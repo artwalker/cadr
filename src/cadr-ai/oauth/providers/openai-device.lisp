@@ -180,6 +180,7 @@
       ((string= method "browser")
        (login-openai-oauth
         nil
+        :agent-name *oauth-login-agent-name*
         :auth-url-function
         (lambda (url)
           (runtime-auth-interaction-notify

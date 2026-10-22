@@ -39,6 +39,11 @@
   handler
   render-call
   render-result
+  (exposure :direct
+            :type (member :direct :model-only :codemode :deferred :hidden))
+  ;; pi@4a080252f extensions/types.ts defaultActive. Nil keeps the tool
+  ;; registered without activating it. Naming it still activates it.
+  (default-active t :type boolean)
   bundle)
 
 (defstruct extension-command-definition
@@ -165,13 +170,23 @@
              kind name)))
   name)
 
-(defun validate-extension-schema (name schema)
+(defun extension-schema-registration-path (&optional path)
+  (or path
+      (and *extension-registration-bundle*
+           (extension-bundle-path *extension-registration-bundle*))
+      "<unknown>"))
+
+(defun validate-extension-schema (name schema &optional path)
+  ;; Reject non-object parameters at registration so they never install.
+  ;; so malformed tools never reach provider request serialization.
   (unless (hash-table-p schema)
     (error
      'extension-registration-error
      :message
-     (format nil "Tool ~A parameters must be a JSON Schema hash-table"
-             name)))
+     (format nil
+             "Tool ~S registered by extension ~S must define an object parameter schema."
+             name
+             (extension-schema-registration-path path))))
   (handler-case
       (validate-json-schema-definition schema)
     (error (condition)
@@ -194,7 +209,9 @@
 
 (defun register-extension-tool
     (name &key description parameters
-            (execution-mode :parallel) handler)
+            (execution-mode :parallel) handler
+            (exposure :direct)
+            (default-active t))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
     (unless (stringp description)
@@ -214,6 +231,13 @@
        'extension-registration-error
        :message (format nil "Tool ~A handler must be a function"
                         name)))
+    (unless (member exposure
+                    '(:direct :model-only :codemode :deferred :hidden))
+      (error
+       'extension-registration-error
+       :message
+       (format nil "Tool ~A exposure must be direct, model-only, codemode, deferred, or hidden"
+               name)))
     (ensure-unique-extension-definition
      (extension-bundle-tools bundle)
      name
@@ -231,6 +255,8 @@
         :parameters parameters
         :execution-mode execution-mode
         :handler handler
+        :exposure exposure
+        :default-active (not (null default-active))
         :bundle bundle)))))
   name)
 
@@ -238,7 +264,9 @@
     (name &key label description prompt-snippet prompt-guidelines
             parameters constrained-sampling render-shell
             prepare-arguments (execution-mode :parallel)
-            handler render-call render-result)
+            handler render-call render-result
+            (exposure :direct)
+            (default-active t))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
     (unless (and (stringp label) (plusp (length label)))
@@ -273,6 +301,12 @@
                  (or (null render-result) (functionp render-result)))
       (error 'extension-registration-error
              :message (format nil "Tool ~A renderers must be functions or NIL" name)))
+    (unless (member exposure
+                    '(:direct :model-only :codemode :deferred :hidden))
+      (error 'extension-registration-error
+             :message
+             (format nil "Tool ~A exposure must be direct, model-only, codemode, deferred, or hidden"
+                     name)))
     (ensure-unique-extension-definition
      (extension-bundle-tools bundle) name
      #'extension-tool-definition-name "Tool")
@@ -291,6 +325,8 @@
         :prepare-arguments prepare-arguments
         :execution-mode execution-mode :full-handler-p t
         :handler handler :render-call render-call :render-result render-result
+        :exposure exposure
+        :default-active (not (null default-active))
         :bundle bundle)))))
   name)
 
@@ -361,9 +397,11 @@
     :session-before-tree
     :session-tree
     :context
+    :context-with-system
     :before-agent-start
     :agent-start
     :agent-end
+    :agent-before-settle
     :agent-settled
     :message-start
     :message-update
@@ -379,6 +417,8 @@
     :before-provider-request
     :before-provider-headers
     :after-provider-response
+    :provider-stream-event
+    :mcp-servers-change
     :user-bash
     :ui-prompt-start
     :ui-prompt-end))
@@ -780,7 +820,8 @@
     (name &key label description prompt-snippet prompt-guidelines
             parameters constrained-sampling render-shell
             prepare-arguments (execution-mode :parallel)
-            handler render-call render-result)
+            handler render-call render-result
+            (default-active t))
   `(register-rich-extension-tool
     ,name :label ,label :description ,description
     :prompt-snippet ,prompt-snippet
@@ -791,7 +832,8 @@
     :prepare-arguments ,prepare-arguments
     :execution-mode ,execution-mode
     :handler ,handler :render-call ,render-call
-    :render-result ,render-result))
+    :render-result ,render-result
+    :default-active ,default-active))
 
 (defmacro define-command
     (name &key description argument-hint

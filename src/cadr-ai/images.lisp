@@ -23,7 +23,8 @@
                     "Unsupported image-generation input: ~S"
                     content)))))
 
-(defun build-openrouter-image-request (model context api-key headers)
+(defun build-openrouter-image-request
+    (model context api-key headers &key identity)
   (unless (non-empty-string-p api-key)
     (error 'authentication-error
            :message
@@ -35,12 +36,16 @@
            (strip-trailing-slash
             (image-model-base-url model)))
    :headers
-   (append
-    `(("content-type" . "application/json")
-      ("accept" . "application/json")
-      ("authorization" . ,(format nil "Bearer ~A" api-key)))
-    headers
-    (image-model-headers model))
+   (apply-client-identity-headers
+    (append
+     `(("content-type" . "application/json")
+       ("accept" . "application/json")
+       ("authorization" . ,(format nil "Bearer ~A" api-key)))
+     (image-model-headers model))
+    (image-model-provider model)
+    (image-model-base-url model)
+    identity
+    :caller-headers headers)
    :payload
    (json-object
     "model" (image-model-id model)
@@ -177,17 +182,19 @@
 
 (defun generate-images
     (model context
-     &key api-key headers abort-p
+     &key api-key headers identity abort-p
        on-payload on-response
        (max-retries *max-provider-retries*)
-       max-retry-delay-ms)
+       max-retry-delay-ms
+     &allow-other-keys)
   (let ((*max-provider-retries* max-retries))
     (handler-case
         (progn
           (check-abort abort-p)
           (let ((request
                   (build-openrouter-image-request
-                   model context api-key headers)))
+                   model context api-key headers
+                   :identity identity)))
             (when on-payload
               (let ((replacement
                       (funcall

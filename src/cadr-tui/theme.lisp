@@ -152,7 +152,8 @@
           :type hash-table)
   (color-mode :256color
               :type (member :truecolor :256color))
-  (enabled-p t :type boolean))
+  (enabled-p t :type boolean)
+  (dim-keys nil :type list))
 
 (defparameter *current-theme* nil)
 
@@ -330,7 +331,8 @@
 (defun make-terminal-theme
     (name &key overrides
                (capabilities (get-terminal-capabilities))
-               (enabled-p t))
+               (enabled-p t)
+               dim-keys)
   (let* ((canonical-name (canonical-theme-name name))
          (base
            (ecase canonical-name
@@ -359,7 +361,9 @@
      (if (terminal-capabilities-true-color-p capabilities)
          :truecolor
          :256color)
-     :enabled-p (not (null enabled-p)))))
+     :enabled-p (not (null enabled-p))
+     :dim-keys
+     (mapcar #'canonical-theme-color-key dim-keys))))
 
 (defun theme-color-value
     (key &key (theme (current-theme)))
@@ -448,8 +452,11 @@
          'string
          (theme-foreground-ansi
           key :theme theme :enabled-p t)
-         text
-         (format nil "~C[39m" #\Escape))
+         (if (member (canonical-theme-color-key key)
+                     (terminal-theme-dim-keys theme))
+             (format nil "~C[2m~A~C[22;39m" #\Escape text #\Escape)
+             (concatenate 'string text
+                          (format nil "~C[39m" #\Escape))))
         (progn
           (theme-foreground-ansi
            key :theme theme :enabled-p nil)
@@ -540,7 +547,8 @@
 
 (defun set-current-theme
     (theme-or-name &key overrides capabilities
-                        (enabled-p t))
+                        (enabled-p t)
+                        dim-keys)
   (setf *current-theme*
         (if (terminal-theme-p theme-or-name)
             (progn
@@ -554,7 +562,8 @@
              :capabilities
              (or capabilities
                  (get-terminal-capabilities))
-             :enabled-p enabled-p))))
+             :enabled-p enabled-p
+             :dim-keys dim-keys))))
 
 (defun reset-current-theme ()
   (setf *current-theme*

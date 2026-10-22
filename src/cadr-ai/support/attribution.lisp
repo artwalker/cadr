@@ -1,18 +1,10 @@
 (in-package #:cadr-ai)
 
 (defun opencode-host-p (provider base-url)
-  (or (member provider '(:opencode :opencode-go))
-      (and (stringp base-url)
-           (search "opencode.ai" base-url))))
+  (opencode-target-p provider base-url))
 
 (defun opencode-request-headers
     (&key provider base-url session-id)
-  "OpenCode requires x-opencode-session on every request.
-Synthesize a UUID when the caller has no session (ephemeral / --no-session)."
-  (when (opencode-host-p provider base-url)
-    (let ((id
-            (if (non-empty-string-p session-id)
-                session-id
-                (uuid-v7))))
-      `(("x-opencode-session" . ,id)
-        ("x-opencode-client" . ,(cadr-product-slug))))))
+  ;; Session routing only. x-opencode-client is attribution and is added
+  ;; with the client identity, including when there is no session.
+  (opencode-session-headers provider base-url session-id))

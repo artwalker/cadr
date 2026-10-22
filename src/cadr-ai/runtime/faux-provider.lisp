@@ -157,6 +157,7 @@
       :id (tool-call-id block)
       :name (tool-call-name block)
       :arguments (copy-json-value (tool-call-arguments block))
+      :arguments-error (tool-call-arguments-error block)
       :thought-signature
       (tool-call-thought-signature block)))
     (t block)))
@@ -254,49 +255,57 @@
               (tool-result-message-content message))))
     (t "")))
 
-(defun faux-serialize-context (context)
-  (format
-   nil "~{~A~^~%~%~}"
-   (append
-    (when (context-system-prompt context)
-      (list
-       (format nil "system:~A"
-               (context-system-prompt context))))
-    (mapcar
-     (lambda (message)
-       (format nil "~A:~A"
-               (cond
-                 ((typep message 'user-message) "user")
-                 ((typep message 'assistant-message)
-                  "assistant")
-                 (t "toolResult"))
-               (faux-message-text message)))
-     (context-messages context))
-    (when (context-tools context)
-      (list
-       (format
-        nil "tools:~A"
-        (stringify-json
-         (list-json-array
-          (mapcar #'faux-tool-json-object
-                  (context-tools context))))))))))
-
 (defun faux-tool-json-object (tool)
-  ;; packages/agent AgentTool extends packages/ai Tool with label; faux.ts
-  ;; JSON.stringify(context.tools) serializes the runtime AgentTool objects.
-  (if (tool-constrained-sampling tool)
-      (json-object
-       "name" (tool-name tool)
-       "label" (tool-name tool)
-       "description" (tool-description tool)
-       "parameters" (tool-parameters tool)
-       "constrainedSampling"
-       (tool-constrained-sampling tool))
-      (json-object
-       "name" (tool-name tool)
-       "label" (tool-name tool)
-       "description" (tool-description tool)
-       "parameters" (tool-parameters tool))))
+  (let ((object
+          (json-object
+           "description" (tool-description tool)
+           "name" (tool-name tool)
+           "parameters" (tool-parameters tool))))
+    (when (tool-constrained-sampling tool)
+      (setf (gethash "constrainedSampling" object)
+            (tool-constrained-sampling tool)))
+    object))
+
+(defun faux-system-line (prompt tools)
+  (let ((parts
+          (remove ""
+                  (cons (or prompt "")
+                        (mapcar
+                         (lambda (tool)
+                           (format nil "tool+:~A"
+                                   (stringify-json
+                                    (faux-tool-json-object tool))))
+                         tools))
+                  :test #'equal)))
+    (when parts
+      (format nil "system:~{~A~^~%~}" parts))))
+
+(defun faux-message-line (message)
+  (format nil "~A:~A"
+          (cond
+            ((typep message 'user-message) "user")
+            ((typep message 'assistant-message) "assistant")
+            (t "toolResult"))
+          (faux-message-text message)))
+
+(defun faux-serialize-context (context)
+  (let ((lines
+          (mapcar #'faux-message-line
+                  (context-messages context)))
+        (system
+          (faux-system-line
+           (context-system-prompt context)
+           (context-tools context))))
+    (when system
+      (let ((index (context-system-prompt-index context)))
+        (setf lines
+              (if index
+                  (let ((at (min index (length lines))))
+                    (append (subseq lines 0 at)
+                            (list system)
+                            (subseq lines at)))
+                  (cons system lines)))))
+    (format nil "~{~A~^~%~%~}" lines)))
 
 (defun common-prefix-length (left right)
   (loop for index from 0
@@ -408,6 +417,8 @@
 (defun faux-emit
     (emit type message
      &key content-index delta content tool-call reason)
+  (when (member type '(:done :error))
+    (stamp-assistant-stream-duration message))
   (funcall
    emit
    (make-stream-event
@@ -512,6 +523,9 @@
 (defun faux-stream
     (handle model context on-event
      &rest options &key abort-p &allow-other-keys)
+  (let ((*assistant-stream-started-wall* (unix-milliseconds))
+        (*assistant-stream-started-mono* (get-internal-real-time))
+        (*assistant-stream-closed-p* nil))
   (multiple-value-bind (message resolution-error-p)
       (faux-resolve handle model context options)
     (let ((partial (faux-partial-message message))
@@ -614,4 +628,4 @@
       (faux-emit
        #'emit-event :done message
        :reason (assistant-message-stop-reason message))
-      (finish message)))))
+      (finish message))))))

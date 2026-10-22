@@ -36,6 +36,98 @@
       (uiop:delete-directory-tree
        root :validate t :if-does-not-exist :ignore))))
 
+(test skill-slash-scores-bare-name-before-full-prefix
+  (let* ((provider
+           (cadr-tui:make-autocomplete-provider
+            :base-path (uiop:temporary-directory)
+            :commands
+            (list
+             (cadr-tui:make-autocomplete-command
+              :name "skip" :description "Skip")
+             (cadr-tui:make-autocomplete-command
+              :name "skill:pdf" :description "PDF skill")
+             (cadr-tui:make-autocomplete-command
+              :name "help" :description "Help"))))
+         (bare
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("/pdf") 0 4))
+         (prefix-only
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("/ski") 0 4)))
+    (is (equal '("skill:pdf")
+               (mapcar #'cadr-tui:autocomplete-item-value
+                       (cadr-tui:autocomplete-suggestions-items
+                        bare))))
+    (is (equal '("skip" "skill:pdf")
+               (mapcar #'cadr-tui:autocomplete-item-value
+                       (cadr-tui:autocomplete-suggestions-items
+                        prefix-only))))))
+
+(test slash-commands-complete-after-leading-whitespace
+  (let ((provider
+          (cadr-tui:make-autocomplete-provider
+           :commands
+           (list
+            (cadr-tui:make-autocomplete-command
+             :name "model"
+             :argument-completer
+             (lambda (prefix)
+               (and (string= prefix "son")
+                    (list
+                     (cadr-tui:make-autocomplete-item
+                      :value "sonnet"
+                      :label "sonnet")))))))))
+    (dolist (example
+             (list
+              (list " /" "/" " /model ")
+              (list "  /mod" "/mod" "  /model ")
+              (list
+               (format nil "~C/mod" #\Tab)
+               "/mod"
+               (format nil "~C/model " #\Tab))))
+      (destructuring-bind (line prefix expected) example
+        (let ((suggestions
+                (cadr-tui:autocomplete-get-suggestions
+                 provider (list line) 0 (length line))))
+          (is (string=
+               prefix
+               (cadr-tui:autocomplete-suggestions-prefix
+                suggestions)))
+          (is (equal
+               '("model")
+               (mapcar
+                #'cadr-tui:autocomplete-item-value
+                (cadr-tui:autocomplete-suggestions-items
+                 suggestions))))
+          (multiple-value-bind (lines cursor-line column)
+              (cadr-tui:autocomplete-apply
+               (list line) 0 (length line)
+               (first
+                (cadr-tui:autocomplete-suggestions-items
+                 suggestions))
+               prefix)
+            (declare (ignore cursor-line))
+            (is (equal (list expected) lines))
+            (is (= (length expected) column))))))
+    (let* ((line "  /model son")
+           (suggestions
+             (cadr-tui:autocomplete-get-suggestions
+              provider (list line) 0 (length line))))
+      (is (string=
+           "son"
+           (cadr-tui:autocomplete-suggestions-prefix
+            suggestions)))
+      (multiple-value-bind (lines cursor-line column)
+          (cadr-tui:autocomplete-apply
+           (list line) 0 (length line)
+           (first
+            (cadr-tui:autocomplete-suggestions-items
+             suggestions))
+           "son")
+        (declare (ignore cursor-line))
+        (is (equal '("  /model sonnet") lines))
+        (is (= (length "  /model sonnet") column))))))
+
 (test autocomplete-slash-and-path-prefix-semantics
   (with-autocomplete-tree
    (lambda (root)
@@ -162,6 +254,71 @@
                          item)))
               (cadr-tui:autocomplete-suggestions-items
                hidden))))))))
+
+(test autocomplete-treats-regex-metacharacters-as-literal
+  ;; pi@4a080252f autocomplete.ts #10972. fd compiles the query as a
+  ;; regex, so [ and ( are literal characters.
+  (is (string= "\\[id"
+               (cadr-tui::autocomplete-fd-path-query "[id")))
+  (is (string= "pages[\\\\/]\\["
+               (cadr-tui::autocomplete-fd-path-query "pages/[")))
+  (is (string= "pages[\\\\/]\\(group\\)"
+               (cadr-tui::autocomplete-fd-path-query
+                "pages/(group)")))
+  (let* ((root
+           (merge-pathnames
+            (format nil "cadr-fd-meta-~36R/"
+                    (random (expt 36 8)))
+            (uiop:temporary-directory)))
+         (fd
+           (uiop:parse-native-namestring
+            (string-right-trim
+             '(#\Newline #\Return)
+             (uiop:run-program
+              '("sh" "-c" "command -v fd")
+              :output :string)))))
+    (unwind-protect
+         (progn
+           (ensure-directories-exist
+            (merge-pathnames "pages/" root))
+           (dolist (name
+                    '("pages/[id].tsx"
+                      "pages/index.tsx"
+                      "pages/(group).ts"))
+             (with-open-file
+                 (stream
+                  (sb-ext:parse-native-namestring
+                   (concatenate
+                    'string
+                    (uiop:native-namestring
+                     (uiop:ensure-directory-pathname root))
+                    name))
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create)
+               (write-string "x" stream)))
+           (let ((provider
+                   (cadr-tui:make-autocomplete-provider
+                    :base-path root :fd-path fd)))
+             (dolist (pair
+                      '(("@pages/[" "@pages/[id].tsx")
+                        ("@pages/(" "@pages/(group).ts")
+                        ("@[id" "@pages/[id].tsx")))
+               (let* ((line (first pair))
+                      (suggestions
+                        (cadr-tui:autocomplete-get-suggestions
+                         provider (list line) 0 (length line)))
+                      (values
+                        (mapcar
+                         #'cadr-tui:autocomplete-item-value
+                         (cadr-tui:autocomplete-suggestions-items
+                          suggestions))))
+                 (is (equal (list (second pair)) values))))))
+      (uiop:run-program
+       (list "rm" "-rf"
+             (uiop:native-namestring
+              (uiop:ensure-directory-pathname root)))
+       :ignore-error-status t))))
 
 (test autocomplete-quoted-completion-does-not-duplicate-closing-quote
   (with-autocomplete-tree
@@ -299,6 +456,38 @@
                 (length
                  (autocomplete-provider-commands"
           source)))))
+
+(test goal24-cjk-punctuation-ends-autocomplete-path-prefix
+  (is (string=
+       "./文档/"
+       (cadr-tui::autocomplete-path-prefix
+        (concatenate 'string "查看，" "./文档/")
+        t)))
+  (is (string=
+       "src/"
+       (cadr-tui::autocomplete-path-prefix
+        (concatenate 'string
+                     "查看"
+                     (string (code-char #x3000))
+                     "src/")
+        t)))
+  (is (string=
+       "文档src/"
+       (cadr-tui::autocomplete-path-prefix "文档src/" t))))
+
+(test goal24-cjk-path-requires-quotes
+  (is (string=
+       "文档/备份"
+       (cadr-tui::autocomplete-quote-value
+        "文档/备份" nil nil)))
+  (is (string=
+       "src/main.lisp"
+       (cadr-tui::autocomplete-quote-value
+        "src/main.lisp" nil nil)))
+  (is (string=
+       "\"查看，src\""
+       (cadr-tui::autocomplete-quote-value
+        "查看，src" nil nil))))
 
 (test at-file-keeps-shallow-match-when-recursive-fd-is-flooded
   (let* ((root

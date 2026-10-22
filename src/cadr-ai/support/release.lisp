@@ -31,12 +31,9 @@
   +cadr-version+)
 
 (defun cadr-os-user-agent ()
-  ;; Baseline packages/ai/src/utils/pi-user-agent.ts getPiUserAgent, with
-  ;; cadr identity.  The baseline guards node:os behind a browser check;
-  ;; cadr is always native, so the OS triple is always available.
-  (format nil "~A (~A ~A; ~A)"
-          (cadr-product-slug)
-          (software-type) (software-version) (machine-type)))
+  ;; v1.4.0 formatUserAgent detailed form. Defined in support/identity.lisp;
+  ;; this stub exists so release.lisp still names the product User-Agent.
+  (format-user-agent))
 
 (defun read-baseline-anchor ()
   "Goal 18 L2.1: the single owner of the fixed pi baseline is the

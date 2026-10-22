@@ -470,9 +470,22 @@
             stack entry)))))
   handle)
 
+(defun retarget-overlay-pre-focus (stack entry)
+  ;; pi tui.ts hide(): an overlay opened above this one recorded this
+  ;; component as its preFocus. Point it at what this overlay would have
+  ;; restored, so hiding the upper overlay does not focus a removed one.
+  (let ((component (overlay-stack-entry-component entry))
+        (fallback (overlay-stack-entry-pre-focus entry)))
+    (dolist (other (overlay-stack-entries stack))
+      (when (and (not (eq other entry))
+                 (eq (overlay-stack-entry-pre-focus other)
+                     component))
+        (setf (overlay-stack-entry-pre-focus other) fallback)))))
+
 (defun overlay-handle-hide (handle)
   (let ((stack (overlay-handle-stack handle))
         (entry (overlay-handle-entry handle)))
+    (retarget-overlay-pre-focus stack entry)
     (when (overlay-handle-focused-p handle)
       (setf
        (overlay-stack-focused-component stack)

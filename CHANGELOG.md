@@ -7,6 +7,160 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 26: retarget the fixed pi baseline from v1.3.0 (`71023aec1`) to
+  v1.4.0 (`4a080252f`). Release identity is
+  `cadr 0.2.0 · aligned with pi v1.4.0 (+0, 4a080252f)`.
+
+- Goal 26: when switching models, drop thinking blocks from earlier
+  assistants produced by a different model instead of rewriting them as
+  visible text (`#10995` / `#11000`). Same-model signed, redacted, and
+  non-empty thinking still replay.
+
+- Goal 26: default TUI mode is fullscreen (pi v1.0.0+). Only exact
+  `tuiMode`/`--tui-mode` value `regular` keeps normal scrollback.
+  Help and settings copy match the baseline.
+
+- Goal 26: `minimax` and `minimax-cn` `MiniMax-M3.1-Flash` thinking
+  levels are low, medium, high, xhigh, and max. Omitting thinking does
+  not send `thinking.type=disabled`. The selected level is
+  `output_config.effort`. M2, M2.1, M2.5, and M2.5-highspeed stay out
+  of those two catalogs.
+
+- Goal 26: xAI `grok-4.3` thinking levels are off, low, medium, high,
+  and xhigh. `grok-4.5` is low, medium, high, and xhigh. A selected
+  `xhigh` is sent as Responses `reasoning.effort`.
+
+- Goal 26: with no model selected, GitHub Copilot uses `gpt-6.1-sol`
+  (context 1050000), NVIDIA uses
+  `nvidia/nemotron-3.5-super-vl-120b-a12b`, and Xiaomi plus the three
+  Xiaomi Token Plan catalogs use `mimo-v2.6-pro`. Turning Copilot
+  thinking off does not send `reasoning.effort=none`. The four Xiaomi
+  catalogs replace the v2.5 pair with `mimo-v2.6-flash` and
+  `mimo-v2.6-pro`. `xiaomi` also lists `mimo-v2.6-pro-ultraspeed`.
+
+- Goal 26: `subscription_sharing_workplace_individual_usage_limit_exceeded`
+  is not retried, including on HTTP 429. OpenAI Responses then tells
+  the user to ask a workspace admin to raise the limit at
+  admin.openai.com. Codex Responses does not add that sentence.
+
+- Goal 26: fold, split-turn prefix, and branch-summary requests omit
+  `maxTokens` and use the model output limit. `reserveTokens` only
+  decides when automatic compaction starts. A `/compact` instruction
+  still applies as `Additional focus` at the start of a split turn.
+
+- Goal 26: the default User-Agent is
+  `cadr/<version> (<platform>; sbcl/<implementation>; <arch>)`.
+  Attribution stays on unless `CADR_TELEMETRY` is `0`, `false`, or
+  empty. OpenRouter, NVIDIA, and OpenCode send the v1.4.0 attribution
+  headers. Classifier requests and GitHub tool release checks use the
+  same User-Agent. Bedrock signs the short `cadr/<version>`. Anthropic
+  OAuth does not use these identity headers.
+
+- Goal 26: whitespace-only tool results use the empty-output
+  placeholder. OpenAI Responses and Completions send
+  `(no tool output)`. Google and Vertex send an empty string, or
+  `(see attached image)` when that blank result includes an image.
+  JavaScript `trim` whitespace counts as blank. Visible text, including
+  text wrapped in that whitespace, is sent unchanged.
+
+- Goal 26: retry also matches `upstream_error`, upstream stream
+  failures, `request to … failed, reason:`, and
+  `stream disconnected before completion`. Digits inside a request id
+  or a byte count are not HTTP statuses. Status boundaries follow
+  JavaScript `[a-z0-9]` and `\S`.
+
+- Goal 26: after a tool removal, later deferred tool loads keep the
+  existing input prefix. Kimi `k3` on Chat Completions rewrites the
+  top-level tool list once, then anchors later loads on that prefix.
+
+- Goal 26: HTTP 413 from any provider is context overflow, including a
+  GitHub Copilot `failed to parse request` body. A Copilot streaming
+  413 folds once and retries. A 413 that appears only in the body, or
+  status 400 or 4130, does not.
+
+- Goal 26: the `openai-codex` catalog no longer lists `gpt-5.5` or
+  `gpt-5.3-codex-spark`. Its default is `gpt-6.1-sol`. The OpenAI API
+  catalog still lists `gpt-5.5`.
+
+- Goal 26: Cloudflare classifier input prices and context windows match
+  pi-ai 1.4.0 (Clef, Clef Flash, Clef Omni, Jev, Jev 1.14). `typesafe`
+  `jev-latest` and OpenRouter decision models accept images. A
+  models.json provider `compat` overlay supplies `imageInput` and
+  `sendImageOptInHeader` for classifier models.
+
+- Goal 26: `TERM_PROGRAM=rex` enables OSC 8, truecolor, and Kitty
+  inline images without `COLORTERM`. A leaked `KITTY_WINDOW_ID` does
+  not change those three. `CADR_HYPERLINKS=0` disables only hyperlinks.
+
+- Goal 26: an unclosed `$$` or `\[` no longer swallows a following
+  GFM table. CJK punctuation can sit inside bold and italic marks.
+  `**end.**Then next` stays literal.
+
+- Goal 26: when the process exits without `stop`, an exit hook
+  restores mouse tracking, focus reporting, Kitty keyboard, bracketed
+  paste, and the alternate screen. Kitty keyboard pop is written
+  before leaving the alternate screen. A normal `stop` emits each
+  sequence once.
+
+- Goal 26: `@` file completion escapes regular-expression
+  metacharacters, so `@pages/[`, `@pages/(`, and `@[id` match those
+  paths as literals.
+
+- Goal 26: extension select, confirm, input, editor, and inline custom
+  dialogs stack in the editor slot. Closing the top dialog reveals the
+  one under it. Overlay custom stays on the overlay layer and takes
+  the next key after an inline dialog closes.
+
+- Goal 26: on POSIX, clipboard commands start with `setsid --wait` in
+  a new session, so Ctrl+Z does not suspend `wl-copy`, `xclip`, or
+  `xsel` with cadr. Windows clipboard commands stay in the parent
+  process group.
+
+- Goal 26: global and project `mcp.json` files may start with a UTF-8
+  BOM. Add, update, and remove read that BOM and rewrite the file
+  without it.
+
+- Goal 26: on resume and `/tree`, extension tools the transcript never
+  added or removed stay active unless they were registered with
+  `default-active` false. Tools removed before compaction stay off.
+
+- Goal 26: a tool call cut off by the output limit, and its tool
+  result, are both omitted from the next projected context. They stay
+  when output already reached the model limit, the model changed, or
+  automatic compaction is off.
+
+- Goal 26: `grep` runs `rg --no-config`, so `RIPGREP_CONFIG_PATH`
+  cannot turn a regex into a literal search.
+
+- Goal 26: HTML export renders CJK punctuation inside `strong` and
+  `em`, includes the hidden-message toggle, `context_edit` nodes, and
+  `nestedCalls`, and ships the v1.4.0 stylesheet byte for byte.
+
+- Goal 26: Windows shell lookup uses the PowerShell installation
+  directories, recognizes legacy WSL `bash.exe` under `SystemRoot`,
+  uses `C:\Windows` for taskkill when `SystemRoot` is empty, and does
+  not read `WINDIR` when unpacking tool packages. Windows Store shell
+  aliases, `pi update` BOM, extension loading of
+  `@earendil-works/pi-ai/models`, generated models reference docs, and
+  telemetry spans stay out of scope under the 2026-10-22 adjudication.
+
+- Goal 26: retarget fixed pi baseline from v0.87.0 (`16787ad5b`) to
+  v1.3.0 (`71023aec1`). Release identity is
+  `cadr 0.2.0 · aligned with pi v1.3.0 (+0, 71023aec1)`.
+  Major-leap pin only; not full v1.3.0 alignment.
+  `version.sexp` stays `0.2.0`. Leftover-PR queue superseded.
+
+- Goal 26: pin fixed pi baseline from v0.86.1 (`13cbf77df`) to
+  v0.87.0 (`16787ad5b`). Release identity is
+  `cadr 0.2.0 · aligned with pi v0.87.0 (+0, 16787ad5b)`.
+  Not full v0.87.0 alignment. `version.sexp` stays `0.2.0`.
+  Superseded by the v1.3.0 retarget above.
+
+- Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to
+  v0.86.1 (`13cbf77df`). Release identity is
+  `cadr 0.2.0 · aligned with pi v0.86.1 (+0, 13cbf77df)`.
+  Not full v0.86.1 alignment. `version.sexp` stays `0.2.0`.
+
 - Goal 24: register `/bug`, redact URLs/secret keys, and write a local
   `cadr-bug-report-*.zip` (`report.json` + `diagnostics.json`). Consent UI
   and Radius upload remain open. `/session` prints the baseline Cache

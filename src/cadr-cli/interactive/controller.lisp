@@ -3,17 +3,22 @@
 (defvar *tui-mode-switch-hook* nil
   "When bound, called with the new tuiMode settings value to
 live-switch the running renderer; returns true when the switch
-happened.  pi@ecac0a9c4 interactive-mode.ts:4557-4567
+happened.  pi@4a080252f interactive-mode.ts:4557-4567
 onTuiModeChange.")
 
 (defvar *fullscreen-copy-on-select-hook* nil
   "When bound, called with the new fullscreenCopyOnSelect boolean so
 the running alt-screen renderer can update copyOnSelect
-(pi@ecac0a9c4 interactive-mode.ts:4584).")
+(pi@4a080252f interactive-mode.ts:4584).")
+
+(defvar *fullscreen-wheel-scroll-lines-hook* nil
+  "When bound, called with the new fullscreenWheelScrollLines value
+(:auto or 1-100) so the running alt-screen renderer can update
+wheel scroll (pi@4a080252f #9758).")
 
 (defvar *alt-screen-flash-function* nil
   "When non-nil, called with a message string to show a transient
-fullscreen flash instead of a status line (pi@ecac0a9c4
+fullscreen flash instead of a status line (pi@4a080252f
 interactive-mode.ts:5956-5960).")
 
 (defun should-use-tui-p
@@ -154,10 +159,12 @@ interactive-mode.ts:5956-5960).")
        clear-on-shrink-p
        (scrollbar-mode :auto)
        (exit-output-mode :transcript)
-       (copy-on-select-p t))
+       (copy-on-select-p t)
+       (wheel-scroll-lines :auto))
   (cadr-tui:make-terminal-renderer
    terminal
    :alt-p alt-p
+   :wheel-scroll-lines wheel-scroll-lines
    :show-hardware-cursor-p
    show-hardware-cursor-p
    :clear-on-shrink-p clear-on-shrink-p
@@ -165,7 +172,7 @@ interactive-mode.ts:5956-5960).")
    :exit-output-mode exit-output-mode
    :copy-on-select-p copy-on-select-p
    :copy-selection-function
-   ;; v0.86.0 tui-alt-screen.ts copySelection: the native/platform
+   ;; v1.4.0 tui-alt-screen.ts copySelection: the native/platform
    ;; clipboard with a verified success path, OSC 52 as its own
    ;; fallback inside copy-to-clipboard.
    (lambda (text)
@@ -175,7 +182,7 @@ interactive-mode.ts:5956-5960).")
    :open-url-function
    #'open-tui-url
    :scroll-to-end-indicator-function
-   ;; pi@ecac0a9c4 tui-renderer.ts scrollToEndIndicator
+   ;; pi@4a080252f tui-renderer.ts scrollToEndIndicator
    (when alt-p
      (lambda ()
        (let* ((shortcut
@@ -289,6 +296,9 @@ interactive-mode.ts:5956-5960).")
        set-theme-function
        preview-theme-function
        session-state-function
+       show-cache-miss-notices-function
+       session-entries-function
+       model-price-function
        debug-messages-function
        busy-input-function
        follow-up-input-function
@@ -306,6 +316,7 @@ interactive-mode.ts:5956-5960).")
        settings-selector-function
        mermaid-mode-function
        code-block-indent-function
+       output-pad-function
        external-editor-command-function
        external-editor-runner-function
        extension-host
@@ -358,6 +369,7 @@ interactive-mode.ts:5956-5960).")
        (scrollbar-mode :auto)
        (exit-output-mode :transcript)
        (copy-on-select-p t)
+       (wheel-scroll-lines :auto)
        last-assistant-text-function
        (clock-function #'tui-monotonic-seconds)
        (sleep-function #'sleep)
@@ -415,6 +427,11 @@ interactive-mode.ts:5956-5960).")
             (if code-block-indent-function
                 (or (funcall code-block-indent-function) "  ")
                 "  ")
+            :output-pad
+            (if output-pad-function
+                (let ((pad (funcall output-pad-function)))
+                  (if (member pad '(0 1)) pad 1))
+                1)
             :session session
             ;; Messages seed after managed-tool ensure (interactive-mode.ts
             ;; ensureTool then rebindCurrentSession / renderInitialMessages).
@@ -468,7 +485,8 @@ interactive-mode.ts:5956-5960).")
             clear-on-shrink-p
             :scrollbar-mode scrollbar-mode
             :exit-output-mode exit-output-mode
-            :copy-on-select-p copy-on-select-p))
+            :copy-on-select-p copy-on-select-p
+            :wheel-scroll-lines wheel-scroll-lines))
          (lock
            (sb-thread:make-mutex
             :name "cadr-tui-state"))
@@ -499,6 +517,15 @@ interactive-mode.ts:5956-5960).")
          (active-custom-ui-state nil)
          (custom-editor-component nil)
          (custom-editor-factory nil)
+         ;; pi@4a080252f interactive-mode.ts pushExtensionDialog.
+         ;; Editor-slot dialogs stack. The last entry is visible;
+         ;; closing it shows the previous one. Each entry keeps its
+         ;; own result, so a buried dialog can still settle.
+         (extension-dialogs nil)
+         ;; Overlay custom (ui.showOverlay) is not an editor-slot dialog.
+         ;; An inline dialog may cover it; closing that dialog restores
+         ;; this state so the overlay keeps the screen and the keys.
+         (remembered-overlay-custom nil)
          (extension-ui-root nil)
          (active-session-path current-session-path)
          (active-theme-mode nil)
@@ -506,13 +533,22 @@ interactive-mode.ts:5956-5960).")
          (terminal-active-p nil)
          (last-terminal-title nil)
          (pending-work-render-p nil)
-         (list-mouse-origin nil))
+         (list-mouse-origin nil)
+         (program-status
+           (make-program-status-reporter
+            (lambda () terminal)
+            (lambda ()
+              (tui-state-session-name state)))))
     (declare (ignore active-theme))
     (dolist (text initial-statuses)
       (add-tui-status state text))
+    (program-status-reporter-report program-status)
     (labels
         ((current-editor ()
            (or custom-editor-component editor))
+         (set-program-status-blocked (source status)
+           (program-status-reporter-set-blocked
+            program-status source status))
          (extension-runtime ()
            (or extension-ui-root
                (setf
@@ -543,7 +579,10 @@ interactive-mode.ts:5956-5960).")
                  '("Yes" "No") '(t nil)
                  :message
                  (missing-session-cwd-prompt
-                  session-cwd fallback-cwd)))))
+                  session-cwd fallback-cwd))
+                :blocked
+                (list :kind :permission
+                      :message "Session cwd not found"))))
          (extension-theme-runtime ()
            (tui-extension-theme-runtime))
          (dispose-component (component)
@@ -565,6 +604,13 @@ interactive-mode.ts:5956-5960).")
          (render-now ()
            (let ((work-rendered-p nil))
              (sb-thread:with-mutex (lock)
+               (let ((floating-overlay
+                       (and remembered-overlay-custom
+                            (not (eq overlay remembered-overlay-custom))
+                            (not
+                             (extension-custom-ui-state-done-p
+                              remembered-overlay-custom))
+                            remembered-overlay-custom)))
                (multiple-value-bind
                      (lines cursor-row cursor-column editor-origin)
                    (render-tui-state
@@ -584,20 +630,24 @@ interactive-mode.ts:5956-5960).")
                     :now (funcall clock-function)
                     :spinner-frame
                     (tui-status-animation-frame
-                     status-animation))
+                     status-animation)
+                    :floating-overlay floating-overlay)
                  (cadr-tui:render-frame
                   renderer lines
                   :cursor-row cursor-row
                   :cursor-column cursor-column
                   :overlay-active-p
-                  (and
-                   (extension-custom-ui-state-p overlay)
-                   (extension-custom-ui-state-overlay-p overlay)
-                   (extension-custom-ui-visible-p overlay)))
+                  (or (and floating-overlay
+                           (extension-custom-ui-visible-p
+                            floating-overlay))
+                      (and
+                       (extension-custom-ui-state-p overlay)
+                       (extension-custom-ui-state-overlay-p overlay)
+                       (extension-custom-ui-visible-p overlay))))
                  (setf
                   list-mouse-origin editor-origin
                   work-rendered-p pending-work-render-p
-                  pending-work-render-p nil)))
+                  pending-work-render-p nil))))
              (when (and work-rendered-p
                         work-rendered-function)
                (funcall work-rendered-function))))
@@ -684,30 +734,61 @@ interactive-mode.ts:5956-5960).")
                    (cadr-tui:terminal-query-background-color
                     terminal
                     :timeout-seconds 0.1d0)))
-             (and
-              color
-              (rgb-background-theme
-               (cadr-tui:rgb-color-red color)
-               (cadr-tui:rgb-color-green color)
-               (cadr-tui:rgb-color-blue color)))))
+             (when color
+               (merge-reported-terminal-colors
+                (list :background
+                      (list (cadr-tui:rgb-color-red color)
+                            (cadr-tui:rgb-color-green color)
+                            (cadr-tui:rgb-color-blue color))))
+               (rgb-background-theme
+                (cadr-tui:rgb-color-red color)
+                (cadr-tui:rgb-color-green color)
+                (cadr-tui:rgb-color-blue color)))))
+         (system-theme-selected-p ()
+           (let ((summary
+                   (and theme-function
+                        (funcall theme-function))))
+             (and summary
+                  (stringp (getf summary :name))
+                  (string-equal (getf summary :name) "system"))))
+         (reapply-system-theme ()
+           (when (system-theme-selected-p)
+             (sb-thread:with-mutex (lock)
+               (apply-tui-theme-summary "system"))
+             (request-render)))
+         (reported-background-theme (reported)
+           (let ((color (getf reported :background)))
+             (when (and color (= (length color) 3))
+               (rgb-background-theme
+                (first color) (second color) (third color)))))
          (refresh-terminal-theme-policy ()
-           (let ((mode (current-theme-mode)))
-             (setf active-theme-mode mode)
-             (case mode
-               (:auto
-                (let ((background
-                        (or
-                         (cadr-tui:terminal-query-color-scheme
-                          terminal
-                          :timeout-seconds 0.1d0)
-                         (query-osc11-background))))
-                  (apply-detected-background background)))
-               (:detect-once
-                (apply-detected-background
-                 (query-osc11-background))))
-             (cadr-tui:terminal-set-color-scheme-notifications
-              terminal (eq mode :auto))
-             mode))
+           (let* ((reported
+                    (cadr-tui:terminal-query-theme-colors
+                     terminal
+                     :timeout-seconds 0.1d0))
+                  (from-report
+                    (reported-background-theme reported)))
+             (merge-reported-terminal-colors reported)
+             (reapply-system-theme)
+             (let ((mode (current-theme-mode)))
+               (setf active-theme-mode mode)
+               (case mode
+                 (:auto
+                  (let ((background
+                          (or
+                           (cadr-tui:terminal-query-color-scheme
+                            terminal
+                            :timeout-seconds 0.1d0)
+                           from-report
+                           (query-osc11-background))))
+                    (apply-detected-background background)))
+                 (:detect-once
+                  (apply-detected-background
+                   (or from-report
+                       (query-osc11-background)))))
+               (cadr-tui:terminal-set-color-scheme-notifications
+                terminal (eq mode :auto))
+               mode)))
          (terminal-progress-enabled-p ()
            (not
             (null
@@ -907,179 +988,375 @@ interactive-mode.ts:5956-5960).")
                        :not-subscription)))))
              (request-render))
            (tui-state-model state))
-         (finish-custom-ui (result)
+         (extension-dialog-entry (component)
+           (find component extension-dialogs
+                 :key (lambda (entry) (getf entry :component))
+                 :test #'eq))
+         (show-top-extension-dialog-locked ()
+           (let ((top (car (last extension-dialogs))))
+             (cond
+               (top
+                (setf overlay (getf top :component)
+                      overlay-kind :extension-custom)
+                (if (extension-custom-ui-state-p overlay)
+                    (setf active-custom-ui-state overlay)
+                    (when
+                        (and active-custom-ui-state
+                             (not
+                              (extension-custom-ui-state-overlay-p
+                               active-custom-ui-state)))
+                      (setf active-custom-ui-state nil)))
+                (set-program-status-blocked
+                 "extension-dialog" (getf top :blocked)))
+               ((and remembered-overlay-custom
+                     (extension-custom-ui-state-p
+                      remembered-overlay-custom)
+                     (not
+                      (extension-custom-ui-state-done-p
+                       remembered-overlay-custom)))
+                ;; pi@4a080252f tui.ts setFocusInternal: the inline
+                ;; dialog unmounted, so the blocked overlay custom
+                ;; takes focus again. Keys must not fall through to
+                ;; the editor.
+                (setf overlay remembered-overlay-custom
+                      overlay-kind :extension-custom
+                      active-custom-ui-state
+                      remembered-overlay-custom)
+                (set-program-status-blocked
+                 "extension-dialog" nil))
+               (t
+                (when (eq overlay-kind :extension-custom)
+                  (setf overlay nil
+                        overlay-kind nil))
+                (when
+                    (and active-custom-ui-state
+                         (not
+                          (extension-custom-ui-state-overlay-p
+                           active-custom-ui-state)))
+                  (setf active-custom-ui-state nil))
+                (set-program-status-blocked
+                 "extension-dialog" nil)))))
+         (uncover-extension-dialog-locked (component)
+           (let ((index
+                   (position component extension-dialogs
+                             :key (lambda (entry)
+                                    (getf entry :component))
+                             :test #'eq)))
+             (when index
+               (setf extension-dialogs
+                     (append
+                      (subseq extension-dialogs 0 index)
+                      (subseq extension-dialogs (1+ index))))
+               (when (= index (length extension-dialogs))
+                 (show-top-extension-dialog-locked)))))
+         (uncover-extension-dialog (component)
+           (sb-thread:with-mutex (lock)
+             (uncover-extension-dialog-locked component))
+           (request-render))
+         (push-extension-dialog-locked (component blocked)
+           (let ((entry
+                   (list :component component
+                         :blocked blocked
+                         :done-p nil
+                         :result nil)))
+             (setf extension-dialogs
+                   (append extension-dialogs (list entry)))
+             (show-top-extension-dialog-locked)
+             entry))
+         (settle-stacked-extension-dialog (component result)
+           (sb-thread:with-mutex (lock)
+             (let ((entry (extension-dialog-entry component)))
+               (when (and entry (not (getf entry :done-p)))
+                 (setf (getf entry :done-p) t
+                       (getf entry :result) result)
+                 (uncover-extension-dialog-locked component))))
            (sb-thread:with-mutex (custom-ui-lock)
-             (unless custom-ui-done-p
-               (when active-custom-ui-state
-                 (let ((handle
-                         (extension-custom-ui-state-handle
-                          active-custom-ui-state)))
-                   (when handle
-                     (cadr-tui:overlay-handle-hide handle)))
+             (sb-thread:condition-broadcast custom-ui-condition))
+           (request-render))
+         (finish-visible-extension-dialog (result)
+           (let ((component
+                   (sb-thread:with-mutex (lock)
+                     (getf (car (last extension-dialogs))
+                           :component))))
+             (when component
+               (if (extension-custom-ui-state-p component)
+                   (finish-custom-ui-state component result)
+                   (settle-stacked-extension-dialog
+                    component result)))))
+         (close-stacked-extension-dialogs ()
+           (loop for guard from 0 below 64
+                 while extension-dialogs
+                 for component =
+                 (getf (car (last extension-dialogs)) :component)
+                 do
+                 (if (extension-custom-ui-state-p component)
+                     (finish-custom-ui-state component nil)
+                     (settle-stacked-extension-dialog
+                      component nil))))
+         (finish-custom-ui-state (state result)
+           (let ((newly-done nil))
+             (sb-thread:with-mutex (custom-ui-lock)
+               (unless (extension-custom-ui-state-done-p state)
                  (unless
-                     (extension-custom-ui-state-disposed-p
-                      active-custom-ui-state)
+                     (extension-custom-ui-state-disposed-p state)
                    (dispose-component
-                    (extension-custom-ui-state-component
-                     active-custom-ui-state))
+                    (extension-custom-ui-state-component state))
                    (setf
-                    (extension-custom-ui-state-disposed-p
-                     active-custom-ui-state)
+                    (extension-custom-ui-state-disposed-p state)
                     t))
-                 (setf active-custom-ui-state nil))
-               (setf
-                custom-ui-result result
-                custom-ui-done-p t)
+                 (setf active-custom-ui-state
+                       (complete-extension-custom-ui
+                        state result active-custom-ui-state))
+                 (setf newly-done t)))
+             (when newly-done
+               (uncover-extension-dialog state))
+             (sb-thread:with-mutex (custom-ui-lock)
                (sb-thread:condition-broadcast
                 custom-ui-condition))))
+         (finish-custom-ui (result)
+           (let ((state
+                   (sb-thread:with-mutex (custom-ui-lock)
+                     active-custom-ui-state)))
+             (when state
+               (finish-custom-ui-state state result))
+             (sb-thread:with-mutex (custom-ui-lock)
+               (unless custom-ui-done-p
+                 (setf
+                  custom-ui-result result
+                  custom-ui-done-p t)
+                 (sb-thread:condition-broadcast
+                  custom-ui-condition)))))
          (show-extension-overlay
-             (component &key signal timeout-ms)
-           (sb-thread:with-mutex (custom-ui-lock)
-             (setf
-              custom-ui-done-p nil
-              custom-ui-result nil))
-           (unless custom-ui-done-p
-             (sb-thread:with-mutex (lock)
-               (setf overlay-kind :extension-custom
-                     overlay component))
-             (request-render)
-             (when extension-overlay-opened-function
-               (funcall extension-overlay-opened-function)))
-           (let* ((deadline
-                    (and timeout-ms
-                         (+ (get-internal-real-time)
-                            (ceiling
-                             (* timeout-ms
-                                internal-time-units-per-second)
-                             1000))))
-                  (monitor
-                    (and
-                     (or signal deadline)
+             (component &key signal timeout-ms blocked)
+           (let* ((tracked-state
+                    (and (extension-custom-ui-state-p component)
+                         component))
+                  ;; Overlay custom stays on the overlay stack (#10648).
+                  ;; Select, confirm, input, editor, and inline custom
+                  ;; share the editor slot and stack (#11166).
+                  (stack-p
+                    (not
+                     (and tracked-state
+                          (extension-custom-ui-state-overlay-p
+                           tracked-state))))
+                  (entry nil))
+             (unless
+                 (and tracked-state
+                      (extension-custom-ui-state-done-p
+                       tracked-state))
+               (sb-thread:with-mutex (lock)
+                 (if stack-p
+                     (setf entry
+                           (push-extension-dialog-locked
+                            component blocked))
+                     (setf overlay-kind :extension-custom
+                           overlay component
+                           remembered-overlay-custom
+                           (if (and
+                                (extension-custom-ui-state-p
+                                 component)
+                                (extension-custom-ui-state-overlay-p
+                                 component))
+                               component
+                               remembered-overlay-custom))))
+               (request-render)
+               (when extension-overlay-opened-function
+                 (funcall extension-overlay-opened-function)))
+             (labels
+                 ((overlay-settled-p ()
+                    (or
+                     (and tracked-state
+                          (extension-custom-ui-state-done-p
+                           tracked-state))
+                     (and entry (getf entry :done-p))
+                     (and (not stack-p)
+                          (not tracked-state)
+                          custom-ui-done-p)))
+                  (await-extension-overlay ()
+                    (let* ((deadline
+                             (and timeout-ms
+                                  (+ (get-internal-real-time)
+                                     (ceiling
+                                      (* timeout-ms
+                                         internal-time-units-per-second)
+                                      1000))))
+                           (monitor
+                             (and
+                              (or signal deadline)
+                              (sb-thread:make-thread
+                               (lambda ()
+                                 ;; LOOP WHEN/DO would skip the abort check
+                                 ;; whenever the countdown test is false.
+                                 (loop with last-countdown = nil
+                                       do
+                                       (when
+                                           (and deadline
+                                                (framed-select-state-p
+                                                 component))
+                                         (let ((remaining
+                                                 (max
+                                                  0
+                                                  (ceiling
+                                                   (/ (- deadline
+                                                         (get-internal-real-time))
+                                                      internal-time-units-per-second)))))
+                                           (unless (eql remaining
+                                                        last-countdown)
+                                             (setf last-countdown remaining)
+                                             (request-render))))
+                                       (when (overlay-settled-p)
+                                         (return))
+                                       (when
+                                           (or
+                                            (and signal
+                                                 (cadr-agent::extension-cancellation-aborted-p
+                                                  signal))
+                                            (and deadline
+                                                 (>= (get-internal-real-time)
+                                                     deadline)))
+                                         (if tracked-state
+                                             (finish-custom-ui-state
+                                              tracked-state nil)
+                                             (settle-stacked-extension-dialog
+                                              component nil))
+                                         (return))
+                                       (sleep 0.01)))
+                               :name "cadr-extension-ui-timeout")))
+                           (result
+                             (sb-thread:with-mutex (custom-ui-lock)
+                               (loop until (overlay-settled-p)
+                                     do
+                                     (sb-thread:condition-wait
+                                      custom-ui-condition
+                                      custom-ui-lock))
+                               (cond
+                                 (tracked-state
+                                  (extension-custom-ui-state-result
+                                   tracked-state))
+                                 (entry (getf entry :result))
+                                 (t custom-ui-result)))))
+                      (when monitor
+                        (stop-thread-for-cleanup monitor))
+                      (sb-thread:with-mutex (lock)
+                        (when (extension-dialog-entry component)
+                          (uncover-extension-dialog-locked component))
+                        (when (eq remembered-overlay-custom component)
+                          (setf remembered-overlay-custom nil))
+                        (when (eq overlay component)
+                          (setf overlay nil
+                                overlay-kind nil)))
+                      (request-render)
+                      result)))
+               (if (and (tui-input-thread-p)
+                        (not (overlay-settled-p)))
+                   ;; pi@4a080252f showExtensionConfirm returns a Promise
+                   ;; before the next key. Waiting here would hold the
+                   ;; thread that reads Escape.
+                   (let ((promise
+                           (cadr-agent::%make-extension-ui-promise)))
                      (sb-thread:make-thread
                       (lambda ()
-                        (loop with last-countdown = nil
-                          when
-                            (and deadline
-                                 (framed-select-state-p component))
-                          do
-                            (let ((remaining
-                                    (max
-                                     0
-                                     (ceiling
-                                      (/ (- deadline
-                                            (get-internal-real-time))
-                                         internal-time-units-per-second)))))
-                              (unless (eql remaining last-countdown)
-                                (setf last-countdown remaining)
-                                (request-render)))
-                          (when
-                              (sb-thread:with-mutex (custom-ui-lock)
-                                custom-ui-done-p)
-                            (return))
-                          (when
-                              (or
-                               (and signal
-                                    (cadr-agent::extension-cancellation-aborted-p
-                                     signal))
-                               (and deadline
-                                    (>= (get-internal-real-time)
-                                        deadline)))
-                            (finish-custom-ui nil)
-                            (return))
-                          (sleep 0.01)))
-                      :name "cadr-extension-ui-timeout")))
-                  (result
-                    (sb-thread:with-mutex (custom-ui-lock)
-                      (loop until custom-ui-done-p
-                            do
-                            (sb-thread:condition-wait
-                             custom-ui-condition
-                             custom-ui-lock))
-                      custom-ui-result)))
-             (when monitor
-               (stop-thread-for-cleanup monitor))
-             (sb-thread:with-mutex (lock)
-               (when (eq overlay component)
-                 (setf overlay nil
-                       overlay-kind nil)))
-             (request-render)
-             result))
+                        (handler-case
+                            (cadr-agent::fulfill-extension-ui-promise
+                             promise (await-extension-overlay))
+                          (error ()
+                            (cadr-agent::fulfill-extension-ui-promise
+                             promise nil))))
+                      :name "cadr-extension-ui-await")
+                     promise)
+                   (await-extension-overlay)))))
          (show-custom-ui
              (factory overlay-p overlay-options)
-           (sb-thread:with-mutex (custom-ui-lock)
-             (setf custom-ui-done-p nil
-                   custom-ui-result nil))
-           (let ((component
-                   (funcall factory
-                            #'finish-custom-ui)))
-             (note-component-render-channel
-              component #'request-render)
-             (if custom-ui-done-p
-                 custom-ui-result
-                 (let ((state
-                         (make-extension-custom-ui-state
-                          :component component
-                          :done-function #'finish-custom-ui
-                          :overlay-p (not (null overlay-p))
-                          :overlay-options overlay-options
-                          :legacy-p t)))
-                   (when overlay-p
-                     (setf
-                      (extension-custom-ui-state-handle state)
-                      (cadr-tui:overlay-stack-show
-                       (cadr-tui:make-overlay-stack
-                        :focused-component (current-editor))
-                       component nil)))
-                   (setf active-custom-ui-state state)
-                   (show-extension-overlay state)))))
+           (let ((own-state nil)
+                 (early-done-p nil)
+                 (early-result nil))
+             (labels ((finish-own (result)
+                        (if own-state
+                            (finish-custom-ui-state own-state result)
+                            (setf early-done-p t
+                                  early-result result))))
+               (let ((component (funcall factory #'finish-own)))
+                 (note-component-render-channel
+                  component #'request-render)
+                 (if early-done-p
+                     early-result
+                     (let ((state
+                             (make-extension-custom-ui-state
+                              :component component
+                              :done-function #'finish-own
+                              :overlay-p (not (null overlay-p))
+                              :overlay-options overlay-options
+                              :legacy-p t)))
+                       (setf own-state state)
+                       (when overlay-p
+                         (setf
+                          (extension-custom-ui-state-handle state)
+                          (cadr-tui:overlay-stack-show
+                           (cadr-tui:make-overlay-stack
+                            :focused-component (current-editor))
+                           component nil)))
+                       (if (extension-custom-ui-state-done-p state)
+                           (extension-custom-ui-state-result state)
+                           (progn
+                             (setf active-custom-ui-state state)
+                             (show-extension-overlay state)))))))))
          (show-custom-component-ui
              (factory overlay-p overlay-options on-handle)
-           (sb-thread:with-mutex (custom-ui-lock)
-             (setf custom-ui-done-p nil
-                   custom-ui-result nil))
-           (let ((component
-                   (funcall
-                    factory
-                    (extension-runtime)
-                    (extension-theme-runtime)
-                    (cadr-tui:get-keybindings)
-                    #'finish-custom-ui)))
-             (note-component-render-channel
-              component #'request-render)
-             (unless (tui-component-protocol-p component)
-               (error
-                'cadr-agent:extension-execution-error
-                :message
-                "Custom component factory must return a CADR-TUI:COMPONENT"))
-             (if custom-ui-done-p
-                 custom-ui-result
-                 (let ((state
-                         (make-extension-custom-ui-state
-                          :component component
-                          :done-function #'finish-custom-ui
-                          :overlay-p (not (null overlay-p))
-                          :overlay-options overlay-options)))
-                   (when overlay-p
-                     (let* ((options
-                              (if (functionp overlay-options)
-                                  (funcall overlay-options)
-                                  overlay-options))
-                            (non-capturing-p
-                              (or (getf options :non-capturing)
-                                  (getf options :non-capturing-p)))
-                            (handle
-                              (cadr-tui:overlay-stack-show
-                               (cadr-tui:make-overlay-stack
-                                :focused-component (current-editor))
-                               component nil
-                               :non-capturing-p non-capturing-p)))
-                       (setf
-                        (extension-custom-ui-state-handle state)
-                        handle)
-                       (when on-handle
-                         (funcall on-handle handle))))
-                   (setf active-custom-ui-state state)
-                   (show-extension-overlay state)))))
+           (let ((own-state nil)
+                 (early-done-p nil)
+                 (early-result nil))
+             (labels ((finish-own (result)
+                        (if own-state
+                            (finish-custom-ui-state own-state result)
+                            (setf early-done-p t
+                                  early-result result))))
+               (let ((component
+                       (funcall
+                        factory
+                        (extension-runtime)
+                        (extension-theme-runtime)
+                        (cadr-tui:get-keybindings)
+                        #'finish-own)))
+                 (note-component-render-channel
+                  component #'request-render)
+                 (unless (tui-component-protocol-p component)
+                   (error
+                    'cadr-agent:extension-execution-error
+                    :message
+                    "Custom component factory must return a CADR-TUI:COMPONENT"))
+                 (if early-done-p
+                     early-result
+                     (let ((state
+                             (make-extension-custom-ui-state
+                              :component component
+                              :done-function #'finish-own
+                              :overlay-p (not (null overlay-p))
+                              :overlay-options overlay-options)))
+                       (setf own-state state)
+                       (when overlay-p
+                         (let* ((options
+                                  (if (functionp overlay-options)
+                                      (funcall overlay-options)
+                                      overlay-options))
+                                (non-capturing-p
+                                  (or (getf options :non-capturing)
+                                      (getf options :non-capturing-p)))
+                                (handle
+                                  (cadr-tui:overlay-stack-show
+                                   (cadr-tui:make-overlay-stack
+                                    :focused-component (current-editor))
+                                   component nil
+                                   :non-capturing-p non-capturing-p)))
+                           (setf
+                            (extension-custom-ui-state-handle state)
+                            handle)
+                           (when on-handle
+                             (funcall on-handle handle))))
+                       (if (extension-custom-ui-state-done-p state)
+                           (extension-custom-ui-state-result state)
+                           (progn
+                             (setf active-custom-ui-state state)
+                             (show-extension-overlay state)))))))))
          (set-extension-header (factory)
            (let ((previous (tui-state-header-component state))
                  (replacement
@@ -1146,7 +1423,10 @@ interactive-mode.ts:5956-5960).")
              :toggle-tools-function
              (lambda ()
              (toggle-last-tool-block state)))
-            :signal signal :timeout-ms timeout-ms))
+            :signal signal
+            :timeout-ms timeout-ms
+            :blocked
+            (list :kind :question :message (or title ""))))
          (show-runtime-auth-prompt (prompt)
            (case (getf prompt :type)
              (:select
@@ -1254,6 +1534,9 @@ interactive-mode.ts:5956-5960).")
               (show-extension-selection
                (getf arguments :title)
                (getf arguments :options)
+               :message
+               (or (getf arguments :message)
+                   (getf arguments :description))
                :signal (getf arguments :signal)
                :timeout-ms (getf arguments :timeout-ms)))
              (:confirm
@@ -1267,7 +1550,11 @@ interactive-mode.ts:5956-5960).")
                 (lambda ()
                   (toggle-last-tool-block state)))
                :signal (getf arguments :signal)
-               :timeout-ms (getf arguments :timeout-ms)))
+               :timeout-ms (getf arguments :timeout-ms)
+               :blocked
+               (list :kind :permission
+                     :message
+                     (or (getf arguments :title) ""))))
              (:custom
               (show-custom-ui
                (getf arguments :factory)
@@ -1282,7 +1569,12 @@ interactive-mode.ts:5956-5960).")
              (:input
               (let* ((component
                        (make-extension-input-dialog
-                        (getf arguments :title)))
+                        (getf arguments :title)
+                        :description
+                        (getf arguments :description)
+                        :initial-value
+                        (or (getf arguments :initial-value)
+                            (getf arguments :placeholder))))
                      (custom-state
                        (make-extension-custom-ui-state
                         :component component
@@ -1292,7 +1584,11 @@ interactive-mode.ts:5956-5960).")
                 (show-extension-overlay
                  custom-state
                  :signal (getf arguments :signal)
-                 :timeout-ms (getf arguments :timeout-ms))))
+                 :timeout-ms (getf arguments :timeout-ms)
+                 :blocked
+                 (list :kind :question
+                       :message
+                       (or (getf arguments :title) "")))))
              (:editor
               (let ((component
                       (make-extension-editor-dialog
@@ -1304,7 +1600,12 @@ interactive-mode.ts:5956-5960).")
                          :done-function #'finish-custom-ui
                          :legacy-p t)))
                   (setf active-custom-ui-state custom-state)
-                  (show-extension-overlay custom-state))))
+                  (show-extension-overlay
+                   custom-state
+                   :blocked
+                   (list :kind :question
+                         :message
+                         (or (getf arguments :title) ""))))))
              (:add-autocomplete-provider
               (add-extension-autocomplete-provider
                (getf arguments :factory)))
@@ -1318,7 +1619,8 @@ interactive-mode.ts:5956-5960).")
                   :custom-payload (copy-tree arguments)
                   :custom-options
                   (list :expanded-p nil
-                        :output-pad 1))))
+                        :output-pad
+                        (tui-state-output-pad state)))))
               (request-render)
               nil)
              (:append-custom-entry
@@ -1490,6 +1792,8 @@ interactive-mode.ts:5956-5960).")
                   (set-terminal-progress-state t))
                  ((:agent-end :compaction-end)
                   (set-terminal-progress-state nil))))
+             (program-status-reporter-handle-event
+              program-status event)
              (sb-thread:with-mutex (lock)
                (if
                    (and
@@ -1513,10 +1817,24 @@ interactive-mode.ts:5956-5960).")
                       compaction-summary
                       :compaction-tokens-before
                       compaction-tokens-before
+                      :show-cache-miss-notices-function
+                      show-cache-miss-notices-function
+                      :session-entries-function
+                      session-entries-function
+                      :model-price-function
+                      model-price-function
+                      :renderer renderer
                       :clock-function clock-function))
                    (tui-handle-agent-event
                     state event
                     :extension-host extension-host
+                    :show-cache-miss-notices-function
+                    show-cache-miss-notices-function
+                    :session-entries-function
+                    session-entries-function
+                    :model-price-function
+                    model-price-function
+                    :renderer renderer
                     :clock-function clock-function)))
              ;; MESSAGE-END is emitted before Cadr persists the final
              ;; assistant message.  Preserve the event-local usage until the
@@ -1613,7 +1931,9 @@ interactive-mode.ts:5956-5960).")
                          (stop-tui-user-bash-entry live-bash-entry))
                        (when (eq overlay-kind :login-dialog)
                          (setf overlay nil
-                               overlay-kind nil))
+                               overlay-kind nil)
+                         (set-program-status-blocked
+                          "login" nil))
                        (setf busy-p nil
                              abort-requested-p nil)
                        (when (typep (current-editor)
@@ -1778,6 +2098,14 @@ interactive-mode.ts:5956-5960).")
                     overlay
                     (make-login-dialog-state
                      (oauth-selector-option-name option)))
+              (set-program-status-blocked
+               "login"
+               (list
+                :kind :auth
+                :message
+                (format nil "Log in to ~A"
+                        (oauth-selector-option-name
+                         option))))
               (start-work
                (format nil "/login ~(~A~)"
                        (oauth-selector-option-id option))))
@@ -1789,6 +2117,14 @@ interactive-mode.ts:5956-5960).")
                     overlay
                     (make-login-dialog-state
                      (oauth-selector-option-name option)))
+              (set-program-status-blocked
+               "login"
+               (list
+                :kind :auth
+                :message
+                (format nil "Log in to ~A"
+                        (oauth-selector-option-name
+                         option))))
               (when (eq :amazon-bedrock
                         (oauth-selector-option-id option))
                 (login-dialog-show-details
@@ -1814,7 +2150,17 @@ interactive-mode.ts:5956-5960).")
            (multiple-value-bind (action value)
                (login-auth-type-route
                 provider-options
-                :generic-p (not provider-options-p))
+                :generic-p (not provider-options-p)
+                :radius-option
+                (unless provider-options-p
+                  (find-if
+                   (lambda (option)
+                     (and (eq :radius
+                              (oauth-selector-option-id option))
+                          (eq :oauth
+                              (oauth-selector-option-auth-type
+                               option))))
+                   (current-login-options))))
              (case action
                (:none
                 (status value))
@@ -1942,7 +2288,7 @@ interactive-mode.ts:5956-5960).")
            (when selected-path
              (setf
               active-session-path selected-path))
-           (replace-tui-entries state nil)
+           (replace-tui-entries state nil :renderer renderer)
            (setf
             (tui-state-current-assistant state)
             nil
@@ -1965,8 +2311,15 @@ interactive-mode.ts:5956-5960).")
             (tui-state-cost-known-p state)
            nil)
            (dolist (message selected-messages)
-             (seed-tui-message state message))
-           (refresh-footer-state))
+             (seed-tui-message
+              state message
+              :show-cache-miss-notices-p
+              (and show-cache-miss-notices-function
+                   (funcall
+                    show-cache-miss-notices-function))))
+           (refresh-footer-state)
+           (program-status-reporter-reset
+            program-status))
          (submit (line)
            (let ((trimmed
                    (string-trim
@@ -2239,6 +2592,13 @@ interactive-mode.ts:5956-5960).")
            (refresh-footer-state))
          (accept-selection (value &key persist)
            (let ((kind overlay-kind))
+             (when (and (eq kind :extension-custom)
+                        (find overlay extension-dialogs
+                              :key (lambda (entry)
+                                     (getf entry :component))
+                              :test #'eq))
+               (finish-visible-extension-dialog value)
+               (return-from accept-selection nil))
              (setf overlay nil
                    overlay-kind nil)
              (handler-case
@@ -2279,7 +2639,7 @@ interactive-mode.ts:5956-5960).")
                            (oauth-selector-option-id value))
                         (declare (ignore provider))
                         (if sync-error
-                            ;; pi@ecac0a9c4 interactive-mode.ts:5399 —
+                            ;; pi@4a080252f interactive-mode.ts:5399 —
                             ;; the synchronization failure replaces the
                             ;; success status.
                             (show-error
@@ -2315,7 +2675,7 @@ interactive-mode.ts:5956-5960).")
                            provider
                            (getf value :key))
                         (if sync-error
-                            ;; pi@ecac0a9c4 interactive-mode.ts:5548 —
+                            ;; pi@4a080252f interactive-mode.ts:5548 —
                             ;; the synchronization failure replaces the
                             ;; success status.
                             (show-error
@@ -2486,7 +2846,8 @@ interactive-mode.ts:5956-5960).")
                                     (sb-thread:with-mutex (lock)
                                       (reset-tui-messages
                                        state
-                                       selected-messages))
+                                       selected-messages
+                                       :renderer renderer))
                                     (request-render))))
                              (error (condition)
                                (status
@@ -2500,7 +2861,7 @@ interactive-mode.ts:5956-5960).")
                   (format nil "~A" condition)))))
            (refresh-footer-state))
          (switch-tui-mode (mode)
-           ;; pi@ecac0a9c4 interactive-mode.ts:788-832 switchTuiMode +
+           ;; pi@4a080252f interactive-mode.ts:788-832 switchTuiMode +
            ;; :4557-4567 onTuiModeChange.  The baseline guard ("Close
            ;; active overlays before changing TUI mode") requires a
            ;; stacked overlay above the settings selector; cadr's
@@ -2582,8 +2943,13 @@ interactive-mode.ts:5956-5960).")
                     (request-render))
                   (accept-selection value)))
              (:submit
-              (when (eq overlay-kind :extension-custom)
-                (finish-custom-ui value)))
+              (if (find overlay extension-dialogs
+                        :key (lambda (entry)
+                               (getf entry :component))
+                        :test #'eq)
+                  (finish-visible-extension-dialog value)
+                  (when (eq overlay-kind :extension-custom)
+                    (finish-custom-ui value))))
              (:persist
               (accept-selection value :persist t))
              (:cancel
@@ -2592,10 +2958,18 @@ interactive-mode.ts:5956-5960).")
                       (and
                        (eq overlay-kind :login-provider)
                        login-provider-auth-type)))
-                ;; Clear the visible overlay before waking a blocked extension
-                ;; UI caller.  That caller may synchronously open the next
-                ;; surface as soon as FINISH-CUSTOM-UI broadcasts; clearing it
-                ;; afterwards would clobber the replacement overlay.
+                ;; A stacked editor-slot dialog uncovers the previous
+                ;; one. Clearing the slot first would drop that dialog.
+                ;; Other overlays still clear before the waiter wakes,
+                ;; so a replacement opened from that waiter is not
+                ;; clobbered by the cleanup.
+                (when (and (eq cancelled-kind :extension-custom)
+                           (find overlay extension-dialogs
+                                 :key (lambda (entry)
+                                        (getf entry :component))
+                                 :test #'eq))
+                  (finish-visible-extension-dialog nil)
+                  (return-from handle-overlay-action nil))
                 (setf overlay nil
                       overlay-kind nil)
                 (when
@@ -2604,6 +2978,8 @@ interactive-mode.ts:5956-5960).")
                   (finish-custom-ui nil))
                 (cond
                   ((eq cancelled-kind :login-dialog)
+                   (set-program-status-blocked
+                    "login" nil)
                    (unless abort-requested-p
                      (setf abort-requested-p t)
                      (when abort-function
@@ -2683,6 +3059,22 @@ interactive-mode.ts:5956-5960).")
                   (setf (tui-state-mermaid-mode state)
                         (or (getf value :value) "streaming"))
                   (dolist (entry (tui-state-entries state))
+                    (invalidate-tui-entry-render-cache entry)
+                    (setf (tui-entry-markdown-cache entry) nil)))
+                (when
+                    (and value
+                         (string=
+                          (getf value :id)
+                          "output-padding"))
+                  (let ((pad (getf value :value)))
+                    (setf (tui-state-output-pad state)
+                          (if (member pad '(0 1)) pad 1)))
+                  (dolist (entry (tui-state-entries state))
+                    (when (member (tui-entry-type entry)
+                                  '(:custom-message :custom-entry))
+                      (setf (getf (tui-entry-custom-options entry)
+                                  :output-pad)
+                            (tui-state-output-pad state)))
                     (invalidate-tui-entry-render-cache entry)
                     (setf (tui-entry-markdown-cache entry) nil)))
                 (synchronize-terminal-progress-setting)
@@ -2968,7 +3360,12 @@ interactive-mode.ts:5956-5960).")
             (funcall tool-ensure-function)
           (condition () nil)))
       (dolist (message messages)
-        (seed-tui-message state message))
+        (seed-tui-message
+         state message
+         :show-cache-miss-notices-p
+         (and show-cache-miss-notices-function
+              (funcall
+               show-cache-miss-notices-function))))
       ;; Baseline interactive-mode.ts: rebind/renderInitialMessages first,
       ;; then modelFallbackMessage via showWarning (appends after transcript).
       ;; Trust warning is also appended after session entries.
@@ -2995,6 +3392,10 @@ interactive-mode.ts:5956-5960).")
                (cadr-tui:terminal-renderer-copy-on-select-p
                 renderer)
                (not (null enabled))))
+            *fullscreen-wheel-scroll-lines-hook*
+            (lambda (lines)
+              (cadr-tui:renderer-set-wheel-scroll-lines
+               renderer lines))
             *alt-screen-flash-function*
             (and alt-p
                  (lambda (message)
@@ -3018,6 +3419,11 @@ interactive-mode.ts:5956-5960).")
                (lambda (gesture)
                  (let* ((origin list-mouse-origin)
                         (y (getf gesture :y))
+                        (content-line
+                          (and y
+                               (+ (cadr-tui::terminal-renderer-scroll-top
+                                   renderer)
+                                  y)))
                         (local
                           (and origin
                                (- (+ (cadr-tui::terminal-renderer-scroll-top
@@ -3025,6 +3431,12 @@ interactive-mode.ts:5956-5960).")
                                      y)
                                   origin))))
                    (cond
+                     ((and content-line
+                           (not (overlay-captures-input-p))
+                           (transcript-summary-click
+                            state gesture content-line))
+                      (request-render)
+                      t)
                      ((or (null local) (minusp local))
                       nil)
                      ((settings-selector-state-p overlay)
@@ -3196,6 +3608,11 @@ interactive-mode.ts:5956-5960).")
                               (handle-event event)))))))
                       )
                     (tick-status-animation)
+                    (when (and (eq overlay-kind :login-method)
+                               (login-method-selector-state-p overlay)
+                               (login-method-radius-selected-p overlay)
+                               (login-method-note-radius-frame overlay))
+                      (request-render))
                     (when
                         (and
                          (typep (current-editor)
@@ -3206,6 +3623,12 @@ interactive-mode.ts:5956-5960).")
                       (request-render))
                     (cadr-tui:terminal-poll-progress
                      terminal)
+                    (let ((late
+                            (cadr-tui:terminal-take-theme-colors
+                             terminal)))
+                      (when late
+                        (merge-reported-terminal-colors late)
+                        (reapply-system-theme)))
                     (poll-theme-watcher)
                     (flush-render)
                     (funcall sleep-function 0.005d0))
@@ -3227,8 +3650,10 @@ interactive-mode.ts:5956-5960).")
                renderer))))
         (setf *tui-mode-switch-hook* nil
               *fullscreen-copy-on-select-hook* nil
+              *fullscreen-wheel-scroll-lines-hook* nil
               *alt-screen-flash-function* nil
               *call-with-share-loader* nil)
+        (close-stacked-extension-dialogs)
         (finish-custom-ui nil)
         (when unwrap-tui-turn-dispatch
           (funcall unwrap-tui-turn-dispatch))

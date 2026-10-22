@@ -276,6 +276,7 @@
              ("support/atomic-write.lisp" "(defun atomic-write-utf8")
              ("support/changelog-share.lisp" "(defun parse-changelog")
              ("support/bug-report.lisp" "(defun bug-report-redact-url")
+             ("support/crash-log.lisp" "(defun record-crash")
              ("support/html.lisp" "(defun escape-html")
              ("support/resume-version-git.lisp" "(defun format-resume-command")
              ("support/headers.lisp" "(defun merge-header-sources")
@@ -440,7 +441,13 @@
     ;; (bootstrap/sessions.lisp, baseline importFromJsonl).
     ;; +1 unflushed fork: refuse-unflushed-persisted-fork
     ;; (bootstrap/sessions.lisp, baseline existsSync before branch).
-    (is (= 177 definition-count)
+    ;; +3 Goal 26: cache warming mode parameter and global reader/writer
+    ;; (bootstrap/settings.lisp).
+    ;; +2 Goal 26 #11062: explicitly-named-tool-names and
+    ;; tool-allowlist-filters-mcp-names-p (bootstrap/tools.lisp).
+    ;; +1 Goal 26 client identity: install-telemetry-enabled-p
+    ;; (bootstrap/settings.lisp).
+    (is (= 191 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -653,7 +660,15 @@
     ;; +2 builtin command conflict diagnostics.
     ;; +2 overlay input press: extension-input-dialog-handle-mouse
     ;; and runtime-auth-input-handle-mouse.
-    (is (= 325 definition-count)
+    ;; +1 Goal 26 left-click summary toggle: transcript-summary-click
+    ;; (interactive/transcript.lisp).
+    ;; +2 Goal 24 cache-miss notices: add-cache-miss-notice and
+    ;; maybe-show-cache-miss-notice (interactive/entries.lisp).
+    ;; +4 Goal 24 compaction cost notices: compaction-cost-notice,
+    ;; compaction-cost-notice-token-count,
+    ;; format-compaction-cost-notice-text, and
+    ;; add-compaction-cost-notice (interactive/entries.lisp).
+    (is (= 351 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -856,7 +871,13 @@
     ;; +4 list hover stays off the selection: centered-list-mouse,
     ;; select-list-handle-mouse, settings-list-handle-mouse,
     ;; renderer-deliver-component-mouse.
-    (is (= 349 definition-count)
+    ;; +1 Goal 24 clipboard fail-naming: renderer-copy-selection-flash
+    ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
+    ;; +3 Goal 24 WezTerm Kitty clear: clear-frame-row, wezterm-session-p,
+    ;; wezterm-kitty-clear-before-draw-p (renderer/main-screen.lisp).
+    ;; +30 Goal 26 markdown: unclosed math tables and CJK emphasis
+    ;; (components/markdown.lisp).
+    (is (= 394 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
@@ -1046,7 +1067,24 @@
     ;; inMemory session entry owners land in B8 session/loop files.
     ;; +15 Goal 28/29: settings readers, HTML export usage stream, and
     ;; adjacent session/codec helpers landed in B8 owners.
-    (is (= 341 definition-count)
+    ;; +16 Goal 26: system-message replay and turn-boundary helpers
+    ;; in messages.lisp and loop/turns.lisp.
+    ;; +1 Goal 26: declare-turn-system-message in loop/turns.lisp.
+    ;; +4 Goal 26: rendered-provider-prompt, declared-system-sections,
+    ;; emit-declared-system-message, omit-recovery-attempt.
+    ;; +4 Goal 26: the overflow cut and its helpers live with the turn
+    ;; that records the omission, so compaction.lisp stays under 1000 lines.
+    ;; +9 Goal 24: system-message session JSON codec helpers in
+    ;; session/codec.lisp (sections/toolsAdded/toolsRemoved round-trip).
+    ;; +2 Goal 24: declare-tool-changes and
+    ;; %system-message-with-tool-changes (loop/turns.lisp).
+    ;; +1 Goal 24: *agent-run-force-system-prompt* (loop/events.lisp).
+    ;; +1 Goal 24: session-append-usage (session/journal.lisp).
+    ;; +1 Goal 24: harness-session-append-usage (storage/harness.lisp).
+    ;; +1 Goal 24: finish-agent-cancelled-retry (loop/turns.lisp).
+    ;; +2 Goal 26 HTML CJK emphasis: +export-html-marked-cjk-friendly-js+
+    ;; and its octets (session/export-html.lisp).
+    (is (= 390 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1208,7 +1246,12 @@
     ;; +2 Goal 28: extension host helpers added in B9 owners.
     ;; +2 duplicate command invocation names.
     ;; +1 extension resource source labels.
-    (is (= 263 definition-count)
+    ;; +2 Goal 26: context-transform-message-p and valid-boundary-draft-p.
+    ;; +1 Goal 24: extension-schema-registration-path (registration.lisp).
+    ;; +3 Goal 26 dialog stack: extension-ui-promise, fulfill, and
+    ;; call-when so a confirm opened on the TUI input thread returns
+    ;; before the next key (v1.4.0 showExtensionConfirm).
+    (is (= 270 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1254,16 +1297,20 @@
             (goal14-source-block
              registration "(defparameter +extension-hook-events+"
              "    :ui-prompt-end))")))
+      ;; v1.4.0 #11191 adds #:add-mcp-server-config and
+      ;; #:remove-mcp-server-config between #:load-mcp-config and
+      ;; #:update-mcp-server-config. Parent freeze was
+      ;; f52b974189f593b4abc2d46ce05885345f743663a8ea1498958daceef3764cb1.
       (is (and exports
                (string=
-                "61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18"
+                "04a231e373e1e3d3fb1a4bf618fd8c4d1d3eaa710bffb48ca6c006d819578993"
                 (goal14-sha256 exports)))
           "B9 changed the frozen extension export text")
       (is (and events
                (string=
-                "61428b4487f768838bc1d660490d9957337c308c9e57be4c5a651548483b6e07"
+                "3f487d4b7b42f5f4dd2c44b2ef86730571f615b9eaff0b86de34a581d2a37e2b"
                 (goal14-sha256 events)))
-          "B9 changed the frozen 37-event source block"))))
+          "B9 changed the frozen 41-event source block"))))
 
 (test goal14-b9-asdf-loads-extension-host-in-dependency-order
   (let* ((root (asdf:system-source-directory "cadr-agent"))
@@ -1390,7 +1437,11 @@
     ;; +2 Goal 20 floor: *cadr-cli-source-directory* + cadr-cli-source-directory
     ;; memoize ASDF source root for docs/prompt/CHANGELOG hot paths.
     ;; +1 Goal 28/29: transport/runtime helper growth in B10 owners.
-    (is (= 279 definition-count)
+    ;; +2 Goal 26: faux-system-line and faux-message-line.
+    ;; +1 Goal 26 #11016: request-size-overflow-text-p (support/overflow.lisp).
+    ;; +4 Goal 26 v1.4.0 retry: status-code boundary and the node-fetch
+    ;; request-failure matcher in support/retry.lisp.
+    (is (= 295 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
@@ -1419,6 +1470,7 @@
                    "support/threads.lisp" "support/release.lisp"
                    "support/retry.lisp" "support/token-estimation.lisp"
                    "support/overflow.lisp" "support/grammar-coercion.lisp"
+                   "support/transcript.lisp"
                    "support/uuid.lisp")
                  collect
                  (goal14-b1-source root (format nil "src/cadr-ai/~A" relative)))))
@@ -1445,7 +1497,19 @@
               ;; +1 Goal 23: #:assistant-message-provider-thinking-level
               ;; (mid-conversation Anthropic thinking effort).
               ;; +1 Goal 28/29: package exports for settings/npm invents.
-              "7007b350dd8c87914f94233a1bce7c4f1123f3a10f48d77460df70caaf8deb24"
+              ;; +1 Goal 26: #:model-input-limits.
+              ;; +5 Goal 24: Radius offline catalog helpers
+              ;; (#:load-radius-gateway-config #:+default-radius-gateway+
+              ;; #:normalize-radius-gateway #:merge-radius-models
+              ;; #:radius-baseline-models).
+              ;; +40 Goal 24: transcript-backed system-message replay exports.
+              ;; +3 Goal 24: ensure-transcript-context /
+              ;; transcript-context-as-request-context /
+              ;; coerce-provider-request-context.
+              ;; +1 Goal 24: #:project-forced-system-prompt.
+              ;; +1 Goal 24: #:model-prompt-cache.
+              ;; Goal 26: classifier catalog exports in package.lisp.
+              "4655af1de0fe36ba3014b585abcbca20beb68e9ba5e529ba7cef92c94ebc9fa7"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
@@ -1465,6 +1529,7 @@
              "(:file \"threads\")" "(:file \"release\")"
              "(:file \"retry\")" "(:file \"token-estimation\")"
              "(:file \"overflow\")" "(:file \"grammar-coercion\")"
+             "(:file \"transcript\")"
              "(:file \"uuid\")"
              "(:module \"capabilities\""
              "(:file \"streaming-json\")" "(:file \"event-stream\")"

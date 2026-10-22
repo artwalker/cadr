@@ -14,7 +14,8 @@
 
 (test resolve-google-thinking-level-exhaustively-resolves-supported-levels
   (let ((model (google-thinking-test-model "gemini-3.7-flash")))
-    (is (eq :high (cadr-ai::resolve-google-thinking-level model :off)))
+    (signals error
+      (cadr-ai::resolve-google-thinking-level model :off))
     (is (eq :minimal (cadr-ai::resolve-google-thinking-level model :minimal)))
     (is (eq :low (cadr-ai::resolve-google-thinking-level model :low)))
     (is (eq :medium (cadr-ai::resolve-google-thinking-level model :medium)))
@@ -83,3 +84,69 @@
          (cadr-ai::json-get
           (cadr-ai::json-get payload "thinkingConfig")
           "thinkingLevel")))))
+
+(defun google-thinking-config-of (id map &key reasoning thinking-budgets)
+  (cadr-ai::json-get
+   (cadr-ai::request-spec-payload
+    (build-request
+     (make-google-provider :api-key "key")
+     (google-thinking-test-model id map)
+     (sample-context)
+     :stream-p t
+     :max-tokens 16
+     :reasoning reasoning
+     :thinking-budgets thinking-budgets))
+   "thinkingConfig"))
+
+(test google-omitted-reasoning-clamps-disabled-level-from-the-map
+  ;; pi #9455: off and minimal are unsupported, so the disabled request
+  ;; uses the next mapped level and does not include thoughts.
+  (let ((config
+          (google-thinking-config-of
+           "gemini-3.8-flash"
+           '((:off) (:minimal) (:low . "low")
+             (:medium . "medium") (:high . "high")
+             (:xhigh) (:max)))))
+    (is (string= "LOW" (cadr-ai::json-get config "thinkingLevel")))
+    (is (null (cadr-ai::json-get config "includeThoughts")))))
+
+(test google-3-1-pro-keeps-medium-thinking-level
+  (let ((config
+          (google-thinking-config-of
+           "gemini-3.1-pro-preview"
+           '((:off) (:minimal) (:low . "low")
+             (:medium . "medium") (:high . "high"))
+           :reasoning :medium)))
+    (is (string= "MEDIUM" (cadr-ai::json-get config "thinkingLevel")))
+    (is (eq t (cadr-ai::json-get config "includeThoughts")))))
+
+(test google-2-5-omitted-reasoning-uses-zero-budget
+  (let ((config (google-thinking-config-of "gemini-2.5-flash" '())))
+    (is (= 0 (cadr-ai::json-get config "thinkingBudget")))))
+
+(test google-4-uses-thinking-level
+  ;; pi #10890: Gemini 4 ids use thinkingLevel on both Google adapters.
+  (dolist (provider (list (make-google-provider :api-key "key")
+                          (make-vertex-provider :api-key "key")))
+    (let* ((payload
+             (cadr-ai::request-spec-payload
+              (build-request
+               provider
+               (google-thinking-test-model "gemini-4-argon" '())
+               (sample-context)
+               :stream-p t
+               :max-tokens 16
+               :reasoning :medium)))
+           (config (cadr-ai::json-get payload "thinkingConfig")))
+      (is (eq t (cadr-ai::json-get config "includeThoughts")))
+      (is (string= "MEDIUM" (cadr-ai::json-get config "thinkingLevel")))
+      (is (not (cadr-ai::json-present-p config "thinkingBudget"))))))
+
+(test google-2-5-maps-extended-level-onto-custom-budget
+  (let ((config
+          (google-thinking-config-of
+           "gemini-2.5-flash"
+           '((:xhigh . "high"))
+           :reasoning :xhigh
+           :thinking-budgets '(:high 1234))))
+    (is (= 1234 (cadr-ai::json-get config "thinkingBudget")))))

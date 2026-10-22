@@ -15,7 +15,8 @@
        "data" (image-content-data block))))
     (t nil)))
 
-(defun anthropic-message-content (message &optional allow-empty-signature-p)
+(defun anthropic-message-content
+    (message &optional allow-empty-signature-p content-override)
   (cond
     ((typep message 'user-message)
      (let ((content (user-message-content message)))
@@ -75,7 +76,9 @@
        "type" "tool_result"
        "tool_use_id" (tool-result-message-tool-call-id message)
        "content"
-       (let ((content (tool-result-message-content message)))
+       (let ((content
+               (or content-override
+                   (tool-result-message-content message))))
          (if (content-has-images-p content)
              (list-json-array
               (loop for block across (coerce content 'vector)
@@ -147,7 +150,8 @@
                    (and (= major 4) minor (>= minor 5))))))))))
 
 (defun anthropic-tool-result-blocks
-    (message allow-empty-signature-p deferred-tools loaded-tool-names)
+    (message allow-empty-signature-p deferred-tools loaded-tool-names
+     &optional content-override)
   (let ((references nil))
     (dolist (name (tool-result-message-added-tool-names message))
       (when (and deferred-tools
@@ -158,7 +162,8 @@
               references)))
     (let* ((ordinary
              (aref
-              (anthropic-message-content message allow-empty-signature-p)
+              (anthropic-message-content
+               message allow-empty-signature-p content-override)
               0))
            (ordinary-content (json-get ordinary "content")))
       (if (null references)
@@ -197,7 +202,7 @@
 
 (defun anthropic-messages
     (model messages &optional cache-control deferred-tools reasoning)
-  (let ((prepared
+  (let* ((prepared
           (prepare-messages-for-model
            messages model #'normalize-provider-id))
         (result nil)
@@ -206,9 +211,12 @@
         (allow-empty-signature-p
           (model-compat-value model :allow-empty-signature nil))
         (mid-convo-p
-          (model-compat-value model :supports-mid-convo-effort nil)))
+          (model-compat-value model :supports-mid-convo-effort nil))
+        (effort-messages-p
+          (and mid-convo-p
+               (not (anthropic-thinking-disabled-p model reasoning)))))
     (flet ((record (encoded effort)
-             (when mid-convo-p
+             (when effort-messages-p
                (when effort
                  (setf (gethash (length result) assistant-levels)
                        effort)))
@@ -218,22 +226,41 @@
             do
             (cond
               ((typep message 'tool-result-message)
-               (let ((blocks nil))
+               (let ((blocks nil)
+                     (error-images nil))
                  (loop while (and prepared
                                   (typep (first prepared)
                                          'tool-result-message))
-                       do (dolist
-                              (block
-                               (anthropic-tool-result-blocks
-                                (pop prepared)
-                                allow-empty-signature-p
-                                deferred-tools
-                                loaded-tool-names))
-                            (push block blocks)))
+                       for tool-message = (pop prepared)
+                       do (multiple-value-bind
+                              (split-content images caption)
+                              (split-error-tool-result-images
+                               tool-message)
+                            (dolist
+                                (block
+                                 (anthropic-tool-result-blocks
+                                  tool-message
+                                  allow-empty-signature-p
+                                  deferred-tools
+                                  loaded-tool-names
+                                  split-content))
+                              (push block blocks))
+                            (when split-content
+                              (setf error-images
+                                    (append
+                                     error-images
+                                     (list
+                                      (json-object
+                                       "type" "text"
+                                       "text" caption))
+                                     (mapcar #'anthropic-input-block
+                                             images))))))
                  (record
                   (json-object
                    "role" "user"
-                   "content" (list-json-array (nreverse blocks)))
+                   "content"
+                   (list-json-array
+                    (append (nreverse blocks) error-images)))
                   nil)))
               ((typep message 'assistant-message)
                (pop prepared)
@@ -244,7 +271,7 @@
                    (record
                     (json-object "role" "assistant"
                                  "content" content)
-                    (and mid-convo-p
+                    (and effort-messages-p
                          (eq (assistant-message-api message)
                              :anthropic-messages)
                          (eq (assistant-message-provider message)
@@ -272,26 +299,39 @@
             (add-anthropic-cache-control-to-messages
              (list-json-array (nreverse result))
              cache-control)))
-      (if mid-convo-p
+      (if effort-messages-p
           (insert-thinking-level-messages
            encoded
            assistant-levels
            (anthropic-active-effort model reasoning))
           encoded))))
 
+(defvar *anthropic-preferred-strict-sent-p* nil)
+
+(defun anthropic-preferred-strict-p (tool)
+  (let ((config (tool-constrained-sampling tool)))
+    (and (eq :json-schema (sampling-type config))
+         (eq :prefer (sampling-value config :strict)))))
+
 (defun anthropic-tools
-    (model tools cache-control &optional defer-loading-p)
-  (list-json-array
-   (loop for tool in tools
-         for index from 0
-         for supports-strict =
-           (model-compat-value model :supports-strict-tools nil)
-         ;; Baseline anthropic-messages.ts convertTools: resolve throws on
-         ;; a "require" mismatch, and strict tools send the strictified
-         ;; schema; others send the legacy {type,properties,required}
-         ;; shape.
-         for strict =
-           (resolve-json-schema-strict-sampling tool supports-strict)
+    (model tools cache-control
+     &optional defer-loading-p disable-preferred-strict-p)
+  (let ((preferred-strict-p nil))
+    (values
+     (list-json-array
+      (loop for tool in tools
+            for index from 0
+            for supports-strict =
+              (model-compat-value model :supports-strict-tools nil)
+            for prefer-p = (anthropic-preferred-strict-p tool)
+            ;; pi@4a080252f anthropic-messages.ts #10409. A prefer tool
+            ;; that was sent strict can be retried with its original schema.
+            ;; require stays strict.
+            for strict =
+              (if (and disable-preferred-strict-p prefer-p)
+                  nil
+                  (resolve-json-schema-strict-sampling
+                   tool supports-strict))
          for parameters = (get-json-schema-tool-parameters tool strict)
          for encoded =
          (if (eq strict t)
@@ -318,7 +358,9 @@
                 model :supports-eager-tool-input-streaming t)
            (json-put encoded-tool "eager_input_streaming" t))
          (when (eq strict t)
-           (json-put encoded-tool "strict" t))
+           (json-put encoded-tool "strict" t)
+           (when prefer-p
+             (setf preferred-strict-p t)))
          (when (and cache-control
                     (not defer-loading-p)
                     (model-compat-value
@@ -327,10 +369,15 @@
            (json-put encoded-tool "cache_control" cache-control))
          (when defer-loading-p
            (json-put encoded-tool "defer_loading" t))
-         collect encoded-tool)))
+            collect encoded-tool))
+     preferred-strict-p)))
 
 (defun anthropic-thinking-options (model reasoning)
   (cond
+    ((anthropic-thinking-disabled-p model reasoning)
+     ;; Haiku 5.5 and Opus 5 accept this. Effort markers and
+     ;; block_binding are rejected while thinking is disabled.
+     (values (json-object "type" "disabled") nil))
     ((model-compat-value model :supports-mid-convo-effort nil)
      (values
       (json-object
@@ -347,9 +394,7 @@
           (json-object "type" "adaptive"
                        "display" "summarized")
           (json-object
-           "effort"
-           (or (model-thinking-level-value model reasoning)
-               (string-downcase (symbol-name reasoning)))))
+           "effort" (anthropic-active-effort model reasoning)))
          (values
           (json-object
            "type" "enabled"
@@ -369,6 +414,7 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
+                            disable-preferred-strict-tools
                             &allow-other-keys)
   (ensure-supported-content model context)
   (let* ((oauth-token (provider-oauth-access-token provider))
@@ -377,6 +423,7 @@
            (anthropic-cache-control model cache-retention))
          (immediate-tools nil)
          (deferred-tools nil)
+         (preferred-strict-p nil)
          (payload
            (json-object
             "model" (model-id model)
@@ -406,20 +453,24 @@
         (json-put payload "system" (json-array block))))
     (when (or immediate-tools
               (plusp (hash-table-count deferred-tools)))
-      (json-put
-       payload "tools"
-       (list-json-array
-        (append
-         (coerce
-          (anthropic-tools model immediate-tools cache-control)
-          'list)
-         (coerce
+      (multiple-value-bind (immediate-encoded immediate-preferred)
           (anthropic-tools
-           model
-           (loop for tool being the hash-values of deferred-tools
-                 collect tool)
-           nil t)
-          'list)))))
+           model immediate-tools cache-control nil
+           disable-preferred-strict-tools)
+        (multiple-value-bind (deferred-encoded deferred-preferred)
+            (anthropic-tools
+             model
+             (loop for tool being the hash-values of deferred-tools
+                   collect tool)
+             nil t
+             disable-preferred-strict-tools)
+          (setf preferred-strict-p
+                (or immediate-preferred deferred-preferred))
+          (json-put
+           payload "tools"
+           (list-json-array
+            (append (coerce immediate-encoded 'list)
+                    (coerce deferred-encoded 'list)))))))
     (when (and (not (null temperature))
                (null reasoning)
                (not (model-compat-value
@@ -439,8 +490,9 @@
       (when (stringp user-id)
         (json-put payload "metadata"
                   (json-object "user_id" user-id))))
-    (make-request-spec
-     :url (format nil "~A/v1/messages"
+    (let ((request
+            (make-request-spec
+             :url (format nil "~A/v1/messages"
                   (strip-trailing-slash (model-base-url model)))
      :headers
     (let* ((beta-features
@@ -481,22 +533,12 @@
                :base-url (model-base-url model)
                :session-id session-id)
               (model-headers model))))
-       (if (eq (model-provider model) :kimi-coding)
-           (progn
-             ;; Baseline anthropic-messages.ts mergeClientHeaders: the
-             ;; kimi-coding endpoint is pinned to the OS-describing
-             ;; product UA, so any inherited user-agent is dropped first.
-             (setf headers
-                   (delete-if
-                    (lambda (pair)
-                      (string-equal (car pair) "user-agent"))
-                    headers))
-             (append headers
-                     (list (cons "User-Agent" (cadr-os-user-agent)))))
-           headers))
+       headers)
      :payload payload
      :stream-p stream-p
      :provider :anthropic)))
+      (setf *anthropic-preferred-strict-sent-p* preferred-strict-p)
+      request)))
 
 (defun parse-anthropic-content (content)
   (loop for block across (or content #())
@@ -531,10 +573,54 @@
                "thinking_tokens"))
     (apply-known-model-cost message)))
 
+(defun record-anthropic-response-model (message requested reported)
+  (when (and (stringp reported)
+             (not (string= reported (model-id requested))))
+    (setf (assistant-message-response-model message) reported))
+  message)
+
+(defun price-anthropic-usage (message requested reported)
+  (labels ((provider-token (value)
+             (cond
+               ((symbolp value) (symbol-name value))
+               ((stringp value) value)
+               (t "")))
+           (price (value)
+             (coerce (or value 0) 'double-float)))
+    (let* ((usage (assistant-message-usage message))
+           (cost
+             (and (stringp reported)
+                  (not (string= reported (model-id requested)))
+                  (loop for row in (model-compat-value
+                                    requested
+                                    :allowed-fallback-models
+                                    nil)
+                        when (and (listp row)
+                                  (string-equal
+                                   (provider-token (getf row :provider))
+                                   (provider-token
+                                    (model-provider requested)))
+                                  (stringp (getf row :model))
+                                  (string= (getf row :model) reported))
+                          return (getf row :cost)))))
+      (if cost
+          (calculate-usage-cost
+           usage
+           (make-model-metadata
+            :provider (model-provider requested)
+            :id reported
+            :input-price (price (getf cost :input))
+            :output-price (price (getf cost :output))
+            :cache-read-price (price (getf cost :cache-read))
+            :cache-write-price (price (getf cost :cache-write))))
+          (apply-known-model-cost message))))
+  message)
+
 (defmethod parse-complete-response ((provider anthropic-provider)
                                     model response)
   (declare (ignore provider))
   (let* ((raw-stop (or (json-get response "stop_reason") "end_turn"))
+         (reported (json-get response "model"))
          (message
            (make-assistant-message
             :content (parse-anthropic-content (json-get response "content"))
@@ -544,7 +630,9 @@
             :response-id (json-get response "id")
             :raw-stop-reason raw-stop
             :stop-reason (map-simple-stop-reason raw-stop))))
+    (record-anthropic-response-model message model reported)
     (update-anthropic-usage message (json-get response "usage"))
+    (price-anthropic-usage message model reported)
     (when (and (eq :stop (assistant-message-stop-reason message))
                (tool-call-present-p message))
       (setf (assistant-message-stop-reason message) :tool-use))
@@ -560,6 +648,36 @@
                        (provider-stream-state-message state))))
             content-index)))
 
+(defun anthropic-input-transformation (value)
+  (when (hash-table-p value)
+    (list :type (json-get value "type")
+          :path (json-get value "path")
+          :reason (json-get value "reason"))))
+
+(defun record-anthropic-input-transformations (message transformations)
+  ;; Last message_delta array wins, matching anthropic-messages.ts.
+  (setf (assistant-message-diagnostics message)
+        (remove :anthropic-input-transformations
+                (assistant-message-diagnostics message)
+                :key #'assistant-message-diagnostic-type
+                :test #'eq))
+  (when (and (vectorp transformations)
+             (plusp (length transformations)))
+    (setf (assistant-message-diagnostics message)
+          (append
+           (assistant-message-diagnostics message)
+           (list
+            (make-assistant-message-diagnostic
+             :type :anthropic-input-transformations
+             :details
+             (list :transformations
+                   (loop for item across transformations
+                         for recorded =
+                           (anthropic-input-transformation item)
+                         when recorded
+                           collect recorded)))))))
+  message)
+
 (defmethod reduce-provider-sse-event ((provider anthropic-provider)
                                       state event emit)
   (declare (ignore provider))
@@ -572,10 +690,17 @@
            (message (provider-stream-state-message state)))
       (cond
         ((string= type "message_start")
-         (let ((upstream (json-get payload "message")))
+         (let ((upstream (json-get payload "message"))
+               (requested (provider-stream-state-model state)))
            (setf (assistant-message-response-id message)
                  (json-get upstream "id"))
-           (update-anthropic-usage message (json-get upstream "usage"))))
+           (when requested
+             (record-anthropic-response-model
+              message requested (json-get upstream "model")))
+           (update-anthropic-usage message (json-get upstream "usage"))
+           (when requested
+             (price-anthropic-usage
+              message requested (json-get upstream "model")))))
         ((string= type "content_block_start")
          (let* ((provider-index (json-get payload "index"))
                 (block-data (json-get payload "content_block"))
@@ -585,7 +710,12 @@
                     ((string= block-type "text")
                      (make-text-content))
                     ((string= block-type "thinking")
-                     (make-thinking-content))
+                     (make-thinking-content
+                      :thinking (or (json-get block-data "thinking") "")
+                      :signature
+                      (let ((signature (json-get block-data "signature")))
+                        (when (stringp signature)
+                          signature))))
                     ((string= block-type "redacted_thinking")
                      (make-thinking-content
                       :thinking "[Reasoning redacted]"
@@ -679,9 +809,7 @@
                              provider-index
                              (provider-stream-state-partial-json state)
                              "")))
-                  (when (non-empty-string-p json)
-                    (setf (tool-call-arguments block)
-                          (parse-streaming-json json)))
+                  (finish-tool-call-arguments block json)
                   (emit-event emit :tool-call-end message
                               :content-index content-index
                               :tool-call block)))))))
@@ -708,7 +836,18 @@
                 (or (json-get
                      (json-get usage "output_tokens_details")
                      "thinking_tokens")
-                    (usage-reasoning old)))))))
+                    (usage-reasoning old)))))
+           (when (and (provider-stream-state-model state)
+                      (assistant-message-response-model message))
+             (price-anthropic-usage
+              message
+              (provider-stream-state-model state)
+              (assistant-message-response-model message)))
+           (let ((transformations
+                   (json-get payload "input_transformations")))
+             (when (vectorp transformations)
+               (record-anthropic-input-transformations
+                message transformations)))))
         ((string= type "message_stop")
          (setf (provider-stream-state-terminal-p state) t)))))
   nil)

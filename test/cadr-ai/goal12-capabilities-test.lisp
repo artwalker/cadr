@@ -31,6 +31,73 @@
          (hash-table-count
           (cadr-ai:parse-streaming-json "not-json")))))
 
+(test finished-tool-arguments-keep-invalid-unicode-and-reject-partial-json
+  ;; pi@4a080252f json-parse.ts (#10868, #10897).
+  (let ((parsed
+          (cadr-ai:parse-streaming-json
+           "{\"path\":\"a.tex\",\"content\":\"\\usepackage{x}\",\"mode\":\"w\"}")))
+    (is (string= "a.tex" (cadr-ai::json-get parsed "path")))
+    (is (string= "\\usepackage{x}"
+                 (cadr-ai::json-get parsed "content")))
+    (is (string= "w" (cadr-ai::json-get parsed "mode"))))
+  (let ((parsed
+          (cadr-ai:parse-streaming-json
+           "{\"text\":\"caf\\u00e9 \\url\"}")))
+    (is (string=
+         (format nil "caf~C \\url" (code-char #xe9))
+         (cadr-ai::json-get parsed "text"))))
+  (is (string=
+       "ab"
+       (cadr-ai::json-get
+        (cadr-ai:parse-streaming-json "{\"text\":\"ab\\u00")
+        "text")))
+  (multiple-value-bind (arguments error)
+      (cadr-ai:parse-tool-call-arguments
+       "{\"kind\":\"seek\",\"note\":\"\\url\"}")
+    (is (null error))
+    (is (string= "seek" (cadr-ai::json-get arguments "kind")))
+    (is (string= "\\url" (cadr-ai::json-get arguments "note"))))
+  (multiple-value-bind (arguments error)
+      (cadr-ai:parse-tool-call-arguments "")
+    (is (null error))
+    (is (zerop (hash-table-count arguments))))
+  (let ((raw "{\"action\":\"apply\",\"actions\":[{\"kind\":\"seek\",\"time\":.5}]}"))
+    (multiple-value-bind (arguments error)
+        (cadr-ai:parse-tool-call-arguments raw)
+      (is (zerop (hash-table-count arguments)))
+      (is (search (format nil "~%~%Received arguments:~%") error))
+      (is (string= raw
+                   (subseq error (- (length error) (length raw)))))))
+  (let ((raw "{\"kind\":\"seek\",\"clipId\":\"clip-fl"))
+    (multiple-value-bind (arguments error)
+        (cadr-ai:parse-tool-call-arguments raw)
+      (is (zerop (hash-table-count arguments)))
+      (is (string= raw
+                   (subseq error (- (length error) (length raw)))))))
+  (multiple-value-bind (arguments error)
+      (cadr-ai:parse-tool-call-arguments "[1,2]")
+    (is (zerop (hash-table-count arguments)))
+    (is (string=
+         (format nil "Tool arguments must be a JSON object~%~%Received arguments:~%[1,2]")
+         error)))
+  (let ((call
+          (cadr-ai:make-tool-call
+           :name "read"
+           :arguments (cadr-ai::json-object)
+           :arguments-error
+           (format nil "bad json~%~%Received arguments:~%{\"path\":"))))
+    (handler-case
+        (progn
+          (cadr-ai:validate-tool-arguments
+           (cadr-ai:make-tool :name "read")
+           call)
+          (is (null "validation should have failed")))
+      (error (condition)
+        (is (search "Invalid arguments for tool \"read\":"
+                    (princ-to-string condition)))
+        (is (search "Received arguments:"
+                    (princ-to-string condition)))))))
+
 (test goal12-event-stream-buffers-wakes-and-exposes-final-result
   (let ((stream
           (cadr-ai:make-event-stream

@@ -27,6 +27,14 @@ VERIFY_PI_REPO_REASON = (
     "Verification passes the repository to the fixed-baseline differential "
     "through its --pi-repo contract."
 )
+BASELINE_CITATION_REASON = (
+    "Source comment cites the pinned upstream pi behavior being implemented; "
+    "it is not a Cadr runtime identity string."
+)
+CHANGELOG_PROVENANCE_REASON = (
+    "Immutable changelog records the fixed upstream pi release used for "
+    "alignment; it does not define Cadr's product identity."
+)
 
 
 def finding_key(entry: dict[str, object]) -> tuple[str, str, str, str]:
@@ -41,6 +49,8 @@ def finding_key(entry: dict[str, object]) -> tuple[str, str, str, str]:
 def default_reason(path: str, kind: str, token: str, line: str) -> str:
     if path.startswith("scripts/goal21-"):
         return GOAL21_REASON
+    if path == "CHANGELOG.md":
+        return CHANGELOG_PROVENANCE_REASON
     if path == "scripts/render-diff.py":
         return RENDER_DIFF_HARNESS_REASON
     if path == "scripts/verify.sh":
@@ -51,6 +61,29 @@ def default_reason(path: str, kind: str, token: str, line: str) -> str:
         return RENDER_DIFF_HARNESS_REASON
     if kind == "legacy-env":
         return VERIFY_BASELINE_ENV_REASON
+    stripped = line.lstrip()
+    if path.startswith("src/") and stripped.startswith((";", "//")):
+        return BASELINE_CITATION_REASON
+    if path == "src/cadr-tui/oklab.lisp" and token.lower() == "pi":
+        return (
+            "Common Lisp's mathematical PI constant appears in color-space "
+            "arithmetic; it is not a product name."
+        )
+    if ".pi" in line or "pi.virtual" in line or ":pi-virtual" in line:
+        return (
+            "Pinned compatibility protocol or persisted key retains its "
+            "literal upstream pi spelling; changing it would break data compatibility."
+        )
+    if "pi-logo" in line or path.endswith("/pi-logo.lisp"):
+        return (
+            "Internal baseline-logo component identifier mirrors the upstream "
+            "presentation surface; it is not Cadr release identity."
+        )
+    if path.startswith("src/") or path.endswith(".asd"):
+        return (
+            f"Internal source identifier {token!r} preserves a pinned protocol "
+            "or component name; it is not Cadr product identity."
+        )
     return RENDER_DIFF_HARNESS_REASON
 
 

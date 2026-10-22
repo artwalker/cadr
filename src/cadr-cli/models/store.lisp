@@ -120,11 +120,11 @@
     "supportsCacheControlOnTools" "supportsTemperature"
     "forceAdaptiveThinking" "allowEmptySignature"
     "supportsStrictTools" "supportsToolReferences"
-    "supportsMaxOutputTokens"))
+    "supportsMaxOutputTokens" "sendImageOptInHeader"))
 
 (defparameter +model-compat-enum-keys+
   '("sessionAffinityFormat" "deferredToolsMode" "cacheControlFormat"
-    "thinkingFormat"))
+    "thinkingFormat" "imageInput"))
 
 (defun parse-model-compat (object)
   ;; Baseline model-config.ts ProviderCompatSchema: the boolean and enum
@@ -198,4 +198,22 @@
       (cadr-ai::json-object-alist
        (cadr-ai::json-get object "headers")))
      :compat
-     (parse-model-compat (cadr-ai::json-get object "compat")))))
+     (parse-model-compat (cadr-ai::json-get object "compat"))
+     :sampling-params
+     (let ((params
+             (cadr-ai::json-get object "samplingParams")))
+       (and (hash-table-p params) params))
+     :sampling-params-by-thinking-level
+     (let ((levels
+             (cadr-ai::json-get
+              object "samplingParamsByThinkingLevel")))
+       (when (hash-table-p levels)
+         (loop for name in
+               '("off" "minimal" "low" "medium"
+                 "high" "xhigh" "max")
+               for params = (cadr-ai::json-get levels name)
+               when (hash-table-p params)
+               collect
+               (cons
+                (intern (string-upcase name) :keyword)
+                params)))))))

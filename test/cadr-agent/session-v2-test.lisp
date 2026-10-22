@@ -414,24 +414,34 @@
         (is (search "parseSkillBlock" html))))))
 
 (test session-html-export-vendors-licensed-offline-assets-and-preserves-two-argument-call
+  ;; pi@4a080252f vendor/marked.min.js, byte-for-byte (marked 18.0.11).
   (is (string=
-       "d5487edc7258b404bfa74c393d74a6393155f02517bd5e7e77cd64f8187f39a0"
+       "438eedfcf932a414d0d0bfeea32dc365c063563b8ca713b4687fc8f8b501e5e4"
        (export-test-sha256
         cadr-agent::+export-html-marked-js+)))
+  ;; pi@4a080252f vendor/marked-cjk-friendly.min.js, byte-for-byte.
+  (is (string=
+       "93d2c938754cb24eef5b9ffecc268a98ef6beeb75dad614b0e874176aeeba565"
+       (export-test-sha256
+        cadr-agent::+export-html-marked-cjk-friendly-js+)))
   (is (string=
        "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846"
        (export-test-sha256
         cadr-agent::+export-html-highlight-js+)))
+  ;; pi@4a080252f template.html, byte-for-byte.
   (is (string=
-       "916782b1184a9597527605ad751e2b3af30fcea23ba2194002969cd217a06881"
+       "47d208235b066c856dae69c60281a3b99d164b99be9b81153d880375c9327105"
        (export-test-sha256
         cadr-agent::+export-html-template+)))
+  ;; pi@4a080252f template.css, byte-for-byte.
   (is (string=
-       "28c16e3827c23a62eef8283cac316b478f946e023093adad25ff9c9b891d41af"
+       "8ee19851f8e583277ed396cbb76496687aa556707fdfc1f78d1118bff87c740a"
        (export-test-sha256
         cadr-agent::+export-html-template-css+)))
+  ;; pi@4a080252f template.js with pi-share:v1:sidebar-width rewritten to
+  ;; cadr-share. The markedCjkFriendly emStrong hook is included.
   (is (string=
-       "822c3fbcbc907edebf200f52ff06a7f15b126bab5810f989a2acf6352bfe20b8"
+       "467edf44d90047c778517d7ac26fb27e23bfbbd02dd3361dcc7ab3a7a73e8ac1"
        (export-test-sha256
         cadr-agent::+export-html-template-js+)))
   (is (search
@@ -440,9 +450,42 @@
   (is (not (search
             "pi-share:v1:sidebar-width"
             cadr-agent::+export-html-template-js+)))
+  ;; pi@4a080252f template.js / template.css. Hidden custom messages stay
+  ;; hidden until H. context_edit is a tree row. nestedCalls render under
+  ;; the parent tool. Modifier keys do not toggle the viewer.
   (is (search
-       "marked v18.0.5 - a markdown parser"
+       "hook-message-hidden"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "H toggle hidden messages"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "e.ctrlKey || e.metaKey || e.altKey"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "[context ${entry.replacement === null ? 'omit' : 'replace'}: ${escapeHtml(entry.targetId)}]"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "const nested = result?.nestedCalls;"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "setThinkingExpanded(thinkingExpanded);"
+       cadr-agent::+export-html-template-js+))
+  (is (search
+       "body:not(.show-hidden-messages) .hook-message-hidden"
+       cadr-agent::+export-html-template-css+))
+  (is (search
+       ".header-toggle-btn[aria-pressed=\"true\"]"
+       cadr-agent::+export-html-template-css+))
+  (is (search
+       "marked v18.0.11 - a markdown parser"
        cadr-agent::+export-html-marked-js+))
+  (is (search
+       "marked-cjk-friendly v0.1.2"
+       cadr-agent::+export-html-marked-cjk-friendly-js+))
+  (is (search
+       "emStrong: markedCjkFriendly().tokenizer.emStrong"
+       cadr-agent::+export-html-template-js+))
   (is (search
        "Copyright (c) 2018-2026, MarkedJS. (MIT License)"
        cadr-agent::+export-html-marked-js+))
@@ -469,8 +512,14 @@
               (uiop:read-file-string
                path :external-format :utf-8)))
         (is (search
-             "marked v18.0.5 - a markdown parser"
+             "marked v18.0.11 - a markdown parser"
              html))
+        (let ((marked (search "marked v18.0.11 - a markdown parser" html))
+              (cjk (search "marked-cjk-friendly v0.1.2" html))
+              (highlight (search "Highlight.js v11.9.0" html))
+              (hook (search "emStrong: markedCjkFriendly().tokenizer.emStrong" html)))
+          (is (and marked cjk highlight hook
+                   (< marked cjk highlight hook))))
         (is (search
              "Highlight.js v11.9.0 (git: f47103d4f1)"
              html))
@@ -481,6 +530,190 @@
         (is (search
              "--body-bg: #18181e;"
              html))))))
+
+(defun export-html-cjk-parsed-html (html)
+  (uiop:with-temporary-file (:pathname html-path)
+    (with-open-file (stream html-path
+                            :direction :output
+                            :if-exists :supersede
+                            :external-format :utf-8)
+      (write-string html stream))
+    (uiop:run-program
+     (list "node"
+           (namestring
+            (asdf:system-relative-pathname
+             "cadr-agent/tests"
+             "test/cadr-agent/export-html-cjk-parse.mjs"))
+           (namestring html-path))
+     :output :string
+     :external-format :utf-8)))
+
+;; pi@4a080252f packages/coding-agent/test/export-html-cjk.test.ts.
+;; The strings are the upstream expectations, including the trailing newline
+;; marked writes after a paragraph.
+(test session-html-export-renders-cjk-emphasis-beside-punctuation
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "cjk-emphasis"))
+           (path (merge-pathnames "cjk.html" sessions))
+           (expected
+             (vector
+              (format nil "<p><strong>这是测试。</strong>后面</p>~%")
+              (format nil "<p><strong>一句话说清：</strong>一台机器</p>~%")
+              (format nil "<p><strong>要点到此为止。</strong>20 小时</p>~%")
+              (format nil "<p>字<strong>「引用」</strong>字</p>~%")
+              (format nil "<p><em>斜体。</em>后面</p>~%")
+              (format nil "<p>**end.**Then next</p>~%"))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "cjk"))
+      (cadr-agent:export-session-html session path)
+      (let ((parsed
+              (cadr-ai::parse-json
+               (export-html-cjk-parsed-html
+                (uiop:read-file-string
+                 path :external-format :utf-8)))))
+        (is (= (length expected) (length parsed)))
+        (loop for want across expected
+              for got across parsed
+              do (is (string= want got)))))))
+
+;; pi@4a080252f session-manager.ts ContextEditEntry and export template.js
+;; consume replacement, display, durationMs, usage, and nestedCalls.
+(test session-html-export-preserves-renderer-entry-shapes
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "renderer-entry-shapes"))
+           (omitted-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "omit")))
+           (replaced-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "replace")))
+           (nested
+             (cadr-agent::make-nested-tool-calls
+              :complete t
+              :calls
+              (list
+               (cadr-agent::make-nested-tool-call-record
+                :id "parent/1"
+                :name "inner"
+                :status :ok
+                :duration-ms 3
+                :arguments
+                (cadr-ai::json-object "value" 7)))))
+           (path
+             (merge-pathnames "renderer-entry-shapes.html"
+                              sessions)))
+      (cadr-agent::session-append-custom-message
+       session "hidden" "private" :display-p nil)
+      (cadr-agent:session-append-context-edit
+       session omitted-id nil)
+      (cadr-agent:session-append-context-edit
+       session replaced-id "replacement")
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-tool-result-message
+        :tool-call-id "parent"
+        :tool-name "outer"
+        :content
+        (list (cadr-ai:make-text-content :text "done"))
+        :duration-ms 9
+        :nested-calls nested
+        :usage
+        (cadr-ai:make-usage :input 1 :output 2 :total 3)))
+      (cadr-agent:export-session-html session path)
+      (let* ((html
+               (uiop:read-file-string
+                path :external-format :utf-8))
+             (data (exported-session-data html))
+             (entries (cadr-ai::json-get data "entries"))
+             (hidden
+               (find
+                "custom_message" entries
+                :test #'string=
+                :key
+                (lambda (entry)
+                  (cadr-ai::json-get entry "type"))))
+             (edits
+               (loop for entry across entries
+                     when
+                     (string=
+                      "context_edit"
+                      (cadr-ai::json-get entry "type"))
+                       collect entry))
+             (tool-entry
+               (find-if
+                (lambda (entry)
+                  (and
+                   (string=
+                    "message"
+                    (cadr-ai::json-get entry "type"))
+                   (string=
+                    "toolResult"
+                    (cadr-ai::json-get
+                     (cadr-ai::json-get entry "message")
+                     "role"))))
+                entries))
+             (tool-message
+               (cadr-ai::json-get tool-entry "message"))
+             (nested-json
+               (cadr-ai::json-get tool-message "nestedCalls")))
+        (multiple-value-bind (display present-p)
+            (gethash "display" hidden)
+          (is (not (null present-p)))
+          (is (null display)))
+        (is (= 2 (length edits)))
+        (is (eq 'null
+                (cadr-ai::json-get
+                 (first edits) "replacement")))
+        (is (equal
+             "replacement"
+             (let ((replacement
+                     (cadr-ai::json-get
+                      (second edits) "replacement")))
+               (and
+                (hash-table-p replacement)
+                (cadr-ai::json-get
+                 replacement "content")))))
+        (dolist (edit edits)
+          (multiple-value-bind (content present-p)
+              (gethash "content" edit)
+            (declare (ignore content))
+            (is (not present-p))))
+        (is (eql 9
+                 (cadr-ai::json-get
+                  tool-message "durationMs")))
+        (let ((usage
+                (cadr-ai::json-get tool-message "usage")))
+          (is (hash-table-p usage))
+          (when (hash-table-p usage)
+            (is (eql 3
+                     (cadr-ai::json-get usage "total")))))
+        (is (hash-table-p nested-json))
+        (when (hash-table-p nested-json)
+          (is (eq t
+                  (cadr-ai::json-get nested-json "complete")))
+          (let ((calls (cadr-ai::json-get nested-json "calls")))
+            (is (and (vectorp calls) (= 1 (length calls))))
+            (when (and (vectorp calls) (= 1 (length calls)))
+              (let ((nested-call (aref calls 0)))
+                (is (string=
+                     "inner"
+                     (cadr-ai::json-get nested-call "name")))
+                (is (= 7
+                       (cadr-ai::json-get
+                        (cadr-ai::json-get
+                         nested-call "arguments")
+                        "value")))))))))))
 
 (test session-html-export-resolves-custom-theme-and-never-rereads-assets
   (with-session-directories (sessions cwd other-cwd)

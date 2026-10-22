@@ -21,7 +21,12 @@
        :error-p
        (cadr-ai:tool-result-message-is-error result))
       (when (tool-outcome-terminate-p outcome)
-        (list :terminate-p t)))))
+        (list :terminate-p t))
+      (when (integerp
+             (cadr-ai:tool-result-message-duration-ms result))
+        (list
+         :duration-ms
+         (cadr-ai:tool-result-message-duration-ms result))))))
   (emit-agent-event
    agent :tool-execution-end
    :tool-call (tool-outcome-call outcome)
@@ -53,6 +58,22 @@
            :tool-call (tool-outcome-call outcome)
            :tool-result (tool-outcome-result outcome))
         (declare (ignore blocked-p reason))
+        (let ((duration
+                (and
+                 (tool-outcome-result outcome)
+                 (cadr-ai:tool-result-message-duration-ms
+                  (tool-outcome-result outcome)))))
+          (when
+              (and
+               (integerp duration)
+               (typep replacement 'cadr-ai:tool-result-message)
+               (null
+                (cadr-ai:tool-result-message-duration-ms
+                 replacement)))
+            (setf
+             (cadr-ai:tool-result-message-duration-ms
+              replacement)
+             duration)))
         (setf
          (tool-outcome-result outcome) replacement
          (tool-outcome-appended-messages outcome)
@@ -67,14 +88,34 @@
 
 (defvar *tool-result-image-normalize-function* nil
   "When bound, called with a tool result's content blocks to
-normalize image blocks entering session history (pi@ecac0a9c4
+normalize image blocks entering session history (pi@4a080252f
 core/agent-session.ts:517-520).  Bound by cadr-cli, where the image
 pipeline lives.")
 
+(defun attach-nested-tool-record (outcome)
+  ;; pi@4a080252f agent-session.ts records ctx.executeTool calls on the
+  ;; model-issued result after the after-hook. Nested results stay bare.
+  (when (and *nested-tool-call-runner*
+             (not *nested-tool-caller-id*))
+    (let ((summary
+            (nested-tool-call-runner-take
+             *nested-tool-call-runner*
+             (cadr-ai:tool-call-id
+              (tool-outcome-call outcome)))))
+      (when (and summary (nested-call-summary-calls summary))
+        (let ((result (tool-outcome-result outcome)))
+          (setf (cadr-ai:tool-result-message-nested-calls result)
+                (nested-call-summary-calls summary))
+          (when (nested-call-summary-usage summary)
+            (setf (cadr-ai:tool-result-message-usage result)
+                  (nested-call-summary-usage summary)))))))
+  outcome)
+
 (defun complete-tool-outcome (agent outcome turn-index)
   (let ((final
-          (finalize-tool-outcome
-           agent outcome turn-index)))
+          (attach-nested-tool-record
+           (finalize-tool-outcome
+            agent outcome turn-index))))
     ;; Runs after the extension hook so images injected or replaced by
     ;; extensions are normalized too.
     (when *tool-result-image-normalize-function*
@@ -85,7 +126,8 @@ pipeline lives.")
                (and content
                     (funcall
                      *tool-result-image-normalize-function*
-                     content))))
+                     content
+                     (agent-model agent)))))
         (when (and normalized
                    (not (eq normalized content)))
           (setf
@@ -240,11 +282,15 @@ pipeline lives.")
               (let ((condition (cdr value)))
                 (setf failure condition)
                 (values
-                 (make-error-tool-result
-                  (tool-restart-state-current-call state)
-                  (cadr-ai:cadr-error-message condition)
-                  (tool-restart-state-current-appended-messages
-                   state))
+                (make-error-tool-result
+                 (tool-restart-state-current-call state)
+                 (cadr-ai:cadr-error-message condition)
+                 (tool-restart-state-current-appended-messages
+                  state)
+                 (and
+                  (typep condition 'tool-execution-error)
+                  (tool-execution-error-duration-ms
+                   condition)))
                  nil))
               (values value nil)))
       (retry-tool-call (replacement-arguments)
@@ -340,7 +386,8 @@ pipeline lives.")
              (unwind-protect
                   (let ((*tool-abort-p*
                           (lambda ()
-                            (agent-aborted-p agent))))
+                            (agent-aborted-p agent)))
+                        (*tool-search-agent* agent))
                     (execute-prepared-tool
                      entry
                      :cancellation-signal signal
@@ -401,7 +448,10 @@ pipeline lives.")
             prepared))
          (outcomes
            (make-array (length prepared)
-                       :initial-element nil)))
+                       :initial-element nil))
+         (*nested-tool-call-runner*
+           (or *nested-tool-call-runner*
+               (make-agent-nested-tool-runner agent))))
     ;; pi executeToolCallsParallel is Promise.all on the same
     ;; event loop. One parallel tool still paid pthread_create
     ;; (sprof pthread_sigmask 53% of agent_tool_loop). Spawn

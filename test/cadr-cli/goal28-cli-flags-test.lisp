@@ -25,6 +25,7 @@
              "--exclude-tools" "write"
              "--no-tools"
              "--no-builtin-tools"
+             "--no-mcp"
              "--extension" "one.lisp"
              "--no-extensions"
              "--export" "out.html"
@@ -64,6 +65,7 @@
     (is (equal '("write") (cadr-cli::cli-arguments-exclude-tools arguments)))
     (is (cadr-cli::cli-arguments-no-tools-p arguments))
     (is (cadr-cli::cli-arguments-no-builtin-tools-p arguments))
+    (is (cadr-cli::cli-arguments-no-mcp-p arguments))
     (is (equal '("one.lisp") (cadr-cli::cli-arguments-extensions arguments)))
     (is (cadr-cli::cli-arguments-no-extensions-p arguments))
     (is (string= "out.html" (cadr-cli::cli-arguments-export arguments)))
@@ -87,4 +89,56 @@
           (cadr-cli::parse-cli-arguments
            '("--no-approve"))))
     (is (null (cadr-cli::cli-arguments-project-trust-override arguments)))
-    (is (cadr-cli::cli-arguments-project-trust-override-supplied-p arguments))))
+    (is (cadr-cli::cli-arguments-project-trust-override-supplied-p arguments)))
+  (let ((arguments
+          (cadr-cli::parse-cli-arguments '("--no-mcp"))))
+    (is (cadr-cli::cli-arguments-no-mcp-p arguments))))
+
+(test goal28-no-mcp-disables-builtin-mcp-factory
+  ;; pi@4a080252f main.ts disabledBuiltinExtensions: ["mcp"]
+  (with-test-directory (temporary)
+    (let* ((mcp-factory
+             (list :name "mcp" :factory (lambda (&rest _) nil) :hidden-p t))
+           (manager
+             (cadr-cli::make-cli-extension-manager
+              :cwd temporary
+              :output (make-broadcast-stream)
+              :extension-factories (list mcp-factory)
+              :disabled-builtin-extensions '("mcp")
+              :no-discovery-p t)))
+      (is (null
+           (find "mcp"
+                 (cadr-cli::cli-extension-manager-extension-factories
+                  manager)
+                 :key (lambda (entry) (getf entry :name))
+                 :test #'string-equal)))
+      (is (find "llama.cpp"
+                (cadr-cli::cli-extension-manager-extension-factories
+                 manager)
+                :key (lambda (entry) (getf entry :name))
+                :test #'string-equal)))))
+
+(test provider-flag-requires-a-model
+  (let* ((errors (make-string-output-stream))
+         (help (make-string-output-stream))
+         (status
+           (let ((*error-output* errors)
+                 (*standard-output* (make-broadcast-stream)))
+             (cadr-cli:main '("--provider" "openai"))))
+         (help-status
+           (let ((*error-output* (make-broadcast-stream))
+                 (*standard-output* help))
+             (cadr-cli:main '("--provider" "openai" "--help")))))
+    (is (= 1 status))
+    (is (search
+         "Error: --provider requires --model (for example: --provider openai --model <pattern>)"
+         (get-output-stream-string errors)))
+    (is (= 0 help-status))
+    (is (search
+         "Provider to search for --model (requires --model)"
+         (get-output-stream-string help))))
+  (is (equal
+       '("gpt-4o" "claude-sonnet")
+       (cadr-cli::cli-arguments-models
+        (cadr-cli::parse-cli-arguments
+         '("--models" "gpt-4o, ,claude-sonnet,"))))))

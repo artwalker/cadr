@@ -681,12 +681,16 @@ interrupt (baseline selectSession onExit: silent exit 0)."
 
 Unlike SESSION-MESSAGES, this projection is display-facing: branch and
 compaction summaries retain their component types instead of being converted
-to provider-facing user messages containing <summary> wrappers."
+to provider-facing user messages containing <summary> wrappers.
+
+After a compaction or branch_summary that has usage, append a
+compaction-cost-notice. It is not a persisted session entry."
   (when session
     (loop
       for entry in (cadr-agent::session-context-entries session)
+      for type = (cadr-agent:session-entry-type entry)
       for message =
-        (case (cadr-agent:session-entry-type entry)
+        (case type
           (:message
            (cadr-agent:session-entry-message entry))
           (:custom-message
@@ -717,7 +721,16 @@ to provider-facing user messages containing <summary> wrappers."
             (cadr-agent:session-entry-tokens-before entry)
             :timestamp
             (cadr-agent:session-entry-timestamp entry))))
-      when message collect message)))
+      when message
+        collect message
+      when (and message
+                (member type '(:compaction :branch-summary))
+                (cadr-agent:session-entry-usage entry))
+        collect
+          (make-compaction-cost-notice
+           :kind type
+           :usage
+           (cadr-agent:session-entry-usage entry)))))
 
 (defun session-compaction-display-state (session)
   "Return the compaction-aware transcript projection consumed by the TUI.
@@ -1013,36 +1026,20 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
 (defun session-restored-model
     (session registry available-models)
   (when session
-    (let* ((change
-             (find
-              :model-change
-              (cadr-agent:session-entries session)
-              :from-end t
-              :key #'cadr-agent:session-entry-type))
-           (assistant
-             (find-if
-              (lambda (message)
-                (typep
-                 message
-                 'cadr-ai:assistant-message))
-              (cadr-agent:session-messages session)
-              :from-end t))
+    (let* ((selection
+             (cadr-agent:branch-selection
+              (cadr-agent::session-path-entries session)
+              (lambda (provider model-id)
+                (model-registry-find
+                 registry provider model-id))))
            (provider
-             (or
-              (and change
-                   (cadr-agent:session-entry-provider
-                    change))
-              (and assistant
-                   (cadr-ai:assistant-message-provider
-                    assistant))))
+             (and selection
+                  (cadr-agent:branch-selection-provider
+                   selection)))
            (model-id
-             (or
-              (and change
-                   (cadr-agent:session-entry-model-id
-                    change))
-              (and assistant
-                   (cadr-ai:assistant-message-model
-                    assistant))))
+             (and selection
+                  (cadr-agent:branch-selection-model-id
+                   selection)))
            (model
              (and
               provider model-id
@@ -1401,7 +1398,9 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
 
 (defun write-session-command-info
     (session output
-     &key ansi-theme-p model-price-function)
+     &key ansi-theme-p model-price-function
+       (cache-warming-mode "streaming")
+       cache-warming-status)
   (let* ((stats
            (session-command-stats session))
          (input
@@ -1417,7 +1416,14 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
            (compute-cache-waste
             (cadr-agent:session-entries session)
             :model-price-function
-            model-price-function)))
+            model-price-function))
+         (warming-mode
+           (or cache-warming-mode "streaming"))
+         (warming-status-text
+           (if cache-warming-status
+               (format-cache-warming-status
+                cache-warming-status)
+               "Inactive (waiting for first request)")))
     (format output "~A~%~%"
             (session-info-style
              "Session Info" :heading ansi-theme-p))
@@ -1483,17 +1489,17 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      (getf stats :output)
      (session-info-style "Total:" :label ansi-theme-p)
      total)
-    ;; Baseline interactive-mode.ts:6387-6390 — /session always prints the
-    ;; Cache Warming block. Goal 24 defers the warmer dispatch; the inactive
-    ;; default matches the baseline CacheWarmer before the first request.
+    ;; Baseline interactive-mode.ts — /session always prints Cache Warming.
+    ;; Mode defaults to streaming (CacheWarmer getMode); status uses the
+    ;; warmer formatter when a status exists, else the pre-first-request idle.
     (format
      output
      "~%~A~%~A ~A~%~A ~A~%"
      (session-info-style "Cache Warming" :heading ansi-theme-p)
      (session-info-style "Mode:" :label ansi-theme-p)
-     "streaming"
+     warming-mode
      (session-info-style "Status:" :label ansi-theme-p)
-     "Inactive (waiting for first request)")
+     warming-status-text)
     (when
         (or
          (plusp (getf stats :cost))
@@ -1889,17 +1895,21 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        (copy-function #'default-copy-text)
        (share-runner
          #'default-share-command-runner)
+       (share-destination "auto")
        changelog-path
        keybindings
        status-function
        export-options-function
        ansi-theme-p
        model-price-function
+       (cache-warming-mode "streaming")
+       cache-warming-status
        (confirm-function
          (lambda (title message)
            (declare (ignore title message))
            t))
-       cwd-confirm-function)
+       cwd-confirm-function
+       ui-function)
   (multiple-value-bind (command argument)
       (split-command line)
     (cond
@@ -1949,7 +1959,9 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
         (cadr-agent:agent-session agent)
         output
         :ansi-theme-p ansi-theme-p
-        :model-price-function model-price-function)
+        :model-price-function model-price-function
+        :cache-warming-mode cache-warming-mode
+        :cache-warming-status cache-warming-status)
        (finish-output output)
        t)
       ((string= command "/share")
@@ -1962,7 +1974,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
            (share-session
             (cadr-agent:agent-session agent)
             :agent agent
-            :runner share-runner)
+            :runner share-runner
+            :destination share-destination)
          (unless (eq gist-url :cancelled)
            (format output "Share URL: ~A~%" viewer-url)
            (when (and gist-url (plusp (length gist-url)))
@@ -1970,64 +1983,13 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        (finish-output output)
        t)
       ((string= command "/bug")
-       (let* ((id (cadr-ai:uuid-v7))
-              (path
-                (merge-pathnames
-                 (bug-report-archive-file-name id)
-                 (uiop:getcwd)))
-              (metadata
-                (list
-                 :schema-version +bug-report-schema-version+
-                 :id id
-                 :created-at (cadr-core:current-utc-iso8601)
-                 :hint (and argument
-                            (plusp (length argument))
-                            argument)
-                 :environment
-                 (bug-report-collect-environment)
-                 :session
-                 (list
-                  :id
-                  (and (cadr-agent:agent-session agent)
-                       (cadr-agent:session-id
-                        (cadr-agent:agent-session agent)))
-                  :included nil
-                  :summary-included nil)))
-              (diagnostics
-                (list
-                 :schema-version +bug-report-schema-version+
-                 :session-id
-                 (getf (getf metadata :session) :id)
-                 :entry-count 0
-                 :assistant-message-count 0
-                 :assistant nil
-                 :crashes nil)))
-         (bug-report-write-zip
-          path
-          (list
-           (cons
-            "report.json"
-            (with-output-to-string (out)
-              (cadr-ai::write-json-value
-               (cadr-agent::json-safe-value metadata)
-               out)
-              (terpri out)))
-           (cons
-            "diagnostics.json"
-            (with-output-to-string (out)
-              (cadr-ai::write-json-value
-               (cadr-agent::json-safe-value diagnostics)
-               out)
-              (terpri out)))))
-         (if status-function
-             (funcall
-              status-function
-              (format nil "Bug report written: ~A" path)
-              :success)
-             (format output "Bug report written: ~A~%"
-                     (uiop:native-namestring path)))
-         (finish-output output)
-         t))
+       (run-bug-report
+        agent
+        :initial-hint argument
+        :ui-function ui-function
+        :status-function status-function
+        :output output)
+       t)
       ((string= command "/changelog")
        (let ((entries
                (parse-changelog
@@ -2101,7 +2063,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
              (handler-case
                  (progn
                    (funcall copy-function text)
-                   ;; pi@ecac0a9c4 interactive-mode.ts:5956-5960 —
+                   ;; pi@4a080252f interactive-mode.ts:5956-5960 —
                    ;; fullscreen flashes; regular mode keeps the status.
                    (if *alt-screen-flash-function*
                        (funcall *alt-screen-flash-function*

@@ -283,3 +283,75 @@
       (is (string=
            "/missing"
            (cadr-ai:user-message-content plain-message))))))
+
+(test empty-quoted-prompt-arguments-keep-their-position
+  ;; pi@4a080252f prompt-templates.ts parseCommandArgs (#10867).
+  (is (equal
+       '("" " ")
+       (cadr-agent::parse-command-args "\"\" \" \"")))
+  (is (equal
+       '("a" "" "c")
+       (cadr-agent::parse-command-args "a '' c")))
+  (is (equal
+       '("a" "")
+       (cadr-agent::parse-command-args "a \"\"")))
+  (is (equal
+       '("quoted \\text\\")
+       (cadr-agent::parse-command-args
+        "\"quoted \\\"text\\\"\"")))
+  (let ((template
+          (cadr-agent::make-prompt-template
+           :name "review"
+           :description "test"
+           :content "Review $2. Focus: ${1:-correctness}."
+           :file-path "/tmp/review.md")))
+    (dolist (text '("/review \"\" src/index.ts"
+                    "/review '' src/index.ts"))
+      (multiple-value-bind (expanded found-p)
+          (cadr-agent::expand-prompt-template-text
+           text (list template))
+        (is-true found-p)
+        (is (string=
+             "Review src/index.ts. Focus: correctness."
+             expanded)))))
+  (let ((template
+          (cadr-agent::make-prompt-template
+           :name "arg-test"
+           :description "test"
+           :content
+           (format nil "- arg1: $1~%- rest: ${@:2}")
+           :file-path "/tmp/arg-test.md")))
+    (multiple-value-bind (expanded found-p)
+        (cadr-agent::expand-prompt-template-text
+         (format nil "/arg-test label-2~%~%Here is some description #2.")
+         (list template))
+      (is-true found-p)
+      (is (string=
+           (format nil "- arg1: label-2~%- rest: Here is some description #2.")
+           expanded)))))
+
+(test malformed-prompt-frontmatter-is-a-resource-warning
+  (with-session-directories (sessions cwd other-cwd)
+    (values sessions other-cwd)
+    (let ((prompts (merge-pathnames "prompts/" cwd)))
+      (ensure-directories-exist prompts)
+      (with-open-file
+          (stream (merge-pathnames "bad.md" prompts)
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (write-string
+         (format nil "---~%description~%---~%body~%")
+         stream))
+      (multiple-value-bind (templates diagnostics)
+          (cadr-agent::load-prompt-templates (list prompts))
+        (is (null templates))
+        (is (= 1 (length diagnostics)))
+        (let ((diagnostic (first diagnostics)))
+          (is (eq :parse-failed
+                  (cadr-agent::resource-diagnostic-code diagnostic)))
+          (is (search
+               "Invalid frontmatter"
+               (cadr-agent::resource-diagnostic-message
+                diagnostic))))))))

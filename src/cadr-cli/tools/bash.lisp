@@ -105,7 +105,7 @@
      (not (null exclude-from-context-p)))))
 
 (defun record-user-bash-result (agent result)
-  ;; Fixed pi@ecac0a9c4 agent-session.ts:2803-2824 records the direct shell
+  ;; Fixed pi@4a080252f agent-session.ts:2803-2824 records the direct shell
   ;; message immediately when the agent is idle. TUI dispatch serializes idle
   ;; direct commands, so the same one-step append preserves ordering here.
   (when (and agent (user-bash-result-p result))
@@ -265,6 +265,37 @@
       (format nil "~A~%~A" prefix command)
       command))
 
+(defstruct bash-output-sanitizer
+  (pending "" :type string))
+
+(defun bash-sanitize-output-text (text)
+  ;; pi@4a080252f bash-executor.ts appendText
+  (remove #\Return
+          (sanitize-binary-output (strip-ansi text))))
+
+(defun bash-take-output-chunk (sanitizer chunk)
+  (multiple-value-bind (complete pending)
+      (split-incomplete-ansi-suffix
+       (concatenate 'string
+                    (bash-output-sanitizer-pending sanitizer)
+                    chunk))
+    (setf (bash-output-sanitizer-pending sanitizer) pending)
+    (bash-sanitize-output-text complete)))
+
+(defun bash-flush-output (sanitizer)
+  (let ((rest (bash-output-sanitizer-pending sanitizer)))
+    (setf (bash-output-sanitizer-pending sanitizer) "")
+    (bash-sanitize-output-text rest)))
+
+(defun write-sanitized-bash-output
+    (text capture full live-output)
+  (when (plusp (length text))
+    (write-string text capture)
+    (write-string text full)
+    (when live-output
+      (write-string text live-output)
+      (finish-output live-output))))
+
 (defun run-bash-command
     (cwd command timeout
      &key
@@ -292,7 +323,7 @@
             (list
              "/usr/bin/setsid" "--fork" "--wait"
              "/bin/sh" "-c"
-             "printf '%s' \"$$\" > \"$1\"; exec /usr/bin/env --default-signal=PIPE \"$3\" -lc \"$2\" 2>&1"
+             "printf '%s' \"$$\" > \"$1\"; /usr/bin/env --default-signal=PIPE \"$3\" -lc \"$2\" 2>&1; exit $?"
              "cadr-bash-wrapper"
              (namestring group-path)
              command
@@ -320,16 +351,16 @@
            (sb-thread:make-thread
             (lambda ()
               (handler-case
-                  (with-open-file
-                      (full output-path
-                            :direction :output
-                            :if-exists :supersede
-                            :if-does-not-exist :create
-                            :external-format :utf-8)
+                  (let ((full (exclusive-output-stream output-path))
+                        (sanitizer (make-bash-output-sanitizer)))
+                    (unwind-protect
+                        (progn
                     ;; Match Node's pipe `data` contract: block for the first
                     ;; character, then drain the currently available burst
                     ;; into one bounded callback chunk.  Per-character flushes
                     ;; turn a normal command into thousands of render requests.
+                    ;; An escape sequence split across bursts stays pending
+                    ;; until its terminator, then strip-ansi removes it.
                     (let ((buffer (make-string 4096)))
                       (loop
                         for first =
@@ -356,13 +387,17 @@
                           (setf
                            last-output-time
                            (get-internal-real-time))
-                          (write-string buffer capture :end count)
-                          (write-string buffer full :end count)
-                          (when live-output
-                            (write-string buffer live-output :end count)
-                            (finish-output live-output))
+                          (write-sanitized-bash-output
+                           (bash-take-output-chunk
+                            sanitizer (subseq buffer 0 count))
+                           capture full live-output)
                           (when eof-p
-                            (return))))))
+                            (return)))))
+                      (write-sanitized-bash-output
+                       (bash-flush-output sanitizer)
+                       capture full live-output)
+                      (when (open-stream-p full)
+                        (close full)))))
                 (error (condition)
                   (unless forced-output-close-p
                     (setf reader-error condition)))))
@@ -522,6 +557,11 @@
                           (not (char= #\Newline (char stdout (1- (length stdout)))))
                           stderr))))
            (exit-code (cadr-agent:execution-result-exit-code result)))
+      (when (null exit-code)
+        (error "~A"
+               (append-bash-status
+                (if (plusp (length output)) output "(no output)")
+                "Command terminated without an exit code")))
       (unless (zerop exit-code)
         (error "~A"
                (append-bash-status
@@ -534,22 +574,29 @@
 
 (defun normalized-extension-bash-result (result)
   (let ((output (or (getf result :output) ""))
-        (exit-code (or (getf result :exit-code) 0)))
-    (values
-     (list
-      (cadr-ai:make-text-content
-       :text
-       (format nil
-               "~A~:[~;~%~]Process exited with code ~D"
-               output
-               (plusp (length output))
-               exit-code)))
-     (list
-      :exit-code exit-code
-      :cancelled (getf result :cancelled-p)
-      :truncated (getf result :truncated-p)
-      :full-output-path
-      (getf result :full-output-path)))))
+        (exit-code (getf result :exit-code)))
+    (when (and (null exit-code)
+               (not (getf result :cancelled-p)))
+      (error
+       (append-bash-status
+        (if (plusp (length output)) output "(no output)")
+        "Command terminated without an exit code")))
+    (let ((exit-code (or exit-code 0)))
+      (values
+       (list
+        (cadr-ai:make-text-content
+         :text
+         (format nil
+                 "~A~:[~;~%~]Process exited with code ~D"
+                 output
+                 (plusp (length output))
+                 exit-code)))
+       (list
+        :exit-code exit-code
+        :cancelled (getf result :cancelled-p)
+        :truncated (getf result :truncated-p)
+        :full-output-path
+        (getf result :full-output-path))))))
 
 (defun execute-user-bash
     (extension-host cwd command

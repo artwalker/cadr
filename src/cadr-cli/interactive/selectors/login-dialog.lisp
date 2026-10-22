@@ -23,12 +23,12 @@
   (%make-login-dialog-state :provider-name provider-name))
 
 (defun login-dialog-show-auth (state url instructions)
-  ;; Baseline showAuth: clear, Spacer, accent URL, dim click hint, and an
-  ;; optional Spacer + warning instructions block.
+  ;; Baseline showAuth: clear, Spacer, accent URL, click hint plus the
+  ;; app.message.copy suffix, and an optional warning instructions block.
   (setf (login-dialog-state-sections state)
         (append
          (list '(:kind :blank)
-               (list :kind :url :url url))
+               (list :kind :auth-url :url url :status nil))
          (when (and instructions (plusp (length instructions)))
            (list '(:kind :blank)
                  (list :kind :warning :text instructions)))))
@@ -139,6 +139,26 @@
          (login-dialog-state-sections state)))
   state)
 
+(defun login-dialog-auth-url-section (state)
+  (find :auth-url (login-dialog-state-sections state)
+        :key (lambda (section) (getf section :kind))))
+
+(defvar *auth-url-copy-function* #'copy-to-clipboard)
+
+(defun login-dialog-copy-auth-url
+    (state &key (copy-function *auth-url-copy-function*))
+  ;; pi@4a080252f login-dialog.ts: app.message.copy copies the sign-in URL.
+  (let ((section (login-dialog-auth-url-section state)))
+    (unless section
+      (return-from login-dialog-copy-auth-url nil))
+    (handler-case
+        (progn
+          (funcall copy-function (getf section :url))
+          (setf (getf section :status) :copied))
+      (error (condition)
+        (setf (getf section :status) (princ-to-string condition))))
+    t))
+
 (defun login-dialog-state-handle-event (state event)
   (if (member (cadr-tui:input-event-kind event)
               '(:escape :cancel :clear :interrupt :eof))
@@ -147,12 +167,15 @@
           (ignore-errors
             (funcall (login-dialog-state-cancel-function state))))
         (values :cancel nil))
-      (if (login-dialog-state-input state)
+      (if (and (eq (cadr-tui:input-event-kind event) :copy)
+               (login-dialog-copy-auth-url state))
+          (values :changed nil)
+          (if (login-dialog-state-input state)
           (multiple-value-bind (action value)
               (cadr-tui:single-line-input-handle-event
                (login-dialog-state-input state) event)
             (values (if (eq action :submit) :select action) value))
-          (values :changed nil))))
+          (values :changed nil)))))
 
 ;; Width-keyed chrome so login-dialog paint reuses overlay title,
 ;; themed wraps, URL/link wraps, submitted input, and keybinding hints.
@@ -185,6 +208,17 @@
                (cadr-tui:theme-foreground
                 kind text :enabled-p t)
                width)))))
+
+(defun login-dialog-auth-url-lines (url status width)
+  (let* ((inner (max 1 (- width 2)))
+         (key (list url status inner)))
+    (or (gethash key *login-dialog-url-by-key*)
+        (setf (gethash key *login-dialog-url-by-key*)
+              (mapcar
+               (lambda (line)
+                 (selector-component-text-line line width))
+               (render-auth-url-lines
+                url inner :copy-hint-p t :status status))))))
 
 (defun login-dialog-url-lines (url width)
   (let* ((inner (max 1 (- width 2)))
@@ -261,6 +295,14 @@
                     :lines
                     (login-dialog-url-lines
                      (getf section :url)
+                     width))))
+                 (:auth-url
+                  (list
+                   (list
+                    :lines
+                    (login-dialog-auth-url-lines
+                     (getf section :url)
+                     (getf section :status)
                      width))))
                  ((:warning :dim :text :muted :accent)
                   (list

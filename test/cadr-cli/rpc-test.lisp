@@ -213,6 +213,25 @@
               (cadr-ai::json-get
                data "sessionId"))))))))
 
+(test rpc-get-state-reports-in-flight-compaction
+  (with-test-directory (directory)
+    (let* ((output (make-string-output-stream))
+           (state (make-rpc-test-state directory output))
+           (agent (cadr-cli::rpc-state-agent state)))
+      (cadr-cli::rpc-handle-line
+       state
+       "{\"id\":\"idle\",\"type\":\"get_state\"}")
+      (setf (cadr-agent::agent-compaction-cancellation agent) t)
+      (cadr-cli::rpc-handle-line
+       state
+       "{\"id\":\"compacting\",\"type\":\"get_state\"}")
+      (let* ((records (rpc-output-records output))
+             (idle (cadr-ai::json-get (first records) "data"))
+             (compacting (cadr-ai::json-get (second records) "data")))
+        (is (cadr-ai::json-present-p idle "isCompacting"))
+        (is (null (cadr-ai::json-get idle "isCompacting")))
+        (is (eq t (cadr-ai::json-get compacting "isCompacting")))))))
+
 (test rpc-prompt-acknowledges-once-and-streams-agent-events
   (with-test-directory (directory)
     (let* ((output

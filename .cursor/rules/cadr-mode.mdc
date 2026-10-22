@@ -12,6 +12,7 @@ Principles index, then match a playbook and copy its steps into the
 todo list verbatim.
 
 cadr standing policy (`docs/development-policy.md`, `AGENTS.md`) wins
-on conflict: do not merge PRs; do not remove intentional-looking
+on conflict: merge PRs only through the gated agent-merge rule in
+`AGENTS.md`; do not remove intentional-looking
 behavior without asking; pins and ledgers stay with the main
 executor; lock assertions to the baseline; `CADR_*` only.

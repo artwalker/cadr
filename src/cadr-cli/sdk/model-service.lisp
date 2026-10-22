@@ -120,6 +120,7 @@
 (defun sdk-model-runtime-model
     (runtime provider model-id)
   (or
+   (cadr-agent:registered-virtual-model provider model-id)
    (cadr-ai:models-runtime-model
     (sdk-model-runtime-native-runtime runtime)
     (provider-symbol-from-key provider)
@@ -175,7 +176,7 @@
 
 (defun sdk-model-runtime-auth
     (runtime provider-or-model
-     &key api-key environment)
+     &key api-key environment abort-p)
   (sb-thread:with-mutex
       ((sdk-model-runtime-lock runtime))
     (let ((auth
@@ -186,7 +187,8 @@
                  (provider-symbol-from-key
                   provider-or-model))
              :api-key api-key
-             :environment environment)))
+             :environment environment
+             :abort-p abort-p)))
       (sdk-sync-refreshed-oauth
        runtime
        (if (typep provider-or-model 'cadr-ai:model)

@@ -34,14 +34,18 @@
   (provider nil :type symbol)
   (api nil :type symbol)
   (base-url "" :type string)
-  (max-tokens 4096 :type (integer 1 *))
+  (max-tokens 4096 :type (integer 0 *))
   (context-window 0 :type (integer 0 *))
   (supports-images-p nil :type boolean)
   (supports-tools-p t :type boolean)
   (reasoning-p nil :type boolean)
   (thinking-level-map nil :type list)
+  (input-limits nil :type list)
   (headers nil :type list)
-  (compat nil :type list))
+  (compat nil :type list)
+  (prompt-cache nil :type list)
+  (sampling-params nil :type (or null hash-table))
+  (sampling-params-by-thinking-level nil :type list))
 
 (cadr-core:define-redacted-print-object (model value stream)
   (format stream "~A/~A :headers [REDACTED]"
@@ -69,7 +73,8 @@
   ;; OpenAI Responses namespace for calls to dynamically loaded or
   ;; namespaced tools.  Wire-level only: like the baseline, the session
   ;; codec does not persist it.
-  (namespace nil :type (or null string)))
+  (namespace nil :type (or null string))
+  (arguments-error nil :type (or null string)))
 
 (defstruct (cost
             (:constructor make-cost
@@ -141,6 +146,9 @@
   (end-turn nil :type (or null boolean))
   (diagnostics nil :type list)
   (timestamp (unix-milliseconds) :type integer)
+  ;; Milliseconds from the assistant stream's creation to its done or
+  ;; error event. Nil when this message was not timed by that stream.
+  (duration-ms nil :type (or null integer))
   (provider-thinking-level nil :type (or null string)))
 
 (defstruct tool-result-message
@@ -150,20 +158,51 @@
   details
   (added-tool-names nil :type list)
   (is-error nil :type boolean)
-  (timestamp (unix-milliseconds) :type integer))
+  (timestamp (unix-milliseconds) :type integer)
+  ;; Milliseconds the tool's execute function ran. Nil when the call
+  ;; never executed, including unknown tools and argument errors.
+  (duration-ms nil :type (or null integer))
+  nested-calls
+  usage)
 
 (defstruct tool
   (name "" :type string)
   (description "" :type string)
   (parameters (make-hash-table :test #'equal) :type hash-table)
-  (constrained-sampling nil :type list)
+  ;; nil = absent; :false = JSON false; cons = sampling config plist.
+  (constrained-sampling nil :type (or null cons (member :false)))
   (execution-mode :parallel :type symbol)
   (executor nil :type (or null function)))
+
+(defstruct tool-reference
+  (name "" :type string))
+
+(defstruct system-message
+  (content "" :type (or string list vector))
+  (sections nil :type list)
+  (tools-added nil :type list)
+  (tools-removed nil :type list)
+  (timestamp 0 :type integer))
 
 (defstruct context
   (system-prompt nil :type (or null string))
   (messages nil :type list)
-  (tools nil :type list))
+  (tools nil :type list)
+  (system-prompt-index nil :type (or null integer)))
+
+(defstruct transcript-context
+  (messages nil :type list))
+
+(defstruct tool-state-changes
+  (tools-added nil :type list)
+  (tools-removed nil :type list))
+
+(defstruct transcript-tools
+  (request-tools nil :type list)
+  (anchors-additions nil :type boolean)
+  ;; How many leading system messages are already represented by
+  ;; request-tools. Later system messages carry their own tool changes.
+  (folded-system-messages 0 :type integer))
 
 (defstruct image-model
   (id "" :type string)

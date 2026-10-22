@@ -1,6 +1,6 @@
 # Goal 9 Part B visual parity ledger
 
-The baseline is fixed at `earendil-works/pi@ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`.
+The baseline is fixed at `earendil-works/pi@4a080252f06caf63a525d7873c5d94d3c23887e0`.
 This document records the mechanically verifiable visual and interaction contract; the final perceptual judgement is still adjudicated by the B3 two-terminal A/B gate.
 
 ## B2 methodology: the visual contract includes runtime state
@@ -62,9 +62,9 @@ Audit checkout:
 
 ```bash
 git -C /root/projects/pi-mono worktree add --detach \
-  /tmp/cadr-parity-ecac0a9c4 \
-  ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc
-cd /tmp/cadr-parity-ecac0a9c4
+  /tmp/cadr-parity-4a080252f \
+  4a080252f06caf63a525d7873c5d94d3c23887e0
+cd /tmp/cadr-parity-4a080252f
 npm ci --ignore-scripts
 npm run hydrate:model-data
 npm run build:offline
@@ -76,7 +76,7 @@ npm run build:offline
 
 ```text
 git rev-parse HEAD
-ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc
+4a080252f06caf63a525d7873c5d94d3c23887e0
 
 ./node_modules/.bin/tsx packages/coding-agent/src/cli.ts --version
 0.83.0
@@ -307,7 +307,7 @@ remains visible. The real-controller regressions are
 The user A/B rounds found, in turn, that the last transcript line sat too close to the editor's top border, and that a short session as a whole was anchored at
 the bottom of the viewport. Neither is a numeric problem of `Output padding` or `Editor padding`. The baseline composition is as follows:
 
-| Region | Baseline `ecac0a9c4` evidence | Cadr conclusion |
+| Region | Baseline `4a080252f` evidence | Cadr conclusion |
 |---|---|---|
 | transcript top | `interactive-mode.ts:758-817`: the header carries one `Spacer(1)` before and after it; with no header/chat there is no extra fixed top margin. | `render-tui-state` has one blank line before and after startup; the cold-start, single-turn, and three-turn full-screen snapshots lock it. Verified consistent. |
 | between transcript entries | `interactive-mode.ts:3318-3369`: one spacer is added before a new user message when chat already exists, while an assistant message is appended directly; `assistant-message.ts:100-114` adds one spacer only before visible assistant content. | `src/cadr-cli/tui.lisp:1983-1999` is isomorphic; the single-turn, multi-turn, and thinking snapshots lock it. Verified consistent. |
@@ -442,8 +442,8 @@ The SHA-256 values after the fourth round's rebuild are:
 
 | Overlay | SHA-256 |
 |---|---|
-| model | `828CFA77C89D3FA8E84E4ACC72FC9AFC797E8C82A26AEFA3FE0FC46438195869` |
-| model-scoped | `9031A4EA00CFEAA9E9A931B0A493414B76AAB46BEC10A0C81204003DAA466DB1` |
+| model | `EC38393C54D8BCF85F2B6C43D29C28BD2B587C00D7CE674D04A29763FD3D7A4C` |
+| model-scoped | `36A1D3104EDAA3B46E2A1E930125148A641118756FD2E4C2B0C6F621687025C1` |
 | settings | `DB40F8BBA31200DB8C5BE49E59B2AE01EDA11F935B002DF230F96BA6F4133CC4` |
 | resume | `DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8` |
 | fork | `AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E` |
@@ -537,7 +537,7 @@ Both ends must use the same terminal emulator, font, 100×32 starting size, `TER
 Terminal A, baseline:
 
 ```bash
-cd /tmp/cadr-parity-ecac0a9c4
+cd /tmp/cadr-parity-4a080252f
 PI_CODING_AGENT_DIR=/tmp/cadr-goal9-ab-pi-agent \
 PI_OFFLINE=1 \
 ./node_modules/.bin/tsx packages/coding-agent/src/cli.ts \

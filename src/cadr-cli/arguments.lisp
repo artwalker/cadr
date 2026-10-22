@@ -30,6 +30,7 @@
   (exclude-tools nil :type list)
   (no-tools-p nil :type boolean)
   (no-builtin-tools-p nil :type boolean)
+  (no-mcp-p nil :type boolean)
   (extensions nil :type list)
   (no-extensions-p nil :type boolean)
   export
@@ -38,14 +39,14 @@
   (prompt-templates nil :type list)
   (no-prompt-templates-p nil :type boolean)
   (themes nil :type list)
-  ;; Baseline v0.86.0 --use-theme: initial interactive theme for this
+  ;; Baseline v1.4.0 --use-theme: initial interactive theme for this
   ;; run (applied as a startup settings override).
   use-theme
   (no-themes-p nil :type boolean)
   (no-context-files-p nil :type boolean)
   list-models
   (offline-p nil :type boolean)
-  ;; pi@ecac0a9c4 cli/args.ts:180-186: --tui-mode replaces --alt;
+  ;; pi@4a080252f cli/args.ts:180-186: --tui-mode replaces --alt;
   ;; NIL means the settings manager's tuiMode decides.
   tui-mode
   (verbose-p nil :type boolean)
@@ -183,9 +184,12 @@
             (#\r (if (cli-token-tail= name 3 "esume")
                      (values :special :resume)
                      (values nil nil)))
-            (#\n (if (cli-token-tail= name 3 "o-tui")
-                     (values :flag :no-tui)
-                     (values nil nil)))
+            (#\n (cond
+                   ((cli-token-tail= name 3 "o-tui")
+                    (values :flag :no-tui))
+                   ((cli-token-tail= name 3 "o-mcp")
+                    (values :flag :no-mcp))
+                   (t (values nil nil))))
             (t (values nil nil))))
          (9
           (case (char name 2)
@@ -407,9 +411,15 @@
       (cli-arguments-models arguments)
       (split-comma-option value)))
     (:tools
-     (setf
-      (cli-arguments-tools arguments)
-      (split-comma-option value)))
+     (let* ((entries (split-comma-option value))
+            (error-message (tool-list-error entries)))
+       (if error-message
+           (add-cli-diagnostic
+            arguments :error
+            (format nil "--tools: ~A" error-message))
+           (setf
+            (cli-arguments-tools arguments)
+            entries))))
     (:exclude-tools
      (setf
       (cli-arguments-exclude-tools arguments)
@@ -464,6 +474,8 @@
      (setf (cli-arguments-no-tools-p arguments) t))
     (:no-builtin-tools
      (setf (cli-arguments-no-builtin-tools-p arguments) t))
+    (:no-mcp
+     (setf (cli-arguments-no-mcp-p arguments) t))
     (:no-extensions
      (setf (cli-arguments-no-extensions-p arguments) t))
     (:print
@@ -595,7 +607,7 @@
                      ((and (null equals-name)
                            (eq kind :special)
                            (eq key :tui-mode))
-                      ;; pi@ecac0a9c4 cli/args.ts:180-191 — space form
+                      ;; pi@4a080252f cli/args.ts:180-191 — space form
                       ;; only; a missing or dash-prefixed value is not
                       ;; consumed.
                       (let ((mode (first argv)))
@@ -626,7 +638,7 @@
                      ((and (null equals-name)
                            (eq kind :special)
                            (eq key :use-theme))
-                      ;; Baseline v0.86.0 cli/args.ts: space form only;
+                      ;; Baseline v1.4.0 cli/args.ts: space form only;
                       ;; a missing or dash-prefixed value is not consumed.
                       (let ((theme-name (first argv)))
                         (if (or (null theme-name)
@@ -753,7 +765,7 @@ Commands:
   cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth
 
 Options:
-  --provider <name>              Provider name (default: google)
+  --provider <name>              Provider to search for --model (requires --model)
   --model <pattern>              Model pattern or ID (supports \"provider/id\" and optional \":<thinking>\")
   --api-key <key>                API key (defaults to env vars)
   --system-prompt <text>         System prompt (default: coding assistant prompt)
@@ -772,7 +784,9 @@ Options:
                                  Supports globs (anthropic/*, *sonnet*) and fuzzy matching
   --no-tools, -nt                Disable all tools by default (built-in and extension)
   --no-builtin-tools, -nbt       Disable built-in tools by default but keep extension/custom tools enabled
+  --no-mcp                       Disable built-in MCP support: no servers connect and no MCP tools
   --tools, -t <tools>            Comma-separated allowlist of tool names to enable
+                                 Or only +name/-name entries to change the defaults
                                  Applies to built-in, extension, and custom tools
   --exclude-tools, -xt <tools>   Comma-separated denylist of tool names to disable
                                  Applies to built-in, extension, and custom tools
@@ -790,7 +804,7 @@ Options:
   --export <file>                Export session file to HTML and exit
   --list-models [search]         List available models (with optional fuzzy search)
   --verbose                      Force verbose startup (overrides quietStartup setting)
-  --tui-mode <mode>              TUI mode: regular (default) or fullscreen
+  --tui-mode <mode>              TUI mode: fullscreen (default) or regular
   --approve, -a                  Trust project-local files for this run
   --no-approve, -na              Ignore project-local files for this run
   --offline                      Disable startup network operations (same as CADR_OFFLINE=1)
@@ -852,6 +866,9 @@ Examples:
 
   # Read-only mode (no file modifications possible)
   cadr --tools read,grep,find,ls -p \"Review the code in src/\"
+
+  # Add grep to the default tools
+  cadr --tools +grep
 
   # Disable one tool while keeping the rest available
   cadr --exclude-tools ask_question

@@ -177,6 +177,46 @@
        overrides))
     result))
 
+(defun migrate-legacy-settings (object)
+  ;; pi@71023aec settings-manager.ts migrateSettings. In-memory only;
+  ;; the file is rewritten on the next settings-set.
+  (unless (hash-table-p object)
+    (return-from migrate-legacy-settings object))
+  (let ((result (copy-json-object object)))
+    (multiple-value-bind (queue present-p)
+        (gethash "queueMode" result)
+      (when (and present-p
+                 (not (cadr-ai::json-present-p
+                       result "steeringMode")))
+        (setf (gethash "steeringMode" result) queue)
+        (remhash "queueMode" result)))
+    (multiple-value-bind (websockets present-p)
+        (gethash "websockets" result)
+      (when (and present-p
+                 (not (cadr-ai::json-present-p
+                       result "transport"))
+                 (or (eq websockets t)
+                     (eq websockets :false)
+                     (null websockets)))
+        (setf (gethash "transport" result)
+              (if (eq websockets t) "websocket" "sse"))
+        (remhash "websockets" result)))
+    (let ((skills (gethash "skills" result)))
+      (when (hash-table-p skills)
+        (when (and (cadr-ai::json-present-p
+                    skills "enableSkillCommands")
+                   (not (cadr-ai::json-present-p
+                         result "enableSkillCommands")))
+          (setf (gethash "enableSkillCommands" result)
+                (gethash "enableSkillCommands" skills)))
+        (let ((directories
+                (gethash "customDirectories" skills)))
+          (if (and (vectorp directories)
+                   (plusp (length directories)))
+              (setf (gethash "skills" result) directories)
+              (remhash "skills" result)))))
+    result))
+
 (defun read-settings-object (path)
   (if (not (probe-file path))
       (values (empty-json-object) nil)
@@ -187,7 +227,7 @@
                     path :external-format :utf-8))))
             (unless (hash-table-p object)
               (error "settings file must contain an object"))
-            (values object nil))
+            (values (migrate-legacy-settings object) nil))
         (condition (condition)
           (values nil condition)))))
 

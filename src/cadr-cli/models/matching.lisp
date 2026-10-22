@@ -247,16 +247,26 @@
                        (subseq pattern 0 colon)
                        pattern))
                  (exact
-                   (exact-model-reference-match
-                    glob models))
+                   (resolve-model-reference
+                    glob models
+                    :thinking-suffix :none
+                    :fuzzy nil
+                    :usable (constantly t)))
                  (matches
-                   (if exact
-                       (list exact)
-                       (remove-if-not
-                        (lambda (model)
-                          (model-glob-matches-p
-                           model glob))
-                        models))))
+                   (cond
+                     ((eq :resolved (getf exact :status))
+                      (list (getf exact :model)))
+                     ((eq :ambiguous (getf exact :status))
+                      (push
+                       (model-scope-ambiguous-diagnostic
+                        pattern (getf exact :candidates))
+                       diagnostics)
+                      (getf exact :candidates))
+                     (t
+                      (remove-if-not
+                       (lambda (model)
+                         (model-glob-matches-p model glob))
+                       models)))))
             (if matches
                 (dolist (model matches)
                   (unless
@@ -272,30 +282,47 @@
                           "No models match pattern ~S"
                           pattern))
                  diagnostics)))
-          (multiple-value-bind
-                (model thinking warning)
-              (parse-scoped-model-pattern
-               pattern models)
-            (when warning
+          (let ((result
+                  (resolve-model-reference
+                   pattern models
+                   :thinking-suffix :lenient
+                   :fuzzy t
+                   :usable (constantly t))))
+            (when (getf result :warning)
               (push
                (model-scope-diagnostic
                 :invalid-thinking-level
-                pattern warning)
+                pattern
+                (getf result :warning))
                diagnostics))
-            (if model
-                (unless
-                    (model-entry-present-p
-                     model scoped)
-                  (push
-                   (list :model model :thinking thinking)
-                   scoped))
-                (push
-                 (model-scope-diagnostic
-                  :no-match pattern
-                  (format nil
-                          "No models match pattern ~S"
-                          pattern))
-                 diagnostics)))))
+            (case (getf result :status)
+              (:resolved
+               (unless
+                   (model-entry-present-p
+                    (getf result :model) scoped)
+                 (push
+                  (list :model (getf result :model)
+                        :thinking (getf result :thinking))
+                  scoped)))
+              (:ambiguous
+               (push
+                (model-scope-ambiguous-diagnostic
+                 pattern (getf result :candidates))
+                diagnostics)
+               (dolist (model (getf result :candidates))
+                 (unless (model-entry-present-p model scoped)
+                   (push
+                    (list :model model
+                          :thinking (getf result :thinking))
+                    scoped))))
+              (otherwise
+               (push
+                (model-scope-diagnostic
+                 :no-match pattern
+                 (format nil
+                         "No models match pattern ~S"
+                         pattern))
+                diagnostics))))))
     (values (nreverse scoped) (nreverse diagnostics))))
 
 (defun enabled-model-ids-for-patterns
@@ -351,46 +378,404 @@
    (resolve-scoped-models-with-diagnostics
     registry patterns)))
 
+(defun model-provider-name (model)
+  (provider-key (cadr-ai:model-provider model)))
+
+(defun model-reference-result
+    (status &key model candidates usable-count thinking warning target)
+  (list :status status
+        :model model
+        :candidates candidates
+        :usable-count (or usable-count 0)
+        :thinking thinking
+        :warning warning
+        :target target))
+
+(defun thinking-suffix-parts (text)
+  (let ((colon (position #\: text :from-end t)))
+    (when colon
+      (let* ((suffix (subseq text (1+ colon)))
+             (name
+               (find suffix +thinking-level-names+
+                     :test #'string-equal)))
+        (when name
+          (values
+           (subseq text 0 colon)
+           (intern (string-upcase name) :keyword)))))))
+
+(defun provider-prefix-parts (text models)
+  (let ((slash (position #\/ text)))
+    (when slash
+      (let ((prefix
+              (string-trim
+               '(#\Space #\Tab)
+               (subseq text 0 slash)))
+            (model-text
+              (string-trim
+               '(#\Space #\Tab)
+               (subseq text (1+ slash)))))
+        (when (and (plusp (length prefix))
+                   (plusp (length model-text)))
+          (let ((match
+                  (find prefix models
+                        :key #'model-provider-name
+                        :test #'string-equal)))
+            (when match
+              (values (model-provider-name match)
+                      model-text))))))))
+
+(defun same-model-provider-p (models)
+  (let ((name (model-provider-name (first models))))
+    (every
+     (lambda (model)
+       (string-equal name (model-provider-name model)))
+     (rest models))))
+
+(defun select-model-reference (text models fuzzy usable)
+  (let ((raw
+          (remove-if-not
+           (lambda (model)
+             (string-equal (cadr-ai:model-id model) text))
+           models))
+        (named nil))
+    (multiple-value-bind (provider model-text)
+        (provider-prefix-parts text models)
+      (when provider
+        (let ((provider-models
+                (remove-if-not
+                 (lambda (model)
+                   (string-equal
+                    (model-provider-name model) provider))
+                 models)))
+          (setf named
+                (or
+                 (find model-text provider-models
+                       :key #'cadr-ai:model-id
+                       :test #'string-equal)
+                 (find provider raw
+                       :key #'model-provider-name
+                       :test #'string-equal)
+                 (and fuzzy
+                      (best-partial-model-match
+                       model-text provider-models)))))))
+    (let* ((others (remove named raw :test #'eq))
+           (candidates
+             (if named (cons named others) others)))
+      (cond
+        ((null candidates) nil)
+        ((same-model-provider-p candidates)
+         (model-reference-result :resolved
+                                 :model (first candidates)))
+        ((and named
+              (funcall usable (model-provider-name named)))
+         (model-reference-result :resolved :model named))
+        (t
+         (let ((usable-others
+                 (remove-if-not
+                  (lambda (model)
+                    (funcall usable
+                             (model-provider-name model)))
+                  others)))
+           (cond
+             ((= 1 (length usable-others))
+              (model-reference-result
+               :resolved :model (first usable-others)))
+             ((and (null usable-others) named)
+              (model-reference-result :resolved :model named))
+             (t
+              (model-reference-result
+               :ambiguous
+               :candidates candidates
+               :usable-count (length usable-others))))))))))
+
+(defun select-fuzzy-model (text matches usable)
+  (when matches
+    (let* ((providers
+             (remove-duplicates
+              (mapcar #'model-provider-name matches)
+              :test #'string-equal))
+           (usable-matches
+             (when (> (length providers) 1)
+               (remove-if-not
+                (lambda (model)
+                  (funcall usable (model-provider-name model)))
+                matches)))
+           (pool (or usable-matches matches))
+           (best (best-partial-model-match text pool)))
+      (when best
+        (let ((tied
+                (remove-if-not
+                 (lambda (model)
+                   (string=
+                    (cadr-ai:model-id model)
+                    (cadr-ai:model-id best)))
+                 pool)))
+          (if (same-model-provider-p tied)
+              (model-reference-result :resolved :model best)
+              (model-reference-result
+               :ambiguous
+               :candidates tied
+               :usable-count
+               (if usable-matches (length tied) 0))))))))
+
+(defun resolve-model-text
+    (text models thinking-suffix fuzzy usable)
+  (or (select-model-reference text models fuzzy usable)
+      (and fuzzy
+           (select-fuzzy-model
+            text
+            (remove-if-not
+             (lambda (model)
+               (model-text-contains-p model text))
+             models)
+            usable))
+      (cond
+        ((eq thinking-suffix :none) nil)
+        (t
+         (multiple-value-bind (base thinking)
+             (thinking-suffix-parts text)
+           (cond
+             (thinking
+              (let ((inner
+                      (resolve-model-text
+                       base models thinking-suffix fuzzy usable)))
+                (when inner
+                  (unless (getf inner :warning)
+                    (setf (getf inner :thinking) thinking))
+                  inner)))
+             ((eq thinking-suffix :strict) nil)
+             (t
+              (let ((colon (position #\: text :from-end t)))
+                (when colon
+                  (let ((inner
+                          (resolve-model-text
+                           (subseq text 0 colon)
+                           models thinking-suffix fuzzy usable)))
+                    (when inner
+                      (setf (getf inner :thinking) nil
+                            (getf inner :warning)
+                            (format nil
+                                    "Invalid thinking level \"~A\" in pattern \"~A\". Using default instead."
+                                    (subseq text (1+ colon))
+                                    text))
+                      inner)))))))))))
+
+(defun resolve-model-reference
+    (text models &key provider (thinking-suffix :strict)
+                      (fuzzy t) (usable (constantly t)))
+  (let ((trimmed
+          (string-trim
+           '(#\Space #\Tab #\Newline #\Return)
+           (or text ""))))
+    (when (zerop (length trimmed))
+      (return-from resolve-model-reference
+        (model-reference-result :not-found)))
+    (let* ((pool
+             (if provider
+                 (remove-if-not
+                  (lambda (model)
+                    (string-equal
+                     (model-provider-name model) provider))
+                  models)
+                 models))
+           (result
+             (resolve-model-text
+              trimmed pool thinking-suffix fuzzy usable)))
+      (or result
+          (multiple-value-bind (split-provider model-text)
+              (provider-prefix-parts trimmed pool)
+            (let ((anchor
+                    (if provider
+                        (first pool)
+                        (and split-provider
+                             (find split-provider pool
+                                   :key #'model-provider-name
+                                   :test #'string-equal)))))
+              (if (null anchor)
+                  (model-reference-result :not-found)
+                  (let* ((model-text (or model-text trimmed))
+                         (base nil)
+                         (level nil))
+                    (unless (eq thinking-suffix :none)
+                      (multiple-value-setq (base level)
+                        (thinking-suffix-parts model-text)))
+                    (model-reference-result
+                     :not-found
+                     :target
+                     (list
+                      :provider (model-provider-name anchor)
+                      :models
+                      (cons anchor
+                            (remove anchor pool :test #'eq))
+                      :model-text model-text
+                      :model-id (or base model-text)
+                      :thinking level))))))))))
+
+(defun model-scope-ambiguous-diagnostic (pattern candidates)
+  (model-scope-diagnostic
+   :ambiguous pattern
+   (format nil
+           "Pattern \"~A\" matches several providers: ~{~A~^, ~}. Use provider/id to choose one."
+           pattern
+           (sort
+            (remove-duplicates
+             (mapcar #'model-provider-name candidates)
+             :test #'string-equal)
+            #'string<))))
+
 (defun resolve-model
-    (registry spec &key provider)
-  (let* ((parsed
-           (parse-model-spec spec provider))
-         (resolved-provider
-           (getf parsed :provider))
-         (model-id (getf parsed :model))
-         (matches
-           (remove-if-not
-            (lambda (model)
-              (and
-               (string=
-                (cadr-ai:model-id model)
-                model-id)
-               (or
-                (null resolved-provider)
-                (string-equal
-                 (provider-key
-                  (cadr-ai:model-provider model))
-                 resolved-provider))))
-            (model-registry-models registry))))
-    (cond
-      ((null matches)
-       (values nil
-               (format nil
-                       "Model not found: ~@[~A/~]~A"
-                       resolved-provider model-id)
-               (getf parsed :thinking)))
-      ((or resolved-provider
-           (= 1 (length matches)))
-       (values (first matches)
+    (registry spec &key provider (usable (constantly t)))
+  (let ((result
+          (resolve-model-reference
+           spec
+           (model-registry-models registry)
+           :provider provider
+           :thinking-suffix :strict
+           :fuzzy t
+           :usable usable)))
+    (case (getf result :status)
+      (:resolved
+       (values (getf result :model)
                nil
-               (getf parsed :thinking)))
-      (t
+               (getf result :thinking)))
+      (:ambiguous
        (values
-        (or
-         (find :openai-codex matches
-               :key #'cadr-ai:model-provider)
-         (find :openai matches
-               :key #'cadr-ai:model-provider)
-         (first matches))
         nil
-        (getf parsed :thinking))))))
+        (format nil
+                "Model \"~A\" is ambiguous across providers: ~{~A~^, ~}."
+                spec
+                (sort
+                 (mapcar #'canonical-model-id
+                         (getf result :candidates))
+                 #'string<))
+        (getf result :thinking)))
+      (otherwise
+       (values nil
+               (format nil "Model not found: ~A" spec)
+               nil)))))
+
+(defun provider-has-configured-auth-p (registry provider-name)
+  (let ((model
+          (find provider-name
+                (model-registry-models registry)
+                :key #'model-provider-name
+                :test #'string-equal)))
+    (and model
+         (handler-case
+             (not
+              (eq :none
+                  (provider-config-auth-source
+                   (provider-config-for-model
+                    registry model
+                    :allow-missing-auth-p t))))
+           (condition () nil)))))
+
+(defun custom-provider-model (provider-models model-id reasoning-p)
+  (let* ((provider (model-provider-name (first provider-models)))
+         (definition
+           (cadr-ai:find-provider-definition
+            (provider-symbol-from-key provider)))
+         (default-id
+           (and definition
+                (cadr-ai:provider-definition-default-model
+                 definition)))
+         (base
+           (or (and default-id
+                    (find default-id provider-models
+                          :key #'cadr-ai:model-id
+                          :test #'string=))
+               (first provider-models)))
+         (copy (cadr-ai::copy-model base)))
+    (setf (cadr-ai:model-id copy) model-id
+          (cadr-ai::model-name copy) model-id)
+    (when reasoning-p
+      (setf (cadr-ai:model-reasoning-p copy) t))
+    copy))
+
+(defun resolve-cli-model
+    (registry model-text &key provider inline-api-key-p explicit-thinking)
+  (let ((models (model-registry-models registry)))
+    (when (null models)
+      (return-from resolve-cli-model
+        (values nil
+                "No models available. Check your installation or add models to models.json."
+                nil nil)))
+    (let ((provider-name
+            (and provider
+                 (let ((match
+                         (find provider models
+                               :key #'model-provider-name
+                               :test #'string-equal)))
+                   (and match (model-provider-name match))))))
+      (when (and provider (null provider-name))
+        (return-from resolve-cli-model
+          (values nil
+                  (format nil
+                          "Unknown provider \"~A\". Use --list-models to see available providers/models."
+                          provider)
+                  nil nil)))
+      (let ((result
+              (resolve-model-reference
+               model-text models
+               :provider provider-name
+               :thinking-suffix :strict
+               :fuzzy t
+               :usable
+               (if inline-api-key-p
+                   (constantly nil)
+                   (lambda (name)
+                     (provider-has-configured-auth-p
+                      registry name))))))
+        (case (getf result :status)
+          (:resolved
+           (values (getf result :model)
+                   nil
+                   (getf result :thinking)
+                   (getf result :warning)))
+          (:ambiguous
+           (values
+            nil
+            (format nil
+                    "Model \"~A\" is ambiguous across providers: ~{~A~^, ~}. ~A Use --provider or provider/model."
+                    model-text
+                    (sort
+                     (mapcar #'canonical-model-id
+                             (getf result :candidates))
+                     #'string<)
+                    (cond
+                      (inline-api-key-p
+                       "--api-key does not choose a provider.")
+                      ((zerop (getf result :usable-count))
+                       "No matching provider is authenticated.")
+                      (t
+                       "More than one matching provider is authenticated.")))
+            nil nil))
+          (otherwise
+           (let ((target (getf result :target)))
+             (if (null target)
+                 (values nil
+                         (format nil
+                                 "Model \"~A\" not found. Use --list-models to see available models."
+                                 model-text)
+                         nil nil)
+                 (let* ((model-id
+                          (if explicit-thinking
+                              (getf target :model-text)
+                              (getf target :model-id)))
+                        (thinking
+                          (unless explicit-thinking
+                            (getf target :thinking)))
+                        (requested
+                          (or explicit-thinking thinking)))
+                   (values
+                    (custom-provider-model
+                     (getf target :models)
+                     model-id
+                     (and requested
+                          (not (eq requested :off))))
+                    nil
+                    thinking
+                    (format nil
+                            "Model \"~A\" not found for provider \"~A\". Using custom model id."
+                            model-id
+                            (getf target :provider))))))))))))

@@ -87,7 +87,7 @@ providers	all.ts	extractor-noise	open	helper module, not a *built-in-provider-de
 providers	amazon-bedrock.ts	name-present	open	*built-in-provider-definition-rows* :amazon-bedrock in src/cadr-ai/providers/definitions.lisp
 providers	ant-ling.ts	name-present	open	*built-in-provider-definition-rows* :ant-ling in src/cadr-ai/providers/definitions.lisp
 providers	anthropic.ts	name-present	open	*built-in-provider-definition-rows* :anthropic in src/cadr-ai/providers/definitions.lisp
-providers	azure-openai-responses.ts	name-present	open	*built-in-provider-definition-rows* :azure-openai-responses in src/cadr-ai/providers/definitions.lisp
+providers	azure.ts	name-present	open	*built-in-provider-definition-rows* :azure in src/cadr-ai/providers/definitions.lisp
 providers	baseten.ts	name-present	open	*built-in-provider-definition-rows* :baseten in src/cadr-ai/providers/definitions.lisp
 providers	cerebras.ts	name-present	open	*built-in-provider-definition-rows* :cerebras in src/cadr-ai/providers/definitions.lisp
 providers	cloudflare-ai-gateway.ts	name-present	open	*built-in-provider-definition-rows* :cloudflare-ai-gateway in src/cadr-ai/providers/definitions.lisp

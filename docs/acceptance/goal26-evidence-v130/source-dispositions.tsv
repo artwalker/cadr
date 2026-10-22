@@ -1,0 +1,587 @@
+status	old_path	new_path	decision
+D	packages/agent/benchmark/session/allocation-profile-worker.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/allocation-profile.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/benchmark.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/loaded-footprint-worker.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/loaded-footprint.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/session-repo-targets.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/session-repo.bench.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/storage-targets.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/benchmark/session/storage.bench.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta-impl.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta.bench.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta.examples.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/01-harness/01-delta/delta.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/01-harness/02-scopes/scopes.variance.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/01-harness/03-execenv/bash.after.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/01-harness/03-execenv/output-capture.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/bench.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/demo-facet.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/escape-audit.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/iso-vs-ctx.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/leak.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/membrane.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/docs/mobile-handoff/02-plugins/02-sandbox/src/property-test.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/agent/examples/mcp-codemode/main.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/agent/examples/mcp-codemode/tools.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/scripts/generate-telemetry-docs.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/agent-harness.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/compaction/branch-summarization.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/compaction/compaction.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/compaction/utils.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/context.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/events.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/execution/assistant.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/execution/effect-gate.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/execution/tools.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/hooks.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/messages.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/bash.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/bounded.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/chord.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/context.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/harness.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/hooks.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/jsonl.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/collapse.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/entries.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/frames.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/generation.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/job.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/plugin.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/post-tools.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/task-api.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/kinds/tool.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/membrane.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/memory.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/scheduler.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/session.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/system.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/pico3/view.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/prompt-templates.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/result.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/boundary.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/checkpoint.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/deferred.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/generation.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/reconcile.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/recovery.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/response.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/retry.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/structural.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/terminal.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/tool-placement.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/drive/tools.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/harness.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/lane.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/progress.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/reducer.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/restore.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/transcript.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/runtime/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/commit.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/context.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/fork-policy.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/fork.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/in-memory-storage-state.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/codec.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/fork.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/io.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/legacy-v3.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/repo.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/storage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/jsonl/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/memory.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/mutation-line.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/session.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/benchmark/datasets.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/benchmark/session-repo.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/benchmark/storage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/conformance/session-repo.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/conformance/storage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/gating-storage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/instrumented-storage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/storage-decorator.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/testing/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/session/values.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/skills.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/system-prompt.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/telemetry.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/tools/bash.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/tools/file-mutation-queue.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/tools/image.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/tools/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/tools/read.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/tools/tool-context.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/utils/adaptive-publisher.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/utils/output-capture.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/utils/shell-output.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/utils/truncate.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/harness/utils/usage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/node.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/src/search/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/test/harness/pico3/helpers.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/test/harness/pico3/types.compile.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/test/harness/runtime/test-utils.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/test/harness/session-test-utils.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/vitest.benchmark.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/agent/vitest.harness.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/ai/scripts/ai-gateway-pricing.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/ai/scripts/generate-image-models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/ai/scripts/hydrate-model-catalog.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/scripts/openrouter-catalog.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/azure-openai-config.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/classifier-shared.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/cloudflare-workers-ai-system-one.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/cloudflare-workers-ai-system-one.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/llama-cpp-classify.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/llama-cpp-classify.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/openai-decisions.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/openai-decisions.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/system-one-shared.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/typesafe-system-one.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/api/typesafe-system-one.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/auth/oauth/callback-server.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/auth/oauth/openai-chatgpt.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/ai/src/image-models.generated.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/ai/src/images-models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/ai/src/providers/azure-openai-responses.models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/ai/src/providers/azure-openai-responses.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/ai/src/providers/azure.models.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/providers/azure.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/providers/compat-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/providers/model-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/providers/openrouter-api.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/ai/src/providers/openrouter-images.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/ai/src/providers/typesafe.models.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/providers/typesafe.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/ai/src/utils/assistant-message-frame.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/ai/src/utils/model-operations.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/ai/src/utils/models-error.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+R	packages/ai/src/auth/oauth/oauth-page.ts	packages/ai/src/utils/oauth-page.ts	upstream rename packages/ai/src/auth/oauth/oauth-page.ts -> packages/ai/src/utils/oauth-page.ts; retarget cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/chord/src/api.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/bundler.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/cell.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/cluster.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/connection.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/contract.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/declare.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/delta/apply-immutable-trusted.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/delta/diff.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/delta/draft.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/delta/revision-validator.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/delta/tracker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/errors.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/facets/host.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/facets/loader.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/host.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/link.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/loader.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/manager.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/node/bundle-loader.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/node/bundle.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/node/manifest.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/node/package.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/object.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/output.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/publish.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/registry.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/reload.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/remote.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/schema.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/consumer.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/errors.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/handle.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/instances.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/loopback.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/provider.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/state-codec.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/state-internals.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/state.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/services/wire.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/state.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/state/diff.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/state/draft.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/src/state/value.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/websocket.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/src/wire.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/delta-benchmark/benchmark.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/delta-benchmark/benchmark.worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/delta-benchmark/conversation-view-benchmark.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/delta-benchmark/conversation-view-benchmark.worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/delta-benchmark/memory-benchmark.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/delta-benchmark/memory-benchmark.worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/test/delta-retention.worker.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/delta-tracker/retention.worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/fixtures/counting.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/fixtures/echo.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/fixtures/loader.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/chord/test/fixtures/worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/chord/test/helpers.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/client.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/connection.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/errors.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/promise.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/transport.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/src/unix.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/client/test/support.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/examples/cloudflare/agent/src/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/examples/cloudflare/sandbox/src/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/cloudflare-modules.d.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/cloudflare.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/declarations.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/identifier.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/portable.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/execution.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/host.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/inline.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/prelude-source.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/protocol.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/remote.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/vm.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/runtime/worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/source.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/types.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/src/wasm.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/test/fixtures/raw-worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/codemode/test/fixtures/worker-process-exit.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+R	packages/protocol/vitest.config.ts	packages/codemode/vitest.config.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/coding-agent/examples/extensions/debug-provider.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/examples/extensions/jev-router.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/coding-agent/examples/plugins/pi-example-plugin/src/contract.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/examples/plugins/pi-example-plugin/src/session.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/examples/plugins/pi-example-plugin/src/tui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/coding-agent/examples/rpc-client.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/examples/sdk/14-codemode-mcp.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/scripts/generate-schemas.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/bun/quickjs-wasm.d.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/coding-agent/src/cli/experimental/cli.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/cli/experimental/command-options.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/cli/experimental/command.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/cli/experimental/commands/client.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/cli/experimental/commands/server.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/client/index.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/core/key-id-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/core/keybindings-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/core/mcp-servers.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/core/nested-tool-calls.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/core/settings-defaults.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/core/settings-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/core/virtual-models.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/cli.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/client-runtime.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/client-tui-chat.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/client-tui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/client.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/commands.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/coordinator-entry.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/coordinator.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/micro/api.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/micro/main.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/micro/models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/micro/runtime.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/micro/sessions.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/micro/tools.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/micro/tui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/main.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/server/entry.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/server/run.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/shared/protocol.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/shared/rpc.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/shared/transport.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/tui/run.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/tui/session.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/tui/view.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/worker/entry.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/worker/lane-service.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/worker/models-service.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/mini/worker/run.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/plugin.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/plugins/bundled.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/plugins/package.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/process.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/radius-auth.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/radius-relay.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/server.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/agent-controller-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/agent-controller.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/connection.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/models-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/plugins.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/presentation-ui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/server.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/sessions.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/slash-commands-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/slash-commands.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/transcript-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/transcript.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/services/worker.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/session-worker-manager.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/src/experimental/session-worker.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/codemode/execute.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/codemode/execute.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/codemode/index.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/codemode/renderer.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/codemode/tool.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/codemode/worker.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/cli.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/cli.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/config.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/index.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/log.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/oauth.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/resources.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/runtime.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/runtime.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/tools.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/mcp/ui.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/tool-search/index.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/extensions/tool-search/tool.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/components/auth-url.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/coding-agent/src/modes/interactive/components/daxnuts.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/components/easter-egg-3d.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/components/pi-logo.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/components/radius-login-selector.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/components/themed-text.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/program-status-reporter.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/theme/system-theme.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/coding-agent/src/modes/interactive/theme/theme-json.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/theme/theme-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/modes/interactive/theme/theme-tokens.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/src/utils/output-files.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+D	packages/coding-agent/test/experimental-service-binding.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/test/experimental-session-support.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/test/fixtures/faux-session-worker.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+D	packages/coding-agent/test/fixtures/keyed-service.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/coding-agent/test/mcp-conformance/client.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/test/mcp-conformance/run.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/test/suite/mcp-oauth-server.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/durable/src/codemode/codemode.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/codemode/describe.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/codemode/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/codemode/models.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/codemode/output.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/documents.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/entries.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/env/decode.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/env/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/env/line-scan.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/env/node-watch.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+R	packages/agent/src/harness/env/nodejs.ts	packages/durable/src/env/node.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/errors.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/agent.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/compaction.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/context.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/define.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/events.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/generation.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/harness.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/inbox.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/json.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/live.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/prompt.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/provider.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/registry.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/scheduler.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/submissions.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/task-graph.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/tool.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/types.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/usage.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/util.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/harness/view.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/ids.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/images/cloudflare.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/images/exif.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/images/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/images/node-worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/images/node.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/images/photon-wasm.d.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/durable/src/memory-storage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/search.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/session/forks.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/session/observation.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/session/session.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/session/transaction.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/jsonl/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/jsonl/node.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/jsonl/storage.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/memory.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/scan.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/sqlite/cloudflare.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/sqlite/database.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/sqlite/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/sqlite/migrations.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/sqlite/node.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/sqlite/schema.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/storage/sqlite/storage.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tasks.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/testing/assertions.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/testing/env-conformance.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/testing/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/testing/runner.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/testing/storage-benchmark.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/testing/storage-conformance.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/testing/types.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tool-search/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tool-search/tool-search.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tools/bash.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+R	packages/agent/src/harness/tools/edit-diff.ts	packages/durable/src/tools/edit-diff.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+R	packages/agent/src/harness/tools/edit.ts	packages/durable/src/tools/edit.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tools/env.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tools/file-mutation-queue.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tools/image-processor.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tools/image.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tools/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+R	packages/agent/src/harness/tools/path-utils.ts	packages/durable/src/tools/path-utils.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/tools/read.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+R	packages/agent/src/harness/tools/write.ts	packages/durable/src/tools/write.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/src/truncate.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/chat-support.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/codemode-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/document-append-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/00-conversation.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/01-documents.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/02-forks.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/03-owned-conversations.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/04-chord-state.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/05-watches.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/06-harness.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/07-configuration.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/08-harness-conversations.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/09-context.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/10-registry-reload.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/11-extension-state.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/12-tasks.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/13-recovery.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/14-chat.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/15-system-prompt.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/16-real-model.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/17-coding-tools.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/18-print.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/19-json.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/20-inbox.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/21-late-join.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/22-subagent-foreground.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/23-subagent-background.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/24-child-tasks.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/25-compaction.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/26-coding-agent.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/27-plan-mode.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/28-reviewer.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/29-sandbox-per-conversation.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/30-tool-override.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/examples/31-reload-and-restart.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/fixtures/delete-buffer.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/fixtures/utf8-byte-length-without-buffer.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/harness-support.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/heap-retained.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/nested-images-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/nested-tools-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/scheduler-fanout-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/scheduler-memory-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/session-document-cache-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/session-support.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/setup-document-retention.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/storage-memory.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/storage.bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/task-support.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/test/tool-output-bench.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/vitest.benchmark.config.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/durable/vitest.config.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/connection.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/errors.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/list-files.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/remote-env.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/ssh.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/terminal.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/src/watch.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/test/daemon.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/test/old-daemon.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/env/vitest.config.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/auth-provider.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/client.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/oauth/callback.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/oauth/discovery.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/oauth/errors.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/oauth/flow.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/oauth/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/oauth/provider.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/oauth/types.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/protocol/content.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/protocol/jsonrpc.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/protocol/types.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/testing/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/transports/in-memory.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/transports/stdio.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/transports/streamable-http.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/src/transports/transport.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/mcp/test/helpers.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+R	packages/client/vitest.config.ts	packages/mcp/vitest.config.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/cbor/decoder.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/cbor/encoder.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/cbor/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/cbor/options.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/codec.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/framing.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/protocol/src/protocol.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/connection.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/errors.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/listener.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/server.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/session-router.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/testing/client.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/testing/host.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/testing/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/testing/server.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/transports/unix/address.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/transports/unix/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/transports/unix/listener.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/transports/unix/preset.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/transports/unix/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/src/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/server/vitest.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/benchmark/session/session-repo-targets.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/benchmark/session/session-repo.bench.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/benchmark/session/storage-targets.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/benchmark/session/storage.bench.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/index.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/migrations.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/repo.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session/branch-entries.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session/entries.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session/session-row.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session/session-sequences.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session/session-stats.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session/usage-ledger.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/session/values.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/sql.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/storage.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/src/sqlite/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/vitest.benchmark.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+D	packages/session-backends/sqlite-node/vitest.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
+A	-	packages/tui/src/colors.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/tui/src/oklab.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/tui/src/program-status.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/tui/src/wheel-scroll.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)

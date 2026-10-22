@@ -20,6 +20,56 @@
           (format nil "~C~Cok" #\Escape character)))))
   (signals type-error (cadr-cli::strip-ansi 42)))
 
+(test bash-output-strips-ansi-split-across-chunks
+  ;; pi@4a080252f #10504. A color or OSC sequence split across bash
+  ;; chunks stays out of the streamed text. A sequence longer than the
+  ;; hold window is emitted immediately, with the escape byte removed.
+  (labels ((chunks (parts)
+             (let ((sanitizer
+                     (cadr-cli::make-bash-output-sanitizer))
+                   (streamed nil))
+               (dolist (part parts)
+                 (let ((text
+                         (cadr-cli::bash-take-output-chunk
+                          sanitizer part)))
+                   (when (plusp (length text))
+                     (push text streamed))))
+               (let ((tail
+                       (cadr-cli::bash-flush-output sanitizer)))
+                 (when (plusp (length tail))
+                   (push tail streamed)))
+               (apply #'concatenate 'string
+                      (nreverse streamed)))))
+    (is (string=
+         (format nil "ERROR: file.py:1~%")
+         (chunks
+          (list
+           (format nil "~C[31mERROR: file.py:1~C[0" #\Escape #\Escape)
+           (format nil "m~%")))))
+    (is (string=
+         (format nil "beforeafter~%")
+         (chunks
+          (list
+           (format nil "before~C" #\Escape)
+           (format nil "[32mafter~%")))))
+    (is (string=
+         (format nil "ab~%")
+         (chunks
+          (list
+           (format nil "a~C]0;window " #\Escape)
+           "title"
+           (format nil "~C" #\Escape)
+           (format nil "\\b~%")))))
+    (let* ((long (make-string 300 :initial-element #\x))
+           (sanitizer (cadr-cli::make-bash-output-sanitizer))
+           (first
+             (cadr-cli::bash-take-output-chunk
+              sanitizer
+              (format nil "~C]~A" #\Escape long))))
+      (is (string= (concatenate 'string "]" long) first))
+      (is (string= ""
+                   (cadr-cli::bash-flush-output sanitizer))))))
+
 (test goal16-cli-runtime-flags-use-only-cadr-environment
   (let ((previous-cadr-experimental
           (uiop:getenv "CADR_EXPERIMENTAL"))
@@ -378,6 +428,93 @@
                   :message "radius down"))))
       (is (null calls)))))
 
+(test session-share-destination-gist-skips-radius
+  ;; pi@4a080252f session-share.test.ts #10870
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session root "force-gist" "SHARE-GIST"))
+          (http-calls 0)
+          (gist-creates 0))
+      (multiple-value-bind (viewer gist)
+          (cadr-cli::share-session
+           session
+           :destination "gist"
+           :radius-token "should-not-use"
+           :viewer-base-url
+           "https://viewer.invalid/session/"
+           :runner
+           (lambda (argv)
+             (cond
+               ((equal argv '("gh" "auth" "status"))
+                (values "" "" 0))
+               ((and
+                 (equal
+                  '("gh" "gist" "create" "--public=false")
+                  (butlast argv))
+                 (probe-file (car (last argv))))
+                (incf gist-creates)
+                (values
+                 "https://gist.github.com/me/forced"
+                 "" 0))
+               (t (values "" "unexpected argv" 1))))
+           :http
+           (lambda (request)
+             (declare (ignore request))
+             (incf http-calls)
+             (error "radius must not run")))
+        (is (= 0 http-calls))
+        (is (= 1 gist-creates))
+        (is (search "forced" viewer))
+        (is (string=
+             "https://gist.github.com/me/forced"
+             gist))))))
+
+(test session-share-destination-radius-requires-auth
+  (with-test-directory (root)
+    (let ((session
+            (share-test-session
+             root "force-radius" "SHARE-RADIUS-REQ"))
+          (gist-calls 0))
+      (signals cadr-ai:configuration-error
+        (cadr-cli::share-session
+         session
+         :destination "radius"
+         :auth-path nil
+         :runner
+         (lambda (argv)
+           (declare (ignore argv))
+           (incf gist-calls)
+           (values "" "" 0))))
+      (is (= 0 gist-calls)))))
+
+(test settings-session-share-destination-defaults-to-auto
+  (with-test-directory (root)
+    (let ((manager
+            (cadr-cli::make-settings-manager
+             :global-path
+             (merge-pathnames "settings.json" root)
+             :project-path
+             (merge-pathnames
+              "project-settings.json" root))))
+      (is (string=
+           "auto"
+           (cadr-cli::settings-session-share-destination
+            manager)))
+      (cadr-cli::settings-set
+       manager "sessionShareDestination" "gist"
+       :scope :global)
+      (is (string=
+           "gist"
+           (cadr-cli::settings-session-share-destination
+            manager)))
+      (cadr-cli::settings-set
+       manager "sessionShareDestination" "bogus"
+       :scope :global)
+      (is (string=
+           "auto"
+           (cadr-cli::settings-session-share-destination
+            manager))))))
+
 (test share-loader-abort-skips-radius-and-gist
   (with-test-directory (root)
     (let ((session
@@ -726,28 +863,21 @@
           (opencode-go-ephemeral
             (cadr-cli::provider-attribution-headers
              :provider :opencode-go)))
-      (is (string= "https://github.com/artwalker/cadr"
-                   (header "HTTP-Referer" openrouter)))
-      (is (string= "cadr"
-                   (header "X-OpenRouter-Title" openrouter)))
-      (is (string= "cadr"
-                   (header "X-BILLING-INVOKE-ORIGIN" nvidia)))
-      (is (string= "cadr-coding-agent"
-                   (header "User-Agent" cloudflare)))
-      (is (string= "cadr"
-                   (header "x-opencode-client" opencode)))
+      ;; Attribution headers are not in this merge. The extension hook
+      ;; sees the session header and not the client, referer, or NIM origin.
+      (is (null (header "HTTP-Referer" openrouter)))
+      (is (null (header "X-OpenRouter-Title" openrouter)))
+      (is (null (header "X-BILLING-INVOKE-ORIGIN" nvidia)))
+      (is (null (header "User-Agent" cloudflare)))
+      (is (null (header "x-opencode-client" opencode)))
       (is (string= "session"
                    (header "x-opencode-session" opencode)))
-      (is (stringp
+      (is (null
            (header "x-opencode-session"
                    opencode-go-ephemeral)))
-      (is (plusp
-           (length
-            (header "x-opencode-session"
-                    opencode-go-ephemeral))))
-      (is (string= "cadr"
-                   (header "x-opencode-client"
-                           opencode-go-ephemeral)))))
+      (is (null
+           (header "x-opencode-client"
+                   opencode-go-ephemeral)))))
   (let ((headers
           (cadr-cli::provider-attribution-headers
            :provider :openrouter
@@ -777,7 +907,53 @@
                  :websocket-connect-timeout-ms)))
     (is (= 3
            (getf (getf options :retry)
-                 :maximum-retries)))))
+                 :maximum-retries))))
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (enabled (cadr-cli::coding-agent-client-identity t))
+         (disabled (cadr-cli::coding-agent-client-identity nil)))
+    (is (eq :detailed (getf enabled :user-agent)))
+    (is (string= (cadr-ai::cadr-version) (getf enabled :version)))
+    (is (eq cadr-ai::+cadr-attribution+ (getf enabled :attribution)))
+    (is (eq :off (getf disabled :attribution)))
+    (is (eq t
+            (cadr-cli::install-telemetry-enabled-p
+             manager :environment "1")))
+    (is (eq t
+            (cadr-cli::install-telemetry-enabled-p
+             manager :environment "YES")))
+    (is (null
+         (cadr-cli::install-telemetry-enabled-p
+          manager :environment "0")))
+    (is (null
+         (cadr-cli::install-telemetry-enabled-p
+          manager :environment "false")))
+    (is (null
+         (cadr-cli::install-telemetry-enabled-p
+          manager :environment "")))
+    ;; pi@4a080252f settings-defaults.ts enableInstallTelemetry is true.
+    ;; sdk-client-identity.test.ts expects attribution when PI_TELEMETRY
+    ;; is unset. nil here is that unset variable.
+    (is (eq t
+            (cadr-cli::install-telemetry-enabled-p
+             manager :environment nil)))
+    (is (eq cadr-ai::+cadr-attribution+
+            (getf (cadr-cli::coding-agent-client-identity
+                   (cadr-cli::install-telemetry-enabled-p
+                    manager :environment nil))
+                  :attribution))))
+  (let ((seen nil))
+    (funcall
+     (cadr-cli::make-extension-aware-stream-function
+      nil
+      :telemetry-p nil
+      :stream-function
+      (lambda (provider model context on-event &rest options)
+        (declare (ignore provider model context on-event))
+        (setf seen options)))
+     nil nil nil nil
+     :identity (cadr-ai::client-identity :user-agent :short))
+    (is (eq :short (getf (getf seen :identity) :user-agent)))
+    (is (eq :off (getf (getf seen :identity) :attribution)))))
 
 (test compare-package-versions-walks-tokens-not-nth
   (is (> (cadr-cli::compare-package-versions "5.0.0-beta.20"
@@ -905,3 +1081,94 @@
      (lambda (path)
        (write-text path "ignored")
        1)))))
+
+(test gif-image-detection-requires-a-complete-signature
+  ;; pi@4a080252f mime.ts — "GIF" alone is text, not an image (#9755).
+  (flet ((bytes (text)
+           (map '(vector (unsigned-byte 8)) #'char-code text)))
+    (is (string=
+         "image/gif"
+         (cadr-cli::detect-image-mime-type (bytes "GIF87a"))))
+    (is (string=
+         "image/gif"
+         (cadr-cli::detect-image-mime-type (bytes "GIF89a"))))
+    (is (null
+         (cadr-cli::detect-image-mime-type
+          (bytes "GIF is not an image"))))
+    (is (null
+         (cadr-cli::detect-image-mime-type (bytes "GIF8"))))))
+
+(test crash-stack-names-the-loaded-extension
+  (let* ((memory
+           (cadr-cli::make-crash-extension
+            :path "/mods/memory/index.ts"
+            :resolved-path "/mods/memory/index.ts"
+            :origin "package"
+            :source "npm:memory"
+            :base-dir "/mods/memory"))
+         (other
+           (cadr-cli::make-crash-extension
+            :path "/mods/other/index.ts"
+            :resolved-path "/mods/other/index.ts"
+            :origin "package"
+            :source "npm:other"
+            :base-dir "/mods/other"))
+         (stack
+           (format nil
+                   "Error: failed to read /mods/memory/index.ts~%    at run (/mods/memory/src/worker.ts:4:2)")))
+    (is (equal '("npm:memory")
+               (cadr-cli::find-extension-stack-matches
+                stack (list memory other))))
+    (is (null
+         (cadr-cli::find-extension-stack-matches
+          (format nil "Error: failed to read /mods/memory/index.ts~%    at run (/opt/cadr/core.lisp:4)")
+          (list memory))))
+    (let ((hint
+            (cadr-cli::format-crash-extension-hint '("npm:memory"))))
+      (is (search "npm:memory" hint))
+      (is (search "cadr -ne" hint)))))
+
+(test model-image-input-limits-shrink-tool-result-images
+  (multiple-value-bind (width height bytes quality)
+      (cadr-cli::image-input-resize-limits
+       (cadr-ai:make-model
+        :input-limits
+        '(:images (:resize (:max-width 32
+                            :max-height 16
+                            :max-bytes 1000
+                            :jpeg-quality 50)))))
+    (is (= 32 width))
+    (is (= 16 height))
+    (is (= 1000 bytes))
+    (is (= 50 quality)))
+  (multiple-value-bind (width height)
+      (cadr-cli::image-input-resize-limits nil)
+    (is (= 2000 width))
+    (is (= 2000 height)))
+  (let* ((png
+           (cadr-cli::encode-rgba-png
+            #(255 0 0 255
+              0 255 0 255
+              0 0 255 255
+              255 255 255 255)
+            2 2))
+         (original
+           (cadr-cli::encode-base64-bytes png))
+         (model
+           (cadr-ai:make-model
+            :input-limits
+            '(:images (:resize (:max-width 1 :max-height 1)))))
+         (normalized
+           (cadr-cli::normalize-tool-result-images
+            (list
+             (cadr-ai:make-image-content
+              :data original
+              :mime-type "image/png"))
+            :model model))
+         (image
+           (find-if
+            (lambda (block)
+              (typep block 'cadr-ai:image-content))
+            normalized)))
+    (is (typep image 'cadr-ai:image-content))
+    (is (not (string= original (cadr-ai:image-content-data image))))))

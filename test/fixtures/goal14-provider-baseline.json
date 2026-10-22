@@ -1,6 +1,6 @@
 {
   "schema": "cadr-goal14-provider-baseline-v1",
-  "baselineCommit": "ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc",
+  "baselineCommit": "4a080252f06caf63a525d7873c5d94d3c23887e0",
   "generatedFrom": [
     "packages/ai/src/providers/*.ts",
     "packages/ai/src/auth/oauth/*.ts",
@@ -118,12 +118,13 @@
       }
     },
     {
-      "id": "azure-openai-responses",
-      "source": "packages/ai/src/providers/azure-openai-responses.ts:7",
-      "name": "Azure OpenAI",
+      "id": "azure",
+      "source": "packages/ai/src/providers/azure.ts:44",
+      "name": "Azure",
       "protocol": "azure-openai-responses",
       "protocols": [
-        "azure-openai-responses"
+        "azure-openai-responses",
+        "openai-completions"
       ],
       "baseUrl": "",
       "authTypes": [
@@ -143,7 +144,7 @@
         "AZURE_OPENAI_API_KEY",
         "AZURE_OPENAI_BASE_URL",
         "AZURE_OPENAI_RESOURCE_NAME",
-        "AZURE_OPENAI_DEPLOYMENT_NAME"
+        "AZURE_OPENAI_DEPLOYMENT_NAME_MAP"
       ],
       "apiKeyAuthStrategy": "environment",
       "oauthLoginStrategy": null,
@@ -328,7 +329,7 @@
         "api-key",
         "oauth"
       ],
-      "defaultModel": "gpt-5.4",
+      "defaultModel": "gpt-6.1-sol",
       "keyEnvironment": "COPILOT_GITHUB_TOKEN",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -480,11 +481,11 @@
       "id": "kimi-coding",
       "source": "packages/ai/src/providers/kimi-coding.ts:8",
       "name": "Kimi For Coding",
-      "protocol": "anthropic-messages",
+      "protocol": "openai-completions",
       "protocols": [
-        "anthropic-messages"
+        "openai-completions"
       ],
-      "baseUrl": "https://api.kimi.com/coding",
+      "baseUrl": "https://api.kimi.com/coding/v1",
       "authTypes": [
         "api-key",
         "oauth"
@@ -677,7 +678,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "nvidia/nemotron-3-super-120b-a12b",
+      "defaultModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
       "keyEnvironment": "NVIDIA_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -737,7 +738,7 @@
       "authTypes": [
         "oauth"
       ],
-      "defaultModel": "gpt-5.5",
+      "defaultModel": "gpt-6.1-sol",
       "keyEnvironment": null,
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -770,7 +771,7 @@
         "openai-completions",
         "openai-responses"
       ],
-      "baseUrl": "https://opencode.ai/zen/v1",
+      "baseUrl": "https://opencode.ai/inference/v1",
       "authTypes": [
         "api-key"
       ],
@@ -799,10 +800,11 @@
       "protocol": "openai-completions",
       "protocols": [
         "anthropic-messages",
+        "google-generative-ai",
         "openai-completions",
         "openai-responses"
       ],
-      "baseUrl": "https://opencode.ai/zen/go/v1",
+      "baseUrl": "https://opencode.ai/inference/go/v1",
       "authTypes": [
         "api-key"
       ],
@@ -934,7 +936,7 @@
         "api-key",
         "oauth"
       ],
-      "defaultModel": "auto",
+      "defaultModel": "balanced",
       "keyEnvironment": "RADIUS_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": true,
@@ -1069,7 +1071,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "mimo-v2.5-pro",
+      "defaultModel": "mimo-v2.6-pro",
       "keyEnvironment": "XIAOMI_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -1099,7 +1101,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "mimo-v2.5-pro",
+      "defaultModel": "mimo-v2.6-pro",
       "keyEnvironment": "XIAOMI_TOKEN_PLAN_AMS_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -1129,7 +1131,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "mimo-v2.5-pro",
+      "defaultModel": "mimo-v2.6-pro",
       "keyEnvironment": "XIAOMI_TOKEN_PLAN_CN_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -1159,7 +1161,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "mimo-v2.5-pro",
+      "defaultModel": "mimo-v2.6-pro",
       "keyEnvironment": "XIAOMI_TOKEN_PLAN_SGP_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,

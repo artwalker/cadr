@@ -259,7 +259,7 @@
                          (char text position) output)
                         (incf position)))))))))
 
-;;; pi@ecac0a9c4 components/markdown.ts:25-122 — inline and block
+;;; pi@4a080252f components/markdown.ts:25-122 — inline and block
 ;;; LaTeX tokenization with the baseline delimiter and guard rules,
 ;;; rendered through the latex.ts port.
 
@@ -284,10 +284,20 @@
     index))
 
 (defun latex-looks-like-pending-math-p (source)
-  ;; /\\[A-Za-z]+|[_^=+*/<>()[\]|+-...]/ character probe.
-  (or (cl-ppcre:scan "\\[A-Za-z]+" source)
-      (cl-ppcre:scan "[_^=+*/<>()\[\]|\u00b1\u2264\u2265\u2260\u2248\u2208\u2192\u21d2\u221e\u222b\u2211\u221a-]"
-                     source)))
+  ;; looksLikePendingDollarMath at v1.4.0 markdown.ts:
+  ;; /\\[A-Za-z]+|[_^=+*/<>()[\]|±≤≥≠≈∈→⇒∞∫∑√-]/
+  ;; The operator inventory is a string. A regex class written with
+  ;; Lisp string escapes closes at the first "]" and drops the rest.
+  (or (loop for index from 0 below (1- (length source))
+            for next = (char source (1+ index))
+            thereis (and (char= (char source index) #\\)
+                         (or (char<= #\A next #\Z)
+                             (char<= #\a next #\z))))
+      (find-if (lambda (character)
+                 (find character
+                       "_^=+*/<>()[]|±≤≥≠≈∈→⇒∞∫∑√-"
+                       :test #'char=))
+               source)))
 
 (defun markdown-latex-inline-span
     (line start)
@@ -431,6 +441,212 @@
       (search "$$" line)
       (search "\]" line)))
 
+(defparameter +cjk-emphasis-ranges+
+  ;; marked-cjk-friendly@0.1.2 CJK class. Ideographs and CJK punctuation
+  ;; count as flanking punctuation so emphasis can close beside them.
+  '((#x1100 . #x11ff) (#x20a9 . #x20a9) (#x2329 . #x232a)
+    (#x2630 . #x2637) (#x268a . #x268f) (#x2e80 . #x2e99)
+    (#x2e9b . #x2ef3) (#x2f00 . #x2fd5) (#x2ff0 . #x303e)
+    (#x3041 . #x3096) (#x3099 . #x30ff) (#x3105 . #x312f)
+    (#x3131 . #x318e) (#x3190 . #x31e5) (#x31ef . #x321e)
+    (#x3220 . #x3247) (#x3250 . #xa48c) (#xa490 . #xa4c6)
+    (#xa960 . #xa97c) (#xac00 . #xd7a3) (#xd7b0 . #xd7c6)
+    (#xd7cb . #xd7fb) (#xf900 . #xfaff) (#xfe10 . #xfe19)
+    (#xfe30 . #xfe52) (#xfe54 . #xfe66) (#xfe68 . #xfe6b)
+    (#xff01 . #xffbe) (#xffc2 . #xffc7) (#xffca . #xffcf)
+    (#xffd2 . #xffd7) (#xffda . #xffdc) (#xffe0 . #xffe6)
+    (#xffe8 . #xffee) (#x16fe0 . #x16fe4) (#x16ff0 . #x16ff6)
+    (#x17000 . #x18cda) (#x18cff . #x18d20) (#x18d80 . #x18df2)
+    (#x18e00 . #x19191) (#x191a0 . #x191d2) (#x1aff0 . #x1aff3)
+    (#x1aff5 . #x1affb) (#x1affd . #x1affe) (#x1b000 . #x1b128)
+    (#x1b132 . #x1b132) (#x1b150 . #x1b152) (#x1b155 . #x1b155)
+    (#x1b164 . #x1b168) (#x1b170 . #x1b2fb) (#x1d300 . #x1d356)
+    (#x1d360 . #x1d376) (#x1f1ae . #x1f1ae) (#x1f200 . #x1f200)
+    (#x1f202 . #x1f202) (#x1f210 . #x1f219) (#x1f21b . #x1f22e)
+    (#x1f230 . #x1f231) (#x1f237 . #x1f237) (#x1f23b . #x1f23b)
+    (#x1f240 . #x1f248) (#x1f260 . #x1f265) (#x1f7da . #x1f7da)
+    (#x20000 . #x3fffd)))
+
+(defun cjk-emphasis-char-p (character)
+  (let ((value (char-code character)))
+    (loop for range in +cjk-emphasis-ranges+
+          thereis (<= (car range) value (cdr range)))))
+
+(defun unicode-punctuation-or-symbol-p (character)
+  (member (sb-unicode:general-category character)
+          '(:pc :pd :pe :pf :pi :po :ps
+            :sc :sk :sm :so)))
+
+(defun unicode-letter-or-number-p (character)
+  (member (sb-unicode:general-category character)
+          '(:lu :ll :lt :lm :lo :nd :nl :no)))
+
+(defun emphasis-flank-punct-p (character)
+  (or (unicode-punctuation-or-symbol-p character)
+      (cjk-emphasis-char-p character)))
+
+(defun emphasis-flank-space-p (character)
+  (or (js-whitespace-p character)
+      (emphasis-flank-punct-p character)))
+
+(defun emphasis-prev-boundary-p (character)
+  (and character
+       (not (or (char= character #\*)
+                (char= character #\_)))
+       (or (js-whitespace-p character)
+           (unicode-punctuation-or-symbol-p character))))
+
+(defun delimiter-run-length (text position marker)
+  (loop for index from position below (length text)
+        while (char= (char text index) marker)
+        count 1))
+
+(defun emphasis-closer-class (before after)
+  ;; Same priority as marked-cjk-friendly's right-delimiter groups.
+  (cond
+    ((null before) nil)
+    ((and (emphasis-flank-punct-p before)
+          (or (null after) (js-whitespace-p after)))
+     :right)
+    ((and (not (emphasis-flank-space-p before))
+          (or (null after) (emphasis-flank-space-p after)))
+     :right)
+    ((and (emphasis-flank-space-p before)
+          after
+          (not (emphasis-flank-space-p after)))
+     :left-only)
+    ((and (js-whitespace-p before)
+          after
+          (emphasis-flank-punct-p after))
+     :left-only)
+    ((and (emphasis-flank-punct-p before)
+          after
+          (emphasis-flank-punct-p after))
+     :both)
+    ((and (not (emphasis-flank-space-p before))
+          after
+          (not (emphasis-flank-space-p after)))
+     :both)
+    (t nil)))
+
+(defun emphasis-cjk-adjacent-p (before after)
+  (or (and before (cjk-emphasis-char-p before))
+      (and after (cjk-emphasis-char-p after))))
+
+(defun find-emphasis-closer
+    (text start marker left-length prev)
+  (let ((delim-total left-length)
+        (mid-total 0)
+        (position start))
+    (loop while (< position (length text))
+          do (if (char/= (char text position) marker)
+                 (incf position)
+                 (let* ((run (delimiter-run-length
+                              text position marker))
+                        (before (char text (1- position)))
+                        (after-at (+ position run))
+                        (after (when (< after-at (length text))
+                                 (char text after-at)))
+                        (class (emphasis-closer-class before after)))
+                   (let ((cjk-adjacent
+                           (emphasis-cjk-adjacent-p before after))
+                         (skip-p nil))
+                     (cond
+                       ((and (eq class :left-only)
+                             (not cjk-adjacent))
+                        (incf delim-total run)
+                        (incf position run))
+                       ((null class)
+                        (incf position))
+                       (t
+                        (when (or (eq class :both) cjk-adjacent)
+                          (cond
+                            ((and (plusp (mod left-length 3))
+                                  (zerop (mod (+ left-length run) 3)))
+                             (incf mid-total run)
+                             (incf position run)
+                             (setf skip-p t))
+                            ((and prev
+                                  (char= prev marker)
+                                  (eq class :both))
+                             (return-from find-emphasis-closer nil))))
+                        (unless skip-p
+                          (decf delim-total run)
+                          (if (plusp delim-total)
+                              (incf position run)
+                              (return-from find-emphasis-closer
+                                (values position
+                                        (min run
+                                             (+ run delim-total
+                                                mid-total))))))))))))))
+
+(defun apply-markdown-emphasis (text ansi-theme-p)
+  (let ((length (length text))
+        (position 0))
+    (with-output-to-string (out)
+      (loop while (< position length)
+            for character = (char text position)
+            do (if (or (char= character #\*)
+                       (char= character #\_))
+                   (multiple-value-bind (next rendered)
+                       (markdown-emphasis-at
+                        text position ansi-theme-p)
+                     (if next
+                         (progn
+                           (write-string rendered out)
+                           (setf position next))
+                         (progn
+                           (write-char character out)
+                           (incf position))))
+                   (progn
+                     (write-char character out)
+                     (incf position)))))))
+
+(defun markdown-emphasis-at (text position ansi-theme-p)
+  (let* ((marker (char text position))
+         (run (delimiter-run-length text position marker))
+         (after-at (+ position run))
+         (after (when (< after-at (length text))
+                  (char text after-at)))
+         (prev (when (plusp position)
+                 (char text (1- position))))
+         (next-punct
+           (when (and after
+                      (unicode-punctuation-or-symbol-p after))
+             after)))
+    (when (and after
+               (not (and (char= marker #\_)
+                         (not (js-whitespace-p after))
+                         (not (unicode-punctuation-or-symbol-p after))
+                         prev
+                         (unicode-letter-or-number-p prev)))
+               (or (null next-punct)
+                   (null prev)
+                   (emphasis-prev-boundary-p prev)
+                   (and prev
+                        (not (or (char= prev #\*)
+                                 (char= prev #\_)))
+                        (cjk-emphasis-char-p prev))
+                   (cjk-emphasis-char-p next-punct)))
+      (multiple-value-bind (closer-at used)
+          (find-emphasis-closer
+           text after-at marker run prev)
+        (when (and closer-at (plusp used))
+          (let* ((use (if (oddp (min run used)) 1 2))
+                 (end (+ closer-at used))
+                 (interior
+                   (subseq text
+                           (+ position use)
+                           (- end use)))
+                 (styled
+                   (apply-markdown-emphasis
+                    interior ansi-theme-p)))
+            (values
+             end
+             (if (= use 1)
+                 (theme-italic styled :enabled-p ansi-theme-p)
+                 (theme-bold styled :enabled-p ansi-theme-p)))))))))
+
 (defun render-inline-markdown
     (line ansi-theme-p capabilities
      &optional default-style-function)
@@ -439,62 +655,206 @@
     (let ((result
             (replace-markdown-links
              line capabilities ansi-theme-p)))
-    (setf result
-          (replace-paired-marker
-           result "**" :open-code "1"
-           :style-function
-           (lambda (text enabled-p)
-             (theme-bold
-              text :enabled-p enabled-p))
-           :ansi-theme-p ansi-theme-p)
-          result
-          (replace-paired-marker
-           result "__" :open-code "1"
-           :style-function
-           (lambda (text enabled-p)
-             (theme-bold
-              text :enabled-p enabled-p))
-           :ansi-theme-p ansi-theme-p)
-          result
-          (replace-paired-marker
-           result "~~" :open-code "9"
-           :ansi-theme-p ansi-theme-p)
-          result
-          (replace-markdown-code-spans
-           result
-           :style-function
-           (lambda (text enabled-p)
-             (theme-foreground
-              :md-code text
-              :enabled-p enabled-p))
-           :ansi-theme-p ansi-theme-p))
-    (unless (search "**" result)
-      (setf
-       result
-       (replace-paired-marker
-        result "*" :open-code "3"
-        :style-function
-        (lambda (text enabled-p)
-          (theme-italic
-           text :enabled-p enabled-p))
-        :ansi-theme-p ansi-theme-p)))
-    (unless (search "__" result)
-      (setf
-       result
-       (replace-paired-marker
-        result "_" :open-code "3"
-        :style-function
-        (lambda (text enabled-p)
-          (theme-italic
-           text :enabled-p enabled-p))
-        :ansi-theme-p ansi-theme-p)))
       (setf result
+            (apply-markdown-emphasis result ansi-theme-p)
+            result
+            (replace-paired-marker
+             result "~~" :open-code "9"
+             :ansi-theme-p ansi-theme-p)
+            result
+            (replace-markdown-code-spans
+             result
+             :style-function
+             (lambda (text enabled-p)
+               (theme-foreground
+                :md-code text
+                :enabled-p enabled-p))
+             :ansi-theme-p ansi-theme-p)
+            result
             (markdown-restore-inline-latex
              result latex-replacements))
       (if default-style-function
           (apply-restoring-style
            result default-style-function)
           result))))
+
+(defparameter +table-delimiter-row-scanner+
+  ;; packages/tui/src/components/markdown.ts TABLE_DELIMITER_ROW_REGEX
+  ;; at v1.4.0. A one-column ":---:" and a pipe-free "| --- |" both match.
+  (cl-ppcre:create-scanner
+   "^ {0,3}\\|?[ \\t]*:?-+:?[ \\t]*(?:\\|[ \\t]*:?-+:?[ \\t]*)*\\|?[ \\t]*$"))
+
+(defparameter +block-dollar-closed-scanner+
+  (cl-ppcre:create-scanner
+   "^ {0,3}\\$\\$[ \\t]*(?:\\n)?((?s:.)*?)\\$\\$[ \\t]*(?:\\n|\\z)"))
+
+(defparameter +block-bracket-closed-scanner+
+  (cl-ppcre:create-scanner
+   "^ {0,3}\\\\\\[[ \\t]*(?:\\n)?((?s:.)*?)\\\\\\][ \\t]*(?:\\n|\\z)"))
+
+(defparameter +block-bracket-pending-scanner+
+  (cl-ppcre:create-scanner
+   "^ {0,3}\\\\\\[[ \\t]*(?:\\n)?((?s:.)*)$"))
+
+(defparameter +block-dollar-pending-scanner+
+  (cl-ppcre:create-scanner
+   "^ {0,3}\\$\\$[ \\t]*(?:\\n)?((?s:.)*)$"))
+
+(defun markdown-regex-group (scanner source)
+  (multiple-value-bind (match groups)
+      (cl-ppcre:scan-to-strings scanner source)
+    (when (and match
+               groups
+               (plusp (length (aref groups 0))))
+      (values match (aref groups 0)))))
+
+(defun markdown-table-delimiter-row-p (line)
+  (and (cl-ppcre:scan +table-delimiter-row-scanner+ line) t))
+
+(defun markdown-contains-table-start-p (source)
+  (let ((lines (split-lines-preserving-empty source)))
+    (loop for index from 0 below (1- (length lines))
+          for header = (nth index lines)
+          for delimiter = (nth (1+ index) lines)
+          thereis (and (markdown-table-delimiter-row-p delimiter)
+                       (or (search "|" delimiter)
+                           (search "|" header))))))
+
+(defun markdown-gfm-table-start-p (header delimiter)
+  (and delimiter
+       (markdown-table-delimiter-row-p delimiter)
+       (or (search "|" delimiter)
+           (search "|" header))))
+
+(defun join-markdown-source (first rest)
+  (with-output-to-string (out)
+    (write-string first out)
+    (dolist (line rest)
+      (write-char #\Newline out)
+      (write-string line out))))
+
+(defun markdown-raw-line-count (raw)
+  (let ((lines (split-lines-preserving-empty raw)))
+    (if (and (plusp (length raw))
+             (char= (char raw (1- (length raw))) #\Newline))
+        (1- (length lines))
+        (length lines))))
+
+(defun markdown-block-latex-token (source)
+  ;; tokenizeBlockLatex at v1.4.0. A closed or pending block that
+  ;; contains a GFM table start is not a math token.
+  (multiple-value-bind (raw text)
+      (markdown-regex-group +block-dollar-closed-scanner+ source)
+    (when (and raw (not (markdown-contains-table-start-p text)))
+      (return-from markdown-block-latex-token
+        (values t raw text nil))))
+  (multiple-value-bind (raw text)
+      (markdown-regex-group +block-bracket-closed-scanner+ source)
+    (when (and raw (not (markdown-contains-table-start-p text)))
+      (return-from markdown-block-latex-token
+        (values t raw text nil))))
+  (multiple-value-bind (raw text)
+      (markdown-regex-group +block-bracket-pending-scanner+ source)
+    (when (and raw (not (markdown-contains-table-start-p text)))
+      (return-from markdown-block-latex-token
+        (values t raw text t))))
+  (multiple-value-bind (raw text)
+      (markdown-regex-group +block-dollar-pending-scanner+ source)
+    (when (and raw
+               (latex-looks-like-pending-math-p text)
+               (not (markdown-contains-table-start-p text)))
+      (return-from markdown-block-latex-token
+        (values t raw text t))))
+  (values nil nil nil nil))
+
+(defun markdown-backslash-math-opener-p (line)
+  (and (>= (length line) 3)
+       (char= (char line 0) #\\)
+       (or (string= "\\[" line :start2 1 :end2 3)
+           (and (>= (length line) 3)
+                (string= "$$" line :start2 1 :end2 3)))))
+
+(defun markdown-style-math-lines (lines default-style-function)
+  (if default-style-function
+      (mapcar (lambda (line)
+                (apply-restoring-style line default-style-function))
+              lines)
+      lines))
+
+(defun markdown-latex-token-lines
+    (raw text pending-p remaining default-style-function)
+  (let* ((rendered (and (not pending-p)
+                        (render-latex text :display-p t)))
+         (body (or rendered (latex-trim raw)))
+         (lines (split-lines-preserving-empty body)))
+    (when (and (plusp (length body))
+               (char= (char body (1- (length body))) #\Newline))
+      (setf lines (butlast lines)))
+    (when (markdown-nonblank-line-p (first remaining))
+      (setf lines (append lines (list ""))))
+    (markdown-style-math-lines lines default-style-function)))
+
+(defun markdown-rejected-bracket-paragraph
+    (line source-lines)
+  (let ((following 0)
+        (lines (list line)))
+    (loop for candidate in source-lines
+          while (markdown-nonblank-line-p candidate)
+          do (incf following)
+             (push candidate lines))
+    (setf lines (nreverse lines))
+    (values
+     (append
+      (list "")
+      (split-lines-preserving-empty
+       (join-markdown-source
+        (subseq (first lines) 1)
+        (rest lines))))
+     (nthcdr following source-lines)
+     t)))
+
+(defun markdown-display-math-output
+    (line source-lines default-style-function)
+  (cond
+    ((markdown-backslash-math-opener-p line)
+     (let ((block-source
+             (join-markdown-source (subseq line 1) source-lines)))
+       (multiple-value-bind (matched raw text pending-p)
+           (markdown-block-latex-token block-source)
+         (if matched
+             (let ((remaining
+                     (nthcdr (1- (markdown-raw-line-count raw))
+                             source-lines)))
+               (values
+                (append
+                 (markdown-style-math-lines
+                  (list "\\") default-style-function)
+                 (list "")
+                 (markdown-latex-token-lines
+                  raw text pending-p remaining
+                  default-style-function))
+                remaining
+                t))
+             (if (string= "\\[" line :start2 1 :end2 3)
+                 (markdown-rejected-bracket-paragraph
+                  line source-lines)
+                 (values nil nil nil))))))
+    ((markdown-latex-block-opening line)
+     (multiple-value-bind (matched raw text pending-p)
+         (markdown-block-latex-token
+          (join-markdown-source line source-lines))
+       (if matched
+           (let ((remaining
+                   (nthcdr (1- (markdown-raw-line-count raw))
+                           source-lines)))
+             (values
+              (markdown-latex-token-lines
+               raw text pending-p remaining
+               default-style-function)
+              remaining
+              t))
+           (values nil nil nil))))
+    (t (values nil nil nil))))
 
 (defun markdown-table-divider-p (line)
   (let ((trimmed
@@ -1262,112 +1622,41 @@
                                     (list "")))))))
                 ((and
                   (not in-code-p)
-                  (markdown-latex-block-opening line))
-                 ;; pi@ecac0a9c4 components/markdown.ts:102-119,505-514
-                 ;; — display-mode latex blocks, raw trim fallback.
-                 (setf list-prefix-width nil)
-                 (let* ((kind
-                          (markdown-latex-block-opening line))
-                        (closer
-                          (if (eq kind :dollar) "$$" "\\]"))
-                        (trimmed-line
-                          (string-left-trim " " line))
-                        (after-open
-                          (string-left-trim
-                           '(#\Space #\Tab)
-                           (subseq trimmed-line 2)))
-                        (content-lines nil)
-                        (raw-lines (list line))
-                        (closed-p nil))
-                   (flet ((trailing-blank-p (text position)
-                            (every
-                             (lambda (c)
-                               (member c '(#\Space #\Tab)))
-                             (subseq text position))))
-                     (let ((close-at
-                             (search closer after-open)))
-                       (if (and close-at
-                                (trailing-blank-p
-                                 after-open (+ close-at 2)))
-                           (progn
-                             (push (subseq after-open 0 close-at)
-                                   content-lines)
-                             (setf closed-p t))
-                           (progn
-                             (push after-open content-lines)
-                             (loop while source-lines
-                                   for candidate =
-                                     (pop source-lines)
-                                   for cidx =
-                                     (search closer candidate)
-                                   do (push candidate raw-lines)
-                                      (if (and cidx
-                                               (trailing-blank-p
-                                                candidate
-                                                (+ cidx 2)))
-                                          (progn
-                                            (push
-                                             (subseq candidate 0 cidx)
-                                             content-lines)
-                                            (setf closed-p t)
-                                            (return))
-                                          (push candidate
-                                                content-lines)))))))
-                   (let* ((content
-                            (format nil "~{~A~^~%~}"
-                                    (nreverse content-lines)))
-                          (rendered
-                            (and closed-p
-                                 (render-latex
-                                  (latex-trim content)
-                                  :display-p t)))
-                          (text
-                            (or rendered
-                                (latex-trim
-                                 (if closed-p
-                                     content
-                                     (format nil "~{~A~^~%~}"
-                                             (nreverse
-                                              (copy-list
-                                               raw-lines))))))))
-                     (dolist (rendered-line
-                              (split-lines-preserving-empty text))
-                       (setf result
-                             (nconc
-                              result
-                              (list
-                               (if default-style-function
-                                   (apply-restoring-style
-                                    rendered-line
-                                    default-style-function)
-                                   rendered-line)))))
-                     (when
-                         (markdown-nonblank-line-p
-                          (first source-lines))
-                       (setf result
-                             (nconc result
-                                    (list "")))))))
+                  (or (markdown-latex-block-opening line)
+                      (markdown-backslash-math-opener-p line))
+                  (multiple-value-bind (output remaining handled)
+                      (markdown-display-math-output
+                       line source-lines
+                       default-style-function)
+                    (when handled
+                      (setf list-prefix-width nil
+                            result (nconc result output)
+                            source-lines remaining))
+                    handled))
+                 t)
                 ((and
                   (not in-code-p)
-                  (find #\| line)
                   next
-                  (markdown-table-divider-p next))
+                  (markdown-gfm-table-start-p line next))
                  (setf list-prefix-width nil)
                  (let ((rows
                          (list
                           (markdown-table-cells
                            line)))
-                       (raw-lines (list line next)))
+                       (raw-lines (list line next))
+                       (pipe-free-header-p
+                         (not (search "|" line))))
                    (pop source-lines)
                    (loop while
                          (and source-lines
-                              (find #\|
-                                    (first source-lines))
                               (plusp
                                (length
                                 (string-trim
                                  '(#\Space #\Tab)
-                                 (first source-lines)))))
+                                 (first source-lines))))
+                              (or (find #\|
+                                        (first source-lines))
+                                  pipe-free-header-p))
                          do
                          (let ((raw-line
                                  (pop source-lines)))

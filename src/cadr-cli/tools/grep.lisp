@@ -180,7 +180,8 @@
         (error "ripgrep (rg) is not available and could not be downloaded"))
       (let ((command
               (append
-               (list rg "--json" "--line-number" "--color=never" "--hidden")
+               (list rg "--no-config" "--json" "--line-number"
+                     "--color=never" "--hidden")
                (when ignore-case-p (list "--ignore-case"))
                (when literal-p (list "--fixed-strings"))
                (when filter (list "--glob" filter))

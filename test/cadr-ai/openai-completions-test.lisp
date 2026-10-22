@@ -428,3 +428,547 @@
            (cadr-ai::json-object "reasoning" "plain"))
         (is (string= "plain" text))
         (is (string= "reasoning" signature))))))
+
+(test unknown-openai-completions-endpoint-is-not-strict
+  (let ((unknown
+          (cadr-ai:make-model
+           :id "local-model"
+           :provider :local-compat
+           :api :openai-completions
+           :base-url "http://127.0.0.1:9/v1"
+           :max-tokens 1024))
+        (builtin
+          (cadr-ai:make-model
+           :id "deepseek-v4-flash"
+           :provider :deepseek
+           :api :openai-completions
+           :base-url "https://api.deepseek.com"
+           :max-tokens 1024))
+        (advertised
+          (cadr-ai:make-model
+           :id "local-model"
+           :provider :local-compat
+           :api :openai-completions
+           :base-url "http://127.0.0.1:9/v1"
+           :max-tokens 1024
+           :compat '(:supports-strict-mode t)))
+        (cerebras
+          (cadr-ai:make-model
+           :id "llama"
+           :provider :cerebras
+           :api :openai-completions
+           :base-url "https://api.cerebras.ai"
+           :max-tokens 1024)))
+    (is (null (cadr-ai::completions-strict-mode-p unknown)))
+    (is (eq t (cadr-ai::completions-strict-mode-p builtin)))
+    (is (eq t (cadr-ai::completions-strict-mode-p advertised)))
+    (is (null (cadr-ai::completions-strict-mode-p cerebras)))))
+
+(test goal24-cerebras-omits-tool-strict
+  (let* ((model
+           (cadr-ai:make-model
+            :id "gpt-oss-120b"
+            :provider :cerebras
+            :api :openai-completions
+            :base-url "https://api.cerebras.ai/v1"
+            :max-tokens 4096
+            :supports-tools-p t))
+         (tools
+           (list
+            (cadr-ai:make-tool
+             :name "t1"
+             :description "strict tool"
+             :parameters (sample-schema)
+             :constrained-sampling
+             '(:type :json-schema :strict :prefer))
+            (cadr-ai:make-tool
+             :name "t2"
+             :description "non-strict tool"
+             :parameters (sample-schema))))
+         (payload-tools
+           (cadr-ai::openai-chat-tools model tools)))
+    (is (= 2 (length payload-tools)))
+    (loop for tool across payload-tools
+          for function = (cadr-ai::json-get tool "function")
+          do (is (not (cadr-ai::json-present-p function "strict"))))))
+
+(defun opencode-completion-header (session-id name)
+  (cdr
+   (assoc
+    name
+    (request-spec-headers
+     (build-request
+      (cadr-ai:make-openai-completions-provider :api-key "key")
+      (make-model
+       :id "test"
+       :provider :opencode
+       :api :openai-completions
+       :base-url "https://opencode.ai/zen/v1"
+       :max-tokens 16)
+      (sample-context)
+      :stream-p t
+      :max-tokens 16
+      :session-id session-id))
+    :test #'string-equal)))
+
+(test opencode-session-header-requires-session-id
+  (is (null (opencode-completion-header nil "x-opencode-session")))
+  (is (null (opencode-completion-header nil "x-opencode-client")))
+  (is (string= "sess-1"
+               (opencode-completion-header "sess-1" "x-opencode-session")))
+  ;; v1.4.0: x-opencode-client is attribution, not part of the session header.
+  (is (null
+       (opencode-completion-header "sess-1" "x-opencode-client"))))
+
+(defun feed-completions-deltas (model deltas)
+  (let* ((provider
+           (cadr-ai:make-openai-completions-provider :api-key "test"))
+         (state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai::empty-assistant-message model)
+            :model model)))
+    (dolist (delta deltas)
+      (cadr-ai::reduce-provider-sse-event
+       provider state
+       (cadr-ai::make-sse-event
+        :data
+        (cadr-ai::stringify-json
+         (cadr-ai::json-object
+          "id" "chatcmpl-test"
+          "choices"
+          (vector
+           (cadr-ai::json-object
+            "delta" delta
+            "finish_reason" 'cadr-ai::null)))))
+       (lambda (event) (declare (ignore event)))))
+    (cadr-ai::reduce-provider-sse-event
+     provider state
+     (cadr-ai::make-sse-event
+      :data
+      (cadr-ai::stringify-json
+       (cadr-ai::json-object
+        "id" "chatcmpl-test"
+        "choices"
+        (vector
+         (cadr-ai::json-object
+          "delta" (cadr-ai::json-object)
+          "finish_reason" "stop")))))
+     (lambda (event) (declare (ignore event))))
+    (cadr-ai::provider-stream-state-message state)))
+
+(defun completions-block-types (message)
+  (mapcar
+   (lambda (block)
+     (cond
+       ((typep block 'cadr-ai:thinking-content) :thinking)
+       ((typep block 'cadr-ai:text-content) :text)
+       ((typep block 'cadr-ai:tool-call) :tool-call)))
+   (cadr-ai:assistant-message-content message)))
+
+(defun replay-assistant-payload (model message)
+  (let* ((provider
+           (cadr-ai:make-openai-completions-provider :api-key "test"))
+         (request
+           (cadr-ai:build-request
+            provider model
+            (cadr-ai:make-context
+             :messages
+             (list
+              (cadr-ai:make-user-message :content "continue")
+              message))
+            :stream-p t
+            :max-tokens 64))
+         (messages
+           (cadr-ai::json-get
+            (cadr-ai:request-spec-payload request)
+            "messages")))
+    (find "assistant" messages
+          :key (lambda (item) (cadr-ai::json-get item "role"))
+          :test #'string=)))
+
+(test completions-same-delta-puts-thinking-before-text
+  ;; pi@4a080252f openai-completions.ts #10926.
+  (let ((model
+          (cadr-ai:make-model
+           :id "proxy-model"
+           :provider :openrouter
+           :api :openai-completions
+           :base-url "https://openrouter.ai/api/v1"
+           :max-tokens 1024
+           :reasoning-p t)))
+    (let ((message
+            (feed-completions-deltas
+             model
+             (list
+              (cadr-ai::json-object
+               "reasoning_content" "thinking"
+               "content" "answer")))))
+      (is (equal '(:thinking :text) (completions-block-types message)))
+      (is (string= "thinking"
+                   (cadr-ai:thinking-content-thinking
+                    (first (cadr-ai:assistant-message-content message)))))
+      (is (string= "reasoning_content"
+                   (cadr-ai:thinking-content-signature
+                    (first (cadr-ai:assistant-message-content message)))))
+      (is (string= "answer"
+                   (cadr-ai:text-content-text
+                    (second (cadr-ai:assistant-message-content message))))))
+    (let* ((detail
+             (cadr-ai::json-object
+              "type" "reasoning.encrypted"
+              "id" "call_1"
+              "data" "encrypted-signature"))
+           (message
+             (feed-completions-deltas
+              model
+              (list
+               (cadr-ai::json-object
+                "reasoning_details" (vector detail)
+                "content" "answer"))))
+           (thinking
+             (first (cadr-ai:assistant-message-content message))))
+      (is (equal '(:thinking :text) (completions-block-types message)))
+      (is (string= "answer"
+                   (cadr-ai:text-content-text
+                    (second (cadr-ai:assistant-message-content message)))))
+      (is (string=
+           (cadr-ai::stringify-json (vector detail))
+           (cadr-ai:thinking-content-signature thinking)))
+      (let ((payload (replay-assistant-payload model message)))
+        (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+        (is (equalp
+             (vector detail)
+             (cadr-ai::json-get payload "reasoning_details")))))
+    (let* ((detail
+             (cadr-ai::json-object
+              "type" "reasoning.text"
+              "text" "I should call the read tool."
+              "signature" "sha256:signed-text"))
+           (message
+             (feed-completions-deltas
+              model
+              (list
+               (cadr-ai::json-object
+                "reasoning" "I should call the read tool."
+                "reasoning_details" (vector detail)))))
+           (thinking
+             (first (cadr-ai:assistant-message-content message)))
+           (payload (replay-assistant-payload model message)))
+      (is (string= "I should call the read tool."
+                   (cadr-ai:thinking-content-thinking thinking)))
+      (is (string=
+           (cadr-ai::stringify-json (vector detail))
+           (cadr-ai:thinking-content-signature thinking)))
+      (is (not (cadr-ai::json-present-p payload "reasoning")))
+      (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+      (is (equalp
+           (vector detail)
+           (cadr-ai::json-get payload "reasoning_details"))))))
+
+(test completions-reasoning-details-merge-and-replay-in-order
+  (let* ((model
+           (cadr-ai:make-model
+            :id "google/gemini-test"
+            :provider :openrouter
+            :api :openai-completions
+            :base-url "https://openrouter.ai/api/v1"
+            :max-tokens 1024
+            :reasoning-p t))
+         (text-delta
+           (cadr-ai::json-object
+            "type" "reasoning.text" "text" "The" "index" 0))
+         (text-rest
+           (cadr-ai::json-object
+            "type" "reasoning.text"
+            "text" " user wants the time."
+            "signature" "sha256:text-signature"
+            "format" "openai-responses-v1"
+            "index" 0))
+         (summary-delta
+           (cadr-ai::json-object
+            "type" "reasoning.summary" "summary" "Looked" "index" 0))
+         (summary-rest
+           (cadr-ai::json-object
+            "type" "reasoning.summary"
+            "summary" " up time."
+            "format" "openai-responses-v1"
+            "index" 0))
+         (encrypted
+           (cadr-ai::json-object
+            "type" "reasoning.encrypted"
+            "id" "call_1"
+            "data" "encrypted-signature"))
+         (later-summary
+           (cadr-ai::json-object
+            "type" "reasoning.summary"
+            "summary" "After encrypted block."
+            "format" "openai-responses-v1"
+            "index" 0))
+         (expected
+           (vector
+            (cadr-ai::json-object
+             "type" "reasoning.text"
+             "text" "The user wants the time."
+             "index" 0
+             "signature" "sha256:text-signature"
+             "format" "openai-responses-v1")
+            (cadr-ai::json-object
+             "type" "reasoning.summary"
+             "summary" "Looked up time."
+             "index" 0
+             "format" "openai-responses-v1")
+            encrypted
+            later-summary))
+         (message
+           (feed-completions-deltas
+            model
+            (list
+             (cadr-ai::json-object "reasoning_details" (vector text-delta))
+             (cadr-ai::json-object "reasoning_details" (vector text-rest))
+             (cadr-ai::json-object "reasoning_details" (vector summary-delta))
+             (cadr-ai::json-object "reasoning_details" (vector summary-rest))
+             (cadr-ai::json-object "reasoning_details" (vector encrypted))
+             (cadr-ai::json-object
+              "reasoning_details" (vector later-summary)))))
+         (thinking
+           (find-if (lambda (block)
+                      (typep block 'cadr-ai:thinking-content))
+                    (cadr-ai:assistant-message-content message))))
+    (is (string= "" (cadr-ai:thinking-content-thinking thinking)))
+    (is (string=
+         (cadr-ai::stringify-json expected)
+         (cadr-ai:thinking-content-signature thinking)))
+    (let ((payload (replay-assistant-payload model message)))
+      (is (not (cadr-ai::json-present-p payload "reasoning")))
+      (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+      (is (equalp expected
+                  (cadr-ai::json-get payload "reasoning_details"))))))
+
+(test completions-legacy-tool-signature-replays-as-reasoning-details
+  (let* ((model
+           (cadr-ai:make-model
+            :id "google/gemini-test"
+            :provider :openrouter
+            :api :openai-completions
+            :base-url "https://openrouter.ai/api/v1"
+            :max-tokens 1024
+            :reasoning-p t))
+         (detail
+           (cadr-ai::json-object
+            "type" "reasoning.encrypted"
+            "id" "call_1"
+            "data" "encrypted-signature"))
+         (message
+           (cadr-ai:make-assistant-message
+            :content
+            (list
+             (cadr-ai:make-tool-call
+              :id "call_1"
+              :name "read"
+              :arguments (cadr-ai::json-object "path" "README.md")
+              :thought-signature (cadr-ai::stringify-json detail)))
+            :api :openai-completions
+            :provider :openrouter
+            :model "google/gemini-test"
+            :stop-reason :tool-use))
+         (payload (replay-assistant-payload model message)))
+    (is (not (cadr-ai::json-present-p payload "reasoning_content")))
+    (is (equalp (vector detail)
+                (cadr-ai::json-get payload "reasoning_details")))))
+
+(defun xiaomi-catalog-model (provider id)
+  (let ((meta (cadr-ai:find-model-metadata provider id)))
+    (make-model
+     :id id
+     :provider provider
+     :api (cadr-ai:model-metadata-api meta)
+     :base-url (cadr-ai:model-metadata-base-url meta)
+     :reasoning-p (cadr-ai:model-metadata-reasoning-p meta)
+     :thinking-level-map (cadr-ai:model-metadata-thinking-level-map meta)
+     :compat (cadr-ai:model-metadata-compat meta))))
+
+(defun xiaomi-thinking-payload (model reasoning)
+  (request-spec-payload
+   (build-request
+    (cadr-ai:make-openai-completions-provider :api-key "test-xiaomi-key")
+    model
+    (make-context
+     :messages
+     (list (make-user-message :content "test" :timestamp 0)))
+    :stream-p t
+    :reasoning reasoning)))
+
+(test xiaomi-mimo-thinking-is-an-off-on-toggle
+  (dolist (provider '(:xiaomi :xiaomi-token-plan-cn
+                      :xiaomi-token-plan-ams :xiaomi-token-plan-sgp))
+    (let ((models
+            (loop for metadata
+                  in (cadr-ai:list-model-metadata provider)
+                  when (cadr-ai:model-metadata-reasoning-p metadata)
+                    collect
+                    (xiaomi-catalog-model
+                     provider
+                     (cadr-ai:model-metadata-id metadata)))))
+      (is (not (null models)))
+      (dolist (model models)
+        (is (equal '(:off :high)
+                   (cadr-ai:supported-thinking-levels model)))
+        (is (eq :high (cadr-ai:clamp-thinking-level model :minimal)))
+        (is (eq :off (cadr-ai:clamp-thinking-level model :off)))
+        (let ((enabled (xiaomi-thinking-payload model :high))
+              (disabled (xiaomi-thinking-payload model nil)))
+          (is (string=
+               "enabled"
+               (cadr-ai::json-get
+                (cadr-ai::json-get enabled "thinking")
+                "type")))
+          (is (not (cadr-ai::json-present-p enabled "reasoning_effort")))
+          (is (string=
+               "disabled"
+               (cadr-ai::json-get
+                (cadr-ai::json-get disabled "thinking")
+                "type")))
+          (is (not
+               (cadr-ai::json-present-p
+                disabled "reasoning_effort"))))))))
+
+(defun sampling-close-p (expected actual)
+  (and (numberp actual)
+       (< (abs (- (coerce expected 'double-float)
+                  (coerce actual 'double-float)))
+          1d-9)
+       t))
+
+(defun sampling-request-payload
+    (provider model &key reasoning sampling-params temperature)
+  (request-spec-payload
+   (build-request
+    provider
+    model
+    (make-context
+     :messages
+     (list (make-user-message :content "hi" :timestamp 0)))
+    :stream-p nil
+    :temperature temperature
+    :reasoning reasoning
+    :sampling-params sampling-params)))
+
+(test sampling-params-follow-the-effective-thinking-level
+  ;; pi@4a080252f simple-options.ts resolveSamplingParams (#9776).
+  ;; low is present with a null map value, so the request clamps to
+  ;; high. Level params override the model defaults, and request
+  ;; params override the level. Named temperature is written first,
+  ;; so the merged table replaces it.
+  (let* ((clamped
+           (make-model
+            :id "sample-model"
+            :provider :openai
+            :api :openai-completions
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 128
+            :reasoning-p t
+            :thinking-level-map '((:low) (:medium))
+            :sampling-params
+            (cadr-ai::json-object
+             "temperature" 1
+             "top_p" 0.95d0)
+            :sampling-params-by-thinking-level
+            (list
+             (cons :high
+                   (cadr-ai::json-object
+                    "temperature" 0.8d0
+                    "top_k" 64)))))
+         (off-model
+           (make-model
+            :id "off-model"
+            :provider :openai
+            :api :openai-completions
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 128
+            :reasoning-p nil
+            :sampling-params-by-thinking-level
+            (list
+             (cons :off
+                   (cadr-ai::json-object
+                    "temperature" 0.7d0)))))
+         (override
+           (make-model
+            :id "override-model"
+            :provider :openai
+            :api :openai-responses
+            :base-url "https://api.openai.com/v1"
+            :max-tokens 128
+            :reasoning-p t
+            :thinking-level-map '((:low . "low"))
+            :sampling-params-by-thinking-level
+            (list
+             (cons :low
+                   (cadr-ai::json-object
+                    "temperature" 0.6d0
+                    "top_p" 0.95d0)))))
+         (completions
+           (cadr-ai:make-openai-completions-provider
+            :api-key "sampling-test"))
+         (responses
+           (cadr-ai:make-openai-provider
+            :api-key "sampling-test"))
+         (azure
+           (cadr-ai:make-azure-openai-provider
+            :api-key "sampling-test"
+            :options
+            '(:azure-base-url
+              "https://example.openai.azure.com/openai/v1")))
+         (clamped-payload
+           (sampling-request-payload
+            completions clamped
+            :reasoning :low
+            :temperature 0.1d0))
+         (off-payload
+           (sampling-request-payload completions off-model))
+         (responses-payload
+           (sampling-request-payload
+            responses override
+            :reasoning :low
+            :sampling-params
+            (cadr-ai::json-object "top_p" 0.5d0)))
+         (azure-payload
+           (sampling-request-payload
+            azure
+            (cadr-ai::copy-model-with
+             override
+             :api :openai-responses)
+            :reasoning :low
+            :sampling-params
+            (cadr-ai::json-object "top_p" 0.5d0))))
+    (is (eq t
+            (sampling-close-p
+             0.8d0
+             (cadr-ai::json-get clamped-payload "temperature"))))
+    (is (eq t
+            (sampling-close-p
+             0.95d0
+             (cadr-ai::json-get clamped-payload "top_p"))))
+    (is (= 64
+           (cadr-ai::json-get clamped-payload "top_k")))
+    (is (eq t
+            (sampling-close-p
+             0.7d0
+             (cadr-ai::json-get off-payload "temperature"))))
+    (is (not
+         (cadr-ai::json-present-p off-payload "top_p")))
+    (is (eq t
+            (sampling-close-p
+             0.6d0
+             (cadr-ai::json-get responses-payload "temperature"))))
+    (is (eq t
+            (sampling-close-p
+             0.5d0
+             (cadr-ai::json-get responses-payload "top_p"))))
+    (is (eq t
+            (sampling-close-p
+             0.6d0
+             (cadr-ai::json-get azure-payload "temperature"))))
+    (is (eq t
+            (sampling-close-p
+             0.5d0
+             (cadr-ai::json-get azure-payload "top_p"))))))

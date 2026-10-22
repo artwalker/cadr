@@ -64,9 +64,18 @@
    #:rgb-color-green
    #:rgb-color-blue
    #:parse-osc-11-background-color
+   #:parse-osc-color-response
+   #:terminal-color-query
+   #:make-terminal-color-query
+   #:terminal-color-query-sequence
+   #:terminal-color-query-note
+   #:terminal-color-query-plist
+   #:terminal-color-query-open-p
    #:parse-terminal-color-scheme-report
    #:terminal-response-filter
    #:make-terminal-response-filter
+   #:terminal-response-filter-color-query
+   #:terminal-response-filter-color-result
    #:terminal-response-expect-color
    #:terminal-response-consume
    #:get-cell-dimensions
@@ -92,6 +101,15 @@
    #:terminal-theme-color-keys
    #:parse-theme-hex-color
    #:rgb-to-ansi-256
+   #:normalize-theme-color
+   #:theme-color-lightness
+   #:color-lightness
+   #:oklab-to-okhsl-lightness
+   #:rgb-oklch-channels
+   #:rgb-okhsl-channels
+   #:wcag-contrast
+   #:okhsl-to-rgb
+   #:oklch-to-rgb
    #:theme-color-value
    #:theme-foreground-ansi
    #:theme-background-ansi
@@ -212,6 +230,7 @@
    #:tool-block-collapsed-p
    #:tool-block-started-at
    #:tool-block-ended-at
+   #:tool-block-duration-ms
    #:toggle-tool-block
    #:render-tool-block
    #:render-footer
@@ -319,15 +338,35 @@
    #:terminal-read-input
    #:terminal-resized-p
    #:terminal-query-background-color
+   #:terminal-query-theme-colors
+   #:terminal-take-theme-colors
    #:terminal-query-color-scheme
    #:terminal-set-color-scheme-notifications
    #:terminal-color-scheme-change
    #:terminal-set-progress
    #:terminal-poll-progress
+   #:terminal-set-program-status
+   #:program-status
+   #:make-program-status
+   #:program-status-state
+   #:program-status-app
+   #:program-status-kind
+   #:program-status-message
+   #:format-program-status
+   #:program-status-reply-p
+   #:+program-status-query+
+   #:wheel-scroll-accelerator
+   #:make-wheel-scroll-accelerator
+   #:wheel-scroll-accelerator-set-lines
+   #:wheel-scroll-accelerator-next
+   #:terminal-accelerates-wheel-p
    #:terminal-renderer
    #:make-terminal-renderer
    #:terminal-renderer-copy-on-select-p
+   #:terminal-renderer-wheel-scroll-lines
+   #:renderer-set-wheel-scroll-lines
    #:renderer-has-active-selection-p
+   #:renderer-reset-text-selection
    #:renderer-copy-active-selection
    #:alt-screen-renderer-p
    #:renderer-viewport-top

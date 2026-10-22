@@ -21,6 +21,7 @@
   (thinking-level-map nil :type list)
   (headers nil :type list)
   (compat nil :type list)
+  (prompt-cache nil :type list)
   (input-price 0d0 :type double-float)
   (output-price 0d0 :type double-float)
   (cache-read-price 0d0 :type double-float)
@@ -34,6 +35,7 @@
           (model-metadata-id value)))
 
 (defparameter *model-catalog* (make-hash-table :test #'equal))
+(defvar *openrouter-metadata-overlay* nil)
 (defparameter *image-model-catalog*
   (make-hash-table :test #'equal))
 
@@ -90,7 +92,10 @@
   metadata)
 
 (defun find-model-metadata (provider id)
-  (or (gethash (model-catalog-key provider id) *model-catalog*)
+  (or (and (eq provider :openrouter)
+           (hash-table-p *openrouter-metadata-overlay*)
+           (gethash id *openrouter-metadata-overlay*))
+      (gethash (model-catalog-key provider id) *model-catalog*)
       (error 'configuration-error
              :message
              (format nil "Unknown model: ~A/~A" provider id))))
@@ -183,7 +188,8 @@
    :reasoning-p (model-metadata-reasoning-p metadata)
    :thinking-level-map (model-metadata-thinking-level-map metadata)
    :headers (model-metadata-headers metadata)
-   :compat (model-metadata-compat metadata)))
+   :compat (model-metadata-compat metadata)
+   :prompt-cache (model-metadata-prompt-cache metadata)))
 
 (defparameter +extended-thinking-levels+
   '(:off :minimal :low :medium :high :xhigh :max))
@@ -236,6 +242,63 @@
   (/ (round (* value 1000000d0))
      1000000d0))
 
+(defun apply-fireworks-effort-override (row)
+  (unless (eq (getf row :provider) :fireworks)
+    (return-from apply-fireworks-effort-override row))
+  (labels ((plist-key-p (plist key)
+             (loop for (candidate) on plist by #'cddr
+                   thereis (eq candidate key)))
+           (copy-map (map)
+             (mapcar (lambda (entry)
+                       (cons (car entry) (cdr entry)))
+                     map))
+           (clear-levels (levels)
+             (let ((map (copy-map (getf row :thinking-level-map))))
+               (dolist (level levels)
+                 (let ((entry (assoc level map :test #'eq)))
+                   (when entry
+                     (setf (cdr entry) nil))))
+               (setf (getf row :thinking-level-map) map))))
+    (let ((id (getf row :id))
+          (deepseek-map
+            '((:off . "none") (:minimal) (:medium)
+              (:max . "max") (:xhigh)))
+          (qwen-map
+            '((:off . "none") (:minimal) (:high)
+              (:max) (:xhigh . "xhigh"))))
+      (when (and (eq (getf row :api) :anthropic-messages)
+                 (not (plist-key-p (getf row :compat)
+                                   :allow-empty-signature)))
+        (setf (getf row :compat)
+              (list* :allow-empty-signature t (getf row :compat))))
+      (let ((adaptive
+              (cond
+                ((member id
+                         '("accounts/fireworks/models/deepseek-v4-flash-0731"
+                           "accounts/fireworks/models/deepseek-v4-flash-vision-exp"
+                           "accounts/fireworks/models/deepseek-v4-pro-0813")
+                         :test #'string=)
+                 deepseek-map)
+                ((member id
+                         '("accounts/fireworks/models/qwen3p8-max"
+                           "accounts/fireworks/models/qwen3p8-2p4t-a95b")
+                         :test #'string=)
+                 qwen-map))))
+        (when adaptive
+          (unless (plist-key-p (getf row :compat)
+                               :force-adaptive-thinking)
+            (setf (getf row :compat)
+                  (list* :force-adaptive-thinking t
+                         (getf row :compat))))
+          (when (null (getf row :thinking-level-map))
+            (setf (getf row :thinking-level-map)
+                  (copy-map adaptive)))))
+      (when (search "glm-5p2" id)
+        (clear-levels '(:low :medium)))
+      (when (search "kimi-k3" id)
+        (clear-levels '(:medium)))))
+  row)
+
 (defun apply-gpt-5-6-pricing-override (row)
   (when
       (member
@@ -270,12 +333,577 @@
              (round-model-cost (* cache-write 2d0)))))))))
   row)
 
+(defun apply-anthropic-prompt-cache-override (row)
+  (when (and (eq (getf row :provider) :anthropic)
+             (eq (getf row :api) :anthropic-messages)
+             (null (get-properties row '(:prompt-cache))))
+    (setf (getf row :prompt-cache) '(:short 300 :long 3600)))
+  row)
+
+(defun apply-fireworks-tool-references-override (row)
+  (when (and (eq (getf row :provider) :fireworks)
+             (eq (getf row :api) :anthropic-messages))
+    (let ((compat (getf row :compat)))
+      (unless (loop for (key) on compat by #'cddr
+                    thereis (eq key :supports-tool-references))
+        (setf (getf row :compat)
+              (list* :supports-tool-references t compat)))))
+  row)
+
+(defun apply-vercel-ai-gateway-empty-signature (row)
+  (when (eq (getf row :provider) :vercel-ai-gateway)
+    (let ((compat (getf row :compat)))
+      (unless (get-properties compat '(:allow-empty-signature))
+        (setf (getf row :compat)
+              (list* :allow-empty-signature t compat)))))
+  row)
+
+(defun apply-azure-provider-id (row)
+  ;; pi@4a080252f generate-models.ts publishes these rows as provider "azure".
+  (when (eq (getf row :provider) :azure-openai-responses)
+    (setf (getf row :provider) :azure))
+  row)
+
+(defun opencode-inference-base-url (url)
+  ;; pi@4a080252f generate-models.ts: Zen and Go left /zen for /inference.
+  ;; Replace the /go host first so a later /zen rewrite cannot eat it.
+  (cond
+    ((not (stringp url)) url)
+    ((uiop:string-prefix-p "https://opencode.ai/zen/go" url)
+     (concatenate
+      'string
+      "https://opencode.ai/inference/go"
+      (subseq url (length "https://opencode.ai/zen/go"))))
+    ((uiop:string-prefix-p "https://opencode.ai/zen" url)
+     (concatenate
+      'string
+      "https://opencode.ai/inference"
+      (subseq url (length "https://opencode.ai/zen"))))
+    (t url)))
+
+(defun anthropic-disabled-thinking-model-p (model-id)
+  ;; pi@4a080252f ANTHROPIC_DISABLED_THINKING_MODELS. Dated snapshots
+  ;; and an OpenRouter anthropic/ prefix do not change the decision.
+  (let* ((lower (string-downcase model-id))
+         (stripped
+           (cond
+             ((uiop:string-prefix-p "~anthropic/" lower)
+              (subseq lower (length "~anthropic/")))
+             ((uiop:string-prefix-p "anthropic/" lower)
+              (subseq lower (length "anthropic/")))
+             (t lower)))
+         (base
+           (if (and (>= (length stripped) 9)
+                    (char= (char stripped (- (length stripped) 9)) #\-)
+                    (every #'digit-char-p
+                           (subseq stripped (- (length stripped) 8))))
+               (subseq stripped 0 (- (length stripped) 9))
+               stripped)))
+    (member base
+            '("claude-opus-5" "claude-haiku-5-5" "claude-haiku-5.5")
+            :test #'string=)))
+
+(defparameter +xiaomi-thinking-level-map+
+  '((:off . "off")
+    (:minimal)
+    (:low)
+    (:medium)
+    (:high . "high")
+    (:xhigh)
+    (:max)))
+
+(defun apply-xiaomi-thinking-toggle (row)
+  ;; pi@4a080252f #10818. MiMo Chat Completions documents only
+  ;; thinking.type enabled/disabled and rejects reasoning_effort
+  ;; "minimal". Every effort level is treated the same, so the catalog
+  ;; exposes off and high and the request omits reasoning_effort.
+  (when (member (getf row :provider)
+                '(:xiaomi :xiaomi-token-plan-ams
+                  :xiaomi-token-plan-cn :xiaomi-token-plan-sgp))
+    (let ((compat (copy-list (getf row :compat))))
+      (setf (getf compat :supports-reasoning-effort) nil)
+      (setf (getf row :compat) compat))
+    (when (getf row :reasoning-p)
+      (setf (getf row :thinking-level-map)
+            (mapcar (lambda (entry) (cons (car entry) (cdr entry)))
+                    +xiaomi-thinking-level-map+))))
+  row)
+
+(defun apply-anthropic-disabled-thinking (row)
+  ;; The catalog snapshot still records off: null for these models, which
+  ;; means "cannot turn thinking off". The pin stopped merging that entry.
+  (when (and (stringp (getf row :id))
+             (anthropic-disabled-thinking-model-p (getf row :id)))
+    (setf (getf row :thinking-level-map)
+          (remove-if
+           (lambda (entry)
+             (and (consp entry)
+                  (eq (car entry) :off)
+                  (null (cdr entry))))
+           (getf row :thinking-level-map))))
+  row)
+
+(defun apply-opencode-inference-endpoints (row)
+  (when (member (getf row :provider) '(:opencode :opencode-go))
+    (setf (getf row :base-url)
+          (opencode-inference-base-url (getf row :base-url)))
+    ;; The catalog snapshot still forces MiniMax M2.7 through
+    ;; openai-completions. The pin removed that override: OpenCode Go
+    ;; rejects the completions protocol for this model.
+    (when (and (eq (getf row :provider) :opencode-go)
+               (string= (getf row :id) "minimax-m2.7"))
+      (setf (getf row :api) :anthropic-messages)
+      (let ((base (getf row :base-url)))
+        (when (and (stringp base)
+                   (uiop:string-suffix-p base "/v1"))
+          (setf (getf row :base-url)
+                (subseq base 0 (- (length base) 3)))))))
+  row)
+
+(defun register-azure-deepseek-model ()
+  ;; pi@4a080252f generate-models.ts azureDeepSeekModels. Foundry rejects
+  ;; DeepSeek's thinking field and prompt-cache parameters, and it keeps
+  ;; mid-conversation system messages.
+  (let ((source (find-model-metadata :deepseek "deepseek-v4-pro")))
+    (when source
+      (let ((compat (copy-list (model-metadata-compat source)))
+            (levels
+              (mapcar #'copy-list
+                      (model-metadata-thinking-level-map source))))
+        (setf (getf compat :thinking-format) :openai)
+        (setf (getf compat :supports-developer-role) nil)
+        (setf (getf compat :supports-mid-convo-system-messages) t)
+        (setf (getf compat :supports-long-cache-retention) nil)
+        (let ((max (assoc :max levels)))
+          (if max
+              (setf (cdr max) "high")
+              (setf levels (acons :max "high" levels))))
+        (register-model-metadata
+         (make-model-metadata
+          :provider :azure
+          :id "deepseek-v4-pro"
+          :name "DeepSeek V4 Pro"
+          :api :openai-completions
+          :base-url ""
+          :context-window (model-metadata-context-window source)
+          :max-output-tokens (model-metadata-max-output-tokens source)
+          :supports-images-p nil
+          :supports-tools-p t
+          :reasoning-p t
+          :thinking-level-map levels
+          :compat compat
+          :input-price 1.925d0
+          :output-price 3.828d0
+          :cache-read-price 0.165d0
+          :cache-write-price 0d0))))))
+
+(defun gpt-6-official-prices (id)
+  (cond
+    ((string= id "gpt-6.1-sol") (values 2d0 10d0 0.1d0 2.5d0))
+    ((string= id "gpt-6-sol") (values 2d0 10d0 0.2d0 2.5d0))
+    ((string= id "gpt-6-luna") (values 0.1d0 0.5d0 0.01d0 0.125d0))))
+
+(defun gpt-6-official-name (id)
+  (cond
+    ((string= id "gpt-6.1-sol") "GPT-6.1 Sol")
+    ((string= id "gpt-6-sol") "GPT-6 Sol")
+    ((string= id "gpt-6-luna") "GPT-6 Luna")))
+
+(defun gpt-6-official-thinking-map (id codex-p)
+  ;; pi@4a080252f applyThinkingLevelMetadata. Astra and GPT-6.1 Sol reject
+  ;; reasoning.effort "none". Codex remaps minimal to "low" for xhigh models.
+  (list
+   (cons :off
+         (if (or (string= id "gpt-6-astra")
+                 (string= id "gpt-6.1-sol"))
+             nil
+             "none"))
+   (cons :minimal (if codex-p "low" nil))
+   (cons :low "low")
+   (cons :medium "medium")
+   (cons :high "high")
+   (cons :xhigh "xhigh")
+   (cons :max "max")))
+
+(defun gpt-6-official-compat (provider)
+  (cond
+    ((eq provider :openai)
+     '(:supports-additional-tools t
+       :supports-explicit-prompt-cache-mode t
+       :supports-mid-convo-effort t
+       :supports-mid-convo-system-messages t
+       :supports-openai-grammar-tools t
+       :supports-tool-search t))
+    ((eq provider :openai-codex)
+     '(:supports-additional-tools t
+       :supports-mid-convo-system-messages t
+       :supports-openai-grammar-tools t
+       :supports-tool-search t))
+    (t '(:supports-openai-grammar-tools t))))
+
+(defun register-gpt-6-official-model (provider id)
+  (let ((existing
+          (gethash (model-catalog-key provider id) *model-catalog*)))
+    (when (and existing
+               (eq provider :openai-codex)
+               (string= id "gpt-6.1-sol"))
+      (setf (model-metadata-context-window existing) 500000))
+    (when existing
+      (return-from register-gpt-6-official-model nil)))
+  (multiple-value-bind (input output cache-read cache-write)
+      (gpt-6-official-prices id)
+    (let ((codex-p (eq provider :openai-codex)))
+      (register-model-metadata
+       (make-model-metadata
+        :provider provider
+        :id id
+        :name (gpt-6-official-name id)
+        :api (cond
+               (codex-p :openai-codex-responses)
+               ((eq provider :azure) :azure-openai-responses)
+               (t :openai-responses))
+        :base-url (cond
+                    (codex-p "https://chatgpt.com/backend-api")
+                    ((eq provider :azure) "")
+                    (t "https://api.openai.com/v1"))
+        :context-window
+        (if (and codex-p (string= id "gpt-6.1-sol"))
+            500000
+            272000)
+        :max-output-tokens 128000
+        :supports-images-p t
+        :supports-tools-p t
+        :reasoning-p t
+        :thinking-level-map (gpt-6-official-thinking-map id codex-p)
+        :compat (gpt-6-official-compat provider)
+        :input-price input
+        :output-price output
+        :cache-read-price cache-read
+        :cache-write-price cache-write
+        :cost-tiers
+        (unless (eq provider :azure)
+          (list
+           (make-model-cost-tier
+            :input-tokens-above 272000
+            :input-price (round-model-cost (* input 2d0))
+            :output-price (round-model-cost (* output 1.5d0))
+            :cache-read-price (round-model-cost (* cache-read 2d0))
+            :cache-write-price
+            (round-model-cost (* cache-write 2d0))))))))))
+
+(defun register-gpt-6-official-models ()
+  ;; pi@4a080252f #10840. These ids are an explicit catalog, not a
+  ;; models.dev import. Codex reports 500k only for gpt-6.1-sol.
+  (dolist (id '("gpt-6.1-sol" "gpt-6-sol" "gpt-6-luna"))
+    (dolist (provider '(:openai :openai-codex :azure))
+      (register-gpt-6-official-model provider id))))
+
+(defparameter +github-copilot-catalog-headers+
+  '(("Copilot-Integration-Id" . "vscode-chat")
+    ("Editor-Plugin-Version" . "copilot-chat/0.35.0")
+    ("Editor-Version" . "vscode/1.107.0")
+    ("User-Agent" . "GitHubCopilotChat/0.35.0")))
+
+(defparameter +github-copilot-extended-context-ids+
+  '("claude-fable-5"
+    "claude-opus-4.6"
+    "claude-opus-4.7"
+    "claude-opus-4.8"
+    "claude-opus-5"
+    "claude-opus-5.5"
+    "claude-sonnet-4.6"
+    "claude-sonnet-5"
+    "gpt-5.3-codex"
+    "gpt-5.4"
+    "gpt-5.5"
+    "gpt-6-astra"
+    "gpt-6-luna"
+    "gpt-6-sol"))
+
+(defun github-copilot-long-context-tiers (input output cache-read cache-write)
+  (list
+   (make-model-cost-tier
+    :input-tokens-above 272000
+    :input-price (round-model-cost (* input 2d0))
+    :output-price (round-model-cost (* output 1.5d0))
+    :cache-read-price (round-model-cost (* cache-read 2d0))
+    :cache-write-price (round-model-cost (* cache-write 2d0)))))
+
+(defun register-github-copilot-gpt-6 (id input output cache-read cache-write)
+  (when (gethash (model-catalog-key :github-copilot id) *model-catalog*)
+    (return-from register-github-copilot-gpt-6 nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :github-copilot
+    :id id
+    :name (gpt-6-official-name id)
+    :api :openai-responses
+    :base-url "https://api.individual.githubcopilot.com"
+    :context-window 1000000
+    :max-output-tokens 128000
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :thinking-level-map
+    '((:off . "none")
+      (:minimal)
+      (:low . "low")
+      (:medium . "medium")
+      (:high . "high")
+      (:xhigh . "xhigh")
+      (:max . "max"))
+    :headers (copy-tree +github-copilot-catalog-headers+)
+    :compat '(:supports-openai-grammar-tools t)
+    :input-price input
+    :output-price output
+    :cache-read-price cache-read
+    :cache-write-price cache-write
+    :cost-tiers
+    (github-copilot-long-context-tiers
+     input output cache-read cache-write))))
+
+(defun register-github-copilot-opus-5-5 ()
+  (when (gethash
+         (model-catalog-key :github-copilot "claude-opus-5.5")
+         *model-catalog*)
+    (return-from register-github-copilot-opus-5-5 nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :github-copilot
+    :id "claude-opus-5.5"
+    :name "Claude Opus 5.5"
+    :api :anthropic-messages
+    :base-url "https://api.individual.githubcopilot.com"
+    :context-window 1000000
+    :max-output-tokens 128000
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :thinking-level-map
+    '((:off)
+      (:minimal)
+      (:low . "low")
+      (:medium . "medium")
+      (:high . "high")
+      (:xhigh . "xhigh")
+      (:max . "max"))
+    :headers (copy-tree +github-copilot-catalog-headers+)
+    :compat '(:force-adaptive-thinking t
+              :supports-temperature nil
+              :supports-mid-convo-system-messages t)
+    :input-price 4d0
+    :output-price 20d0
+    :cache-read-price 0.2d0
+    :cache-write-price 5d0)))
+
+(defun apply-github-copilot-extended-context ()
+  (dolist (id +github-copilot-extended-context-ids+)
+    (let ((metadata
+            (gethash
+             (model-catalog-key :github-copilot id)
+             *model-catalog*)))
+      (when metadata
+        (setf (model-metadata-context-window metadata) 1000000)))))
+
+(defun register-github-copilot-pin-models ()
+  ;; pi@4a080252f generate-models.ts. Copilot advertised these before
+  ;; models.dev did. The extended-context ids are 1_000_000 even when an
+  ;; import reports a larger window.
+  (register-github-copilot-opus-5-5)
+  (register-github-copilot-gpt-6 "gpt-6-sol" 2d0 10d0 0.2d0 2.5d0)
+  (register-github-copilot-gpt-6 "gpt-6-luna" 0.1d0 0.5d0 0.01d0 0.125d0)
+  (apply-github-copilot-extended-context))
+
+(defparameter +minimax-m31-flash-thinking-level-map+
+  '((:off)
+    (:minimal)
+    (:low . "low")
+    (:medium . "medium")
+    (:high . "high")
+    (:xhigh . "xhigh")
+    (:max . "max")))
+
+(defparameter +minimax-m31-flash-rows+
+  '((:provider :minimax
+     :base-url "https://api.minimax.io/anthropic"
+     :input-price 0.15d0
+     :output-price 0.6d0
+     :cache-read-price 0.015d0
+     :cache-write-price 0d0)
+    (:provider :minimax-cn
+     :base-url "https://api.minimaxi.com/anthropic"
+     :input-price 0.1494d0
+     :output-price 0.5976d0
+     :cache-read-price 0.0149d0
+     :cache-write-price 0d0)))
+
+(defun register-minimax-m31-flash ()
+  ;; pi@4a080252f generate-models.ts #11121. Effort values with no "none"
+  ;; leave off null, so the model rejects thinking.type "disabled". The
+  ;; request sends the selected level as output_config.effort.
+  (dolist (row +minimax-m31-flash-rows+)
+    (let ((provider (getf row :provider)))
+      (unless (gethash
+               (model-catalog-key provider "MiniMax-M3.1-Flash")
+               *model-catalog*)
+        (register-model-metadata
+         (make-model-metadata
+          :provider provider
+          :id "MiniMax-M3.1-Flash"
+          :name "MiniMax-M3.1-Flash"
+          :api :anthropic-messages
+          :base-url (getf row :base-url)
+          :context-window 1000000
+          :max-output-tokens 524288
+          :supports-images-p t
+          :supports-tools-p t
+          :reasoning-p t
+          :thinking-level-map
+          (mapcar (lambda (entry) (cons (car entry) (cdr entry)))
+                  +minimax-m31-flash-thinking-level-map+)
+          :compat '(:force-adaptive-thinking t)
+          :input-price (getf row :input-price)
+          :output-price (getf row :output-price)
+          :cache-read-price (getf row :cache-read-price)
+          :cache-write-price (getf row :cache-write-price)))))))
+
+(defun copy-catalog-thinking-map (map)
+  (mapcar (lambda (entry) (cons (car entry) (cdr entry))) map))
+
+(defun register-github-copilot-gpt-6.1-sol ()
+  ;; pi@4a080252f defaultModelPerProvider and pi-ai@1.4.0
+  ;; github-copilot chat:gpt-6.1-sol. Astra and GPT-6.1 Sol reject
+  ;; reasoning.effort "none", and this id is outside the 1_000_000
+  ;; extended-context set, so the published window stays 1_050_000.
+  (when (gethash
+         (model-catalog-key :github-copilot "gpt-6.1-sol")
+         *model-catalog*)
+    (return-from register-github-copilot-gpt-6.1-sol nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :github-copilot
+    :id "gpt-6.1-sol"
+    :name (gpt-6-official-name "gpt-6.1-sol")
+    :api :openai-responses
+    :base-url "https://api.individual.githubcopilot.com"
+    :context-window 1050000
+    :max-output-tokens 128000
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :thinking-level-map (gpt-6-official-thinking-map "gpt-6.1-sol" nil)
+    :headers (copy-tree +github-copilot-catalog-headers+)
+    :compat '(:supports-additional-tools t
+              :supports-mid-convo-system-messages t
+              :supports-openai-grammar-tools t)
+    :input-price 2d0
+    :output-price 10d0
+    :cache-read-price 0.1d0
+    :cache-write-price 2.5d0
+    :cost-tiers
+    (github-copilot-long-context-tiers 2d0 10d0 0.1d0 2.5d0))))
+
+(defun register-nvidia-nemotron-3.5 ()
+  ;; pi@4a080252f #10910. pi-ai@1.4.0 nvidia chat catalog.
+  (when (gethash
+         (model-catalog-key
+          :nvidia "nvidia/nemotron-3.5-super-vl-120b-a12b")
+         *model-catalog*)
+    (return-from register-nvidia-nemotron-3.5 nil))
+  (register-model-metadata
+   (make-model-metadata
+    :provider :nvidia
+    :id "nvidia/nemotron-3.5-super-vl-120b-a12b"
+    :name "Nemotron 3.5 Super VL 120B A12B"
+    :api :openai-completions
+    :base-url "https://integrate.api.nvidia.com/v1"
+    :context-window 1048576
+    :max-output-tokens 8192
+    :supports-images-p t
+    :supports-tools-p t
+    :reasoning-p t
+    :headers '(("NVCF-POLL-SECONDS" . "3600"))
+    :compat '(:max-tokens-field :max-tokens
+              :supports-developer-role nil
+              :supports-long-cache-retention nil
+              :supports-reasoning-effort nil
+              :supports-store nil
+              :supports-strict-mode nil)
+    :input-price 0d0
+    :output-price 0d0
+    :cache-read-price 0d0
+    :cache-write-price 0d0)))
+
+(defparameter +xiaomi-mimo-v26-providers+
+  '((:xiaomi "https://api.xiaomimimo.com/v1")
+    (:xiaomi-token-plan-cn "https://token-plan-cn.xiaomimimo.com/v1")
+    (:xiaomi-token-plan-ams "https://token-plan-ams.xiaomimimo.com/v1")
+    (:xiaomi-token-plan-sgp "https://token-plan-sgp.xiaomimimo.com/v1")))
+
+(defparameter +xiaomi-mimo-v26-models+
+  '(("mimo-v2.6-flash" "MiMo-V2.6-Flash"
+     0.14d0 0.28d0 0.0028d0 nil)
+    ("mimo-v2.6-pro" "MiMo-V2.6-Pro"
+     0.435d0 0.87d0 0.0036d0 nil)
+    ("mimo-v2.6-pro-ultraspeed" "MiMo-V2.6-Pro-UltraSpeed"
+     4.35d0 8.7d0 0.036d0 t)))
+
+(defparameter +xiaomi-retired-v25-model-ids+
+  '("mimo-v2.5" "mimo-v2.5-pro" "mimo-v2.5-pro-ultraspeed"))
+
+(defun register-xiaomi-mimo-v26-catalog ()
+  (dolist (provider-row +xiaomi-mimo-v26-providers+)
+    (destructuring-bind (provider base-url) provider-row
+      (dolist (id +xiaomi-retired-v25-model-ids+)
+        (remhash (model-catalog-key provider id) *model-catalog*))
+      (dolist (model-row +xiaomi-mimo-v26-models+)
+        (destructuring-bind
+            (id name input output cache-read direct-only-p)
+            model-row
+          (when (or (not direct-only-p) (eq provider :xiaomi))
+            (register-model-metadata
+             (make-model-metadata
+              :provider provider
+              :id id
+              :name name
+              :api :openai-completions
+              :base-url base-url
+              :context-window 1048576
+              :max-output-tokens 131072
+              :supports-images-p t
+              :supports-tools-p t
+              :reasoning-p t
+              :thinking-level-map
+              (copy-catalog-thinking-map +xiaomi-thinking-level-map+)
+              :compat
+              '(:requires-reasoning-content-on-assistant-messages t
+                :supports-reasoning-effort nil
+                :supports-strict-mode t
+                :thinking-format :deepseek)
+              :input-price (if (eq provider :xiaomi) input 0d0)
+              :output-price (if (eq provider :xiaomi) output 0d0)
+              :cache-read-price (if (eq provider :xiaomi) cache-read 0d0)
+              :cache-write-price 0d0))))))))
+
+(defun register-v140-default-models ()
+  (register-github-copilot-gpt-6.1-sol)
+  (register-nvidia-nemotron-3.5)
+  (register-xiaomi-mimo-v26-catalog))
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
     (let ((copy
-            (apply-gpt-5-6-pricing-override
-             (copy-list row))))
+            (apply-xiaomi-thinking-toggle
+             (apply-anthropic-disabled-thinking
+              (apply-opencode-inference-endpoints
+              (apply-azure-provider-id
+              (apply-vercel-ai-gateway-empty-signature
+               (apply-fireworks-effort-override
+                (apply-fireworks-tool-references-override
+                 (apply-anthropic-prompt-cache-override
+                  (apply-gpt-5-6-pricing-override
+                   (copy-list row))))))))))))
       (setf
        (getf copy :cost-tiers)
        (mapcar
@@ -285,4 +913,9 @@
               (apply #'make-model-cost-tier tier)))
         (getf copy :cost-tiers)))
       (register-model-metadata
-       (apply #'make-model-metadata copy)))))
+       (apply #'make-model-metadata copy))))
+  (register-azure-deepseek-model)
+  (register-gpt-6-official-models)
+  (register-github-copilot-pin-models)
+  (register-minimax-m31-flash)
+  (register-v140-default-models))

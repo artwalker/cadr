@@ -74,13 +74,13 @@
     minimax-provider-matches-fixed-catalog
     :minimax :anthropic-messages
     "https://api.minimax.io/anthropic"
-    "MINIMAX_API_KEY" "MiniMax-M2.7" 3)
+    "MINIMAX_API_KEY" "MiniMax-M2.7" 4)
 
 (define-wave1-provider-test
     minimax-cn-provider-matches-fixed-catalog
     :minimax-cn :anthropic-messages
     "https://api.minimaxi.com/anthropic"
-    "MINIMAX_CN_API_KEY" "MiniMax-M2.7" 3)
+    "MINIMAX_CN_API_KEY" "MiniMax-M2.7" 4)
 
 (define-wave1-provider-test
     moonshotai-provider-matches-fixed-catalog
@@ -121,4 +121,4 @@
     xiaomi-provider-matches-fixed-catalog
     :xiaomi :openai-completions
     "https://api.xiaomimimo.com/v1"
-    "XIAOMI_API_KEY" "mimo-v2.5-pro" 3)
+    "XIAOMI_API_KEY" "mimo-v2.6-pro" 3)

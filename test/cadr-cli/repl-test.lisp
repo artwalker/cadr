@@ -125,7 +125,11 @@
         (is (string=
              (format nil "(defun add (a b) (+ a b))~%")
              (read-text (merge-pathnames "calc.lisp" directory))))
-        (is (= 8 (length (cadr-agent:agent-messages agent))))
+        (is (= 8
+               (length
+                (remove-if
+                 #'cadr-ai:system-message-p
+                 (cadr-agent:agent-messages agent)))))
         (is (null responses))
         (is (search "assistant> fixed"
                     (get-output-stream-string output)))))))

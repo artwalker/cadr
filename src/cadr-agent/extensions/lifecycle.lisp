@@ -8,6 +8,11 @@
    (typep value 'cadr-ai:assistant-message)
    (typep value 'cadr-ai:tool-result-message)))
 
+(defun context-transform-message-p (value)
+  (or
+   (extension-message-p value)
+   (agent-system-message-p value)))
+
 (defun assistant-tool-call-signature (message)
   (loop
     for block in
@@ -48,12 +53,37 @@
        (cadr-ai:tool-result-message-tool-name original))))
     (otherwise nil)))
 
+(defun valid-boundary-draft-p (draft)
+  (and
+   (listp draft)
+   (case (getf draft :type)
+     (:custom
+      (and
+       (stringp (getf draft :custom-type))
+       (plusp (length (getf draft :custom-type)))))
+     (:custom-message
+      (and
+       (stringp (getf draft :custom-type))
+       (plusp (length (getf draft :custom-type)))
+       (stringp (getf draft :content))))
+     (:context-edit
+      (and
+       (stringp (getf draft :target-id))
+       (or
+        (null (getf draft :replacement))
+        (stringp (getf draft :replacement)))))
+     (:compaction
+      (stringp (getf draft :summary)))
+     (t nil))))
+
 (defun make-hook-event
     (type turn-index primary tool-call
-     tool-result tool-results appended)
+     tool-result tool-results appended
+     &key payload)
   (%make-extension-event
    :type type
    :turn-index turn-index
+   :payload payload
    :message
    (and (member type '(:turn-start :turn-end))
         primary)
@@ -75,7 +105,10 @@
        message
        tool-call
        tool-result
-       tool-results)
+       tool-results
+       outcome
+       message-entry-id
+       tool-result-entry-ids)
   (let* ((snapshot
            (extension-host-current-snapshot host))
          (definitions
@@ -92,7 +125,9 @@
          (blocked-p nil)
          (reason nil)
          (terminate-p nil)
-         (terminate-supplied-p nil))
+         (terminate-supplied-p nil)
+         (boundary-entries nil)
+         (boundary-continue-p nil))
     (let ((held
             (acquire-extension-snapshot
              host snapshot)))
@@ -111,7 +146,19 @@
                                (make-hook-event
                                 event-type turn-index primary
                                 tool-call tool-result tool-results
-                                appended)
+                                appended
+                                :payload
+                                (when (eq event-type :turn-end)
+                                  (list
+                                   :entries
+                                   (copy-tree boundary-entries)
+                                   :continue boundary-continue-p
+                                   :outcome outcome
+                                   :message-entry-id
+                                   message-entry-id
+                                   :tool-result-entry-ids
+                                   (copy-list
+                                    tool-result-entry-ids))))
                                context)))))
                      (when result
                        (unless
@@ -175,7 +222,7 @@
                                 (stringp result-reason))
                              (error
                               "Hook block reason must be a string or NIL")))
-                         ;; pi@ecac0a9c4 extensions/types.ts:1075-1079 — the
+                         ;; pi@4a080252f extensions/types.ts:1075-1079 — the
                          ;; before hook may set terminate on a block;
                          ;; agent-loop.ts:638-639 applies it to the blocked
                          ;; result.  Without a block it is ignored.
@@ -195,6 +242,38 @@
                          (when result-terminate-supplied-p
                            (setf terminate-p result-terminate-p
                                  terminate-supplied-p t))
+                         (when
+                             (extension-hook-result-entries-supplied-p
+                              result)
+                           (unless (eq event-type :turn-end)
+                             (error
+                              "Only :turn-end hooks may return entries"))
+                           (unless
+                               (and
+                                (listp
+                                 (extension-hook-result-entries
+                                  result))
+                                (every
+                                 #'valid-boundary-draft-p
+                                 (extension-hook-result-entries
+                                  result)))
+                             (error
+                              "Hook entries must be boundary drafts"))
+                           (setf
+                            boundary-entries
+                            (copy-tree
+                             (extension-hook-result-entries
+                              result))))
+                         (when
+                             (extension-hook-result-continue-supplied-p
+                              result)
+                           (unless (eq event-type :turn-end)
+                             (error
+                              "Only :turn-end hooks may return continue"))
+                           (setf
+                            boundary-continue-p
+                            (extension-hook-result-continue-p
+                             result)))
                          (when result-block-p
                            (setf
                             blocked-p t
@@ -209,7 +288,8 @@
         (release-acquired-extension-snapshot
          host held)))
     (values primary appended blocked-p reason
-            terminate-p terminate-supplied-p)))
+            terminate-p terminate-supplied-p
+            boundary-entries boundary-continue-p)))
 
 ;;; Wave 2 lifecycle dispatch. The original four hooks above deliberately keep
 ;;; their frozen EXTENSION-HOOK-RESULT contract.
@@ -232,6 +312,8 @@
     :model-select
     :thinking-level-select
     :after-provider-response
+    :provider-stream-event
+    :mcp-servers-change
     :ui-prompt-start
     :ui-prompt-end))
 
@@ -351,7 +433,7 @@
             (error
              ":TOOL-CALL-ERROR :ACTION must be :RETRY, :SKIP, or :ABORT")))))
      result)
-    ((eq event :context)
+    ((member event '(:context :context-with-system))
      (when result
        (validate-lifecycle-result-keys
         event result '(:messages))
@@ -359,9 +441,10 @@
          (unless
              (and
               (listp messages)
-              (every #'extension-message-p messages))
+              (every #'context-transform-message-p messages))
            (error
-            ":CONTEXT :MESSAGES must be a list of CADR-AI messages"))))
+            "~S :MESSAGES must be a list of conversation or system messages"
+            event))))
      result)
     ((eq event :before-agent-start)
      (when result
@@ -483,6 +566,28 @@
        (validate-lifecycle-result-keys
         event result '(:operations :result)))
      result)
+    ((eq event :agent-before-settle)
+     (when result
+       (validate-lifecycle-result-keys
+        event result '(:entries :continue))
+       (let ((sentinel (list :missing)))
+         (let ((entries (getf result :entries sentinel))
+               (continue (getf result :continue sentinel)))
+           (unless
+               (or
+                (eq entries sentinel)
+                (and
+                 (listp entries)
+                 (every #'valid-boundary-draft-p entries)))
+             (error
+              ":AGENT-BEFORE-SETTLE entries must be boundary drafts"))
+           (unless
+               (or
+                (eq continue sentinel)
+                (extension-boolean-p continue))
+             (error
+              ":AGENT-BEFORE-SETTLE continue must be boolean")))))
+     result)
     (t
      (error "No lifecycle result contract for ~S" event))))
 
@@ -504,6 +609,10 @@
     (:tool-call-error
      (copy-extension-value original))
     (:context
+     (list
+      :messages
+      (conversation-messages (getf state :messages))))
+    (:context-with-system
      (list :messages (copy-list (getf state :messages))))
     (:before-agent-start
      (let ((copy (copy-list original)))
@@ -529,11 +638,18 @@
       (copy-tree (getf state :payload))))
     (:before-provider-headers
      (list :headers (getf state :headers)))
+    (:agent-before-settle
+     (list
+      :outcome (getf original :outcome)
+      :entries (copy-tree (getf state :entries))
+      :continue (not (null (getf state :continue)))))
     (otherwise (copy-tree original))))
 
 (defun initial-lifecycle-state (event payload)
   (case event
     (:context
+     (list :messages (copy-list (getf payload :messages))))
+    (:context-with-system
      (list :messages (copy-list (getf payload :messages))))
     (:before-agent-start
      (list
@@ -558,6 +674,8 @@
      (list :payload (getf payload :payload)))
     (:before-provider-headers
      (list :headers (getf payload :headers)))
+    (:agent-before-settle
+     (list :entries nil :continue nil))
     (otherwise nil)))
 
 (defun merge-lifecycle-result
@@ -569,6 +687,18 @@
       :session-before-tree)
      result)
     (:context
+     (when result
+       (let ((visible
+               (conversation-messages
+                (getf state :messages))))
+         (setf
+          (getf state :messages)
+          (restore-system-messages
+           (getf state :messages)
+           visible
+           (getf result :messages)))))
+     state)
+    (:context-with-system
      (when result
        (setf
         (getf state :messages)
@@ -642,6 +772,16 @@
         (setf (getf state :payload)
               result)))
      state)
+    (:agent-before-settle
+     (when result
+       (let ((sentinel (list :missing)))
+         (let ((entries (getf result :entries sentinel))
+               (continue (getf result :continue sentinel)))
+           (unless (eq entries sentinel)
+             (setf (getf state :entries) entries))
+           (unless (eq continue sentinel)
+             (setf (getf state :continue) continue)))))
+     state)
     (otherwise state)))
 
 (defun finalize-lifecycle-state (event state last-result)
@@ -652,7 +792,7 @@
       :session-before-tree)
      last-result)
     (:tool-call-error last-result)
-    (:context
+    ((:context :context-with-system)
      (list :messages (copy-list (getf state :messages))))
     (:before-agent-start
      (let ((result nil))
@@ -696,6 +836,10 @@
      (getf state :headers))
     (:user-bash
      last-result)
+    (:agent-before-settle
+     (list
+      :entries (copy-tree (getf state :entries))
+      :continue (not (null (getf state :continue)))))
     (otherwise nil)))
 
 (defun run-extension-lifecycle-hooks
@@ -744,12 +888,31 @@
                               context)))))
                    (validate-lifecycle-result
                     event result handler-payload)
-                   (when result
-                     (setf last-result result))
-                   (setf
-                    state
-                    (merge-lifecycle-result
-                     event state result))
+                   (let ((leading-system-p
+                           (and
+                            (eq event :context-with-system)
+                            (agent-system-message-p
+                             (first
+                              (getf state :messages))))))
+                     (when result
+                       (setf last-result result))
+                     (setf
+                      state
+                      (merge-lifecycle-result
+                       event state result))
+                     (when
+                         (and
+                          leading-system-p
+                          (not
+                           (agent-system-message-p
+                            (first
+                             (getf state :messages)))))
+                       (notify-extension-failure
+                        host definition "Hook"
+                        (make-condition
+                         'simple-error
+                         :format-control
+                         "Handler removed the leading system message; the request has no prompt or initial tool declarations."))))
                    (when
                        (and
                         (eq event :resources-discover)

@@ -29,7 +29,48 @@
       (is (cadr-tui:terminal-capabilities-true-color-p tmux))
       (is (cadr-tui:terminal-capabilities-hyperlinks-p tmux))
       (is (not
-           (cadr-tui:terminal-capabilities-hyperlinks-p screen))))))
+           (cadr-tui:terminal-capabilities-hyperlinks-p screen)))
+      (let ((herdr (detect "TERM_PROGRAM=herdr"))
+            (herdr-leaked
+              (detect "TERM_PROGRAM=herdr" "KITTY_WINDOW_ID=1")))
+        (is (eq :kitty
+                (cadr-tui:terminal-capabilities-images herdr)))
+        (is (cadr-tui:terminal-capabilities-hyperlinks-p herdr))
+        (is (not
+             (cadr-tui:terminal-capabilities-true-color-p herdr)))
+        (is (eq :kitty
+                (cadr-tui:terminal-capabilities-images herdr-leaked)))
+        (is (not
+             (cadr-tui:terminal-capabilities-true-color-p
+              herdr-leaked)))))))
+
+(test terminal-image-rex-enables-osc8-truecolor-and-kitty-images
+  ;; pi@4a080252f packages/tui/test/terminal-image.test.ts #11131.
+  (flet ((detect (&rest environment)
+           (cadr-tui:detect-terminal-capabilities
+            :environment environment)))
+    (let ((rex (detect "TERM_PROGRAM=rex"
+                       "TERM=xterm-256color"))
+          (rex-leaked
+            (detect "TERM_PROGRAM=rex"
+                    "TERM=xterm-256color"
+                    "KITTY_WINDOW_ID=1"))
+          (links-off
+            (detect "TERM_PROGRAM=rex"
+                    "CADR_HYPERLINKS=0")))
+      (dolist (caps (list rex rex-leaked))
+        (is (cadr-tui:terminal-capabilities-hyperlinks-p caps))
+        (is (eq :kitty
+                (cadr-tui:terminal-capabilities-images caps)))
+        (is (cadr-tui:terminal-capabilities-true-color-p caps)))
+      (is (not
+           (cadr-tui:terminal-capabilities-hyperlinks-p
+            links-off)))
+      (is (eq :kitty
+              (cadr-tui:terminal-capabilities-images
+               links-off)))
+      (is (cadr-tui:terminal-capabilities-true-color-p
+           links-off)))))
 
 (test terminal-image-encoding-sizing-and-detection
   (let* ((escape (string #\Escape))

@@ -33,6 +33,7 @@
   render-cache-extension-snapshot
   render-cache-mermaid-mode
   render-cache-code-block-indent
+  render-cache-output-pad
   (render-cache-lines nil :type list))
 
 (defstruct (tui-state
@@ -71,6 +72,9 @@
   (widgets-above nil :type list)
   (widgets-below nil :type list)
   (tools-expanded-p nil :type boolean)
+  ;; Line ranges from the last paint, in full-frame coordinates.
+  ;; Each item is (entry start end) for a left-click toggle.
+  (summary-click-ranges nil :type list)
   header-component
   footer-component
   (working-visible-p t :type boolean)
@@ -89,7 +93,9 @@
   (hide-thinking-block-p nil :type boolean)
   status-message
   (mermaid-mode "streaming" :type string)
-  (code-block-indent "  " :type string))
+  (code-block-indent "  " :type string)
+  (output-pad 1 :type (integer 0 1))
+  (bug-report-hint-shown-p nil :type boolean))
 
 (defun make-tui-state
     (&key model provider thinking cwd branch
@@ -104,7 +110,9 @@
        (auto-compact-p t)
        (context-window 0)
        (mermaid-mode "streaming")
-       (code-block-indent "  "))
+       (code-block-indent "  ")
+       (output-pad 1)
+       show-cache-miss-notices-p)
   (let ((state
           (%make-tui-state
            :model model
@@ -132,9 +140,16 @@
            (or mermaid-mode "streaming")
            :code-block-indent
            (or code-block-indent "  ")
+           :output-pad
+           (if (member output-pad '(0 1))
+               output-pad
+               1)
            :session session)))
     (dolist (message messages)
-      (seed-tui-message state message))
+      (seed-tui-message
+       state message
+       :show-cache-miss-notices-p
+       show-cache-miss-notices-p))
     state))
 
 (defun apply-tui-footer-state (state values)

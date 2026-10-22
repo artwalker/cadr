@@ -16,27 +16,27 @@
   '((:amazon-bedrock . 121)
     (:ant-ling . 3)
     (:anthropic . 14)
-    (:azure-openai-responses . 39)
+    (:azure . 43)
     (:baseten . 20)
     (:cerebras . 2)
     (:cloudflare-ai-gateway . 50)
     (:cloudflare-workers-ai . 18)
     (:deepseek . 3)
     (:fireworks . 20)
-    (:github-copilot . 28)
+    (:github-copilot . 32)
     (:google . 22)
     (:google-vertex . 14)
     (:groq . 7)
     (:huggingface . 71)
     (:kimi-coding . 4)
-    (:minimax . 3)
-    (:minimax-cn . 3)
+    (:minimax . 4)
+    (:minimax-cn . 4)
     (:mistral . 32)
     (:moonshotai . 10)
     (:moonshotai-cn . 10)
-    (:nvidia . 20)
-    (:openai . 39)
-    (:openai-codex . 8)
+    (:nvidia . 21)
+    (:openai . 42)
+    (:openai-codex . 9)
     (:opencode . 68)
     (:opencode-go . 27)
     (:openrouter . 366)
@@ -57,7 +57,7 @@
   (is
    (equal
     '(:amazon-bedrock :ant-ling :anthropic
-      :azure-openai-responses :baseten :cerebras
+      :azure :baseten :cerebras
       :cloudflare-ai-gateway :cloudflare-workers-ai :deepseek
       :fireworks :github-copilot :google :google-vertex :groq
       :huggingface :kimi-coding :minimax :minimax-cn :mistral
@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1354 (length (cadr-ai:list-model-metadata))))
+  (is (= 1369 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
@@ -115,7 +115,7 @@
   :opencode "gemini-3-flash"
   :google-generative-ai cadr-ai:google-provider)
 (define-wave3-route-test azure-uses-independent-adapter
-  :azure-openai-responses "gpt-5.5"
+  :azure "gpt-5.5"
   :azure-openai-responses cadr-ai:azure-openai-provider)
 (define-wave3-route-test bedrock-uses-independent-adapter
   :amazon-bedrock "us.anthropic.claude-opus-4-8"
@@ -127,7 +127,7 @@
   :mistral "mistral-large-latest"
   :mistral-conversations cadr-ai:mistral-provider)
 (define-wave3-route-test codex-uses-independent-adapter
-  :openai-codex "gpt-5.3-codex-spark"
+  :openai-codex "gpt-5.6-sol"
   :openai-codex-responses cadr-ai:openai-codex-provider)
 (define-wave3-route-test radius-uses-independent-adapter
   :radius "fixture-model"
@@ -156,6 +156,95 @@
     "explicit"
     (cadr-ai:resolve-azure-deployment-name
      "model-b" "explicit" "model-b=ignored"))))
+
+(defun azure-message-roles (payload)
+  (let ((messages (cadr-ai::json-get payload "messages")))
+    (loop for index below (length messages)
+          collect (cadr-ai::json-get (aref messages index) "role"))))
+
+(test azure-completions-use-the-foundry-endpoint-and-deployment-map
+  ;; pi@4a080252f azure-openai-completions.test.ts
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :azure :model-id "deepseek-v4-pro" :api-key "test-key"
+       :options
+       '(:azure-base-url "https://my-resource.services.ai.azure.com"
+         :azure-deployment-name-map "deepseek-v4-pro=my-deepseek"))
+    (let* ((context
+             (cadr-ai:make-context
+              :system-prompt "sys"
+              :messages
+              (list
+               (cadr-ai:make-user-message :content "hi")
+               (cadr-ai:make-system-message :content "second")
+               (cadr-ai:make-user-message :content "again")
+               (cadr-ai:make-assistant-message
+                :content
+                (list
+                 (cadr-ai:make-thinking-content
+                  :thinking "internal reasoning"))
+                :api :openai-completions
+                :provider :azure
+                :model "deepseek-v4-pro"))))
+           (request
+             (cadr-ai:build-request
+              provider model context
+              :stream-p t :reasoning :high
+              :cache-retention :long :session-id "session-1"))
+           (payload (cadr-ai:request-spec-payload request))
+           (messages (cadr-ai::json-get payload "messages")))
+      (is (eq :openai-completions (cadr-ai:model-api model)))
+      (is (string= "deepseek-v4-pro" (cadr-ai:model-id model)))
+      (is (string=
+           "https://my-resource.services.ai.azure.com/openai/v1/chat/completions"
+           (cadr-ai:request-spec-url request)))
+      (is (string= "my-deepseek" (cadr-ai::json-get payload "model")))
+      (is (string= "high" (cadr-ai::json-get payload "reasoning_effort")))
+      (is (null (cadr-ai::json-get payload "thinking")))
+      (is (null (cadr-ai::json-get payload "prompt_cache_key")))
+      (is (null (cadr-ai::json-get payload "prompt_cache_retention")))
+      (is (equal '("system" "user" "system" "user" "assistant")
+                 (azure-message-roles payload)))
+      (is (string= "sys" (cadr-ai::json-get (aref messages 0) "content")))
+      (is (string= "second" (cadr-ai::json-get (aref messages 2) "content")))
+      (is (string= "internal reasoning"
+                   (cadr-ai::json-get (aref messages 4) "reasoning_content")))))
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :azure :model-id "deepseek-v4-pro" :api-key "test-key"
+       :options
+       '(:azure-base-url "https://my-resource.services.ai.azure.com"))
+    (let ((payload
+            (cadr-ai:request-spec-payload
+             (cadr-ai:build-request
+              provider model
+              (cadr-ai:make-context
+               :messages (list (cadr-ai:make-user-message :content "hi")))
+              :reasoning :max))))
+      (is (string= "high" (cadr-ai::json-get payload "reasoning_effort")))
+      (is (string= "deepseek-v4-pro" (cadr-ai::json-get payload "model")))))
+  (let* ((provider
+           (cadr-ai:make-azure-openai-provider
+            :api-key "test-key"
+            :options
+            '(:environment
+              (("AZURE_OPENAI_BASE_URL" . nil)
+               ("AZURE_OPENAI_RESOURCE_NAME" . nil)))))
+         (model
+           (nth-value
+            1
+            (cadr-ai:instantiate-provider
+             :azure :model-id "deepseek-v4-pro"
+             :api-key "test-key" :allow-missing-auth-p t)))
+         (message
+           (cadr-ai:stream-chat
+            provider model
+            (cadr-ai:make-context
+             :messages (list (cadr-ai:make-user-message :content "hi")))
+            (lambda (event) (declare (ignore event))))))
+    (is (eq :error (cadr-ai:assistant-message-stop-reason message)))
+    (is (search "Azure OpenAI base URL is required"
+                (cadr-ai:assistant-message-error-message message)))))
 
 (defun hex-octets (hex)
   (let ((result
@@ -440,6 +529,25 @@ region = eu-central-1")))
        (string=
         "Provider stopped with: guardrail_intervened"
         (cadr-ai:assistant-message-error-message message))))))
+
+(test bedrock-one-hour-cache-write-priced-at-twice-input
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :amazon-bedrock
+       :model-id "us.anthropic.claude-opus-4-8"
+       :api-key "bearer")
+    (let* ((message
+             (cadr-ai:parse-complete-response
+              provider model
+              (cadr-ai::parse-json
+               "{\"output\":{\"message\":{\"content\":[{\"text\":\"ok\"}]}},\"stopReason\":\"end_turn\",\"usage\":{\"cacheWriteInputTokens\":1000000,\"cacheDetails\":[{\"ttl\":\"1h\",\"inputTokens\":150000},{\"ttl\":\"5m\",\"inputTokens\":600000},{\"ttl\":\"1h\",\"inputTokens\":250000}]}}")))
+           (usage (cadr-ai:assistant-message-usage message)))
+      (is (= 1000000 (cadr-ai:usage-cache-write usage)))
+      (is (= 400000 (cadr-ai:usage-cache-write-1h usage)))
+      (is (< (abs (- 7.75d0
+                     (cadr-ai:cost-cache-write
+                      (cadr-ai:usage-cost usage))))
+             1d-6)))))
 
 (test bedrock-failure-records-bounded-structured-metadata
   (multiple-value-bind (provider model)

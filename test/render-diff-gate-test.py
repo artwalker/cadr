@@ -457,7 +457,7 @@ class RenderDiffGateTest(unittest.TestCase):
             [entry["name"] for entry in registry["slashCommands"]],
             inventory["slashCommands"],
         )
-        self.assertEqual(len(inventory["constructorSites"]), 25)
+        self.assertEqual(len(inventory["constructorSites"]), 26)
         self.assertEqual(
             sorted(registry["baselineConstructorSites"]),
             inventory["constructorSites"],
@@ -817,7 +817,7 @@ class RenderDiffGateTest(unittest.TestCase):
         # stack gray. The 39m closer lands mid-path and would leave the
         # driver line number in the I04 screen.
         colored = (
-            b"    at Timeout.<anonymous> \x1b[90m(/tmp/cadr-render-diff-pi-ecac0a9c4/"
+            b"    at Timeout.<anonymous> \x1b[90m(/tmp/cadr-render-diff-pi-4a080252f/"
             b"packages/coding-agent/\x1b[39mtest/goal15-render-driver.ts:1068:12"
             b"\x1b[90m)\x1b[39m\n"
             b"\x1b[90m    at listOnTimeout (node:internal/timers:588:17)\x1b[39m"
@@ -857,7 +857,7 @@ class RenderDiffGateTest(unittest.TestCase):
             b"ome/.cadr/agent/crash/cadr-crash-3994918403-1601836-0.\nlog"
         )
         pi = (
-            b"    at Object.crash (/tmp/cadr-render-diff-pi-ecac0a9c4/"
+            b"    at Object.crash (/tmp/cadr-render-diff-pi-4a080252f/"
             b"packages/coding-agent/test/goal15-rend\n"
             b"er-driver.ts:756:11)"
         )
@@ -1058,17 +1058,17 @@ class RenderDiffGateTest(unittest.TestCase):
         RENDER_DIFF.validate_visible_string_inventory(
             inventory, manifest["baselineCommit"]
         )
-        # Locked to tip baseline-visible-strings.json after the v0.86.0
+        # Locked to tip baseline-visible-strings.json after the v1.4.0
         # pin inventory refresh. Recount from the fixture:
-        # 549 sites, 1221 branches, 1158 printable-visible, 63
-        # terminal-protocol, 268 source-inventory entries.
-        self.assertEqual(549, len(inventory["entries"]))
+        # 552 sites, 1234 branches, 1171 printable-visible, 63
+        # terminal-protocol, 269 source-inventory entries.
+        self.assertEqual(552, len(inventory["entries"]))
         self.assertEqual(
-            1221,
+            1234,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1158,
+            1171,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -1083,7 +1083,7 @@ class RenderDiffGateTest(unittest.TestCase):
                 if entry["sink"]["channel"] == "terminal-protocol"
             ),
         )
-        self.assertEqual(268, len(inventory["sourceInventory"]))
+        self.assertEqual(269, len(inventory["sourceInventory"]))
         self.assertEqual(
             62,
             sum(

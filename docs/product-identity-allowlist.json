@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1473,
+  "expected_findings": 1687,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -703,6 +703,38 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.86.0 (+0, ecac0a9c4)`.",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.86.1 (+0, 13cbf77df)`.",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v0.87.0 (+0, 16787ad5b)`.",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v1.3.0 (+0, 71023aec1)`.",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `cadr 0.2.0 \u00b7 aligned with pi v1.4.0 (+0, 4a080252f)`.",
       "occurrences": 1,
       "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
     },
@@ -2588,6 +2620,46 @@
     },
     {
       "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 25: pin fixed pi baseline from v0.86.0 (`ecac0a9c4`) to",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 26: default TUI mode is fullscreen (pi v1.0.0+). Only exact",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 26: pin fixed pi baseline from v0.86.1 (`13cbf77df`) to",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 26: retarget fixed pi baseline from v0.87.0 (`16787ad5b`) to",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 26: retarget the fixed pi baseline from v1.3.0 (`71023aec1`) to",
+      "occurrences": 1,
+      "reason": "Immutable changelog records baseline pairing or alignment evidence; cites upstream pi in audit prose only."
+    },
+    {
+      "path": "CHANGELOG.md",
       "kind": "upstream-org",
       "token": "earendil-works",
       "line": "  Model-data pack `@earendil-works/pi-ai@0.86.0`",
@@ -2822,7 +2894,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.86.0 (+0, ecac0a9c4)**",
+      "line": "**cadr 0.2.0 \u00b7 aligned with pi v1.4.0 (+0, 4a080252f)**",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -2870,7 +2942,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "[`earendil-works/pi@ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`](https://github.com/earendil-works/pi/tree/ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc),",
+      "line": "[`earendil-works/pi@4a080252f06caf63a525d7873c5d94d3c23887e0`](https://github.com/earendil-works/pi/tree/4a080252f06caf63a525d7873c5d94d3c23887e0),",
       "occurrences": 2,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -2990,7 +3062,7 @@
       "path": "README.md",
       "kind": "upstream-org",
       "token": "earendil-works",
-      "line": "[`earendil-works/pi@ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc`](https://github.com/earendil-works/pi/tree/ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc),",
+      "line": "[`earendil-works/pi@4a080252f06caf63a525d7873c5d94d3c23887e0`](https://github.com/earendil-works/pi/tree/4a080252f06caf63a525d7873c5d94d3c23887e0),",
       "occurrences": 2,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -3001,6 +3073,22 @@
       "line": "                                           (:file \"pi-messages\")",
       "occurrences": 1,
       "reason": "ASDF component name implements the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "cadr-cli.asd",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                                           (:file \"pi-logo\")",
+      "occurrences": 1,
+      "reason": "Internal baseline-logo component identifier mirrors the upstream presentation surface; it is not Cadr release identity."
+    },
+    {
+      "path": "cadr-cli.asd",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                             (:file \"pi-logo-test\")",
+      "occurrences": 1,
+      "reason": "Internal baseline-logo component identifier mirrors the upstream presentation surface; it is not Cadr release identity."
     },
     {
       "path": "cadr-evals.asd",
@@ -7662,6 +7750,14 @@
       "path": "scripts/goal21-sync-product-identity-allowlist.py",
       "kind": "pi-token",
       "token": "PI",
+      "line": "            \"Common Lisp's mathematical PI constant appears in color-space \"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "PI",
       "line": "            return VERIFY_PI_REPO_REASON",
       "occurrences": 1,
       "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
@@ -7671,6 +7767,14 @@
       "kind": "pi-token",
       "token": "PI",
       "line": "VERIFY_PI_REPO_REASON = (",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            \"literal upstream pi spelling; changing it would break data compatibility.\"",
       "occurrences": 1,
       "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
     },
@@ -7694,7 +7798,47 @@
       "path": "scripts/goal21-sync-product-identity-allowlist.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "    \"Immutable changelog records the fixed upstream pi release used for \"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    \"Source comment cites the pinned upstream pi behavior being implemented; \"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "    \"through its --pi-repo contract.\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if \".pi\" in line or \"pi.virtual\" in line or \":pi-virtual\" in line:",
+      "occurrences": 3,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if \"pi-logo\" in line or path.endswith(\"/pi-logo.lisp\"):",
+      "occurrences": 2,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if path == \"src/cadr-tui/oklab.lisp\" and token.lower() == \"pi\":",
       "occurrences": 1,
       "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
     },
@@ -7910,7 +8054,7 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_PACKAGE",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.86.0\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@1.4.0\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -7926,7 +8070,7 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_SHA256",
-      "line": "PI_AI_MODEL_DATA_SHA256 = \"d52448c827a72c8fdcf9f0c96c9966704a8525a6a0ae181f4bd886c584d727e3\"",
+      "line": "PI_AI_MODEL_DATA_SHA256 = \"b40e2ba8bb6fc332908f8b96e837dc2d1fdfb45eb9cd382f5aed111462981e3c\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -8774,7 +8918,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.86.0\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@1.4.0\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -8822,7 +8966,7 @@
       "path": "scripts/render-diff.py",
       "kind": "upstream-org",
       "token": "earendil-works",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.86.0\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@1.4.0\"",
       "occurrences": 1,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
@@ -9115,6 +9259,14 @@
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
     {
+      "path": "src/cadr-agent/compaction.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f compaction.ts estimateProjectedContextTokens.",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
       "path": "src/cadr-agent/export-html/template.js",
       "kind": "pi-token",
       "token": "pi",
@@ -9134,7 +9286,15 @@
       "path": "src/cadr-agent/extensions/context.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 extensions/runner.ts withUIPrompt: nest prompts, emit",
+      "line": "  ;; pi@4a080252f McpServerRegistry: servers registered via",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-agent/extensions/context.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f extensions/runner.ts withUIPrompt: nest prompts, emit",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -9142,15 +9302,63 @@
       "path": "src/cadr-agent/extensions/lifecycle.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                         ;; pi@ecac0a9c4 extensions/types.ts:1075-1079 \u2014 the",
+      "line": "                         ;; pi@4a080252f extensions/types.ts:1075-1079 \u2014 the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/extensions/mcp-config.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "               (mcp-join (mcp-join cwd \".pi\") \"mcp.json\"))))",
+      "occurrences": 1,
+      "reason": "Pinned compatibility protocol or persisted key retains its literal upstream pi spelling; changing it would break data compatibility."
+    },
+    {
+      "path": "src/cadr-agent/extensions/mcp-config.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f createMcpToolName. Provider names are 64 characters of",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-agent/extensions/mcp-config.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f renderServersSection. Direct-only servers stay out.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-agent/extensions/mcp-config.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; pi@4a080252f core/mcp-servers.ts and extensions/mcp/config.ts.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-agent/extensions/mcp-servers.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f reportUnhandledMcpServers: when nothing handles",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-agent/extensions/mcp-servers.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; MCP server registrations (pi@4a080252f mcp-servers.ts).",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-agent/extensions/providers.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 agent-session.ts #8537: context-only custom messages",
+      "line": "  ;; pi@4a080252f agent-session.ts #8537: context-only custom messages",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -9158,7 +9366,7 @@
       "path": "src/cadr-agent/extensions/snapshot.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 extensions/loader.ts:205-218,410-424 \u2014 invalidating",
+      "line": "    ;; pi@4a080252f extensions/loader.ts:205-218,410-424 \u2014 invalidating",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9166,9 +9374,25 @@
       "path": "src/cadr-agent/loop/agent-loop.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        ;; pi@ecac0a9c4 agent-loop.ts #8782: compact before the next",
+      "line": "              ;; pi@4a080252f agent-session.ts finishTurn wrapper:",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-agent/loop/agent-loop.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        ;; pi@4a080252f agent-loop.ts #8782: compact before the next",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-agent/loop/agent-loop.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f agent-session.ts _prepareRun. An idle triggerTurn",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-agent/loop/tool-execution.lisp",
@@ -9182,7 +9406,15 @@
       "path": "src/cadr-agent/loop/tool-execution.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "normalize image blocks entering session history (pi@ecac0a9c4",
+      "line": "  ;; pi@4a080252f agent-session.ts records ctx.executeTool calls on the",
+      "occurrences": 1,
+      "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
+      "path": "src/cadr-agent/loop/tool-execution.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "normalize image blocks entering session history (pi@4a080252f",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9190,7 +9422,7 @@
       "path": "src/cadr-agent/loop/turns.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                 ;; pi@ecac0a9c4 \u2014 an abort already pending when the",
+      "line": "                   ;; pi@4a080252f prepareRequest routes a virtual",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9198,7 +9430,15 @@
       "path": "src/cadr-agent/loop/turns.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "         ;; pi@ecac0a9c4 agent-loop.ts:295 converts agent-level",
+      "line": "                 ;; pi@4a080252f \u2014 an abort already pending when the",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/loop/turns.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "         ;; pi@4a080252f agent-loop.ts:295 converts agent-level",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9206,7 +9446,15 @@
       "path": "src/cadr-agent/session/discovery.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 SessionManager.list onProgress: invoked per",
+      "line": "           ;; pi@4a080252f SessionManager.list onProgress: invoked per",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/session/discovery.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi findMostRecentSession sorts by file mtime only. Activity is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9215,6 +9463,22 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "  ;; pi SessionManager.getEntries().length",
+      "occurrences": 1,
+      "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
+      "path": "src/cadr-agent/session/journal.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f session-manager.ts appendCompaction \u2014 a null keep",
+      "occurrences": 1,
+      "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
+      "path": "src/cadr-agent/session/journal.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f session-manager.ts appendCompaction. The kept path",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9238,7 +9502,7 @@
       "path": "src/cadr-agent/session/migration.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 session-manager.ts #8345: after a valid load, append a",
+      "line": "  ;; pi@4a080252f session-manager.ts #8345: after a valid load, append a",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9246,7 +9510,31 @@
       "path": "src/cadr-agent/tool.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "              ;; pi@ecac0a9c4 agent-loop.ts:637-640 \u2014 a before-hook",
+      "line": "               ;; pi@4a080252f: setActiveTools / resume restore pick",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/tool.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              ;; pi@4a080252f agent-loop.ts:637-640 \u2014 a before-hook",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/tool.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "          ;; restore the active loadout (pi@4a080252f #10785). Agent",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/tool.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10343. Hidden tools stay callable through another",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9265,6 +9553,70 @@
       "line": "  ;; pi truncateTail: one length + random-access lines + index",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                             \"pi.virtual-model-state\"))",
+      "occurrences": 1,
+      "reason": "Pinned compatibility protocol or persisted key retains its literal upstream pi spelling; changing it would break data compatibility."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       \"pi.virtual-model-state\"",
+      "occurrences": 1,
+      "reason": "Pinned compatibility protocol or persisted key retains its literal upstream pi spelling; changing it would break data compatibility."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     (eq (cadr-ai:assistant-message-api model) :pi-virtual))",
+      "occurrences": 1,
+      "reason": "Pinned compatibility protocol or persisted key retains its literal upstream pi spelling; changing it would break data compatibility."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     (eq (cadr-ai:model-api model) :pi-virtual))",
+      "occurrences": 1,
+      "reason": "Pinned compatibility protocol or persisted key retains its literal upstream pi spelling; changing it would break data compatibility."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     :api :pi-virtual",
+      "occurrences": 1,
+      "reason": "Pinned compatibility protocol or persisted key retains its literal upstream pi spelling; changing it would break data compatibility."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; leaves api pi-virtual on the assistant message.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f getBranchSelection. A virtual model_change holds",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-agent/virtual-models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f virtual-models.ts isVirtualModel. Failed routing",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-ai/auth/radius-cloudflare.lisp",
@@ -9307,12 +9659,116 @@
       "reason": "Generated-file provenance header names the fixed pi-ai 0.84.1 catalog snapshot."
     },
     {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10818. MiMo Chat Completions documents only",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10840. These ids are an explicit catalog, not a",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f ANTHROPIC_DISABLED_THINKING_MODELS. Dated snapshots",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f applyThinkingLevelMetadata. Astra and GPT-6.1 Sol reject",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f generate-models.ts #11121. Effort values with no \"none\"",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f generate-models.ts azureDeepSeekModels. Foundry rejects",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f generate-models.ts publishes these rows as provider \"azure\".",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f generate-models.ts. Copilot advertised these before",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/models.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f generate-models.ts: Zen and Go left /zen for /inference.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/oauth/callback.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10571. 53692 stays preferred so a forwarded port",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/oauth/openai-anthropic.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10571. Bind the callback before the authorize URL",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-ai/oauth/pkce.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/ai/src/auth/oauth/*.ts \u2014 subscription-backed",
+      "line": "  ;; pi@4a080252f packages/ai/src/auth/oauth/*.ts \u2014 subscription-backed",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/oauth/providers/anthropic.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f anthropic.ts #10194. The copy-code page shows the",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/oauth/providers/openrouter.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f openrouter.ts personalizeOpenRouterCatalog #10672.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-ai/package.lisp",
@@ -9327,6 +9783,78 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "   #:pi-messages-provider",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    ;; pi@4a080252f #10409. Downgrade prefer-strict tools",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     ;; pi@4a080252f transform-messages.ts \u2014 thinking from another model",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (when (eq (model-api model) :pi-virtual)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; Parsed provider event before normalization (pi onProviderStreamEvent).",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10794. Anthropic and Claude on Bedrock reject images",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f event-stream.ts AssistantMessageEventStream.#time.",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f thinkingLevelMap.off === null means the model rejects",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f transform-messages.ts. One note covers a run of images.",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; when getConfigurationUpdateEffort would (pi@4a080252f) \u2014 requires a",
       "occurrences": 1,
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     },
@@ -9353,6 +9881,30 @@
       "line": "(define-provider-constructor make-pi-messages-provider",
       "occurrences": 1,
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/anthropic.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            ;; pi@4a080252f anthropic-messages.ts #10409. A prefer tool",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/providers/bedrock.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f bedrock-converse-stream.ts #9331. OpenAI models on",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/providers/codex.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10429. Defaults go on first. Model headers, then",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-ai/providers/definitions.lisp",
@@ -9398,15 +9950,39 @@
       "path": "src/cadr-ai/providers/definitions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 core/model-runtime.ts:462-464 isUsingSubscription:",
+      "line": "  ;; pi@4a080252f core/model-runtime.ts:462-464 isUsingSubscription:",
       "occurrences": 1,
       "reason": "Slot-exclusion note names the pi source line the metadata points at; not Cadr identity."
     },
     {
+      "path": "src/cadr-ai/providers/google.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             ;; pi@4a080252f google-shared.ts #8720. Whitespace-only",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/providers/mistral.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f mistral-conversations.ts mapChatStopReason. #10487",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/providers/mistral.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f mistral-conversations.ts. Headers wait at most this",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@ecac0a9c4 api/openai-completions.ts:779-793 \u2014 chat",
+      "line": "            ;; pi@4a080252f #10926. reasoning_details are replay metadata.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9414,7 +9990,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 api/openai-completions.ts:847-866 \u2014 vLLM caps",
+      "line": "         ;; pi@4a080252f: kimi Coding mid-convo tool additions, or the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9422,7 +9998,7 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 openai-completions.ts:838 \u2014 omit tool_choice when",
+      "line": "       ;; pi@4a080252f api/openai-completions.ts:779-793 \u2014 chat",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9430,9 +10006,81 @@
       "path": "src/cadr-ai/providers/openai-completions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 api/openai-completions.ts:892-940 \u2014 each entry",
+      "line": "      ;; pi@4a080252f openai-completions.ts createClient: product UA first,",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ;; pi@4a080252f api/openai-completions.ts:847-866 \u2014 vLLM caps",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ;; pi@4a080252f openai-completions.ts:838 \u2014 omit tool_choice when",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f api/openai-completions.ts:892-940 \u2014 each entry",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f openai-completions.ts detectCompat defaults",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f openai-completions.ts isOpenAIReasoningDetail.",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             ;; pi@4a080252f: configuration_update before each same-model",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi openai-responses-shared.ts response.failed",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi throws `Error Code ${event.code}: ${event.message}`.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";; thinking level (pi@4a080252f openai-responses.ts).",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-ai/providers/pi-messages.lisp",
@@ -9619,6 +10267,38 @@
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     },
     {
+      "path": "src/cadr-ai/providers/radius-catalog.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "               (eq :pi-messages (model-api model))))",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/radius-catalog.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter +default-radius-gateway+ \"https://radius.pi.dev\")",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/radius.models.generated.lisp",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "  :PI-MESSAGES :BASE-URL \"https://radius.pi.dev/v1\"",
+      "occurrences": 27,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/radius.models.generated.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  :PI-MESSAGES :BASE-URL \"https://radius.pi.dev/v1\"",
+      "occurrences": 27,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
       "path": "src/cadr-ai/providers/registry.lisp",
       "kind": "pi-token",
       "token": "pi",
@@ -9633,6 +10313,22 @@
       "line": "      (:pi-messages",
       "occurrences": 1,
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/registry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ;; pi@4a080252f azure.ts: both APIs stay on the Azure provider so the",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/support/attribution.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi getSessionHeaders / withOpenCodeSessionHeader: no session id",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-ai/support/release.lisp",
@@ -9667,6 +10363,22 @@
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
     {
+      "path": "src/cadr-ai/support/token-estimation.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f estimate.ts #10497. 3.5 characters per token, so a",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-ai/support/token-estimation.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f simple-options.ts clampMaxTokensToContext.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-ai/websocket.lisp",
       "kind": "pi-token",
       "token": "Pi",
@@ -9678,7 +10390,7 @@
       "path": "src/cadr-cli/arguments.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                      ;; pi@ecac0a9c4 cli/args.ts:180-191 \u2014 space form",
+      "line": "                      ;; pi@4a080252f cli/args.ts:180-191 \u2014 space form",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9694,7 +10406,7 @@
       "path": "src/cadr-cli/arguments.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 cli/args.ts:180-186: --tui-mode replaces --alt;",
+      "line": "  ;; pi@4a080252f cli/args.ts:180-186: --tui-mode replaces --alt;",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -9702,7 +10414,7 @@
       "path": "src/cadr-cli/bootstrap/auth.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "             ;; pi@ecac0a9c4 interactive-mode.ts:5548,5662 \u2014 when the",
+      "line": "             ;; pi@4a080252f interactive-mode.ts:5548,5662 \u2014 when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9710,7 +10422,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "              ;; pi@ecac0a9c4 footer.ts:139-141 \u2014 Kimi Coding is",
+      "line": "              ;; pi@4a080252f footer.ts:139-141 \u2014 Kimi Coding is",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9718,7 +10430,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            ;; pi@ecac0a9c4 model-runtime.ts:532 \u2014 non-nil when the",
+      "line": "            ;; pi@4a080252f model-runtime.ts:532 \u2014 non-nil when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9726,7 +10438,7 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 interactive-mode.ts:530-531 \u2014 the CLI flag",
+      "line": "           ;; pi@4a080252f interactive-mode.ts:611-612 \u2014 the CLI flag",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9734,7 +10446,15 @@
       "path": "src/cadr-cli/bootstrap/commands.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 utils/tool-result-images.ts via",
+      "line": "           ;; pi@4a080252f sdk.ts usesDefaultTools; --no-tools and",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/commands.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@4a080252f utils/tool-result-images.ts via",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9742,7 +10462,7 @@
       "path": "src/cadr-cli/bootstrap/main.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 cli.ts:13-15 \u2014 the running agent publishes its",
+      "line": "  ;; pi@4a080252f cli.ts:13-15 \u2014 the running agent publishes its",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9750,7 +10470,7 @@
       "path": "src/cadr-cli/bootstrap/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                   ;; pi@ecac0a9c4 interactive-mode.ts:5956-5960 \u2014",
+      "line": "                   ;; pi@4a080252f interactive-mode.ts:5956-5960 \u2014",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9758,7 +10478,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 settings-selector.ts:539-546",
+      "line": "           ;; pi@4a080252f settings-selector.ts:539-546",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9766,7 +10486,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 settings-selector.ts:634-646",
+      "line": "           ;; pi@4a080252f settings-selector.ts:634-646",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9774,7 +10494,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "          ;; pi@ecac0a9c4 interactive-mode.ts:4557-4567: switch the",
+      "line": "          ;; pi@4a080252f interactive-mode.ts:4557-4567: switch the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9782,7 +10502,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts getFullscreenCopyOnSelect: default true.",
+      "line": "  ;; pi@4a080252f settings-manager.ts getDefaultTools / resolveDefaultTools:",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9790,7 +10510,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts getTerminalCapabilityOverrides.",
+      "line": "  ;; pi@4a080252f settings-manager.ts getFullscreenCopyOnSelect: default true.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9798,7 +10518,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1093-1099 gives an explicit setting",
+      "line": "  ;; pi@4a080252f settings-manager.ts getFullscreenWheelScrollLines (#9758).",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9806,7 +10526,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1128-1130 \u2014 only the exact string",
+      "line": "  ;; pi@4a080252f settings-manager.ts getSessionShareDestination",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9814,7 +10534,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1138-1141 \u2014 \"always\"/\"hidden\" pass",
+      "line": "  ;; pi@4a080252f settings-manager.ts getTerminalCapabilityOverrides.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9822,9 +10542,81 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 settings-manager.ts:1252-1255 \u2014 markdown.mermaid is",
+      "line": "  ;; pi@4a080252f settings-manager.ts:1093-1099 gives an explicit setting",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f settings-manager.ts:1138-1141 \u2014 \"always\"/\"hidden\" pass",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f settings-manager.ts:1252-1255 \u2014 markdown.mermaid is",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f settings-manager.ts:1256-1257 \u2014 only the exact string",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/tools.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f agent-session.ts _restoreToolsFromTranscript",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/tools.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f sdk.ts: tools?.some(isToolModifier) ? tools : undefined",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/tools.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f settings-manager.ts applyToolModifiers",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/tools.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f settings-manager.ts getToolListError",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/tools.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f settings-manager.ts isToolModifier",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/tools.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f settings-manager.ts resolveDefaultTools",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-cli/config.lisp",
@@ -9835,12 +10627,44 @@
       "reason": "CLI OAuth refresh default Radius gateway URL matches the Radius pi.dev service endpoint."
     },
     {
+      "path": "src/cadr-cli/extensions/discovery.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f resource-loader disabledBuiltinExtensions, e.g. (\"mcp\")",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-cli/extensions/llama/extension.lisp",
       "kind": "pi-token",
       "token": "pi",
       "line": "  ;; string \"manual\" here is always NIL (pi index.ts:143).",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
+      "path": "src/cadr-cli/interactive/clipboard.lisp",
+      "kind": "legacy-env",
+      "token": "PI_CLIPBOARD_OSC52",
+      "line": "                     environment \"PI_CLIPBOARD_OSC52\")",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
+      "path": "src/cadr-cli/interactive/clipboard.lisp",
+      "kind": "legacy-env",
+      "token": "PI_CLIPBOARD_OSC52",
+      "line": "         ;; pi@4a080252f clipboard.ts isRemoteSession. PI_CLIPBOARD_OSC52=1",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
+      "path": "src/cadr-cli/interactive/clipboard.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "         ;; pi@4a080252f clipboard.ts isRemoteSession. PI_CLIPBOARD_OSC52=1",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-cli/interactive/components/announcement.lisp",
@@ -9851,10 +10675,42 @@
       "reason": "Historical upstream announcement quotes the real pi event; changing it would fabricate history."
     },
     {
+      "path": "src/cadr-cli/interactive/components/pi-logo.lisp",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": ";;; coral-then-yellow split the pin uses for \"Pi\".",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/interactive/components/pi-logo.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun pi-logo-lines",
+      "occurrences": 1,
+      "reason": "Internal baseline-logo component identifier mirrors the upstream presentation surface; it is not Cadr release identity."
+    },
+    {
+      "path": "src/cadr-cli/interactive/components/pi-logo.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; pi@4a080252f components/pi-logo.ts. The half-block mark keeps the pin's",
+      "occurrences": 2,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/interactive/components/radius-login.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; pi@4a080252f radius-login-selector.ts. The selected \"Sign in with",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                            ;; pi@ecac0a9c4 interactive-mode.ts:5399 \u2014",
+      "line": "                            ;; pi@4a080252f interactive-mode.ts:5399 \u2014",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9862,7 +10718,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                            ;; pi@ecac0a9c4 interactive-mode.ts:5548 \u2014",
+      "line": "                            ;; pi@4a080252f interactive-mode.ts:5548 \u2014",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9870,7 +10726,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 interactive-mode.ts:788-832 switchTuiMode +",
+      "line": "           ;; pi@4a080252f interactive-mode.ts:788-832 switchTuiMode +",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9878,7 +10734,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "   ;; pi@ecac0a9c4 tui-renderer.ts scrollToEndIndicator",
+      "line": "   ;; pi@4a080252f tui-renderer.ts scrollToEndIndicator",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9886,7 +10742,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "(pi@ecac0a9c4 interactive-mode.ts:4584).\")",
+      "line": "(pi@4a080252f interactive-mode.ts:4584).\")",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9894,7 +10750,7 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "fullscreen flash instead of a status line (pi@ecac0a9c4",
+      "line": "fullscreen flash instead of a status line (pi@4a080252f",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9902,7 +10758,71 @@
       "path": "src/cadr-cli/interactive/controller.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "happened.  pi@ecac0a9c4 interactive-mode.ts:4557-4567",
+      "line": "happened.  pi@4a080252f interactive-mode.ts:4557-4567",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/controller.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "wheel scroll (pi@4a080252f #9758).\")",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/entries.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                   (nth-value 0 (pi-logo-lines))",
+      "occurrences": 1,
+      "reason": "Internal baseline-logo component identifier mirrors the upstream presentation surface; it is not Cadr release identity."
+    },
+    {
+      "path": "src/cadr-cli/interactive/entries.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              (nth-value 1 (pi-logo-lines))",
+      "occurrences": 1,
+      "reason": "Internal baseline-logo component identifier mirrors the upstream presentation surface; it is not Cadr release identity."
+    },
+    {
+      "path": "src/cadr-cli/interactive/entries.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10567. Session switches and other full transcript",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/interactive/entries.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f AuthUrlComponent: macOS uses Cmd+click.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/interactive/entries.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f auth-url.ts. The click hint stays; copy replaces only",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/interactive/extension-ui.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f interactive-mode.ts showExtensionCustom: done() hides",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/interactive/images.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f ModelImageResizeOptions. Absent fields keep the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9910,9 +10830,25 @@
       "path": "src/cadr-cli/interactive/images.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 utils/tool-result-images.ts \u2014 normalize image blocks",
+      "line": "  ;; pi@4a080252f utils/tool-result-images.ts \u2014 normalize image blocks",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/program-status-reporter.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; Interactive OSC 7501 reporter (pi@71023aec program-status-reporter.ts).",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/auth.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f redraws the shimmer every 50ms while Radius is selected.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-cli/interactive/selectors/common.lisp",
@@ -9931,10 +10867,18 @@
       "reason": "Internal docstring identifies the fixed Pi Text layout semantics being reproduced."
     },
     {
+      "path": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f login-dialog.ts: app.message.copy copies the sign-in URL.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 session-selector.ts onProgress: progress is applied",
+      "line": "  ;; pi@4a080252f session-selector.ts onProgress: progress is applied",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9942,7 +10886,7 @@
       "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 session-selector.ts:140-143 \u2014 incremental load",
+      "line": "  ;; pi@4a080252f session-selector.ts:140-143 \u2014 incremental load",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9963,10 +10907,26 @@
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
     {
+      "path": "src/cadr-cli/interactive/system-theme.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";; pi@4a080252f system-theme.ts. Colors come from the terminal palette and",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-cli/interactive/themes.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@ecac0a9c4 theme.ts:326-332 \u2014 optional scrollbarThumb",
+      "line": "       ;; pi@4a080252f theme.ts:326-332 \u2014 optional scrollbarThumb",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/themes.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f detectAppearance: background lighter than the text is a",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -9979,10 +10939,26 @@
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
     {
+      "path": "src/cadr-cli/interactive/tool-rendering.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f formatReadLineRange. A malformed bound drops the",
+      "occurrences": 1,
+      "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
+      "path": "src/cadr-cli/interactive/tool-rendering.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f render-utils.ts parseLineNumber. Numeric strings",
+      "occurrences": 1,
+      "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
+    },
+    {
       "path": "src/cadr-cli/interactive/user-bash.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; Fixed pi@ecac0a9c4 BashExecutionComponent is deliberately separate from",
+      "line": "  ;; Fixed pi@4a080252f BashExecutionComponent is deliberately separate from",
       "occurrences": 1,
       "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
     },
@@ -10086,9 +11062,49 @@
       "path": "src/cadr-cli/models/registry.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; (pi@ecac0a9c4 model registry provider then id).",
+      "line": "  ;; (pi@4a080252f model registry provider then id).",
       "occurrences": 1,
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-cli/models/registry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f withVirtualModels. A registered virtual model hides",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-cli/modes/print.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                             ;; pi@4a080252f print-mode.ts #10799. Partial",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/output-files.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f limitMcpContent: text over the byte budget becomes one",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/output-files.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f truncateMiddle: keep half the byte budget at each end and",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/output-files.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; pi@4a080252f utils/output-files.ts. Truncated tool output can contain",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-cli/packages/config-selector.lisp",
@@ -10103,6 +11119,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "      (read-package-pi-manifest root)",
+      "occurrences": 1,
+      "reason": "The function name describes the external pi package manifest schema, which remains a compatibility contract."
+    },
+    {
+      "path": "src/cadr-cli/packages/config-selector.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f normalizePath. Only a leading ~ or ~/ is home.",
       "occurrences": 1,
       "reason": "The function name describes the external pi package manifest schema, which remains a compatibility contract."
     },
@@ -10150,17 +11174,73 @@
       "path": "src/cadr-cli/resource-loader.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 core/resource-loader.ts:118-155: global agent-dir",
+      "line": "  ;; pi@4a080252f core/resource-loader.ts. Global agent-dir context",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/resource-loader.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f resource-loader.ts findShadowedContextFile. A nested",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/sdk/agent-session.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@4a080252f sdk.ts usesDefaultTools",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/sdk/agent-session.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f sdk.ts allowedToolNames",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/sdk/agent-session.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f sdk.ts selectedToolNames / defaultToolNames",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/sdk/system-prompt.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10343. A hidden reader is still reachable through",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-cli/settings/config-values.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@71023aec settings-manager.ts migrateSettings. In-memory only;",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-cli/settings/manager.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 agent-session.ts _addPersistedDefaultToNonEmptyScope:",
+      "line": "  ;; pi@4a080252f agent-session.ts _addPersistedDefaultToNonEmptyScope:",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/settings/manager.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@71023aec getOrCreateDeviceId: global only, created on first use.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-cli/support/bug-report.lisp",
@@ -10188,6 +11268,30 @@
     },
     {
       "path": "src/cadr-cli/support/changelog-share.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ;; pi@4a080252f ansi.ts unfinishedAnsiAtEndRegex. An OSC without",
+      "occurrences": 1,
+      "reason": "Exact legacy upstream URL recognizer rewrites old links to Cadr's canonical repository; target identity is Cadr-owned."
+    },
+    {
+      "path": "src/cadr-cli/support/changelog-share.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f ansi.ts splitIncompleteAnsiSuffix",
+      "occurrences": 1,
+      "reason": "Exact legacy upstream URL recognizer rewrites old links to Cadr's canonical repository; target identity is Cadr-owned."
+    },
+    {
+      "path": "src/cadr-cli/support/changelog-share.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f session-share.ts shareSession + sessionShareDestination",
+      "occurrences": 1,
+      "reason": "Exact legacy upstream URL recognizer rewrites old links to Cadr's canonical repository; target identity is Cadr-owned."
+    },
+    {
+      "path": "src/cadr-cli/support/changelog-share.lisp",
       "kind": "upstream-org",
       "token": "badlogic",
       "line": "           \"^https://github\\\\.com/(?:badlogic/pi-mono|earendil-works/(?:pi|pi-mono))(?=/|$)\"",
@@ -10206,7 +11310,15 @@
       "path": "src/cadr-cli/tools/bash.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; Fixed pi@ecac0a9c4 agent-session.ts:2803-2824 records the direct shell",
+      "line": "  ;; Fixed pi@4a080252f agent-session.ts:2803-2824 records the direct shell",
+      "occurrences": 1,
+      "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/tools/bash.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f bash-executor.ts appendText",
       "occurrences": 1,
       "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
     },
@@ -10214,7 +11326,7 @@
       "path": "src/cadr-cli/tools/edit.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/coding-agent/src/core/tools/edit-diff.ts:286-293",
+      "line": "  ;; pi@4a080252f packages/coding-agent/src/core/tools/edit-diff.ts:286-293",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -10571,10 +11683,18 @@
       "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
     },
     {
+      "path": "src/cadr-tui/autocomplete.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f autocomplete.ts buildFdPathQuery. fd treats the",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
       "path": "src/cadr-tui/components/markdown.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                 ;; pi@ecac0a9c4 components/markdown.ts:102-119,505-514",
+      "line": "                 ;; pi@4a080252f components/markdown.ts:102-119,505-514",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10582,9 +11702,17 @@
       "path": "src/cadr-tui/components/markdown.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";;; pi@ecac0a9c4 components/markdown.ts:25-122 \u2014 inline and block",
+      "line": ";;; pi@4a080252f components/markdown.ts:25-122 \u2014 inline and block",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/components/tool-block.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@71023aec render-utils.ts formatToolDuration. Input is seconds.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-tui/composition/protocol.lisp",
@@ -10598,7 +11726,7 @@
       "path": "src/cadr-tui/editor.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "      ;; pi@ecac0a9c4 components/editor.ts:768-777 \u2014 the dedicated",
+      "line": "      ;; pi@4a080252f components/editor.ts:768-777 \u2014 the dedicated",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10606,7 +11734,7 @@
       "path": "src/cadr-tui/editor.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/tui/src/components/editor.ts:466 stores",
+      "line": "  ;; pi@4a080252f packages/tui/src/components/editor.ts:466 stores",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10614,7 +11742,7 @@
       "path": "src/cadr-tui/input-component.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/tui/src/input.ts Input reset sites.",
+      "line": "  ;; pi@4a080252f packages/tui/src/input.ts Input reset sites.",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
     },
@@ -10622,7 +11750,7 @@
       "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 tui/keybindings.ts:154-178 \u2014 the alt-screen",
+      "line": "    ;; pi@4a080252f keybindings.ts #10314 \u2014 unmodified Home/End stay",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10630,7 +11758,15 @@
       "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 tui/keybindings.ts:68-75 \u2014 prompt history",
+      "line": "    ;; pi@4a080252f tui/keybindings.ts:154-178 \u2014 the alt-screen",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/keybindings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ;; pi@4a080252f tui/keybindings.ts:68-75 \u2014 prompt history",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10638,7 +11774,7 @@
       "path": "src/cadr-tui/keys.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    ;; pi@ecac0a9c4 tui/keybindings.ts:170-175 \u2014 the prompt-jump",
+      "line": "    ;; pi@4a080252f tui/keybindings.ts:170-175 \u2014 the prompt-jump",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10662,7 +11798,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 packages/tui/src/latex.ts layoutNodes.push \u2014 O(1) append",
+      "line": "  ;; pi@4a080252f packages/tui/src/latex.ts layoutNodes.push \u2014 O(1) append",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -10670,7 +11806,7 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";; generated from pi@ecac0a9c4 packages/tui/src/latex.ts data tables",
+      "line": ";; generated from pi@4a080252f packages/tui/src/latex.ts data tables",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
@@ -10678,23 +11814,71 @@
       "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";;; pi@ecac0a9c4 packages/tui/src/latex.ts \u2014 terminal-friendly Unicode",
+      "line": ";;; pi@4a080252f packages/tui/src/latex.ts \u2014 terminal-friendly Unicode",
       "occurrences": 1,
       "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
     {
-      "path": "src/cadr-tui/renderer/alt-screen.lisp",
+      "path": "src/cadr-tui/oklab.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "             ;; pi@ecac0a9c4 tui-alt-screen.ts:969-981",
+      "line": "            (mod (+ (* (atan b a) (/ 180d0 pi)) 360d0) 360d0))))",
       "occurrences": 1,
-      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+      "reason": "Common Lisp's mathematical PI constant appears in color-space arithmetic; it is not a product name."
+    },
+    {
+      "path": "src/cadr-tui/oklab.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      (let* ((angle (* 2d0 pi",
+      "occurrences": 1,
+      "reason": "Common Lisp's mathematical PI constant appears in color-space arithmetic; it is not a product name."
+    },
+    {
+      "path": "src/cadr-tui/oklab.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (let* ((hue (mod (+ (* (atan b a) (/ 180d0 pi)) 360d0) 360d0))",
+      "occurrences": 1,
+      "reason": "Common Lisp's mathematical PI constant appears in color-space arithmetic; it is not a product name."
+    },
+    {
+      "path": "src/cadr-tui/oklab.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (let* ((radians (* hue (/ pi 180d0)))",
+      "occurrences": 1,
+      "reason": "Common Lisp's mathematical PI constant appears in color-space arithmetic; it is not a product name."
+    },
+    {
+      "path": "src/cadr-tui/oklab.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";; pi@4a080252f packages/tui/src/oklab.ts and the color parsing in colors.ts.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-tui/overlay.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi tui.ts hide(): an overlay opened above this one recorded this",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-tui/program-status.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; Baseline: packages/tui/src/program-status.ts (pi@71023aec).",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/scroll-view.ts:62-70 \u2014 \"always\" whenever a",
+      "line": "             ;; pi@4a080252f tui-alt-screen.ts:969-981",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10702,7 +11886,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 layout.ts:249-327 \u2014 the last-column cell keeps its",
+      "line": "  ;; pi@4a080252f components/scroll-view.ts:62-70 \u2014 \"always\" whenever a",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10710,7 +11894,7 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 layout.ts:309-327 \u2014 paint every track row; thumb",
+      "line": "  ;; pi@4a080252f layout.ts:249-327 \u2014 the last-column cell keeps its",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10718,7 +11902,15 @@
       "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:1618-1635 \u2014 when follow-end is",
+      "line": "  ;; pi@4a080252f layout.ts:309-327 \u2014 paint every track row; thumb",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/renderer/alt-screen.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts:1618-1645 \u2014 center the jump",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10726,7 +11918,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            ;; pi@ecac0a9c4 tui-alt-screen.ts:896 \u2014 the fullscreen",
+      "line": "            ;; pi@4a080252f tui-alt-screen.ts:896 \u2014 the fullscreen",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10734,7 +11926,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "           ;; pi@ecac0a9c4 tui-alt-screen.ts:665-684",
+      "line": "           ;; pi@4a080252f tui-alt-screen.ts:665-684",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10742,7 +11934,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "         ;; pi@ecac0a9c4 tui-alt-screen.ts:813-833 \u2014 word/line ranges",
+      "line": "         ;; pi@4a080252f tui-alt-screen.ts:813-833 \u2014 word/line ranges",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10750,7 +11942,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "       ;; pi@ecac0a9c4 tui-alt-screen.ts:435-441",
+      "line": "       ;; pi@4a080252f tui-alt-screen.ts:435-441",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10758,7 +11950,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "      ;; pi@ecac0a9c4 handleScrollToEndIndicatorMouseEvent",
+      "line": "      ;; pi@4a080252f handleScrollToEndIndicatorMouseEvent",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10766,7 +11958,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; (pi@ecac0a9c4 interactive-mode.ts:788-832 switchTuiMode).",
+      "line": "  ;; (pi@4a080252f interactive-mode.ts:788-832 switchTuiMode).",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10774,7 +11966,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/alt-screen-flash.ts \u2014 transient",
+      "line": "  ;; :auto accelerates fast spins (pi@71023aec #9758); integer is fixed.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10782,7 +11974,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/alt-screen-flash.ts:20-38 \u2014 transient",
+      "line": "  ;; pi@4a080252f #10567. A transcript rebuild reuses viewport",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10790,7 +11982,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/scroll-view.ts:140-150 \u2014 scroll activity",
+      "line": "  ;; pi@4a080252f components/alt-screen-flash.ts \u2014 transient",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10798,7 +11990,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 components/scroll-view.ts:62-70 \u2014 :auto shows the",
+      "line": "  ;; pi@4a080252f components/alt-screen-flash.ts:20-38 \u2014 transient",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10806,7 +11998,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts TERMINAL_WORD_SELECTION_JOINERS:",
+      "line": "  ;; pi@4a080252f components/scroll-view.ts:140-150 \u2014 scroll activity",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10814,7 +12006,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts scrollToEndIndicator \u2014 when the",
+      "line": "  ;; pi@4a080252f components/scroll-view.ts:62-70 \u2014 :auto shows the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10822,7 +12014,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:147-149 \u2014 multi-click selection",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts TERMINAL_WORD_SELECTION_JOINERS:",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10830,7 +12022,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:236-247 \u2014 multiplexers lag when",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts scrollToEndIndicator \u2014 when the",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10838,7 +12030,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:366-378 \u2014 scan the scroll content",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts \u2014 accelerator then Alt\u00d75.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10846,7 +12038,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:56 \u2014 /^\\x1b\\]133;A(?:\\x07|\\x1b\\\\)/.",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts:147-149 \u2014 multi-click selection",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10854,7 +12046,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:687-713 getClickCount: the count",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts:236-247 \u2014 multiplexers lag when",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10862,7 +12054,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:855-869 \u2014 a boundary end (word or",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts:366-378 \u2014 scan the scroll content",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10870,7 +12062,7 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 tui-alt-screen.ts:968-970 \u2014 SGR bit 3 (value 8) is Alt.",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts:56 \u2014 /^\\x1b\\]133;A(?:\\x07|\\x1b\\\\)/.",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
@@ -10878,15 +12070,63 @@
       "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "'/' (pi@ecac0a9c4 tui-alt-screen.ts:835-868).\"",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts:687-713 getClickCount: the count",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f tui-alt-screen.ts:855-869 \u2014 a boundary end (word or",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "'/' (pi@4a080252f tui-alt-screen.ts:835-868).\"",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/stdin-buffer.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f #10256. A recognized reply waits for its terminator.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-tui/stdin-buffer.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f stdin-buffer.ts. OSC 10/11, palette 4, program",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-tui/terminal-colors.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f parseOscColorResponse: OSC 10, 11, or 4.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     },
     {
       "path": "src/cadr-tui/terminal-image.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 terminal-image.ts:139-141 \u2014 only \"1\" and \"0\" override;",
+      "line": "             ;; pi@4a080252f #10774. Herdr speaks Kitty graphics and OSC 8.",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-tui/terminal-image.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@4a080252f terminal-image.ts:139-141 \u2014 only \"1\" and \"0\" override;",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -10894,16 +12134,50 @@
       "path": "src/cadr-tui/terminal-image.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@ecac0a9c4 terminal-image.ts:179-189 \u2014 skip work when the three",
+      "line": "  ;; pi@4a080252f terminal-image.ts:179-189 \u2014 skip work when the three",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-tui/terminal.lisp",
+      "kind": "legacy-env",
+      "token": "PI_PROGRAM_STATUS",
+      "line": "  (uiop:getenv \"PI_PROGRAM_STATUS\"))",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
+      "path": "src/cadr-tui/terminal.lisp",
+      "kind": "legacy-env",
+      "token": "PI_PROGRAM_STATUS",
+      "line": "  ;; PI_PROGRAM_STATUS matches the baseline env contract (enumerate",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
+      "path": "src/cadr-tui/wheel-scroll.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; Mouse-wheel line acceleration (pi@71023aec wheel-scroll.ts, #9758).",
+      "occurrences": 1,
+      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
     }
   ],
   "opaque_files": [
     {
+      "path": "src/cadr-agent/export-html/vendor/marked.min.js",
+      "sha256": "438eedfcf932a414d0d0bfeea32dc365c063563b8ca713b4687fc8f8b501e5e4",
+      "reason": "Exact vendored Marked 18.0.11 bytes. The identity scan matches Pi inside the Unicode property escape \\p{Pi} (initial punctuation), which is not a product name. The digest locks this exemption to these bytes."
+    },
+    {
       "path": "src/cadr-agent/export-html/vendor/highlight.min.js",
       "sha256": "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846",
       "reason": "Exact vendored Highlight.js 11.9.0 bytes contain pi only in Lua and R mathematical builtin lists; digest lock prevents this exemption from covering any asset change."
+    },
+    {
+      "path": "src/cadr-ai/providers/data/radius.json",
+      "sha256": "17863cffc194be9cb7f5d411a1f0422b38abcc2359f53b493c9c97248d4733d6",
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     }
   ]
 }

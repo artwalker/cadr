@@ -63,6 +63,16 @@
      ((typep message 'compaction-summary-agent-message)
       (utf16-code-unit-length
        (compaction-summary-agent-message-summary message)))
+     ((typep message 'agent-system-message)
+      (+ (utf16-code-unit-length
+          (agent-system-message-content message))
+         (if (agent-system-message-tools-added message)
+             (utf16-code-unit-length
+              (cadr-ai::stringify-json
+               (cadr-ai::list-json-array
+                (mapcar #'declared-tool-json
+                        (agent-system-message-tools-added message)))))
+             0)))
      (t 0))
    4))
 
@@ -96,6 +106,35 @@
                 :key #'message-estimated-tokens
                 :initial-value 0))))
 
+(defun declared-tool-json (tool)
+  (let ((object
+          (cadr-ai::json-object
+           "description" (cadr-ai:tool-description tool)
+           "name" (cadr-ai:tool-name tool)
+           "parameters" (cadr-ai:tool-parameters tool))))
+    (when (cadr-ai:tool-constrained-sampling tool)
+      (setf (gethash "constrainedSampling" object)
+            (cadr-ai:tool-constrained-sampling tool)))
+    object))
+
+(defun declared-tools-estimated-tokens (tools)
+  (if (null tools)
+      0
+      (text-estimated-tokens
+       (cadr-ai::stringify-json
+        (cadr-ai::list-json-array
+         (mapcar #'declared-tool-json tools))))))
+
+(defun projected-context-tokens (messages &optional declared)
+  ;; pi@4a080252f compaction.ts estimateProjectedContextTokens.
+  ;; Tool declarations count only after this turn has declared them.
+  ;; Idle history has no declaration and stays on the message text.
+  (context-estimated-tokens
+   (if (and declared
+            (not (some #'agent-system-message-p messages)))
+       (cons declared messages)
+       messages)))
+
 (defun compaction-field
     (from-extension-p extension key fallback)
   ;; One owner of the extension-vs-generated pick. Five copies
@@ -127,35 +166,6 @@
    #'+ (session-context-entries session)
    :key #'compaction-entry-estimated-tokens
    :initial-value 0))
-
-(defun compaction-cut-point (entries keep-recent-tokens)
-  ;; Reverse-then-forward is the same walk as the old (nth index …)
-  ;; downfrom loop, in O(n) instead of O(n·k) (goal 20, 12F-3).
-  (let ((accumulated 0)
-        (candidate nil)
-        (entry-count (length entries)))
-    (loop for entry in (reverse entries)
-          for reverse-index from 0
-          for index = (- (1- entry-count) reverse-index)
-          do
-          (incf accumulated
-                (compaction-entry-estimated-tokens entry))
-          (when
-              (and (eq :message
-                       (session-entry-type entry))
-                   (let ((message
-                           (session-entry-message entry)))
-                     (or
-                      (typep message 'cadr-ai:user-message)
-                      (typep message
-                             'cadr-ai:assistant-message))))
-            (setf candidate index))
-          (when (and candidate
-                     (>= accumulated keep-recent-tokens))
-            (return)))
-    (and candidate
-         (> candidate 0)
-         candidate)))
 
 (defun truncate-summary-tool-result (text)
   (let ((total-units (utf16-code-unit-length text)))
@@ -357,6 +367,9 @@ Keep each section concise. Preserve exact file paths, function names, and error 
     (agent messages max-output-tokens
      &optional custom-instructions (reason :manual)
                previous-summary)
+  ;; v1.4.0 #9512: reserveTokens is unused here. The provider sizes
+  ;; output from the model limit and the actual summary request.
+  (declare (ignore max-output-tokens))
   (let* ((conversation
            (serialize-conversation
             (convert-agent-messages-to-llm messages)))
@@ -391,9 +404,7 @@ Keep each section concise. Preserve exact file paths, function names, and error 
              (list
               (cadr-ai:make-user-message :content prompt))
              :tools nil)
-            (min (floor (* 4 max-output-tokens) 5)
-                 (cadr-ai:model-max-tokens
-                  (agent-model agent)))
+            nil
             :compaction
             :reason reason))
          (summary
@@ -431,13 +442,23 @@ Summarize the prefix to provide context for the retained suffix:
 Be concise. Focus on what's needed to understand the kept suffix.")
 
 (defun generate-turn-prefix-summary
-    (agent messages max-output-tokens reason)
+    (agent messages max-output-tokens reason
+     &optional custom-instructions)
+  ;; v1.4.0 #9512: same omitted output cap as the history summary.
+  ;; #11058: /compact instructions still apply to this prefix.
+  (declare (ignore max-output-tokens))
   (let* ((prompt
            (format
             nil "<conversation>~%~A~%</conversation>~%~%~A"
             (serialize-conversation
              (convert-agent-messages-to-llm messages))
             +turn-prefix-summarization-prompt+))
+         (prompt
+           (if (and custom-instructions
+                    (plusp (length custom-instructions)))
+               (format nil "~A~%~%Additional focus: ~A"
+                       prompt custom-instructions)
+               prompt))
          (response
            (complete-summarization
             agent
@@ -447,9 +468,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
              :messages
              (list (cadr-ai:make-user-message :content prompt))
              :tools nil)
-            (min (floor max-output-tokens 2)
-                 (cadr-ai:model-max-tokens
-                  (agent-model agent)))
+            nil
             :compaction
             :reason reason))
          (summary
@@ -655,7 +674,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                 (generate-turn-prefix-summary
                  agent
                  (getf preparation :turn-prefix-messages)
-                 reserve reason)
+                 reserve reason custom-instructions)
               (values
                (format
                 nil
@@ -677,6 +696,24 @@ Be concise. Focus on what's needed to understand the kept suffix.")
          (getf file-ops :read-files)
          (getf file-ops :modified-files)))
        usage))))
+
+(defun compaction-aborted-outcome-p (signal cancelled-by-extension-p)
+  (or cancelled-by-extension-p
+      (and signal (extension-cancellation-aborted-p signal))))
+
+(defun resolve-summarization-request-auth (agent model signal)
+  (let ((function (agent-summarization-auth-function agent)))
+    (when function (funcall function agent model signal))))
+
+(defun emit-compaction-aborted-end
+    (agent reason &key from-extension-p will-retry-p)
+  (declare (ignore will-retry-p))
+  (emit-agent-event agent :compaction-end :reason reason
+                    :result nil :aborted t :will-retry nil)
+  (emit-session-compact-failed
+   agent :reason reason :aborted t :will-retry-p nil
+   :from-extension-p from-extension-p)
+  nil)
 
 (defun %compact-agent
     (agent &key force-p custom-instructions
@@ -717,7 +754,12 @@ Be concise. Focus on what's needed to understand the kept suffix.")
       (return-from %compact-agent nil))
     (let* ((messages (session-messages session))
            (tokens-before
-             (context-estimated-tokens messages))
+             (let ((estimated
+                     (context-estimated-tokens messages)))
+               (if (some #'valid-assistant-usage-p messages)
+                   estimated
+                   (+ estimated
+                      (declared-system-cut-tokens agent)))))
            (reserve
              (agent-compaction-reserve-tokens agent))
            (keep-recent
@@ -731,7 +773,11 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                (session-context-entries session))
              (cut-point
                (compaction-cut-point
-                entries keep-recent)))
+                entries keep-recent
+                :system-tokens
+                (declared-system-cut-tokens agent)
+                :system-index
+                (agent-system-cut-index agent))))
         (unless cut-point
           (return-from %compact-agent nil))
         (let* ((source-entries
@@ -761,152 +807,157 @@ Be concise. Focus on what's needed to understand the kept suffix.")
           (unwind-protect
                (progn
                  (emit-agent-event
-           agent :compaction-start
-           :reason reason)
-                 (let ((from-extension-p nil))
-            (handler-case
-                (let* ((before
-                         (run-compaction-lifecycle
-                          agent :session-before-compact
-                          (list
-                           :preparation preparation
-                           :branch-entries (copy-list entries)
-                           :custom-instructions custom-instructions
-                           :reason reason
-                           :will-retry-p (not (null will-retry-p))
-                           :signal signal)))
-                       (extension-compaction
-                         (and before
-                              (getf before :compaction))))
-                  (when (or (getf before :cancel-p)
-                            (extension-cancellation-aborted-p signal))
-                    (emit-agent-event
-                     agent :compaction-end
-                     :reason reason
-                     :result nil
-                     :aborted t
-                     :will-retry nil)
-                    (emit-session-compact-failed
-                     agent
-                     :reason reason
-                     :aborted t
-                     :will-retry-p nil
-                     :from-extension-p nil)
-                    (return-from %compact-agent nil))
-                  (unless (usable-extension-compaction-p
-                           extension-compaction)
-                    (setf extension-compaction nil))
-                  (setf from-extension-p (not (null extension-compaction)))
-                  (let* (
-                       (generated
-                         (unless from-extension-p
-                           (multiple-value-list
-                            (compact-from-preparation
-                             agent preparation
-                             :custom-instructions custom-instructions
-                             :reason reason))))
-                       (summary
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :summary (first generated)))
-                       (first-kept-entry-id
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :first-kept-entry-id
-                          (session-entry-id kept-entry)))
-                       (effective-tokens-before
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :tokens-before tokens-before))
-                       (usage
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :usage (second generated)))
-                       (details
-                         (compaction-field
-                          from-extension-p extension-compaction
-                          :details
-                          (getf preparation :file-ops))))
-                    (when
-                        (extension-cancellation-aborted-p signal)
-                      (emit-agent-event
-                       agent :compaction-end
-                       :reason reason
-                       :result nil
-                       :aborted t
-                       :will-retry nil)
-                      (emit-session-compact-failed
-                       agent
-                       :reason reason
-                       :aborted t
-                       :will-retry-p nil
-                       :from-extension-p from-extension-p)
-                      (return-from %compact-agent nil))
-                (assert-agent-not-shutdown agent)
-                (let* ((entry-id
-                         (session-append-compaction
-                          session summary source-ids
-                          first-kept-entry-id
-                          effective-tokens-before
-                          :details details
-                          :usage usage
-                          :from-hook-p from-extension-p))
-                       (entry
-                         (gethash entry-id
-                                  (session-by-id session))))
-                  (run-compaction-lifecycle
-                   agent :session-compact
-                   (list
-                    :compaction-entry entry
-                    :from-extension-p from-extension-p
-                    :reason reason
-                    :will-retry-p
-                    (not (null will-retry-p)))))
-                (setf (agent-messages agent)
-                      (session-messages session))
-                (let ((result
-                        (list
-                         :summary summary
-                         :first-kept-entry-id first-kept-entry-id
-                         :tokens-before effective-tokens-before
-                         :estimated-tokens-after
-                         (session-context-estimated-tokens session)
-                         :usage usage
-                         :details details)))
-                  (emit-agent-event
-                   agent :compaction-end
-                   :reason reason
-                   :result result
-                   :aborted nil
-                   :will-retry (not (null will-retry-p)))
-                  result)))
-            (error (condition)
-                (let ((error-message
-                        (format
-                         nil
-                         (case reason
-                           (:overflow
-                            "Context overflow recovery failed: ~A")
-                           (:threshold
-                            "Auto-compaction failed: ~A")
-                           (otherwise
-                            "Compaction failed: ~A"))
-                         (princ-to-string condition))))
-                  (emit-agent-event
-                   agent :compaction-end
-                   :reason reason
-                   :result nil
-                   :aborted nil
-                   :will-retry nil
-                   :error-message error-message)
-                  (emit-session-compact-failed
-                   agent
-                   :reason reason
-                   :error-message error-message
-                   :aborted nil
-                   :will-retry-p nil
-                   :from-extension-p from-extension-p)
-                  nil)))))
+                  agent :compaction-start
+                  :reason reason)
+                 (let ((from-extension-p nil)
+                       (cancelled-by-extension-p nil))
+                   (handler-case
+                       (progn
+                         (when (extension-cancellation-aborted-p signal)
+                           (return-from %compact-agent
+                             (emit-compaction-aborted-end agent reason)))
+                         (resolve-summarization-request-auth
+                          agent model signal)
+                         (when (extension-cancellation-aborted-p signal)
+                           (return-from %compact-agent
+                             (emit-compaction-aborted-end agent reason)))
+                         (let* ((before
+                                  (run-compaction-lifecycle
+                                   agent :session-before-compact
+                                   (list
+                                    :preparation preparation
+                                    :branch-entries (copy-list entries)
+                                    :custom-instructions custom-instructions
+                                    :reason reason
+                                    :will-retry-p (not (null will-retry-p))
+                                    :signal signal)))
+                                (extension-compaction
+                                  (and before
+                                       (getf before :compaction))))
+                           (when (getf before :cancel-p)
+                             (setf cancelled-by-extension-p t))
+                           (when (or cancelled-by-extension-p
+                                     (extension-cancellation-aborted-p
+                                      signal))
+                             (return-from %compact-agent
+                               (emit-compaction-aborted-end
+                                agent reason
+                                :from-extension-p nil)))
+                           (unless (usable-extension-compaction-p
+                                    extension-compaction)
+                             (setf extension-compaction nil))
+                           (setf from-extension-p
+                                 (not (null extension-compaction)))
+                           (let* ((generated
+                                    (unless from-extension-p
+                                      (multiple-value-list
+                                       (compact-from-preparation
+                                        agent preparation
+                                        :custom-instructions
+                                        custom-instructions
+                                        :reason reason))))
+                                  (summary
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :summary (first generated)))
+                                  (first-kept-entry-id
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :first-kept-entry-id
+                                     (session-entry-id kept-entry)))
+                                  (effective-tokens-before
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :tokens-before tokens-before))
+                                  (usage
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :usage (second generated)))
+                                  (details
+                                    (compaction-field
+                                     from-extension-p extension-compaction
+                                     :details
+                                     (getf preparation :file-ops))))
+                             (when (extension-cancellation-aborted-p signal)
+                               (return-from %compact-agent
+                                 (emit-compaction-aborted-end
+                                  agent reason
+                                  :from-extension-p from-extension-p)))
+                             (assert-agent-not-shutdown agent)
+                             (let* ((entry-id
+                                      (session-append-compaction
+                                       session summary source-ids
+                                       first-kept-entry-id
+                                       effective-tokens-before
+                                       :details details
+                                       :usage usage
+                                       :from-hook-p from-extension-p))
+                                    (entry
+                                      (gethash entry-id
+                                               (session-by-id session))))
+                               (run-compaction-lifecycle
+                                agent :session-compact
+                                (list
+                                 :compaction-entry entry
+                                 :from-extension-p from-extension-p
+                                 :reason reason
+                                 :will-retry-p
+                                 (not (null will-retry-p))))
+                               (setf (agent-messages agent)
+                                     (session-messages session))
+                               (let ((result
+                                       (list
+                                        :summary summary
+                                        :first-kept-entry-id
+                                        first-kept-entry-id
+                                        :tokens-before
+                                        effective-tokens-before
+                                        :estimated-tokens-after
+                                        (+ (session-context-estimated-tokens
+                                            session)
+                                           (declared-system-cut-tokens agent))
+                                        :usage usage
+                                        :details details)))
+                                 (emit-agent-event
+                                  agent :compaction-end
+                                  :reason reason
+                                  :result result
+                                  :aborted nil
+                                  :will-retry
+                                  (not (null will-retry-p)))
+                                 result)))))
+                     (error (condition)
+                       (let* ((aborted-p
+                                (compaction-aborted-outcome-p
+                                 signal
+                                 cancelled-by-extension-p))
+                              (error-message
+                                (unless aborted-p
+                                  (format
+                                   nil
+                                   (case reason
+                                     (:overflow
+                                      "Context overflow recovery failed: ~A")
+                                     (:threshold
+                                      "Auto-compaction failed: ~A")
+                                     (otherwise
+                                      "Compaction failed: ~A"))
+                                   (princ-to-string condition)))))
+                         (emit-agent-event
+                          agent :compaction-end
+                          :reason reason
+                          :result nil
+                          :aborted aborted-p
+                          :will-retry nil
+                          :error-message error-message)
+                         (emit-session-compact-failed
+                          agent
+                          :reason reason
+                          :error-message error-message
+                          :aborted aborted-p
+                          :will-retry-p nil
+                          :from-extension-p from-extension-p)
+                         nil)))))
             (sb-thread:with-mutex
                 ((agent-state-lock agent))
               (when (eq (agent-compaction-cancellation agent)
@@ -927,6 +978,50 @@ Be concise. Focus on what's needed to understand the kept suffix.")
       :reason reason
       :will-retry-p will-retry-p))))
 
+(defun omit-resumed-length-stop (agent)
+  ;; pi@4a080252f agent-session.ts _prepareRun. A new prompt recovers a
+  ;; length stop that ended below the model's output limit, and #11227
+  ;; drops the tool results that answered that call.
+  (let ((session (agent-session agent))
+        (message (last-agent-assistant-message agent)))
+    (unless (and (agent-auto-compact-p agent)
+                 session
+                 (typep message 'cadr-ai:assistant-message)
+                 (find message (session-messages session) :test #'eq))
+      (return-from omit-resumed-length-stop nil))
+    (let ((compaction
+            (latest-compaction-entry
+             (session-path-entries session))))
+      (when (and compaction
+                 (<= (cadr-ai:assistant-message-timestamp message)
+                     (session-entry-timestamp compaction)))
+        (return-from omit-resumed-length-stop nil)))
+    (let* ((selected (agent-model agent))
+           (limits
+             (cond
+               ((null selected) nil)
+               ((virtual-model-p selected)
+                (handler-case
+                    (cadr-ai:model-metadata-max-output-tokens
+                     (cadr-ai:find-model-metadata
+                      (cadr-ai:assistant-message-provider message)
+                      (cadr-ai:assistant-message-model message)))
+                  (cadr-ai:configuration-error () nil)))
+               ((and (eq (cadr-ai:model-provider selected)
+                         (cadr-ai:assistant-message-provider message))
+                     (string= (cadr-ai:model-id selected)
+                              (cadr-ai:assistant-message-model message)))
+                (cadr-ai:model-max-tokens selected)))))
+      (when (and limits
+                 (plusp limits)
+                 (eq :length
+                     (cadr-ai:assistant-message-stop-reason message))
+                 (< (cadr-ai:usage-output
+                     (cadr-ai:assistant-message-usage message))
+                    limits))
+        (omit-recovery-attempt agent message))))
+  nil)
+
 (defun maybe-compact-agent (agent)
   (when (agent-auto-compact-p agent)
     (%compact-agent agent :reason :threshold)))
@@ -942,14 +1037,22 @@ Be concise. Focus on what's needed to understand the kept suffix.")
             (string-downcase
              (cadr-ai:assistant-message-error-message
               message))))
-      (some
-       (lambda (needle)
-         (search needle text))
-       '("context_length_exceeded"
-         "context length"
-         "context window"
-         "maximum context"
-         "too many tokens"
-         "prompt is too long"
-         "input is too long"
-         "exceeds the context")))))
+      (or
+       (some
+        (lambda (needle)
+          (search needle text))
+        '("context_length_exceeded"
+          "context length"
+          "context window"
+          "maximum context"
+          "too many tokens"
+          "prompt is too long"
+          "input is too long"
+          "exceeds the context"))
+       ;; pi@4a080252f #11016. HTTP 413 is overflow for every provider.
+       ;; context-overflow-p still rejects non-overflow text such as
+       ;; rate limits that happen to mention 413.
+       (and
+        (cadr-ai::request-size-overflow-text-p
+         (cadr-ai:assistant-message-error-message message))
+        (cadr-ai:context-overflow-p message))))))

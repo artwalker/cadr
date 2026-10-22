@@ -109,11 +109,11 @@
      :oauth-refresh-strategy :anthropic
      :oauth-to-auth-strategy :access-token
      :model-filter-strategy nil)
-    (:id :azure-openai-responses
-     :baseline-source "packages/ai/src/providers/azure-openai-responses.ts:7"
-     :name "Azure OpenAI"
+    (:id :azure
+     :baseline-source "packages/ai/src/providers/azure.ts:44"
+     :name "Azure"
      :protocol :azure-openai-responses
-     :protocols (:azure-openai-responses)
+     :protocols (:azure-openai-responses :openai-completions)
      :base-url ""
      :auth-types (:api-key)
      :default-model "gpt-5.4"
@@ -125,7 +125,7 @@
      :reasoning-p nil
      :oauth-metadata nil
      :api-key-name "Azure OpenAI API key"
-     :environment-names ("AZURE_OPENAI_API_KEY" "AZURE_OPENAI_BASE_URL" "AZURE_OPENAI_RESOURCE_NAME" "AZURE_OPENAI_DEPLOYMENT_NAME")
+     :environment-names ("AZURE_OPENAI_API_KEY" "AZURE_OPENAI_BASE_URL" "AZURE_OPENAI_RESOURCE_NAME" "AZURE_OPENAI_DEPLOYMENT_NAME_MAP")
      :api-key-auth-strategy :environment
      :oauth-login-strategy nil
      :oauth-refresh-strategy nil
@@ -270,7 +270,7 @@
      :protocols (:anthropic-messages :openai-completions :openai-responses)
      :base-url "https://api.individual.githubcopilot.com"
      :auth-types (:api-key :oauth)
-     :default-model "gpt-5.4"
+     :default-model "gpt-6.1-sol"
      :key-environment "COPILOT_GITHUB_TOKEN"
      :required-environment nil
      :dynamic-models-p nil
@@ -376,9 +376,9 @@
     (:id :kimi-coding
      :baseline-source "packages/ai/src/providers/kimi-coding.ts:8"
      :name "Kimi For Coding"
-     :protocol :anthropic-messages
-     :protocols (:anthropic-messages)
-     :base-url "https://api.kimi.com/coding"
+     :protocol :openai-completions
+     :protocols (:openai-completions)
+     :base-url "https://api.kimi.com/coding/v1"
      :auth-types (:api-key :oauth)
      :default-model "kimi-for-coding"
      :key-environment "KIMI_API_KEY"
@@ -512,7 +512,7 @@
      :protocols (:openai-completions)
      :base-url "https://integrate.api.nvidia.com/v1"
      :auth-types (:api-key)
-     :default-model "nvidia/nemotron-3-super-120b-a12b"
+     :default-model "nvidia/nemotron-3.5-super-vl-120b-a12b"
      :key-environment "NVIDIA_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -556,7 +556,7 @@
      :protocols (:openai-codex-responses)
      :base-url "https://chatgpt.com/backend-api"
      :auth-types (:oauth)
-     :default-model "gpt-5.5"
+     :default-model "gpt-6.1-sol"
      :key-environment nil
      :required-environment nil
      :dynamic-models-p nil
@@ -576,7 +576,7 @@
      :name "OpenCode Zen"
      :protocol :openai-completions
      :protocols (:anthropic-messages :google-generative-ai :openai-completions :openai-responses)
-     :base-url "https://opencode.ai/zen/v1"
+     :base-url "https://opencode.ai/inference/v1"
      :auth-types (:api-key)
      :default-model "kimi-k2.6"
      :key-environment "OPENCODE_API_KEY"
@@ -597,8 +597,8 @@
      :baseline-source "packages/ai/src/providers/opencode-go.ts:9"
      :name "OpenCode Go"
      :protocol :openai-completions
-     :protocols (:anthropic-messages :openai-completions :openai-responses)
-     :base-url "https://opencode.ai/zen/go/v1"
+     :protocols (:anthropic-messages :google-generative-ai :openai-completions :openai-responses)
+     :base-url "https://opencode.ai/inference/go/v1"
      :auth-types (:api-key)
      :default-model "kimi-k2.6"
      :key-environment "OPENCODE_API_KEY"
@@ -712,7 +712,7 @@
      :protocols (:pi-messages)
      :base-url "https://radius.pi.dev"
      :auth-types (:api-key :oauth)
-     :default-model "auto"
+     :default-model "balanced"
      :key-environment "RADIUS_API_KEY"
      :required-environment nil
      :dynamic-models-p t
@@ -800,7 +800,7 @@
      :protocols (:openai-completions)
      :base-url "https://api.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -822,7 +822,7 @@
      :protocols (:openai-completions)
      :base-url "https://token-plan-ams.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_TOKEN_PLAN_AMS_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -844,7 +844,7 @@
      :protocols (:openai-completions)
      :base-url "https://token-plan-cn.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_TOKEN_PLAN_CN_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -866,7 +866,7 @@
      :protocols (:openai-completions)
      :base-url "https://token-plan-sgp.xiaomimimo.com/v1"
      :auth-types (:api-key)
-     :default-model "mimo-v2.5-pro"
+     :default-model "mimo-v2.6-pro"
      :key-environment "XIAOMI_TOKEN_PLAN_SGP_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -1001,7 +1001,7 @@
              :message (format nil "Unknown provider: ~A" id))))
 
 (defun provider-oauth-subscription-p (id)
-  ;; pi@ecac0a9c4 core/model-runtime.ts:462-464 isUsingSubscription:
+  ;; pi@4a080252f core/model-runtime.ts:462-464 isUsingSubscription:
   ;; true when the provider's OAuth registration is subscription-backed.
   (let ((definition (gethash id *provider-definitions*)))
     (and definition

@@ -30,6 +30,8 @@
    #:model-supports-images-p
    #:model-supports-tools-p
    #:model-reasoning-p
+   #:model-input-limits
+   #:model-prompt-cache
    #:text-content
    #:make-text-content
    #:text-content-text
@@ -48,8 +50,10 @@
    #:tool-call-id
    #:tool-call-name
    #:tool-call-arguments
+   #:tool-call-arguments-error
    #:tool-call-thought-signature
    #:tool-call-namespace
+   #:parse-tool-call-arguments
    #:cost
    #:make-cost
    #:cost-input
@@ -86,6 +90,7 @@
    #:assistant-message-end-turn
    #:assistant-message-diagnostics
    #:assistant-message-timestamp
+   #:assistant-message-duration-ms
    #:assistant-message-provider-thinking-level
    #:assistant-message-diagnostic
    #:make-assistant-message-diagnostic
@@ -102,6 +107,9 @@
    #:tool-result-message-added-tool-names
    #:tool-result-message-is-error
    #:tool-result-message-timestamp
+   #:tool-result-message-duration-ms
+   #:tool-result-message-nested-calls
+   #:tool-result-message-usage
    #:tool
    #:make-tool
    #:tool-name
@@ -110,11 +118,55 @@
    #:tool-constrained-sampling
    #:tool-execution-mode
    #:tool-executor
+   #:tool-reference
+   #:make-tool-reference
+   #:tool-reference-name
+   #:system-message
+   #:make-system-message
+   #:system-message-p
+   #:system-message-content
+   #:system-message-sections
+   #:system-message-tools-added
+   #:system-message-tools-removed
+   #:system-message-timestamp
    #:context
    #:make-context
    #:context-system-prompt
    #:context-messages
    #:context-tools
+   #:transcript-context
+   #:make-transcript-context
+   #:transcript-context-messages
+   #:tool-state-changes
+   #:make-tool-state-changes
+   #:tool-state-changes-tools-added
+   #:tool-state-changes-tools-removed
+   #:transcript-tools
+   #:make-transcript-tools
+   #:transcript-tools-request-tools
+   #:transcript-tools-anchors-additions
+   #:create-initial-system-message
+   #:normalize-context
+   #:ensure-transcript-context
+   #:transcript-context-as-request-context
+   #:coerce-provider-request-context
+   #:get-initial-system-message
+   #:without-initial-system-message
+   #:get-current-tools
+   #:get-current-system-message
+   #:get-current-system-prompt
+   #:collapse-system-messages
+   #:project-forced-system-prompt
+   #:resolve-transcript
+   #:to-tool-declaration
+   #:declarations-equal
+   #:get-tool-state-changes
+   #:get-declared-tools
+   #:has-tool-redefinitions
+   #:has-non-additive-tool-changes
+   #:resolve-transcript-tools
+   #:get-system-message-text
+   #:render-system-message-update
    #:stream-event
    #:make-stream-event
    #:stream-event-type
@@ -236,6 +288,7 @@
    #:model-metadata-thinking-level-map
    #:model-metadata-headers
    #:model-metadata-compat
+   #:model-metadata-prompt-cache
    #:model-metadata-input-price
    #:model-metadata-output-price
    #:model-metadata-cache-read-price
@@ -471,11 +524,41 @@
    #:radius-authorization-url
    #:materialize-cloudflare-url
    #:radius-models-from-config
+   #:load-radius-gateway-config
+   #:+default-radius-gateway+
+   #:normalize-radius-gateway
+   #:merge-radius-models
+   #:radius-baseline-models
    #:build-request
    #:parse-complete-response
    #:complete-chat
    #:stream-chat
-   #:generate-images))
+   #:generate-images
+   #:classifier-model
+   #:make-classifier-model
+   #:classifier-model-id
+   #:classifier-model-name
+   #:classifier-model-api
+   #:classifier-model-provider
+   #:classifier-model-base-url
+   #:classifier-model-input
+   #:classifier-model-context-window
+   #:classifier-model-input-price
+   #:classifier-model-output-price
+   #:classifier-model-compat
+   #:classifier-context
+   #:make-classifier-context
+   #:classifier-context-state
+   #:classifier-context-questions
+   #:classifier-context-images
+   #:classifier-result
+   #:classifier-result-stop-reason
+   #:classifier-result-answers
+   #:classifier-result-error-message
+   #:classifier-result-usage
+   #:find-classifier-model
+   #:list-classifier-models
+   #:classify-model))
 
 (in-package #:cadr-ai)
 

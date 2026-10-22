@@ -76,7 +76,9 @@
                :render-shell
                (extension-tool-definition-render-shell definition)
                :source
-               (extension-definition-origin definition)))))
+               (extension-definition-origin definition)
+               :exposure
+               (extension-tool-definition-exposure definition)))))
 
 (defun extension-host-current-active-tools (host)
   (let ((agent (extension-host-agent host)))
@@ -230,7 +232,7 @@
   message)
 
 (defun flush-pending-custom-messages (host)
-  ;; pi@ecac0a9c4 agent-session.ts #8537: context-only custom messages
+  ;; pi@4a080252f agent-session.ts #8537: context-only custom messages
   ;; queued during a run land after the turn's tool results.
   (unless host
     (return-from flush-pending-custom-messages nil))
@@ -241,7 +243,8 @@
     (setf (extension-host-pending-custom-messages host) nil)
     (when agent
       (dolist (message pending)
-        (append-extension-custom-message host agent message)))))
+        (append-extension-custom-message host agent message)))
+    pending))
 
 (defun flush-agent-pending-custom-messages (agent)
   (when agent
@@ -262,6 +265,14 @@
       (error
        'extension-execution-error
        :message "send-message requires an attached agent"))
+    (when (and (extension-custom-message-p message)
+               trigger-turn-p
+               (null deliver-as)
+               (not (agent-busy-p agent)))
+      ;; The run appends the custom message once. A user copy would
+      ;; put the same text in the prompt a second time.
+      (return-from extension-host-send-message
+        (agent-prompt-custom agent message)))
     (let ((queued-message
             (cond
               ((extension-custom-message-p message)
@@ -467,7 +478,7 @@
     (context tool
      &key label prompt-snippet prompt-guidelines
        constrained-sampling render-shell prepare-arguments
-       render-call render-result)
+       render-call render-result (default-active t))
   (assert-active-extension-context context)
   (unless (typep tool 'cadr-ai:tool)
     (error
@@ -497,10 +508,13 @@
                call-id arguments))
             :render-call render-call
             :render-result render-result
+            :default-active (not (null default-active))
             :bundle bundle)))
     (validate-extension-resource-name "tool" name)
     (validate-extension-schema
-     name (cadr-ai:tool-parameters tool))
+     name
+     (cadr-ai:tool-parameters tool)
+     (extension-bundle-path bundle))
     (unless (and (stringp (or label name))
                  (or (null prompt-snippet) (stringp prompt-snippet))
                  (listp prompt-guidelines)

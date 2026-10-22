@@ -774,10 +774,10 @@
       " │ !!                    │ Run bash command (excluded from context) │"
       plain :test #'string=))))
 
-(test fork-during-active-tool-leaves-replacement-empty
+(test fork-during-active-tool-keeps-only-the-tool-baseline
   ;; Baseline #8724: fork while a tool is running settles that turn on
-  ;; the outgoing session. The replacement starts empty, and the next
-  ;; prompt sees only the new user message.
+  ;; the outgoing session. The replacement keeps the tools-only system
+  ;; ancestor but no conversation turn.
   (with-test-directory (directory)
     (let* ((started (sb-thread:make-semaphore :count 0))
            (captured nil)
@@ -852,6 +852,7 @@
                  (mapcar
                   (lambda (message)
                     (typecase message
+                      (cadr-ai:system-message :system)
                       (cadr-ai:user-message :user)
                       (cadr-ai:assistant-message :assistant)
                       (cadr-ai:tool-result-message :tool)
@@ -899,8 +900,30 @@
                  (is (string= "first prompt" text))
                  (is (eq fork
                          (cadr-agent:agent-session agent)))
-                 (is (null
-                      (cadr-agent:session-messages fork)))
+                 (let ((messages
+                         (cadr-agent:session-messages fork)))
+                   (is (= 1 (length messages)))
+                   (is (typep (first messages)
+                              'cadr-ai:system-message))
+                   (is (string=
+                        ""
+                        (cadr-ai:system-message-content
+                         (first messages))))
+                   (is
+                    (equal
+                     '("block")
+                     (mapcar
+                      #'cadr-ai:tool-name
+                      (cadr-ai:system-message-tools-added
+                       (first messages)))))
+                   (is (notany
+                        (lambda (message)
+                          (or
+                           (typep message 'cadr-ai:user-message)
+                           (typep message 'cadr-ai:assistant-message)
+                           (typep message
+                                  'cadr-ai:tool-result-message)))
+                        messages)))
                  (is
                   (find-if
                    (lambda (message)
@@ -908,8 +931,13 @@
                       message
                       'cadr-ai:tool-result-message))
                    (cadr-agent:session-messages source)))
+                 (setf
+                  (cadr-agent::agent-tool-filter-function agent)
+                  (constantly nil))
+                 (cadr-agent::refresh-agent-extension-tools agent)
                  (cadr-agent:agent-prompt agent "next prompt")
-                 (is (equal '(:user) (first captured))))))
+                 (is (equal '(:system :system :user)
+                            (first captured))))))
         (cadr-agent:agent-shutdown agent)))))
 
 (test unflushed-persisted-fork-waits-for-the-first-assistant
@@ -978,3 +1006,30 @@
            (cadr-cli::clone-agent-session
             agent directory)
            'cadr-agent:session)))))
+
+(test offline-bug-report-writes-a-local-zip
+  (with-test-directory (root)
+    (let ((agent
+            (cadr-agent:make-agent
+             :provider :mock
+             :model (cli-mock-model)))
+          (output (make-string-output-stream))
+          (previous (uiop:getenv "CADR_OFFLINE")))
+      (unwind-protect
+           (uiop:with-current-directory (root)
+             (setf (uiop:getenv "CADR_OFFLINE") "1")
+             (is (cadr-cli::handle-session-command
+                  "/bug" agent
+                  :cwd root
+                  :output output))
+             (let ((zips
+                     (directory
+                      (merge-pathnames
+                       "cadr-bug-report-*.zip" root))))
+               (is (= 1 (length zips))))
+             (let ((text (get-output-stream-string output)))
+               (is (search "Bug report exported to:" text))
+               (is (null (search "Upload" text)))))
+        (if previous
+            (setf (uiop:getenv "CADR_OFFLINE") previous)
+            (sb-posix:unsetenv "CADR_OFFLINE"))))))

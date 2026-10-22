@@ -9,14 +9,84 @@
     :after-provider-response
     :user-bash))
 
-(test goal10-extension-event-set-is-refrozen-at-thirty-five
-  (is (= 37
-         (length
-          cadr-agent::+extension-hook-events+)))
-  (is (= 37
-         (length
-          (remove-duplicates
-           cadr-agent::+extension-hook-events+))))
+;; pi@4a080252f packages/coding-agent/src/core/extensions/types.ts
+;; ExtensionAPI.on. cache_warming_decision is not a hook-table member.
+;; tool_call / tool_result are the three-phase split.
+(defparameter +v140-extension-on-events+
+  '("project_trust"
+    "resources_discover"
+    "session_start"
+    "session_info_changed"
+    "session_before_switch"
+    "session_before_fork"
+    "session_before_compact"
+    "session_compact"
+    "session_compact_failed"
+    "session_shutdown"
+    "mcp_servers_change"
+    "session_before_tree"
+    "session_tree"
+    "context"
+    "context_with_system"
+    "cache_warming_decision"
+    "before_provider_request"
+    "before_provider_headers"
+    "after_provider_response"
+    "provider_stream_event"
+    "before_agent_start"
+    "agent_start"
+    "agent_end"
+    "agent_before_settle"
+    "agent_settled"
+    "ui_prompt_start"
+    "ui_prompt_end"
+    "turn_start"
+    "turn_end"
+    "message_start"
+    "message_update"
+    "message_end"
+    "tool_execution_start"
+    "tool_execution_update"
+    "tool_execution_end"
+    "model_select"
+    "thinking_level_select"
+    "tool_call"
+    "tool_result"
+    "user_bash"
+    "input"))
+
+(defun v140-cadr-extension-events ()
+  (sort
+   (append
+    (loop for name in +v140-extension-on-events+
+          unless (member name
+                         '("tool_call" "tool_result"
+                           "cache_warming_decision")
+                         :test #'string=)
+            collect (intern
+                     (substitute #\- #\_ (string-upcase name))
+                     :keyword))
+    '(:tool-call-before :tool-call-after :tool-call-error))
+   #'string<))
+
+(test goal10-extension-event-set-is-refrozen-at-forty-one
+  (let ((expected (v140-cadr-extension-events))
+        (actual
+          (sort
+           (copy-list cadr-agent::+extension-hook-events+)
+           #'string<)))
+    (is (= 41 (length +v140-extension-on-events+)))
+    (is (equal expected actual))
+    (is (= (length expected)
+           (length
+            (remove-duplicates
+             cadr-agent::+extension-hook-events+)))))
+  (is (member
+       :agent-before-settle
+       cadr-agent::+extension-hook-events+))
+  (is (member
+       :context-with-system
+       cadr-agent::+extension-hook-events+))
   (is (member
        :session-compact-failed
        cadr-agent::+extension-hook-events+))

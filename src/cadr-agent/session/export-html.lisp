@@ -37,6 +37,8 @@
   (funcall *export-html-asset-reader* "template.js"))
 (defparameter +export-html-marked-js+
   (funcall *export-html-asset-reader* "vendor/marked.min.js"))
+(defparameter +export-html-marked-cjk-friendly-js+
+  (funcall *export-html-asset-reader* "vendor/marked-cjk-friendly.min.js"))
 (defparameter +export-html-highlight-js+
   (funcall *export-html-asset-reader* "vendor/highlight.min.js"))
 
@@ -66,6 +68,7 @@
    '("{{CSS}}"
      "{{SESSION_DATA}}"
      "{{MARKED_JS}}"
+     "{{MARKED_CJK_FRIENDLY_JS}}"
      "{{HIGHLIGHT_JS}}"
      "{{JS}}")))
 
@@ -78,6 +81,8 @@
   (mapcar #'export-html-utf8-octets +export-html-html-parts+))
 (defparameter +export-html-marked-js-octets+
   (export-html-utf8-octets +export-html-marked-js+))
+(defparameter +export-html-marked-cjk-friendly-js-octets+
+  (export-html-utf8-octets +export-html-marked-cjk-friendly-js+))
 (defparameter +export-html-highlight-js-octets+
   (export-html-utf8-octets +export-html-highlight-js+))
 (defparameter +export-html-template-js-octets+
@@ -651,6 +656,23 @@
      (write-string ",\"isError\":" stream)
      (cadr-ai::write-json-value
       (cadr-ai:tool-result-message-is-error message) stream)
+     (when (integerp
+            (cadr-ai:tool-result-message-duration-ms message))
+       (write-string ",\"durationMs\":" stream)
+       (cadr-ai::write-json-value
+        (cadr-ai:tool-result-message-duration-ms message)
+        stream))
+     (when (cadr-ai:tool-result-message-nested-calls message)
+       (write-string ",\"nestedCalls\":" stream)
+       (cadr-ai::write-json-value
+        (nested-tool-calls-to-json
+         (cadr-ai:tool-result-message-nested-calls message))
+        stream))
+     (when (cadr-ai:tool-result-message-usage message)
+       (write-string ",\"usage\":" stream)
+       (write-export-json-usage
+        stream
+        (cadr-ai:tool-result-message-usage message)))
      (write-string ",\"timestamp\":" stream)
      (cadr-ai::write-json-value
       (cadr-ai:tool-result-message-timestamp message) stream)
@@ -676,8 +698,16 @@
         (write-export-json-message
          stream (session-entry-message entry))
         (write-char #\} stream))
-      (cadr-ai::write-json-value
-       (session-entry-to-json entry) stream)))
+      (let ((object (session-entry-to-json entry)))
+        (when (eq :context-edit (session-entry-type entry))
+          (remhash "content" object)
+          (cadr-ai::json-put
+           object "replacement"
+           (if (eq :omit (session-entry-data entry))
+               'null
+               (cadr-ai::json-object
+                "content" (session-entry-data entry)))))
+        (cadr-ai::write-json-value object stream))))
 
 (defun stringify-export-html-session (session)
   (let ((cadr-ai::*json-sort-object-keys* nil))
@@ -737,8 +767,10 @@
         (write-sequence (third html-parts) stream)
         (write-sequence +export-html-marked-js-octets+ stream)
         (write-sequence (fourth html-parts) stream)
-        (write-sequence +export-html-highlight-js-octets+ stream)
+        (write-sequence +export-html-marked-cjk-friendly-js-octets+ stream)
         (write-sequence (fifth html-parts) stream)
+        (write-sequence +export-html-highlight-js-octets+ stream)
+        (write-sequence (sixth html-parts) stream)
         (write-sequence +export-html-template-js-octets+ stream)
-        (write-sequence (sixth html-parts) stream))
+        (write-sequence (seventh html-parts) stream))
       (pathname path))))

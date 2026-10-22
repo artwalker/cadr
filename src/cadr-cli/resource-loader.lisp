@@ -279,42 +279,186 @@ Returns the deduped list and a list of collision records
           :key (lambda (entry)
                  (getf entry :name)))))
 
+(defstruct git-footer-paths
+  repo-directory
+  common-git-directory
+  head-path)
+
+(defun parent-directory-pathname (directory)
+  (let* ((normalized
+           (uiop:ensure-directory-pathname
+            directory))
+         (parts
+           (pathname-directory normalized)))
+    (when (> (length parts) 1)
+      (make-pathname
+       :directory (butlast parts)
+       :defaults normalized))))
+
+(defun find-git-footer-paths (cwd)
+  (loop
+    with directory =
+    (uiop:ensure-directory-pathname
+     (uiop:ensure-absolute-pathname cwd))
+    for git-path =
+    (merge-pathnames ".git" directory)
+    do
+    (when (probe-file git-path)
+      (handler-case
+          (if (uiop:directory-pathname-p
+               (truename git-path))
+              (let* ((git-directory
+                       (uiop:ensure-directory-pathname
+                        (truename git-path)))
+                     (head
+                       (merge-pathnames
+                        "HEAD" git-directory)))
+                (when (probe-file head)
+                  (return
+                    (make-git-footer-paths
+                     :repo-directory directory
+                     :common-git-directory
+                     git-directory
+                     :head-path head))))
+              (let* ((content
+                       (string-trim
+                        '(#\Space #\Tab
+                          #\Newline #\Return)
+                        (uiop:read-file-string
+                         git-path
+                         :external-format
+                         :utf-8)))
+                     (prefix "gitdir: "))
+                (when
+                    (uiop:string-prefix-p
+                     prefix content)
+                  (let* ((git-directory
+                           (uiop:ensure-directory-pathname
+                            (uiop:ensure-absolute-pathname
+                             (subseq
+                              content
+                              (length prefix))
+                             directory)))
+                         (head
+                           (merge-pathnames
+                            "HEAD"
+                            git-directory))
+                         (common-file
+                           (merge-pathnames
+                            "commondir"
+                            git-directory))
+                         (common-directory
+                           (if
+                               (probe-file
+                                common-file)
+                               (uiop:ensure-directory-pathname
+                                (uiop:ensure-absolute-pathname
+                                 (string-trim
+                                  '(#\Space #\Tab
+                                    #\Newline #\Return)
+                                  (uiop:read-file-string
+                                   common-file
+                                   :external-format
+                                   :utf-8))
+                                 git-directory))
+                               git-directory)))
+                    (when (probe-file head)
+                      (return
+                        (make-git-footer-paths
+                         :repo-directory directory
+                         :common-git-directory
+                         common-directory
+                         :head-path head)))))))
+        (condition ()
+          (return nil))))
+    (let ((parent
+            (parent-directory-pathname
+             directory)))
+      (unless parent
+        (return nil))
+      (setf directory parent))))
+
+(defun directory-inside-p (ancestor directory)
+  (let* ((parent (string-right-trim "/" ancestor))
+         (child (string-right-trim "/" directory)))
+    (and (plusp (length parent))
+         (uiop:string-prefix-p
+          (concatenate 'string parent "/")
+          child))))
+
+(defun context-shadow-key (directory filename)
+  (namestring
+   (merge-pathnames
+    filename
+    (uiop:ensure-directory-pathname
+     (canonical-directory-name directory)))))
+
 (defun load-context-file-from-dir (directory)
+  ;; Keep the path as written. probe-file follows a symlink and would
+  ;; make a worktree AGENTS.md look like the main repo's file.
   (dolist (name '("AGENTS.override.md" "AGENTS.md"
                   "AGENTS.MD" "CLAUDE.md" "CLAUDE.MD"))
-    (let ((path
-            (existing-file
-             (merge-pathnames name directory))))
-      (when path
+    (let ((path (merge-pathnames name directory)))
+      (when (and (probe-file path)
+                 (not (uiop:directory-exists-p path)))
         (return path)))))
 
+(defun find-shadowed-context-file (cwd)
+  ;; pi@4a080252f resource-loader.ts findShadowedContextFile. A nested
+  ;; linked worktree and its main repo share one logical scope. The
+  ;; shadowed path is the main repo root plus the worktree file's name,
+  ;; not the file's real path: a symlink still names the worktree copy.
+  (let ((paths (find-git-footer-paths cwd)))
+    (when paths
+      (let* ((common
+               (canonical-directory-name
+                (git-footer-paths-common-git-directory paths)))
+             (worktree
+               (canonical-directory-name
+                (git-footer-paths-repo-directory paths)))
+             (main
+               (parent-directory common)))
+        (when (and main
+                   (directory-inside-p (namestring main) worktree))
+          (let ((main-git
+                  (canonical-directory-name
+                   (merge-pathnames ".git" main))))
+            (when (string= main-git common)
+              (let ((file
+                      (load-context-file-from-dir
+                       (git-footer-paths-repo-directory paths))))
+                (when file
+                  (context-shadow-key
+                   main
+                   (file-namestring file)))))))))))
+
 (defun load-project-context-files (&key cwd agent-directory)
-  ;; pi@ecac0a9c4 core/resource-loader.ts:118-155: global agent-dir
-  ;; context first, then cwd→root ancestors rootward-first. First
-  ;; existing candidate wins per directory; paths are deduped.
-  (let ((ancestors nil)
-        (seen (make-hash-table :test #'equal)))
-    (labels ((remember (path)
-               (let ((key (namestring (truename path))))
-                 (unless (gethash key seen)
-                   (setf (gethash key seen) t)
-                   (push path ancestors)))))
-      (loop for directory in (ancestor-directories cwd)
-            for match = (load-context-file-from-dir directory)
-            when match do (remember match))
-      (let ((global
-              (when agent-directory
-                (load-context-file-from-dir
-                 (uiop:ensure-directory-pathname
-                  agent-directory)))))
-         (append
-          (if (and global
-                   (not (gethash
-                         (namestring (truename global))
-                         seen)))
-              (list global)
-              nil)
-          ancestors)))))
+  ;; pi@4a080252f core/resource-loader.ts. Global agent-dir context
+  ;; first, then cwd→root ancestors rootward-first. A nested worktree
+  ;; drops only the main repo file of the same name.
+  (let* ((ancestors nil)
+         (seen (make-hash-table :test #'equal))
+         (shadowed (find-shadowed-context-file cwd))
+         (global
+           (when agent-directory
+             (load-context-file-from-dir
+              (uiop:ensure-directory-pathname
+               agent-directory)))))
+    (when global
+      (setf (gethash (namestring global) seen) t))
+    (loop for directory in (ancestor-directories cwd)
+          for match = (load-context-file-from-dir directory)
+          when (and match
+                    (not (gethash (namestring match) seen))
+                    (not (and shadowed
+                              (string=
+                               shadowed
+                               (context-shadow-key
+                                directory
+                                (file-namestring match))))))
+            do (setf (gethash (namestring match) seen) t)
+               (push match ancestors))
+    (append (and global (list global)) ancestors)))
 
 (defun nearest-config-file (configs name)
   (loop for directory in configs

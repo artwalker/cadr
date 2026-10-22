@@ -253,7 +253,22 @@
       (is (find "https://github.com/sharkdp/fd/releases/latest"
                 (first seen) :test #'string=))
       (is (null (search "api.github.com"
-                        (format nil "~{~A~^ ~}" (first seen)))))))
+                        (format nil "~{~A~^ ~}" (first seen)))))
+      ;; pi@4a080252f tools-manager.ts getLatestVersion sends
+      ;; getPiUserAgent(VERSION). CHANGELOG 1.4.0: GitHub tool release
+      ;; checks use that detailed User-Agent and no longer send
+      ;; pi-coding-agent.
+      (let* ((argv (first seen))
+             (marker (position "-A" argv :test #'string=))
+             (agent (and marker (nth (1+ marker) argv))))
+        (is (string=
+             (format nil "cadr/~A (~(~A~); sbcl/~A; ~(~A~))"
+                     (cadr-ai::cadr-version)
+                     (software-type)
+                     (lisp-implementation-version)
+                     (machine-type))
+             agent))
+        (is (null (string= "cadr-coding-agent" agent))))))
   (flet ((runner (arguments &key output-file)
            (declare (ignore arguments output-file))
            (values

@@ -204,8 +204,8 @@ def validate_unmodeled_site_review(
         raise HarnessFailure(
             "stale unmodeled-sink review entries: " + ", ".join(stale)
         )
-PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.86.0"
-PI_AI_MODEL_DATA_SHA256 = "d52448c827a72c8fdcf9f0c96c9966704a8525a6a0ae181f4bd886c584d727e3"
+PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@1.4.0"
+PI_AI_MODEL_DATA_SHA256 = "b40e2ba8bb6fc332908f8b96e837dc2d1fdfb45eb9cd382f5aed111462981e3c"
 KEYS = {
     "enter": b"\r",
     "escape": b"\x1b",
@@ -619,9 +619,10 @@ def extract_baseline_extension_events(repo: Path, commit: str) -> list[str]:
                 interface_extends[match.group(1)] = base
 
     for match in re.finditer(
-        r"export type (\w+)\s*=\s*\n((?:\s*\|\s*\w+\s*\n?)+);", source
+        r"export type (\w+)\s*=\s*(\|?\s*\w+(?:\s*\|\s*\w+)*)\s*;",
+        source,
     ):
-        aliases[match.group(1)] = re.findall(r"\|\s*(\w+)", match.group(2))
+        aliases[match.group(1)] = re.findall(r"\w+", match.group(2))
     ingest_interfaces(source)
     # v0.86.0 re-exports CacheWarmingDecisionEvent from cache-warmer.ts.
     ingest_interfaces(

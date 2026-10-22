@@ -8,9 +8,13 @@
    #:agent-system-prompt-options
    #:agent-messages
    #:agent-busy-p
+   #:agent-compacting-p
    #:agent-session
    #:agent-prompt
+   #:agent-finish-turn-function
    #:agent-continue
+   #:declare-tool-changes
+   #:agent-prepare-prompt-loadout-function
    #:agent-steer
    #:agent-follow-up
    #:agent-next-turn
@@ -24,6 +28,34 @@
    #:agent-append-message
    #:agent-set-model
    #:agent-set-thinking-level
+   #:virtual-model-p
+   #:create-virtual-model
+   #:register-virtual-model
+   #:unregister-virtual-model
+   #:registered-virtual-model
+   #:registered-virtual-models
+   #:virtual-model-generation
+   #:resolve-virtual-model
+   #:make-virtual-model-route
+   #:virtual-model-route-model
+   #:virtual-model-route-thinking-level
+   #:virtual-model-route-state
+   #:virtual-model-route-request-reason
+   #:virtual-model-route-request-state
+   #:virtual-model-route-request-messages
+   #:virtual-model-route-request-previous
+   #:virtual-model-route-request-failed
+   #:branch-selection
+   #:branch-selection-provider
+   #:branch-selection-model-id
+   #:virtual-model-state
+   #:tool-search-tokenize
+   #:tool-search-document
+   #:tool-search-rank
+   #:tool-search-load
+   #:make-tool-search-tool
+   #:tool-search-match-name
+   #:tool-search-match-score
    #:agent-navigate-tree
    #:collect-entries-for-branch-summary
    #:prepare-branch-entries
@@ -75,11 +107,21 @@
    #:call-with-file-mutation-queue
    #:custom-agent-message
    #:make-custom-agent-message
+   #:agent-system-message
+   #:make-agent-system-message
+   #:agent-system-message-p
+   #:agent-system-message-content
+   #:agent-system-message-tools-added
    #:branch-summary-message
    #:make-branch-summary-message
    #:compaction-summary-agent-message
    #:make-compaction-summary-agent-message
    #:convert-agent-messages-to-llm
+   #:make-cache-warmer
+   #:cache-warmer-start
+   #:refresh-cache-warmer
+   #:cache-warmer-status
+   #:get-cache-warming-delay-ms
    #:file-operations
    #:make-file-operations
    #:file-operations-read
@@ -172,6 +214,34 @@
    #:extension-api-set-label
    #:extension-api-events-on
    #:extension-api-events-emit
+   #:extension-api-register-mcp-server
+   #:extension-api-unregister-mcp-server
+   #:extension-api-get-mcp-servers
+   #:validate-mcp-server-config
+   #:mcp-tool-exposure
+   #:mcp-namespace
+   #:load-mcp-config
+   #:add-mcp-server-config
+   #:remove-mcp-server-config
+   #:update-mcp-server-config
+   #:loaded-mcp-config-servers
+   #:loaded-mcp-config-errors
+   #:loaded-mcp-config-auto-enable-codemode
+   #:loaded-mcp-config-auto-enable-codemode-p
+   #:loaded-mcp-config-project-config
+   #:mcp-server-entry-name
+   #:mcp-server-entry-config
+   #:mcp-server-entry-source
+   #:mcp-server-entry-scope
+   #:mcp-server-entry-override
+   #:create-mcp-tool-name
+   #:render-mcp-servers-section
+   #:make-mcp-server-listing
+   #:mcp-server-listing-name
+   #:registered-mcp-server
+   #:registered-mcp-server-name
+   #:registered-mcp-server-config
+   #:registered-mcp-server-extension-path
    #:extension-context
    #:extension-context-cwd
    #:extension-context-agent
@@ -226,6 +296,7 @@
    #:extension-context-set-tools-expanded
    #:extension-context-register-provider
    #:extension-context-register-tool
+   #:extension-context-execute-tool
    #:extension-context-send-message
    #:extension-context-send-user-message
    #:extension-context-set-session-name
@@ -273,6 +344,8 @@
    #:session-entry-thinking-level
    #:session-entry-provider
    #:session-entry-model-id
+   #:session-entry-kind
+   #:session-entry-note
    #:session-entry-active-tool-names
    #:session-entry-from-id
    #:session-entry-details
@@ -310,8 +383,10 @@
    #:session-branch
    #:session-append-message
    #:session-append-compaction
+   #:session-append-context-edit
    #:session-append-thinking-level-change
    #:session-append-model-change
+   #:session-append-usage
    #:session-append-branch-summary
    #:session-append-custom
    #:session-append-custom-message
@@ -446,6 +521,7 @@
    #:harness-session-append-message
    #:harness-session-append-thinking-level
    #:harness-session-append-model
+   #:harness-session-append-usage
    #:harness-session-append-active-tools
    #:harness-session-append-compaction
    #:harness-session-append-custom
@@ -472,6 +548,7 @@
    #:make-tool-registry
    #:register-tool
    #:find-tool
+   #:registry-tools
    #:validate-tool-arguments))
 
 (in-package #:cadr-agent)

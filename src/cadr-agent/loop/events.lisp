@@ -2,16 +2,29 @@
 
 (defvar *agent-run-system-prompt* :use-agent-system-prompt)
 
+(defvar *agent-run-force-system-prompt* nil)
+
 (defvar *agent-run-new-messages* nil)
 
 (defparameter +non-retryable-assistant-error-pattern+
   (cl-ppcre:create-scanner
-   "(GoUsageLimitError|FreeUsageLimitError|Monthly usage limit reached|available balance|insufficient_quota|out of budget|quota exceeded|billing)"
+   "(GoUsageLimitError|FreeUsageLimitError|Monthly usage limit reached|available balance|insufficient_quota|out of budget|quota exceeded|billing|subscription_sharing_usage_limit_exceeded|subscription_sharing_workplace_individual_usage_limit_exceeded)"
    :case-insensitive-mode t))
 
 (defparameter +retryable-assistant-error-pattern+
   (cl-ppcre:create-scanner
-   "(overloaded|rate.?limit|too many requests|429|500|502|503|504|524|service.?unavailable|server.?error|internal.?error|provider.?returned.?error|network.?error|connection.?error|connection.?refused|connection.?lost|other side closed|fetch failed|getaddrinfo|ENOTFOUND|EAI_AGAIN|upstream.?connect|reset before headers|socket hang up|socket connection was closed|timed? out|timeout|terminated|websocket.?closed|websocket.?error|ended without|stream ended before message_stop|stream ended before a terminal response event|http2 request did not get a response|retry delay|you can retry your request|try your request again|please retry your request|ResourceExhausted)"
+   (concatenate
+    'string
+    "(overloaded|server_busy|servers are currently busy|currently experiencing high demand|model is at capacity|rate.?limit|too many requests|(?<![a-z0-9])(?:429|500|502|503|504|520|524)(?![a-z0-9])|service.?(?:is.?)?(?:temporarily.?)?unavailable|server.?error|internal.?error|provider.?returned.?(?:an.?)?error|exceeded request buffer limit while retrying upstream|unable to forward upstream|upstream.?request.?failed|upstream_stream_read_error|stream was interrupted|http/?2 stream failed|network.?error|connection.?error|connection.?refused|connection.?lost|other side closed|fetch failed|request to "
+    ;; Complement of JavaScript /\s/ with no u flag. cl-ppcre \s is only
+    ;; tab, linefeed, page, return, and space, so vertical tab and NBSP
+    ;; in the URL would still match \S (#10996).
+    "[^\\s\\x0b\\xa0"
+    (map 'string #'code-char '(#x1680 #x2000))
+    "-"
+    (map 'string #'code-char
+         '(#x200A #x2028 #x2029 #x202F #x205F #x3000 #xFEFF))
+    "]+ failed, reason:|getaddrinfo|ENOTFOUND|EAI_AGAIN|upstream.?connect|reset before headers|socket hang up|socket connection was closed|timed? out|timeout|terminated|websocket.?closed|websocket.?error|ended without|stream ended before message_stop|stream ended before a terminal response event|http2 request did not get a response|stream disconnected before completion|pending stream has been canceled|retry delay|you can retry your request|try your request again|please retry your request|ResourceExhausted|subscription_sharing_usage_unavailable|subscription_sharing_user_unavailable)")
    :case-insensitive-mode t))
 
 (defun retryable-assistant-error-p (message)
@@ -39,7 +52,10 @@
           text)))))))
 
 (defun agent-will-retry-p (agent message)
+  ;; Baseline agent-session.ts _willRetryAfterAgentEnd: abort requested
+  ;; during the run suppresses retry advertisement (#9340).
   (and
+   (not (agent-abort-requested-p agent))
    (agent-auto-retry-p agent)
    (< (agent-retry-attempt agent)
       (agent-auto-retry-max-attempts agent))
@@ -73,10 +89,12 @@
        :payload '(:reason :startup)))))
 
 (defun current-agent-system-prompt (agent)
-  (if (eq *agent-run-system-prompt*
-          :use-agent-system-prompt)
-      (agent-system-prompt agent)
-      *agent-run-system-prompt*))
+  (or
+   *agent-run-force-system-prompt*
+   (if (eq *agent-run-system-prompt*
+           :use-agent-system-prompt)
+       (agent-system-prompt agent)
+       *agent-run-system-prompt*)))
 
 (defun lifecycle-message-end (agent message)
   (let ((result
@@ -148,10 +166,10 @@
         (agent-messages-tail-head agent) messages))))
   (agent-messages-tail agent))
 
-(defun append-agent-message (agent message)
+(defun append-agent-message (agent message &key id)
   (when (agent-session agent)
     (session-append-message
-     (agent-session agent) message))
+     (agent-session agent) message :id id))
   (let ((cell (list message)))
     (if (agent-messages agent)
         (setf

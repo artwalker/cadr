@@ -45,19 +45,77 @@
         :url (and hyperlink-p
                   (tool-path-file-url text cwd)))))))
 
+(defun tool-read-finite-line-number (value)
+  ;; pi@4a080252f render-utils.ts parseLineNumber. Numeric strings
+  ;; count. Empty, partial, and non-finite values do not.
+  (cond
+    ((integerp value) value)
+    ((and (floatp value)
+          (not (or (float-infinity-p value)
+                   (float-nan-p value))))
+     value)
+    ((and (rationalp value) (not (integerp value))) value)
+    ((stringp value)
+     (let ((token
+             (string-trim
+              '(#\Space #\Tab #\Newline #\Return #\Page)
+              value)))
+       (when (plusp (length token))
+         (handler-case
+             (tool-read-finite-line-number
+              (cadr-ai::parse-json-number-token token))
+           (error () nil)))))
+    (t nil)))
+
+(defun format-tool-read-line-number (value)
+  (cond
+    ((integerp value) (princ-to-string value))
+    ((and (rationalp value) (= value (truncate value)))
+     (princ-to-string (truncate value)))
+    ((and (floatp value) (= value (ffloor value)))
+     (princ-to-string (truncate value)))
+    (t (princ-to-string (coerce value 'single-float)))))
+
+(defun read-line-bound-absent-p (value)
+  (or (null value) (cadr-ai::json-null-p value)))
+
+(defun format-read-line-range (offset limit)
+  ;; pi@4a080252f formatReadLineRange. A malformed bound drops the
+  ;; whole range. JSON null is an omitted argument. A zero end is
+  ;; omitted, so :1 with limit 0 stays ":1".
+  (when (read-line-bound-absent-p offset)
+    (setf offset nil))
+  (when (read-line-bound-absent-p limit)
+    (setf limit nil))
+  (when (and (null offset) (null limit))
+    (return-from format-read-line-range ""))
+  (let ((start
+          (if (null offset)
+              1
+              (tool-read-finite-line-number offset))))
+    (unless start
+      (return-from format-read-line-range ""))
+    (when (null limit)
+      (return-from format-read-line-range
+        (format nil ":~A" (format-tool-read-line-number start))))
+    (let ((count (tool-read-finite-line-number limit)))
+      (unless count
+        (return-from format-read-line-range ""))
+      (let ((end (+ start count -1)))
+        (if (zerop end)
+            (format nil ":~A" (format-tool-read-line-number start))
+            (format nil ":~A-~A"
+                    (format-tool-read-line-number start)
+                    (format-tool-read-line-number end)))))))
+
 (defun tool-read-range-segments (arguments)
-  (let ((offset (cadr-ai::json-get arguments "offset"))
-        (limit (cadr-ai::json-get arguments "limit")))
-    (when (or (numberp offset)
-              (numberp limit))
-      (let* ((start (if (numberp offset) offset 1))
-             (end
-               (and (numberp limit)
-                    (+ start limit -1))))
-        (list
-         (tool-header-segment
-          (format nil ":~A~@[-~A~]" start end)
-          :token :warning))))))
+  (let ((text
+          (format-read-line-range
+           (cadr-ai::json-get arguments "offset")
+           (cadr-ai::json-get arguments "limit"))))
+    (when (plusp (length text))
+      (list
+       (tool-header-segment text :token :warning)))))
 
 (defun tool-summary-segments (call &optional (cwd (uiop:getcwd)))
   (let* ((name (cadr-ai:tool-call-name call))
@@ -566,6 +624,10 @@
        display-messages
        compaction-summary
        compaction-tokens-before
+       show-cache-miss-notices-function
+       session-entries-function
+       model-price-function
+       renderer
        (clock-function #'tui-monotonic-seconds))
   (let ((type (cadr-agent:agent-event-type event))
         (message (cadr-agent:agent-event-message event))
@@ -651,6 +713,8 @@
          (cadr-agent:branch-summary-message
           (seed-tui-message state message))
          (cadr-agent:compaction-summary-agent-message
+          (seed-tui-message state message))
+         (cadr-agent:custom-agent-message
           (seed-tui-message state message))))
       (:message-update
        ;; Block-end opens the persist settle window (pi never paints
@@ -758,8 +822,30 @@
                  message))
              (setf
               (tui-entry-streaming-p entry)
-              nil))))
+              nil)
+             (let ((hint (bug-report-hint message)))
+               (when (and (not (tui-state-bug-report-hint-shown-p
+                                state))
+                          (stringp hint))
+                 (add-tui-notice state hint)
+                 (setf (tui-state-bug-report-hint-shown-p state)
+                       t))))))
          (accumulate-message-usage state message)
+         (let ((show-cache-miss-notices-p
+                 (and show-cache-miss-notices-function
+                      (funcall show-cache-miss-notices-function)))
+               (session-entries
+                 (and session-entries-function
+                      (funcall session-entries-function))))
+           (maybe-show-thinking-drop-notice
+            state message
+            :show-p show-cache-miss-notices-p
+            :session-entries session-entries)
+           (maybe-show-cache-miss-notice
+            state message
+            :show-p show-cache-miss-notices-p
+            :session-entries session-entries
+            :model-price-function model-price-function))
          (setf
           (tui-state-current-assistant state)
           nil)))
@@ -880,6 +966,10 @@
             (cadr-tui:tool-block-ended-at
              (tui-entry-tool-block entry))
             (funcall clock-function)
+            (cadr-tui:tool-block-duration-ms
+             (tui-entry-tool-block entry))
+            (cadr-ai:tool-result-message-duration-ms
+             result)
             (cadr-tui:tool-block-collapsed-p
              (tui-entry-tool-block entry))
             (not
@@ -912,6 +1002,9 @@
                    (tui-state-tools-expanded-p state)
                    :is-error-p
                    (cadr-ai:tool-result-message-is-error
+                    result)
+                   :duration-ms
+                   (cadr-ai:tool-result-message-duration-ms
                     result)))
                (setf
                 (tui-entry-custom-result-render
@@ -967,7 +1060,12 @@
                (reset-tui-messages
                 state display-messages
                 :preserve-usage-p t
-                :context-unknown-p t))
+                :context-unknown-p t
+                :renderer renderer
+                :show-cache-miss-notices-p
+                (and show-cache-miss-notices-function
+                     (funcall
+                      show-cache-miss-notices-function))))
              (if compaction-summary
                  (append-tui-entry
                   state

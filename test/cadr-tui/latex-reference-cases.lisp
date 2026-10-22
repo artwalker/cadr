@@ -1,4 +1,4 @@
-;; Generated from pi@ecac0a9c4 packages/tui/src/latex.ts renderLatex
+;; Generated from pi@4a080252f packages/tui/src/latex.ts renderLatex
 ;; output for each (source display) pair; NIL rendered means the
 ;; baseline rejected the expression as unsupported or malformed.
 (in-package #:cadr-tui/tests)
@@ -40,7 +40,8 @@ x→0    x")
    (list "\\operatorname{argmax}_{x} f(x)" t "argmax[x] f(x)")
    (list "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}" t "⎛ a │ b ⎞
 ⎝ c │ d ⎠")
-   (list "\\begin{cases} x & if x > 0 \\\\ -x & otherwise \\end{cases}" t "⎧ x if x > 0
+   (list "\\begin{cases} x & if x > 0 \\\\ -x & otherwise \\end{cases}" t "⎧ x  if x > 0
+⎨
 ⎩ -x otherwise")
    (list "\\begin{aligned} x &= 1 \\\\ y &= 2 \\end{aligned}" t "x = 1
 y = 2")

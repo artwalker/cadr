@@ -425,7 +425,7 @@
            for header =
              (read-session-header-for-discovery
               path)
-           ;; pi@ecac0a9c4 SessionManager.list onProgress: invoked per
+           ;; pi@4a080252f SessionManager.list onProgress: invoked per
            ;; scanned session file with 1-based loaded and total counts.
            do (when progress-function
                 (funcall progress-function loaded total))
@@ -470,14 +470,28 @@
          nil
          "Session not found: ~A" id))))
 
+(defun continue-session-newer-p (left right)
+  ;; pi findMostRecentSession sorts by file mtime only. Activity is
+  ;; the tie-break when two files share a one-second mtime.
+  (let ((mtime-left (session-list-info-created left))
+        (mtime-right (session-list-info-created right)))
+    (cond
+      ((/= mtime-left mtime-right)
+       (> mtime-left mtime-right))
+      (t
+       (> (session-list-info-modified left)
+          (session-list-info-modified right))))))
+
 (defun continue-session (&key
                                (directory
                                  (default-session-directory))
                                cwd)
   (let ((info
           (first
-           (list-session-infos
-            :directory directory
-            :cwd (or cwd (uiop:getcwd))))))
+           (stable-sort
+            (list-session-infos
+             :directory directory
+             :cwd (or cwd (uiop:getcwd)))
+            #'continue-session-newer-p))))
     (and info
          (load-session (session-list-info-path info)))))

@@ -21,7 +21,9 @@
   success
   final-error
   source
-  reason)
+  reason
+  entry
+  parent-tool-call-id)
 
 (defstruct (agent
             (:constructor %make-agent))
@@ -35,9 +37,11 @@
   (base-tools nil :type list)
   tool-registry
   (tool-filter-function #'identity :type function)
+  prepare-prompt-loadout-function
   extension-host
   session
   stream-function
+  summarization-auth-function
   on-event
   (max-turns 100 :type (integer 1 *))
   (auto-compact-p t :type boolean)
@@ -46,8 +50,10 @@
   (compaction-keep-recent-tokens 20000
                                  :type (integer 1 *))
   abort-p
+  finish-turn-function
   (abort-requested-p nil :type boolean)
   compaction-cancellation
+  tree-navigation-cancellation
   (tool-cancellations nil :type list)
   (busy-p nil :type boolean)
   (shutdown-p nil :type boolean)
@@ -65,6 +71,12 @@
   (retry-attempt 0 :type (integer 0 *))
   (retry-in-progress-p nil :type boolean)
   (retry-abort-requested-p nil :type boolean)
+  ;; Failed assistant response removed before an automatic retry.
+  ;; The next virtual-model route reports it as reason :retry.
+  virtual-route-failure
+  ;; (model) -> provider, for a routed model whose provider is not
+  ;; the agent's current provider object.
+  virtual-provider-function
   (steering-mode :one-at-a-time
                  :type (member :all :one-at-a-time))
   (follow-up-mode :one-at-a-time
@@ -81,7 +93,20 @@
   (retry-condition
     (sb-thread:make-waitqueue :name "cadr-agent-retry"))
   (event-lock
-    (sb-thread:make-mutex :name "cadr-agent-events")))
+    (sb-thread:make-mutex :name "cadr-agent-events"))
+  (declared-system-message nil)
+  (prompt-insert-index nil :type (or null integer))
+  (system-cut-index nil :type (or null integer))
+  ;; Names the user or defaultTools setting named, including +name.
+  ;; A default-active false extension tool stays inactive unless named.
+  (named-tool-names nil :type list)
+  ;; Nil allowlist-p means no --tools allowlist. An empty allowlist is
+  ;; present and matches nothing. MCP names stay registered unless the
+  ;; allowlist is empty or itself names an mcp__ tool.
+  (tool-allowlist nil :type list)
+  (tool-allowlist-p nil :type boolean)
+  (tool-allowlist-filters-mcp-p nil :type boolean)
+  (excluded-tool-names nil :type list))
 
 (defun emit-agent-event (agent type
                          &key
@@ -104,7 +129,9 @@
                            success
                            final-error
                            source
-                           reason)
+                           reason
+                           entry
+                           parent-tool-call-id)
   (let ((event
           (make-agent-event
            :type type
@@ -127,7 +154,9 @@
            :success success
            :final-error final-error
            :source source
-           :reason reason)))
+           :reason reason
+           :entry entry
+           :parent-tool-call-id parent-tool-call-id)))
     (when (agent-on-event agent)
       (sb-thread:with-recursive-lock
           ((agent-event-lock agent))
@@ -361,6 +390,14 @@
    (let ((predicate (agent-abort-p agent)))
      (and predicate (funcall predicate)))))
 
+(defun agent-compacting-p (agent)
+  ;; Baseline agent-session.ts isCompacting: any in-flight manual /
+  ;; auto compaction or tree-navigation abort controller (#9179).
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (or (agent-compaction-cancellation agent)
+        (agent-tree-navigation-cancellation agent))))
+
 (defun agent-abort-compaction (agent)
   ;; Baseline agent-session.ts abortCompaction: wake waiters on the
   ;; in-flight compaction cancellation signal (#8920).
@@ -475,5 +512,126 @@
               do
               (sb-thread:condition-wait
                (agent-idle-condition agent)
-               (agent-state-lock agent))))))
-  nil)
+               (agent-state-lock agent)))))))
+
+(defparameter +max-warming-age-ms+ (* 60 60000))
+(defparameter +max-idle-warming-age-ms+ (* 30 60000))
+
+(defstruct cache-warm-run
+  (ttl-ms 0 :type integer)
+  (delay-ms 0 :type integer)
+  (refresh-deadline-at 0 :type integer)
+  (next-warm-at 0 :type integer)
+  (started-at 0 :type integer)
+  (phase :streaming :type keyword)
+  (current-p (lambda () t) :type function))
+
+(defstruct cache-warmer
+  (run nil)
+  (inactive-reason "waiting for first request" :type string)
+  (inactive-p t :type boolean)
+  (now-function
+   (lambda () (cadr-core:unix-milliseconds))
+   :type function)
+  (warm-function
+   (lambda (run) (declare (ignore run)) nil)
+   :type function)
+  (decide-function nil)
+  (mode-function (lambda () :streaming) :type function))
+
+(defun cache-warmer-now (warmer)
+  (funcall (cache-warmer-now-function warmer)))
+
+(defun get-cache-warming-delay-ms (ttl-ms)
+  (when (> ttl-ms 10000)
+    (max 1
+         (floor
+          (min (* ttl-ms 0.9)
+               (- ttl-ms 10000))))))
+
+(defun stop-cache-warmer (warmer reason)
+  (setf (cache-warmer-run warmer) nil
+        (cache-warmer-inactive-p warmer) t
+        (cache-warmer-inactive-reason warmer) reason)
+  warmer)
+
+(defun cache-warmer-status (warmer)
+  (if (or (cache-warmer-inactive-p warmer)
+          (null (cache-warmer-run warmer)))
+      (list :state :inactive
+            :reason (cache-warmer-inactive-reason warmer))
+      (list :state :scheduled
+            :next-warm-at
+            (cache-warm-run-next-warm-at
+             (cache-warmer-run warmer)))))
+
+(defun schedule-cache-warm-run (warmer run)
+  (let* ((now (cache-warmer-now warmer))
+         (delay (cache-warm-run-delay-ms run))
+         (next (+ now delay))
+         (age-limit
+           (+ (cache-warm-run-started-at run)
+              (if (eq (cache-warm-run-phase run) :idle)
+                  +max-idle-warming-age-ms+
+                  +max-warming-age-ms+))))
+    (setf (cache-warm-run-next-warm-at run) next
+          ;; Half the pre-expiry margin remains for a late timer.
+          ;; Past that, a refresh is a full-price cache write.
+          (cache-warm-run-refresh-deadline-at run)
+          (+ next
+             (floor
+              (- (cache-warm-run-ttl-ms run) delay)
+              2)))
+    (when (or (> next age-limit) (>= now age-limit))
+      (stop-cache-warmer
+       warmer
+       (if (eq (cache-warm-run-phase run) :idle)
+           "30-minute idle safety limit reached"
+           "one-hour safety limit reached"))))
+  run)
+
+(defun cache-refresh-deadline-missed (warmer run)
+  (cond
+    ((<= (cache-warmer-now warmer)
+         (cache-warm-run-refresh-deadline-at run))
+     nil)
+    (t
+     (stop-cache-warmer warmer "cache refresh deadline missed")
+     t)))
+
+(defun refresh-cache-warmer (warmer run)
+  (unless (eq (cache-warmer-run warmer) run)
+    (return-from refresh-cache-warmer nil))
+  (when (cache-refresh-deadline-missed warmer run)
+    (return-from refresh-cache-warmer nil))
+  (let ((action :warm))
+    (when (cache-warmer-decide-function warmer)
+      (handler-case
+          (setf action
+                (funcall (cache-warmer-decide-function warmer)))
+        (condition ()
+          (setf action :warm))))
+    (when (or (not (eq (cache-warmer-run warmer) run))
+              (cache-refresh-deadline-missed warmer run))
+      (return-from refresh-cache-warmer nil))
+    (when (eq action :warm)
+      (funcall (cache-warmer-warm-function warmer) run))
+    (when (eq (cache-warmer-run warmer) run)
+      (schedule-cache-warm-run warmer run)))
+  run)
+
+(defun cache-warmer-start (warmer &key ttl-ms (current-p (lambda () t)))
+  (let ((delay (get-cache-warming-delay-ms ttl-ms)))
+    (unless delay
+      (return-from cache-warmer-start
+        (stop-cache-warmer warmer "cache lifetime unavailable")))
+    (let ((run
+            (make-cache-warm-run
+             :ttl-ms ttl-ms
+             :delay-ms delay
+             :started-at (cache-warmer-now warmer)
+             :current-p current-p)))
+      (setf (cache-warmer-run warmer) run
+            (cache-warmer-inactive-p warmer) nil)
+      (schedule-cache-warm-run warmer run)
+      run)))

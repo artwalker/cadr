@@ -83,6 +83,44 @@
     ((eq reasoning :medium) "medium")
     (t "high")))
 
+(defun bedrock-openai-gpt-effort (reasoning)
+  (case reasoning
+    ((:minimal :low) "low")
+    (:medium "medium")
+    (:high "high")
+    (:xhigh "xhigh")
+    (:max "max")
+    (t "high")))
+
+(defun bedrock-gpt-oss-effort (reasoning)
+  (case reasoning
+    ((:minimal :low) "low")
+    (:medium "medium")
+    (t "high")))
+
+(defun bedrock-openai-request-fields (model reasoning)
+  ;; pi@4a080252f bedrock-converse-stream.ts #9331. OpenAI models on
+  ;; Bedrock take reasoning.effort. gpt-oss takes a flat
+  ;; reasoning_effort and only low, medium, or high.
+  (when (and reasoning
+             (not (eq reasoning :off))
+             (model-reasoning-p model))
+    (cond
+      ((bedrock-candidate-matches-p model '("gpt-oss"))
+       (json-object
+        "reasoning_effort"
+        (bedrock-gpt-oss-effort reasoning)))
+      ((bedrock-candidate-matches-p model '("gpt-"))
+       (let ((mapped
+               (model-thinking-level-value model reasoning)))
+         (json-object
+          "reasoning"
+          (json-object
+           "effort"
+           (if (stringp mapped)
+               mapped
+               (bedrock-openai-gpt-effort reasoning)))))))))
+
 (defun bedrock-thinking-fields (model reasoning region options)
   (when (and reasoning
              (model-reasoning-p model)
@@ -187,11 +225,24 @@
           (prepare-messages-for-model
            (context-messages context)
            model #'normalize-provider-id))
-        (result nil))
-    (loop for tail on messages
-          for message = (car tail)
-          do
-          (cond
+        (result nil)
+        (error-images nil))
+    (labels ((flush-error-images ()
+               (when error-images
+                 (let ((message (car result)))
+                   (json-put
+                    message "content"
+                    (concatenate
+                     'vector
+                     (json-get message "content")
+                     (coerce error-images 'vector))))
+                 (setf error-images nil))))
+      (loop for tail on messages
+            for message = (car tail)
+            do
+            (unless (typep message 'tool-result-message)
+              (flush-error-images))
+            (cond
            ((typep message 'user-message)
             (push
              (json-object
@@ -264,43 +315,56 @@
                   "content" (list-json-array blocks))
                  result))))
            ((typep message 'tool-result-message)
-            (let* ((block
+            (multiple-value-bind (split-content images caption)
+                (if (bedrock-claude-model-p model)
+                    (split-error-tool-result-images message)
+                    (values nil nil nil))
+              (let* ((block
+                       (json-object
+                        "toolResult"
+                        (json-object
+                         "toolUseId"
+                         (tool-result-message-tool-call-id message)
+                         "status"
+                         (if (tool-result-message-is-error message)
+                             "error" "success")
+                         "content"
+                         (bedrock-text-blocks
+                          (or split-content
+                              (tool-result-message-content message))
+                          :required-p t))))
+                     (previous (car result))
+                     (previous-content
+                       (and previous
+                            (string= (json-get previous "role") "user")
+                            (json-get previous "content")))
+                     (tool-result-message-p
+                       (and previous-content
+                            (plusp (length previous-content))
+                            (every
+                             (lambda (entry)
+                               (json-present-p entry "toolResult"))
+                             previous-content))))
+                (if tool-result-message-p
+                    (json-put
+                     previous "content"
+                     (concatenate 'vector
+                                  previous-content
+                                  (vector block)))
+                    (push
                      (json-object
-                      "toolResult"
-                      (json-object
-                       "toolUseId"
-                       (tool-result-message-tool-call-id message)
-                       "status"
-                       (if (tool-result-message-is-error message)
-                           "error" "success")
-                       "content"
-                       (bedrock-text-blocks
-                        (tool-result-message-content message)
-                        :required-p t))))
-                   (previous (car result))
-                   (previous-content
-                     (and previous
-                          (string= (json-get previous "role") "user")
-                          (json-get previous "content")))
-                   (tool-result-message-p
-                     (and previous-content
-                          (plusp (length previous-content))
-                          (every
-                           (lambda (entry)
-                             (json-present-p entry "toolResult"))
-                           previous-content))))
-              (if tool-result-message-p
-                  (json-put
-                   previous "content"
-                   (concatenate 'vector
-                                previous-content
-                                (vector block)))
-                  (push
-                   (json-object
-                    "role" "user"
-                    "content" (json-array block))
-                   result))))))
-    (list-json-array (nreverse result))))
+                      "role" "user"
+                      "content" (json-array block))
+                     result))
+                (when split-content
+                  (setf error-images
+                        (append
+                         error-images
+                         (list (json-object "text" caption))
+                         (mapcar #'bedrock-image-block images)))))))
+      ))
+      (flush-error-images)
+    (list-json-array (nreverse result)))))
 
 (defun bedrock-tools (model tools tool-choice)
   (let ((result
@@ -448,7 +512,8 @@
 
 (defun bedrock-request-headers (provider model stream-p)
   (let ((headers
-          `(("content-type" . "application/json")
+          `(("User-Agent" . ,(bedrock-identity-user-agent))
+            ("content-type" . "application/json")
             ("accept" .
              ,(if stream-p
                   "application/vnd.amazon.eventstream"
@@ -493,7 +558,8 @@
     ((provider bedrock-provider) model context
      &key stream-p max-tokens temperature reasoning
        cache-retention session-id tool-choice metadata
-       thinking-budgets)
+       thinking-budgets
+       &allow-other-keys)
   (declare (ignore session-id))
   (ensure-supported-content model context)
   (let* ((options (provider-options provider))
@@ -578,12 +644,14 @@
                 (bedrock-tools
                  model (context-tools context) tool-choice)))
     (let ((thinking
-            (bedrock-thinking-fields
-             model reasoning region
-             (if thinking-budgets
-                 (list* :thinking-budgets thinking-budgets
-                        options)
-                 options))))
+            (or
+             (bedrock-thinking-fields
+              model reasoning region
+              (if thinking-budgets
+                  (list* :thinking-budgets thinking-budgets
+                         options)
+                  options))
+             (bedrock-openai-request-fields model reasoning))))
       (when thinking
         (json-put payload
                   "additionalModelRequestFields"
@@ -732,6 +800,15 @@
 (defun parse-partial-json-object (text)
   (parse-streaming-json text))
 
+(defun bedrock-cache-write-1h-tokens (usage)
+  (let ((details (json-get usage "cacheDetails")))
+    (if (vectorp details)
+        (loop for detail across details
+              when (string= (json-get detail "ttl" "") "1h")
+                sum (let ((tokens (json-get detail "inputTokens")))
+                      (if (integerp tokens) tokens 0)))
+        0)))
+
 (defmethod reduce-provider-sse-event
     ((provider bedrock-provider) state event emit)
   (declare (ignore provider))
@@ -852,9 +929,7 @@
                       index
                       (provider-stream-state-partial-json state)
                       "")))
-               (when (non-empty-string-p json)
-                 (setf (tool-call-arguments block)
-                       (parse-partial-json-object json))))
+               (finish-tool-call-arguments block json))
              (emit-event emit :tool-call-end message
                          :content-index block-index
                          :tool-call block))))
@@ -880,6 +955,9 @@
               (json-get usage "cacheWriteInputTokens")
               nil
               (json-get usage "totalTokens"))
+             (setf (usage-cache-write-1h
+                    (assistant-message-usage message))
+                   (bedrock-cache-write-1h-tokens usage))
              (apply-known-model-cost message))))))))
 
 (defmethod parse-complete-response
@@ -925,7 +1003,10 @@
          (json-get usage "inputTokens")
          (json-get usage "outputTokens")
          (json-get usage "cacheReadInputTokens")
-         (json-get usage "cacheWriteInputTokens"))))
+         (json-get usage "cacheWriteInputTokens"))
+        (setf (usage-cache-write-1h
+               (assistant-message-usage message))
+              (bedrock-cache-write-1h-tokens usage))))
     (when (tool-call-present-p message)
       (setf (assistant-message-stop-reason message) :tool-use))
     (apply-known-model-cost message)))

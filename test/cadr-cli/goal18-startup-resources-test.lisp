@@ -224,3 +224,252 @@
                (first (cadr-cli::resource-snapshot-skill-collisions snapshot))))
           (is (search "project" (getf collision :winner-path)))
           (is (search "agent" (getf collision :loser-path))))))))
+
+(defun goal18-link-worktree (main worktree name)
+  (let ((git-dir
+          (merge-pathnames
+           (format nil ".git/worktrees/~A/" name)
+           main)))
+    (ensure-directories-exist git-dir)
+    (write-text (merge-pathnames ".git/HEAD" main)
+                (format nil "ref: refs/heads/main~%"))
+    (write-text (merge-pathnames "HEAD" git-dir)
+                (format nil "ref: refs/heads/feat~%"))
+    (write-text (merge-pathnames "commondir" git-dir) "../..")
+    (write-text (merge-pathnames ".git" worktree)
+                (format nil "gitdir: ~A~%" (namestring git-dir)))))
+
+(defun goal18-symlink (target link)
+  (uiop:run-program
+   (list "ln" "-s" (namestring target) (namestring link))))
+
+(defun goal18-context-under (root cwd)
+  (let ((prefix
+          (namestring
+           (uiop:ensure-directory-pathname root))))
+    (remove-if-not
+     (lambda (path)
+       (uiop:string-prefix-p prefix (namestring path)))
+     (cadr-cli::load-project-context-files :cwd cwd))))
+
+(test nested-worktree-keeps-its-own-agents-file
+  (with-test-directory (root)
+    (let* ((main (merge-pathnames "outer/main/" root))
+           (worktree (merge-pathnames "worktrees/feat/" main))
+           (src (merge-pathnames "src/" worktree)))
+      (ensure-directories-exist src)
+      (goal18-link-worktree main worktree "feat")
+      (write-text (merge-pathnames "AGENTS.md" main)
+                  "main repo instructions")
+      (write-text (merge-pathnames "AGENTS.md" worktree)
+                  "worktree instructions")
+      (is (equal '("worktree instructions")
+                 (mapcar (lambda (path)
+                           (uiop:read-file-string
+                            path :external-format :utf-8))
+                         (goal18-context-under root src)))))))
+
+(test nested-worktree-symlink-loads-the-worktree-path-once
+  (with-test-directory (root)
+    (let* ((main (merge-pathnames "outer/main/" root))
+           (worktree (merge-pathnames "worktrees/feat/" main))
+           (src (merge-pathnames "src/" worktree))
+           (link (merge-pathnames "AGENTS.md" worktree)))
+      (ensure-directories-exist src)
+      (goal18-link-worktree main worktree "feat")
+      (write-text (merge-pathnames "AGENTS.md" main)
+                  "main repo instructions")
+      (goal18-symlink (merge-pathnames "AGENTS.md" main) link)
+      (is (equal (list (namestring link))
+                 (mapcar #'namestring
+                         (goal18-context-under root src)))))))
+
+(test nested-worktree-shared-symlink-keeps-the-worktree-path
+  (with-test-directory (root)
+    (let* ((outer (merge-pathnames "outer/" root))
+           (main (merge-pathnames "main/" outer))
+           (worktree (merge-pathnames "worktrees/feat/" main))
+           (src (merge-pathnames "src/" worktree))
+           (shared (merge-pathnames "shared-agents.md" outer))
+           (link (merge-pathnames "AGENTS.md" worktree)))
+      (ensure-directories-exist src)
+      (goal18-link-worktree main worktree "feat")
+      (write-text shared "shared instructions")
+      (goal18-symlink shared (merge-pathnames "AGENTS.md" main))
+      (goal18-symlink shared link)
+      (is (equal (list (namestring link))
+                 (mapcar #'namestring
+                         (goal18-context-under root src)))))))
+
+(test nested-worktree-without-its-own-file-inherits-the-main-repo
+  (with-test-directory (root)
+    (let* ((main (merge-pathnames "outer/main/" root))
+           (worktree (merge-pathnames "worktrees/feat/" main))
+           (src (merge-pathnames "src/" worktree)))
+      (ensure-directories-exist src)
+      (goal18-link-worktree main worktree "feat")
+      (write-text (merge-pathnames "AGENTS.md" main)
+                  "main repo instructions")
+      (is (equal '("main repo instructions")
+                 (mapcar (lambda (path)
+                           (uiop:read-file-string
+                            path :external-format :utf-8))
+                         (goal18-context-under root src)))))))
+
+(test nested-worktree-keeps-a-differently-named-main-context-file
+  (with-test-directory (root)
+    (let* ((main (merge-pathnames "outer/main/" root))
+           (worktree (merge-pathnames "worktrees/feat/" main))
+           (src (merge-pathnames "src/" worktree)))
+      (ensure-directories-exist src)
+      (goal18-link-worktree main worktree "feat")
+      (write-text (merge-pathnames "CLAUDE.md" main)
+                  "main repo instructions")
+      (write-text (merge-pathnames "AGENTS.md" worktree)
+                  "worktree instructions")
+      (is (equal '("main repo instructions" "worktree instructions")
+                 (mapcar (lambda (path)
+                           (uiop:read-file-string
+                            path :external-format :utf-8))
+                         (goal18-context-under root src)))))))
+
+(test bare-worktree-layout-keeps-the-container-context
+  (with-test-directory (root)
+    (let* ((proj (merge-pathnames "proj/" root))
+           (bare (merge-pathnames ".bare/" proj))
+           (worktree (merge-pathnames "main/" proj))
+           (git-dir (merge-pathnames "worktrees/main/" bare)))
+      (ensure-directories-exist git-dir)
+      (ensure-directories-exist worktree)
+      (write-text (merge-pathnames "HEAD" bare)
+                  (format nil "ref: refs/heads/main~%"))
+      (write-text (merge-pathnames "HEAD" git-dir)
+                  (format nil "ref: refs/heads/main~%"))
+      (write-text (merge-pathnames "commondir" git-dir) "../..")
+      (write-text (merge-pathnames ".git" worktree)
+                  (format nil "gitdir: ~A~%" (namestring git-dir)))
+      (write-text (merge-pathnames "AGENTS.md" proj)
+                  "container instructions")
+      (write-text (merge-pathnames "AGENTS.md" worktree)
+                  "worktree instructions")
+      (is (equal '("container instructions" "worktree instructions")
+                 (mapcar (lambda (path)
+                           (uiop:read-file-string
+                            path :external-format :utf-8))
+                         (goal18-context-under root worktree)))))))
+
+(test nested-worktree-keeps-context-above-the-main-repo
+  (with-test-directory (root)
+    (let* ((outer (merge-pathnames "outer/" root))
+           (main (merge-pathnames "main/" outer))
+           (worktree (merge-pathnames "worktrees/feat/" main))
+           (src (merge-pathnames "src/" worktree)))
+      (ensure-directories-exist src)
+      (goal18-link-worktree main worktree "feat")
+      (write-text (merge-pathnames "AGENTS.md" outer) "outer instructions")
+      (write-text (merge-pathnames "AGENTS.md" main) "main repo instructions")
+      (write-text (merge-pathnames "AGENTS.md" worktree)
+                  "worktree instructions")
+      (is (equal '("outer instructions" "worktree instructions")
+                 (mapcar (lambda (path)
+                           (uiop:read-file-string
+                            path :external-format :utf-8))
+                         (goal18-context-under root src)))))))
+
+(test sibling-worktree-keeps-the-outer-context
+  (with-test-directory (root)
+    (let* ((outer (merge-pathnames "outer/" root))
+           (main (merge-pathnames "main/" outer))
+           (sib (merge-pathnames "sib-feat/" outer))
+           (src (merge-pathnames "src/" sib)))
+      (ensure-directories-exist src)
+      (ensure-directories-exist main)
+      (goal18-link-worktree main sib "sib")
+      (write-text (merge-pathnames "AGENTS.md" outer) "outer instructions")
+      (write-text (merge-pathnames "AGENTS.md" sib)
+                  "sibling worktree instructions")
+      (is (equal '("outer instructions" "sibling worktree instructions")
+                 (mapcar (lambda (path)
+                           (uiop:read-file-string
+                            path :external-format :utf-8))
+                         (goal18-context-under root src)))))))
+
+(test submodule-keeps-the-superproject-context
+  (with-test-directory (root)
+    (let* ((sup (merge-pathnames "super/" root))
+           (sub (merge-pathnames "vendor/lib/" sup))
+           (src (merge-pathnames "src/" sub))
+           (git-dir (merge-pathnames ".git/modules/vendor/lib/" sup)))
+      (ensure-directories-exist src)
+      (ensure-directories-exist git-dir)
+      (write-text (merge-pathnames "AGENTS.md" sup)
+                  "superproject instructions")
+      (write-text (merge-pathnames "AGENTS.md" sub)
+                  "submodule instructions")
+      (write-text (merge-pathnames "HEAD" git-dir)
+                  (format nil "ref: refs/heads/main~%"))
+      (write-text (merge-pathnames ".git" sub)
+                  (format nil "gitdir: ~A~%" (namestring git-dir)))
+      (is (equal '("superproject instructions" "submodule instructions")
+                 (mapcar (lambda (path)
+                           (uiop:read-file-string
+                            path :external-format :utf-8))
+                         (goal18-context-under root src)))))))
+
+(test header-only-quiet-startup-keeps-the-banner-and-drops-resources
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (model
+           (cadr-ai:make-model
+            :id "faux-1" :name "Faux" :provider :faux :api :faux))
+         (agent (cadr-agent:make-agent :provider nil :model model))
+         (state
+           (cadr-cli::make-cli-settings-selector-state
+            manager agent (cadr-cli::make-resource-snapshot)
+            :supports-images-p nil))
+         (snapshot (goal18-resource-snapshot))
+         (scope
+           (list (list :model model :thinking nil)))
+         (keys (cadr-tui:make-keybindings-manager)))
+    (is (null (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-selector-notify-change
+     state "quiet-startup" "header")
+    (is (eq :header (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-selector-notify-change
+     state "quiet-startup" "true")
+    (is (eq t (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-selector-notify-change
+     state "quiet-startup" "false")
+    (is (null (cadr-cli::settings-quiet-startup manager)))
+    (cadr-cli::settings-set
+     manager "quietStartup" "nope" :scope :global)
+    (is (null (cadr-cli::settings-quiet-startup manager)))
+    (is (null
+         (cadr-cli::model-scope-startup-line
+          scope keys :verbose-p nil :quiet-startup-p :header)))
+    (is (stringp
+         (cadr-cli::model-scope-startup-line
+          scope keys :verbose-p t :quiet-startup-p :header)))
+    (multiple-value-bind (compact expanded)
+        (cadr-cli::make-tui-startup-lines
+         snapshot :include-resources-p nil)
+      (let ((compact-text (mapcar #'goal18-strip-ansi compact))
+            (expanded-text (mapcar #'goal18-strip-ansi expanded)))
+        (is (find-if
+             (lambda (line) (uiop:string-prefix-p "cadr v" line))
+             compact-text))
+        (is (find "Press ctrl+o to show full startup help."
+                  compact-text :test #'string=))
+        (is (not (find "loaded resources" compact-text :test #'search)))
+        (is (not (find "[Skills]" compact-text :test #'string=)))
+        (is (not (find "alpha-skill" compact-text :test #'search)))
+        (is (not (find "[Skills]" expanded-text :test #'string=)))
+        (is (not (find "alpha-skill" expanded-text :test #'search)))))
+    (let ((texts
+            (mapcar
+             #'goal18-strip-ansi
+             (cadr-cli::make-tui-startup-lines snapshot))))
+      (is (find
+           "Press ctrl+o to show full startup help and loaded resources."
+           texts :test #'string=))
+      (is (find "[Skills]" texts :test #'string=))
+      (is (find "  alpha-skill, zeta-skill" texts :test #'string=)))))

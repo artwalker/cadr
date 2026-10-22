@@ -60,13 +60,17 @@
          ((or (eq key "message") (string= key "message"))
           (setf (session-entry-message entry) value))
          ((string= key "modelId")
+          (setf (session-entry-model-id entry) value))
+         ((or (eq key "model") (string= key "model"))
           (setf (session-entry-model-id entry) value))))
       (#\s
        (cond
          ((or (eq key "summary") (string= key "summary"))
           (setf (session-entry-summary entry) value))
          ((string= key "sourceIds")
-          (setf (session-entry-source-ids entry) value))))
+          (setf (session-entry-source-ids entry) value))
+         ((string= key "systemMessage")
+          (setf (session-entry-system-message entry) value))))
       (#\f
        (cond
          ((string= key "firstKeptEntryId")
@@ -100,12 +104,21 @@
       (#\l
        (when (or (eq key "label") (string= key "label"))
          (setf (session-entry-label entry) value)))
+      (#\k
+       (when (or (eq key "kind") (string= key "kind"))
+         (setf (session-entry-kind entry) value)))
       (#\n
-       (when (or (eq key "name") (string= key "name"))
-         (setf (session-entry-name entry) value)))
+       (cond
+         ((or (eq key "name") (string= key "name"))
+          (setf (session-entry-name entry) value))
+         ((or (eq key "note") (string= key "note"))
+          (setf (session-entry-note entry) value))))
       (#\r
-       (when (string= key "retainedTail")
-         (setf (session-entry-retained-tail entry) value))))))
+       (cond
+         ((string= key "retainedTail")
+          (setf (session-entry-retained-tail entry) value))
+         ((string= key "replacement")
+          (setf (session-entry-data entry) value)))))))
 
 (defconstant +swar-lsb+ #x01010101)
 (defconstant +swar-msb+ #x80808080)
@@ -1132,9 +1145,15 @@
                       ((and (= w #x656d6974) (= n 9))
                        (setf (session-json-message-timestamp bag)
                              (parse-timestamp-value)))
+                      ((and (= w #x6c6f6f74) (= n 10)
+                            (= (aref octets (+ key-start 4)) #x73))
+                       (keep-extra bag :tools-added (parse-generic)))
                       ((and (= w #x6c6f6f74) (= n 10))
                        (keep-extra bag :tool-call-id
                                    (parse-string-value)))
+                      ((and (= w #x6c6f6f74) (= n 12)
+                            (= (aref octets (+ key-start 4)) #x73))
+                       (keep-extra bag :tools-removed (parse-generic)))
                       ((and (= w #x6c6f6f74) (= n 12))
                        (keep-extra bag :tool-call-id
                                    (parse-string-value)))
@@ -1177,6 +1196,8 @@
                       ((and (= w #x706f7473) (= n 11))
                        (setf (session-json-message-stop-reason bag)
                              (keyword-from-json (parse-string-value))))
+                      ((and (= w #x74636573) (= n 8))
+                       (keep-extra bag :sections (parse-generic)))
                       ((and (= w #x6f727265) (= n 12))
                        (keep-extra bag :error-message
                                    (parse-string-value)))
@@ -1199,6 +1220,9 @@
                        (keep-extra bag :diagnostics (parse-generic)))
                       ((and (= w #x61746564) (= n 7))
                        (keep-extra bag :details (parse-generic)))
+                      ;; nestedCalls: length 11, little-endian "nest".
+                      ((and (= w #x7473656e) (= n 11))
+                       (keep-extra bag :nested-calls (parse-generic)))
                       ((and (= w #x72457369) (= n 7))
                        (keep-extra bag :is-error (parse-generic)))
                       ((and (= w #x655f7369) (= n 8))
@@ -1477,6 +1501,15 @@
                (#x765646f6d
                 (setf (session-entry-model-id entry)
                       (parse-string-value)))
+               (#x565646f6d
+                (setf (session-entry-model-id entry)
+                      (parse-string-value)))
+               (#x4646e696b
+                (setf (session-entry-kind entry)
+                      (parse-string-value)))
+               (#x465746f6e
+                (setf (session-entry-note entry)
+                      (parse-string-value)))
                (#xf69746361
                 (setf (session-entry-active-tool-names entry)
                       (parse-generic)))
@@ -1521,6 +1554,13 @@
                (#xc61746572
                 (setf (session-entry-retained-tail entry)
                       (parse-generic)))
+               ;; systemMessage: length 13, little-endian prefix "syst".
+               (#xD74737973
+                (skip-space)
+                (setf (session-entry-system-message entry)
+                      (if (eql (peek-code) 123)
+                          (parse-message)
+                          (parse-generic))))
                (otherwise
                 (skip-value)))))
         (skip-space)
@@ -1660,6 +1700,14 @@
                        (string= field "timestamp"))
                    (setf (session-json-message-timestamp bag)
                          value))
+                  ((or (eq field "toolsAdded")
+                       (string= field "toolsAdded")
+                       (string= field "tools_added"))
+                   (keep-extra bag :tools-added value))
+                  ((or (eq field "toolsRemoved")
+                       (string= field "toolsRemoved")
+                       (string= field "tools_removed"))
+                   (keep-extra bag :tools-removed value))
                   ((or (eq field "toolCallId")
                        (string= field "toolCallId")
                        (string= field "tool_call_id"))
@@ -1697,15 +1745,22 @@
                (#\m
                 (when (or (eq field "model") (string= field "model"))
                   (keep-extra bag :model value)))
+               (#\n
+                (when (string= field "nestedCalls")
+                  (keep-extra bag :nested-calls value)))
                (#\u
                 (when (or (eq field "usage") (string= field "usage"))
                   (setf (session-json-message-usage bag)
                         (usage-or-hash value))))
                (#\s
-                (when (or (eq field "stopReason")
-                          (string= field "stopReason")
-                          (string= field "stop_reason"))
-                  (keep-extra bag :stop-reason value)))
+                (cond
+                  ((or (eq field "sections")
+                       (string= field "sections"))
+                   (keep-extra bag :sections value))
+                  ((or (eq field "stopReason")
+                       (string= field "stopReason")
+                       (string= field "stop_reason"))
+                   (keep-extra bag :stop-reason value))))
                (#\e
                 (cond
                   ((or (eq field "errorMessage")
@@ -1727,7 +1782,11 @@
                    (keep-extra bag :diagnostics value))
                   ((or (eq field "details")
                        (string= field "details"))
-                   (keep-extra bag :details value))))
+                   (keep-extra bag :details value))
+                  ((or (eq field "durationMs")
+                       (string= field "durationMs")
+                       (string= field "duration_ms"))
+                   (keep-extra bag :duration-ms value))))
                (#\i
                 (when (or (eq field "isError")
                           (string= field "isError")
@@ -1860,7 +1919,18 @@
              ((or (eq key "arguments") (string= key "arguments"))
               (visit-arguments))
              ((or (eq key "content") (string= key "content"))
-              (values #'visit-content-block nil :array)))))
+              (values #'visit-content-block nil :array))
+             ((string= key "replacement")
+              (let ((content nil)
+                    (seen nil))
+                (values
+                 (lambda (field value)
+                   (when (or (eq field "content")
+                             (string= field "content"))
+                     (setf content value
+                           seen t)))
+                 (lambda ()
+                   (if seen content 'null))))))))
       (if octet-p
           (cadr-ai::parse-json-octets
            line
@@ -1973,7 +2043,7 @@
   object)
 
 (defun repair-unterminated-session-file (path)
-  ;; pi@ecac0a9c4 session-manager.ts #8345: after a valid load, append a
+  ;; pi@4a080252f session-manager.ts #8345: after a valid load, append a
   ;; trailing newline so the next JSONL entry cannot fuse with a
   ;; truncated last line.
   (when (probe-file path)
@@ -2274,10 +2344,13 @@
     ((or (eq raw "custom") (string= raw "custom")) :custom)
     ((or (eq raw "custom_message") (string= raw "custom_message"))
      :custom-message)
+    ((or (eq raw "context_edit") (string= raw "context_edit"))
+     :context-edit)
     ((or (eq raw "label") (string= raw "label")) :label)
     ((or (eq raw "session_info") (string= raw "session_info"))
      :session-info)
     ((or (eq raw "leaf") (string= raw "leaf")) :leaf)
+    ((or (eq raw "usage") (string= raw "usage")) :usage)
     ((stringp raw)
      (intern
       (string-upcase (substitute #\- #\_ raw))
@@ -2322,9 +2395,11 @@
             :branch-summary
             :custom
             :custom-message
+            :context-edit
             :label
             :session-info
-            :leaf))
+            :leaf
+            :usage))
          (stringp id)
          (or (null parent-id)
              (stringp parent-id)))
@@ -2449,7 +2524,24 @@
                (loop for message across tail
                      collect
                      (message-from-json
-                      message)))))))
+                      message))))))
+           (let ((raw (session-entry-system-message entry)))
+             (when raw
+               (let ((message
+                       (handler-case
+                           (message-from-json raw)
+                         (error ()
+                           (session-failure
+                            path line-number
+                            "Invalid compaction systemMessage at line ~D"
+                            line-number)))))
+                 (unless (cadr-ai:system-message-p message)
+                   (session-failure
+                    path line-number
+                    "Invalid compaction systemMessage at line ~D"
+                    line-number))
+                 (setf (session-entry-system-message entry)
+                       message)))))
         (:branch-summary
          (let ((from-id
                  (require-session-slot
@@ -2520,6 +2612,40 @@
               (t
                (content-blocks-from-json
                 content))))))
+        (:context-edit
+         (let ((target-id
+                 (progn
+                   (unless
+                       (session-seen-p
+                        entry +session-seen-target-id+)
+                     (session-failure
+                      path line-number
+                      "Session record is missing targetId"))
+                   (session-entry-target-id entry))))
+           (unless
+               (and (stringp target-id)
+                    (gethash target-id by-id))
+             (session-failure
+              path line-number
+              "Invalid context edit at line ~D"
+              line-number))
+           (let ((content (session-entry-content entry)))
+             (unless
+                 (or
+                  (not
+                   (session-seen-p
+                    entry +session-seen-content+))
+                  (stringp content))
+               (session-failure
+                path line-number
+                "Invalid context edit at line ~D"
+                line-number))
+             (setf (session-entry-target-id entry) target-id
+                   (session-entry-data entry)
+                   (if (session-seen-p
+                        entry +session-seen-content+)
+                       content
+                       :omit)))))
         (:label
          (let ((target-id
                  (progn
@@ -2581,7 +2707,40 @@
               line-number))
            (setf
             (session-entry-target-id entry)
-            target-id))))
+            target-id)))
+        (:usage
+         (let ((kind
+                 (require-session-slot
+                  (session-entry-kind entry)
+                  "kind" path line-number))
+               (provider
+                 (require-session-slot
+                  (session-entry-provider entry)
+                  "provider" path line-number))
+               (model-id
+                 (require-session-slot
+                  (session-entry-model-id entry)
+                  "model" path line-number))
+               (note
+                 (json-null-to-nil
+                  (session-entry-note entry))))
+           (unless
+               (and
+                (stringp kind)
+                (stringp provider)
+                (stringp model-id)
+                (or (null note) (stringp note))
+                usage-object)
+             (session-failure
+              path line-number
+              "Invalid usage entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-usage entry)
+            (if (hash-table-p usage-object)
+                (usage-from-json usage-object)
+                usage-object)
+            (session-entry-note entry) note))))
       (setf (gethash id by-id) entry)
       entry)))
 

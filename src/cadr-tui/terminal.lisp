@@ -4,6 +4,13 @@
   (format nil "~C[>7u~C[?u~C[c"
           #\Escape #\Escape #\Escape))
 
+(defparameter +keyboard-protocol-query-without-da+
+  (format nil "~C[>7u~C[?u"
+          #\Escape #\Escape))
+
+(defparameter +device-attributes-query+
+  (format nil "~C[c" #\Escape))
+
 (defparameter +modify-other-keys-enable+
   (format nil "~C[>4;2m" #\Escape))
 
@@ -237,6 +244,9 @@
    (started-p
     :initform nil
     :accessor process-terminal-started-p)
+   (keyboard-protocol-pushed-p
+    :initform nil
+    :accessor process-terminal-keyboard-protocol-pushed-p)
    (keyboard-negotiator
     :initform
     (make-keyboard-protocol-negotiator)
@@ -280,6 +290,15 @@
     :initarg :progress-clock-function
     :initform #'terminal-monotonic-seconds
     :accessor process-terminal-progress-clock-function)
+   (program-status
+    :initform nil
+    :accessor process-terminal-program-status)
+   (program-status-supported-p
+    :initform nil
+    :accessor process-terminal-program-status-supported-p)
+   (program-status-query-pending-p
+    :initform nil
+    :accessor process-terminal-program-status-query-pending-p)
    (apple-terminal-function
     :initarg :apple-terminal-function
     :initform #'apple-terminal-session-p
@@ -291,6 +310,33 @@
    (resize-p
     :initform nil
     :accessor process-terminal-resize-p)))
+
+(defun program-status-env-override ()
+  ;; PI_PROGRAM_STATUS matches the baseline env contract (enumerate
+  ;; environmentVariables). 1 forces reports; 0 disables; unset queries.
+  (uiop:getenv "PI_PROGRAM_STATUS"))
+
+(defun configure-program-status-support (terminal)
+  (let ((override (program-status-env-override)))
+    (setf
+     (process-terminal-program-status-supported-p terminal)
+     (string= override "1")
+     (process-terminal-program-status-query-pending-p terminal)
+     (and (not (string= override "1"))
+          (not (string= override "0"))))
+    (process-terminal-program-status-query-pending-p
+     terminal)))
+
+(defun write-stored-program-status (terminal)
+  (when
+      (and
+       (process-terminal-program-status-supported-p
+        terminal)
+       (process-terminal-program-status terminal))
+    (terminal-write
+     terminal
+     (format-program-status
+      (process-terminal-program-status terminal)))))
 
 (defun make-process-terminal
     (&key
@@ -432,6 +478,137 @@
      1)
     raw))
 
+(defvar *armed-terminal-exits* nil)
+
+(defun ensure-terminal-exit-hook ()
+  (unless (member 'run-terminal-exit-restores
+                  sb-ext:*exit-hooks*)
+    (push 'run-terminal-exit-restores sb-ext:*exit-hooks*)))
+
+(defun disarm-terminal-exit-restore (terminal)
+  (setf *armed-terminal-exits*
+        (remove terminal *armed-terminal-exits* :test #'eq))
+  terminal)
+
+(defun arm-terminal-exit-restore (terminal)
+  (disarm-terminal-exit-restore terminal)
+  (push terminal *armed-terminal-exits*)
+  (ensure-terminal-exit-hook)
+  terminal)
+
+(defun terminal-exit-restore-base-prefix (terminal)
+  (format nil "~A~C[?25h"
+          (if (process-terminal-color-scheme-notifications-enabled-p
+               terminal)
+              (format nil "~C[?2031l" #\Escape)
+              "")
+          #\Escape))
+
+(defun terminal-exit-restore-prefix (terminal)
+  (let ((renderer (terminal-exit-renderer terminal))
+        (base (terminal-exit-restore-base-prefix terminal)))
+    (if (and renderer
+             (terminal-renderer-alt-screen-p renderer)
+             (terminal-renderer-alt-screen-active-p renderer))
+        (concatenate
+         'string
+         +synchronized-update-end+
+         (if (terminal-renderer-mouse-p renderer)
+             +mouse-disable+
+             "")
+         +autowrap-enable+
+         base)
+        base)))
+
+(defun terminal-exit-restore-suffix (terminal)
+  ;; Kitty keyboard flags are per screen, so the pop is written
+  ;; before the alternate screen is left.
+  (let ((renderer (terminal-exit-renderer terminal)))
+    (if (and renderer
+             (terminal-renderer-alt-screen-p renderer)
+             (terminal-renderer-alt-screen-active-p renderer))
+        (concatenate 'string
+                     +alt-screen-exit+
+                     (format nil "~C[?25h" #\Escape))
+        "")))
+
+(defun terminal-exit-pop-keyboard-p (terminal)
+  (or (process-terminal-keyboard-protocol-pushed-p terminal)
+      (eq :kitty
+          (keyboard-protocol-negotiator-mode
+           (process-terminal-keyboard-negotiator terminal)))))
+
+(defun terminal-exit-disable-modify-other-keys-p (terminal)
+  (eq :modify-other-keys
+      (keyboard-protocol-negotiator-mode
+       (process-terminal-keyboard-negotiator terminal))))
+
+(defun process-terminal-exit-restore-sequence
+    (terminal before after)
+  (concatenate
+   'string
+   before
+   (if (process-terminal-progress-active-p terminal)
+       +terminal-progress-clear-sequence+
+       "")
+   (format nil "~C[?2004l" #\Escape)
+   (if (terminal-exit-pop-keyboard-p terminal)
+       (format nil "~C[<u" #\Escape)
+       "")
+   (if (terminal-exit-disable-modify-other-keys-p terminal)
+       +modify-other-keys-disable+
+       "")
+   after))
+
+(defun write-octets-to-fd (fd octets)
+  (let ((total (length octets)))
+    (sb-sys:with-pinned-objects (octets)
+      (let ((base (sb-sys:vector-sap octets))
+            (offset 0))
+        (loop
+          (unless (< offset total)
+            (return))
+          (let ((wrote
+                  (sb-posix:write
+                   fd
+                   (sb-sys:sap+ base offset)
+                   (- total offset))))
+            (when (zerop wrote)
+              (return))
+            (incf offset wrote)))))))
+
+(defun write-terminal-exit-bytes (terminal sequence)
+  ;; A buffered stream write can still be sitting in the Lisp buffer
+  ;; when the exit hook runs. Flush that first, then write the reset
+  ;; itself with write(2) so it reaches the terminal before the process
+  ;; is gone.
+  (let ((output (process-terminal-output terminal)))
+    (handler-case
+        (finish-output output)
+      (serious-condition () nil))
+    (let ((fd (stream-file-descriptor output :output)))
+      (if fd
+          (write-octets-to-fd
+           fd
+           (sb-ext:string-to-octets sequence))
+          (progn
+            (write-string sequence output)
+            (finish-output output))))))
+
+(defun terminal-restore-on-exit (terminal)
+  (write-terminal-exit-bytes
+   terminal
+   (process-terminal-exit-restore-sequence
+    terminal
+    (terminal-exit-restore-prefix terminal)
+    (terminal-exit-restore-suffix terminal))))
+
+(defun run-terminal-exit-restores ()
+  (dolist (terminal (copy-list *armed-terminal-exits*))
+    (handler-case
+        (terminal-restore-on-exit terminal)
+      (serious-condition () nil))))
+
 (defmethod terminal-start ((terminal process-terminal))
   #+sbcl
   (let ((fd
@@ -454,34 +631,61 @@
        fd sb-posix:tcsanow
        (raw-termios original))
       (setf (process-terminal-started-p terminal) t)
+      (setf
+       (process-terminal-keyboard-protocol-pushed-p
+        terminal)
+       t)
+      (arm-terminal-exit-restore terminal)
       (refresh-terminal-size terminal)
-      (terminal-write
-       terminal
-       (format nil
-               "~C[?2004h~C[?25l~A~A~A"
-               #\Escape #\Escape
-               (keyboard-protocol-query)
-               (if
-                   (terminal-capabilities-images
-                    (get-terminal-capabilities))
-                   (format nil "~C[16t" #\Escape)
-                   "")
-               (if
-                   (process-terminal-color-scheme-notifications-enabled-p
-                    terminal)
-                   (format nil "~C[?2031h" #\Escape)
-                   "")))))
+      (let ((program-status-query
+              (if (configure-program-status-support
+                   terminal)
+                  +program-status-query+
+                  "")))
+        (terminal-write
+         terminal
+         (format nil
+                 "~C[?2004h~C[?25l~A~A~A~A~A"
+                 #\Escape #\Escape
+                 +keyboard-protocol-query-without-da+
+                 program-status-query
+                 +device-attributes-query+
+                 (if
+                     (terminal-capabilities-images
+                      (get-terminal-capabilities))
+                     (format nil "~C[16t" #\Escape)
+                     "")
+                 (if
+                     (process-terminal-color-scheme-notifications-enabled-p
+                      terminal)
+                     (format nil "~C[?2031h" #\Escape)
+                     "")))
+        (when
+            (process-terminal-program-status-supported-p
+             terminal)
+          (write-stored-program-status terminal)))))
   #-sbcl
   (error "process-terminal requires SBCL")
   terminal)
 
 (defmethod terminal-stop ((terminal process-terminal))
   (when (process-terminal-started-p terminal)
+    (disarm-terminal-exit-restore terminal)
+    (setf (terminal-exit-renderer terminal) nil)
     (unwind-protect
          (ignore-errors
            (when (process-terminal-progress-active-p
                   terminal)
              (terminal-set-progress terminal nil))
+           (when
+               (and
+                (process-terminal-program-status-supported-p
+                 terminal)
+                (process-terminal-program-status terminal))
+             (terminal-write
+              terminal
+              (format-program-status
+               (make-program-status :state :clear))))
            (terminal-write
             terminal
             (format nil
@@ -504,9 +708,18 @@
            (process-terminal-saved-termios terminal))))
       (setf
        (process-terminal-started-p terminal) nil
+       (process-terminal-keyboard-protocol-pushed-p
+        terminal)
+       nil
        (process-terminal-saved-termios terminal) nil
        (process-terminal-progress-active-p terminal) nil
        (process-terminal-progress-next-keepalive-at terminal)
+       nil
+       (process-terminal-program-status-supported-p
+        terminal)
+       nil
+       (process-terminal-program-status-query-pending-p
+        terminal)
        nil
        (process-terminal-stdin-prefix-time terminal) nil
        (process-terminal-keyboard-prefix-time terminal) nil
@@ -543,6 +756,20 @@
 
 (defun process-terminal-consume-sequence
     (terminal sequence forward)
+  (when (program-status-reply-p sequence)
+    (when
+        (process-terminal-program-status-query-pending-p
+         terminal)
+      (setf
+       (process-terminal-program-status-query-pending-p
+        terminal)
+       nil
+       (process-terminal-program-status-supported-p
+        terminal)
+       t)
+      (write-stored-program-status terminal))
+    (return-from process-terminal-consume-sequence
+      forward))
   (multiple-value-bind (sequences writes)
       (keyboard-protocol-consume
        (process-terminal-keyboard-negotiator terminal)
@@ -550,6 +777,19 @@
     (dolist (write writes)
       (terminal-write terminal write))
     (dolist (candidate sequences)
+      (when (program-status-reply-p candidate)
+        (when
+            (process-terminal-program-status-query-pending-p
+             terminal)
+          (setf
+           (process-terminal-program-status-query-pending-p
+            terminal)
+           nil
+           (process-terminal-program-status-supported-p
+            terminal)
+           t)
+          (write-stored-program-status terminal))
+        (return))
       (multiple-value-bind (consumed-p value)
           (terminal-response-consume
            (process-terminal-response-filter terminal)
@@ -751,6 +991,55 @@
         (process-terminal-pending-input terminal))))
     (process-terminal-background-response terminal)))
 
+(defmethod terminal-query-theme-colors
+    ((terminal process-terminal)
+     &key (timeout-seconds 0.1d0))
+  (unless (process-terminal-started-p terminal)
+    (return-from terminal-query-theme-colors nil))
+  (let* ((filter
+           (process-terminal-response-filter terminal))
+         (query (make-terminal-color-query))
+         (forward nil)
+         (started-at (get-internal-real-time))
+         (timeout
+           (max 0d0
+                (coerce timeout-seconds 'double-float))))
+    (setf (terminal-response-filter-color-query filter) query)
+    (setf (terminal-response-filter-color-result filter) nil)
+    (terminal-write terminal (terminal-color-query-sequence))
+    (loop
+      (let ((input (terminal-read-input terminal)))
+        (when (plusp (length input))
+          (push input forward)))
+      (when (or (null
+                 (terminal-response-filter-color-query filter))
+                (>= (elapsed-seconds started-at) timeout))
+        (return))
+      (sleep 0.005d0))
+    (when forward
+      (setf
+       (process-terminal-pending-input terminal)
+       (nconc
+        (nreverse forward)
+        (process-terminal-pending-input terminal))))
+    (let ((result
+            (or (terminal-response-filter-color-result filter)
+                (terminal-color-query-plist query))))
+      (when (null
+             (terminal-response-filter-color-query filter))
+        (setf (terminal-response-filter-color-result filter)
+              nil))
+      result)))
+
+(defmethod terminal-take-theme-colors
+    ((terminal process-terminal))
+  (let* ((filter
+           (process-terminal-response-filter terminal))
+         (result
+           (terminal-response-filter-color-result filter)))
+    (setf (terminal-response-filter-color-result filter) nil)
+    result))
+
 (defmethod terminal-query-color-scheme
     ((terminal process-terminal)
      &key (timeout-seconds 0.1d0))
@@ -874,6 +1163,24 @@
           +terminal-progress-keepalive-seconds+))
       t)))
 
+(defmethod terminal-set-program-status
+    ((terminal process-terminal) status)
+  (setf
+   (process-terminal-program-status terminal)
+   (if (and status
+            (not (eq :clear
+                     (program-status-state status))))
+       status
+       nil))
+  (when
+      (process-terminal-program-status-supported-p
+       terminal)
+    (terminal-write
+     terminal
+     (format-program-status
+      (or status
+          (make-program-status :state :clear)))))
+  status)
 (defun %call-with-terminal
     (terminal function
      before-start before-stop after-stop)
@@ -885,6 +1192,7 @@
          (funcall function))
     (unwind-protect
          (progn
+           (disarm-terminal-exit-restore terminal)
            (when before-stop
              (funcall before-stop))
            (terminal-stop terminal))

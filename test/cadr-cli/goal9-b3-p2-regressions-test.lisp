@@ -53,6 +53,9 @@
        ""
        (goal9-b3-full-width-line "  Model Name: Faux Model" width)
        ""
+       (goal9-b3-full-width-line
+        "  Enter to select · Ctrl+S to set as default · Escape/Ctrl+C to cancel"
+        width)
        border)
       plain))))
 
@@ -148,7 +151,13 @@
 
 (test goal9-b3-cold-startup-content-is-top-aligned
   (let* ((version-line
-           (format nil "cadr v~A" (cadr-ai::cadr-version)))
+          (format nil "cadr v~A" (cadr-ai::cadr-version)))
+         (logo-line
+           (concatenate 'string "▀▀█  "
+                        (subseq version-line (length "cadr "))))
+         (hint-line
+           (concatenate 'string "█▀ █ "
+                        "escape interrupt · ctrl+c/ctrl+d clear/exit"))
          (width 60)
          (rows 16)
          (blank-row
@@ -172,13 +181,12 @@
        (equal
         (list
          ""
-         (format nil " ~A~A" version-line
-                 (make-string (- width 1 (length version-line))
+         (format nil " ~A~A" logo-line
+                 (make-string (- width 1 (length logo-line))
                               :initial-element #\Space))
-         (format nil " escape interrupt · ctrl+c/ctrl+d clear/exit~A"
+         (format nil " ~A~A" hint-line
                  (make-string
-                  (- width
-                     (length " escape interrupt · ctrl+c/ctrl+d clear/exit"))
+                  (- width 1 (length hint-line))
                   :initial-element #\Space))
          ""
          ""
@@ -209,19 +217,22 @@
            (make-string width :initial-element #\─))
          (options
            (cadr-cli::settings-selector-state-options state)))
-    (is (= 30 (length options)))
+    (is (= 33 (length options)))
     (is
      (equal
       '("autocompact" "auto-resize-images" "block-images"
         "skill-commands" "show-hardware-cursor" "editor-padding"
         "output-padding" "autocomplete-max-visible" "clear-on-shrink"
         "terminal-progress" "steering-mode" "follow-up-mode" "transport"
-        "http-idle-timeout" "hide-thinking" "mermaid-rendering"
+        "share-destination" "http-idle-timeout"
+        "cache-warming-mode" "hide-thinking"
+        "mermaid-rendering"
         "cache-miss-notices" "collapse-changelog" "quiet-startup"
         "install-telemetry" "default-project-trust" "double-escape-action"
         "tree-filter-mode" "warnings" "model-thinking"
         "tui-mode" "fullscreen-exit-output" "fullscreen-scrollbar"
-        "fullscreen-copy-on-select" "theme")
+        "fullscreen-copy-on-select" "fullscreen-wheel-scroll-lines"
+        "theme")
       (mapcar #'cadr-cli::settings-option-id options)))
     (is
      (uiop:string-prefix-p
@@ -246,7 +257,7 @@
        "  Autocomplete max items          5"
        "  Clear on shrink                 false"
        "  Terminal progress               false"
-       "  (1/30)"
+       "  (1/33)"
        ""
        "  Automatically compact context when it gets too large"
        ""
@@ -385,7 +396,7 @@
            (cadr-cli::make-cli-settings-selector-state
             manager agent (cadr-cli::make-resource-snapshot)
             :supports-images-p t)))
-    (is (= 32
+    (is (= 35
            (length
             (cadr-cli::settings-selector-state-options with-images))))
     (is

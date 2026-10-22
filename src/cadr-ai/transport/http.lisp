@@ -746,9 +746,21 @@
            :message
            (redact-request-text
             request
-            (if (and (= status 429) terminal-p)
-                (format nil "~A: ~A" status display-body)
-                extracted)))))
+            (cond
+              ((and (= status 429) terminal-p)
+               (format nil "~A: ~A" status display-body))
+              ;; pi@4a080252f openai-responses.ts formatProviderError.
+              ;; Copilot's 413 body is "failed to parse request" with no
+              ;; overflow phrase, so the status has to be in the text.
+              ((= status 413)
+               (format nil "~A API error (413): ~A"
+                       (if (eq (request-spec-provider request) :openai)
+                           "OpenAI"
+                           (string-downcase
+                            (symbol-name
+                             (request-spec-provider request))))
+                       (or display-body extracted "")))
+              (t extracted))))))
 
 (defun signal-http-timeout (cause)
   (error
@@ -788,6 +800,8 @@
       (error condition))
     (native-http-timeout (cause)
       (signal-http-timeout cause))
+    (sb-sys:deadline-timeout (condition)
+      (error condition))
     (sb-sys:io-timeout (cause)
       (signal-http-timeout cause))
     (sb-bsd-sockets:operation-timeout-error
@@ -831,23 +845,40 @@
             :cause cause)))
        status headers))))
 
+(defun call-with-header-timeout (timeout message function)
+  (if (realp timeout)
+      (handler-case
+          (sb-sys:with-deadline (:seconds timeout)
+            (funcall function))
+        (sb-sys:deadline-timeout (condition)
+          (error 'timeout-error
+                 :message (or message "HTTP response headers timed out")
+                 :cause condition
+                 :retryable-p nil)))
+      (funcall function)))
+
 (defun request-sse
     (request consumer
      &key (connect-timeout 10)
        (read-timeout nil)
        abort-p
        environment
-       on-response)
+       on-response
+       header-timeout
+       header-timeout-message)
   (multiple-value-bind (body status headers)
       (let ((*native-http-abort-p* abort-p))
-        (apply #'invoke-http-request
-               request
-               (append
-                (list :connect-timeout connect-timeout
-                      ;; SSE may remain silent during model thinking.
-                      :read-timeout read-timeout)
-                (when environment (list :environment environment))
-                (list :want-stream t :force-binary t))))
+        (call-with-header-timeout
+         header-timeout header-timeout-message
+         (lambda ()
+           (apply #'invoke-http-request
+                  request
+                  (append
+                   (list :connect-timeout connect-timeout
+                         ;; SSE may remain silent during model thinking.
+                         :read-timeout read-timeout)
+                   (when environment (list :environment environment))
+                   (list :want-stream t :force-binary t))))))
     (unwind-protect
          (progn
            (when on-response

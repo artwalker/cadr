@@ -109,6 +109,19 @@
    (settings-effective-object manager)
    key default))
 
+(defun settings-device-id (manager)
+  ;; pi@71023aec getOrCreateDeviceId: global only, created on first use.
+  ;; A project settings file must not supply the installation id.
+  (let ((existing
+          (cadr-ai::json-get
+           (settings-manager-global manager)
+           "deviceId")))
+    (if (and (stringp existing) (plusp (length existing)))
+        existing
+        (let ((id (cadr-ai:uuid-v7)))
+          (settings-set manager "deviceId" id :scope :global)
+          id))))
+
 (defun settings-set
     (manager key value &key (scope :global))
   (when (and (eq scope :project)
@@ -306,6 +319,14 @@
           (settings-value manager "outputPad" 1)))
     (if (member value '(0 1)) value 1)))
 
+(defun settings-quiet-startup (manager)
+  "Return T, :HEADER, or NIL. Only boolean true and the string \"header\" count."
+  (let ((value (settings-value manager "quietStartup" nil)))
+    (cond
+      ((eq value t) t)
+      ((and (stringp value) (string= value "header")) :header)
+      (t nil))))
+
 (defun settings-auto-resize-images-p (manager)
   (let ((images
           (settings-value
@@ -383,7 +404,7 @@
   model-id)
 
 (defun add-persisted-default-to-non-empty-scope (manager model)
-  ;; pi@ecac0a9c4 agent-session.ts _addPersistedDefaultToNonEmptyScope:
+  ;; pi@4a080252f agent-session.ts _addPersistedDefaultToNonEmptyScope:
   ;; a Ctrl+S default joins a non-empty enabledModels list so the
   ;; saved default stays selectable after restart.
   (let ((enabled (settings-enabled-models manager)))

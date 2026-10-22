@@ -41,28 +41,159 @@
     "name" (tool-call-name call)
     "arguments" (stringify-json (tool-call-arguments call)))))
 
+(defun openai-reasoning-detail-p (detail)
+  ;; pi@4a080252f openai-completions.ts isOpenAIReasoningDetail.
+  (and (hash-table-p detail)
+       (let ((type (json-get detail "type")))
+         (and (stringp type)
+              (or (not (json-present-p detail "id"))
+                  (json-null-p (json-get detail "id"))
+                  (stringp (json-get detail "id")))
+              (or (not (json-present-p detail "format"))
+                  (stringp (json-get detail "format")))
+              (or (not (json-present-p detail "index"))
+                  (numberp (json-get detail "index")))
+              (cond
+                ((string= type "reasoning.summary")
+                 (stringp (json-get detail "summary")))
+                ((string= type "reasoning.encrypted")
+                 (stringp (json-get detail "data")))
+                ((string= type "reasoning.text")
+                 (and (stringp (json-get detail "text"))
+                      (or (not (json-present-p detail "signature"))
+                          (json-null-p (json-get detail "signature"))
+                          (stringp (json-get detail "signature")))))
+                (t nil))))))
+
+(defun parse-openai-reasoning-details (signature)
+  (when (and (stringp signature) (plusp (length signature)))
+    (handler-case
+        (let ((parsed (parse-json signature)))
+          (when (and (vectorp parsed)
+                     (plusp (length parsed))
+                     (every #'openai-reasoning-detail-p parsed))
+            (coerce parsed 'list)))
+      (error () nil))))
+
+(defun legacy-encrypted-reasoning-detail (signature)
+  (when (and (stringp signature) (plusp (length signature)))
+    (handler-case
+        (let ((parsed (parse-json signature)))
+          (when (and (openai-reasoning-detail-p parsed)
+                     (string= "reasoning.encrypted"
+                              (json-get parsed "type"))
+                     (stringp (json-get parsed "id"))
+                     (plusp (length (json-get parsed "id")))
+                     (stringp (json-get parsed "data"))
+                     (plusp (length (json-get parsed "data"))))
+            parsed))
+      (error () nil))))
+
+(defun reasoning-detail-string-falsy-p (object key)
+  (if (json-present-p object key)
+      (let ((value (json-get object key)))
+        (or (not (stringp value)) (zerop (length value))))
+      t))
+
+(defun fill-missing-reasoning-detail-fields (target source)
+  (when (or (not (json-present-p target "id"))
+            (json-null-p (json-get target "id")))
+    (when (json-present-p source "id")
+      (json-put target "id"
+                (copy-json-value (json-get source "id")))))
+  (when (reasoning-detail-string-falsy-p target "format")
+    (let ((format
+            (and (json-present-p source "format")
+                 (json-get source "format"))))
+      (when (and (stringp format) (plusp (length format)))
+        (json-put target "format" format))))
+  (when (or (not (json-present-p target "index"))
+            (json-null-p (json-get target "index")))
+    (when (numberp
+           (and (json-present-p source "index")
+                (json-get source "index")))
+      (json-put target "index" (json-get source "index")))))
+
+(defun merge-reasoning-detail-signature (target source)
+  (when (reasoning-detail-string-falsy-p target "signature")
+    (let ((signature
+            (and (json-present-p source "signature")
+                 (json-get source "signature"))))
+      (when (and (stringp signature) (plusp (length signature)))
+        (json-put target "signature" signature)))))
+
+(defun append-openai-reasoning-detail (details detail)
+  ;; Consecutive text or summary deltas merge. Encrypted entries stay
+  ;; discrete. The stored object is a copy so the SSE scratch can be reused.
+  (let ((copy (copy-json-value detail))
+        (last (car (last details)))
+        (type (json-get detail "type")))
+    (cond
+      ((and last
+            (string= type "reasoning.text")
+            (string= (json-get last "type") "reasoning.text"))
+       (json-put last "text"
+                 (concatenate 'string
+                              (json-get last "text")
+                              (json-get copy "text")))
+       (merge-reasoning-detail-signature last copy)
+       (fill-missing-reasoning-detail-fields last copy)
+       details)
+      ((and last
+            (string= type "reasoning.summary")
+            (string= (json-get last "type") "reasoning.summary"))
+       (json-put last "summary"
+                 (concatenate 'string
+                              (json-get last "summary")
+                              (json-get copy "summary")))
+       (fill-missing-reasoning-detail-fields last copy)
+       details)
+      (details (nconc details (list copy)))
+      (t (list copy)))))
+
 (defun openai-chat-assistant-message (message)
   (let ((result (json-object "role" "assistant"))
         (texts nil)
-        (thinking nil)
+        (thinking-blocks nil)
         (calls nil))
     (dolist (block (assistant-message-content message))
       (cond
         ((typep block 'text-content)
          (push (text-content-text block) texts))
         ((typep block 'thinking-content)
-         (push (thinking-content-thinking block) thinking))
+         (push block thinking-blocks))
         ((typep block 'tool-call)
          (push (openai-chat-tool-call block) calls))))
+    (setf texts (nreverse texts)
+          thinking-blocks (nreverse thinking-blocks)
+          calls (nreverse calls))
     (when texts
-      (json-put result "content"
-                (format nil "~{~A~}" (nreverse texts))))
-    (when thinking
-      (json-put result "reasoning_content"
-                (format nil "~{~A~^~%~%~}" (nreverse thinking))))
-    (when calls
-      (json-put result "tool_calls"
-                (list-json-array (nreverse calls))))
+      (json-put result "content" (format nil "~{~A~}" texts)))
+    (let ((preserved
+            (or (loop for block in thinking-blocks
+                      for details
+                        = (parse-openai-reasoning-details
+                           (thinking-content-signature block))
+                      when details
+                        return details)
+                (loop for block in (assistant-message-content message)
+                      when (and (typep block 'tool-call)
+                                (legacy-encrypted-reasoning-detail
+                                 (tool-call-thought-signature block)))
+                        collect
+                        (legacy-encrypted-reasoning-detail
+                         (tool-call-thought-signature block))))))
+      (unless preserved
+        (when thinking-blocks
+          (json-put result "reasoning_content"
+                    (format nil "~{~A~^~%~%~}"
+                            (mapcar #'thinking-content-thinking
+                                    thinking-blocks)))))
+      (when calls
+        (json-put result "tool_calls" (list-json-array calls)))
+      (when preserved
+        (json-put result "reasoning_details"
+                  (list-json-array preserved))))
     (when (and (null texts) (null calls))
       (json-put result "content" ""))
     result))
@@ -86,27 +217,67 @@
           (setf (gethash name names) t))))
     names))
 
+(defun completions-instruction-role (model)
+  (if (and (model-reasoning-p model)
+           (completions-developer-role-p model))
+      "developer"
+      "system"))
+
 (defun openai-chat-messages
     (model context &key (normalize-id #'normalize-provider-id)
-                       deferred-tools-mode)
+                       deferred-tools-mode transcript transcript-tools)
+  ;; pi@4a080252f openai-completions.ts convertMessages: an additions
+  ;; transport reads toolsAdded off each system message. Messages at or
+  ;; after foldedSystemMessages carry those tools in place; earlier ones
+  ;; are already the top-level list, so a later load does not rewrite it.
   (let ((messages nil)
-        (loaded-tool-names (make-hash-table :test #'equal)))
-    (when (non-empty-string-p (context-system-prompt context))
-      (push
-       (json-object "role"
-                    (if (and (model-reasoning-p model)
-                             (completions-developer-role-p model))
-                        "developer"
-                        "system")
-                    "content" (context-system-prompt context))
-       messages))
-    (dolist
-        (message
-         (prepare-messages-for-model
-          (context-messages context)
-          model
-          normalize-id))
+        (loaded-tool-names (make-hash-table :test #'equal))
+        (anchored-p (and transcript transcript-tools))
+        (system-index 0))
+    (unless anchored-p
+      (when (non-empty-string-p (context-system-prompt context))
+        (push
+         (json-object "role" (completions-instruction-role model)
+                      "content" (context-system-prompt context))
+         messages)))
+    (loop for message
+            in (prepare-messages-for-model
+                (if anchored-p
+                    (transcript-context-messages transcript)
+                    (context-messages context))
+                model
+                normalize-id)
+          for index from 0
+          do
       (cond
+        ((typep message 'system-message)
+         (when (and anchored-p
+                    (>= system-index
+                        (transcript-tools-folded-system-messages
+                         transcript-tools)))
+           (let ((added (system-message-tools-added message)))
+             (when added
+               (push
+                (json-object
+                 "role" "system"
+                 "tools" (openai-chat-tools model added))
+                messages))))
+         (incf system-index)
+         (let ((text
+                 (if (and anchored-p (plusp index))
+                     (render-system-message-update message)
+                     (get-system-message-text message))))
+           (when (if anchored-p
+                     (plusp (length text))
+                     (non-empty-string-p text))
+             (push
+              (json-object
+               "role"
+               (if anchored-p
+                   (completions-instruction-role model)
+                   "system")
+               "content" text)
+              messages))))
         ((typep message 'user-message)
          (let ((content
                  (openai-chat-user-content
@@ -127,7 +298,8 @@
            (let ((text
                    (content-text
                     (tool-result-message-content message))))
-             (if (non-empty-string-p text)
+             ;; pi@4a080252f openai-completions.ts #8720.
+             (if (javascript-trim-nonempty-p text)
                  text
                  (if (content-has-images-p
                       (tool-result-message-content message))
@@ -175,13 +347,23 @@
     (list-json-array (nreverse messages))))
 
 (defun completions-strict-mode-p (model)
+  ;; pi@4a080252f openai-completions.ts detectCompat defaults
+  ;; supportsStrictMode to false. Built-in catalogs still advertise
+  ;; the capability. An unknown provider id must not inherit it.
   (model-compat-value
    model :supports-strict-mode
-   (not
-    (member (model-provider model)
-            '(:minimax :minimax-cn :moonshotai :moonshotai-cn
-              :together)
-            :test #'eq))))
+   (let ((provider (model-provider model)))
+     (and (gethash provider *provider-definitions*)
+          (not
+           (member provider
+                   '(:minimax :minimax-cn
+                     :moonshotai :moonshotai-cn
+                     :together :nvidia :cerebras
+                     :cloudflare-ai-gateway)
+                   :test #'eq))
+          (not
+           (search "cerebras.ai"
+                   (or (model-base-url model) "")))))))
 
 (defun openai-chat-tools (model tools)
   (list-json-array
@@ -280,7 +462,7 @@
            (string-downcase (symbol-name reasoning)))))
 
 (defun resolve-chat-template-args (model reasoning values)
-  ;; pi@ecac0a9c4 api/openai-completions.ts:892-940 — each entry
+  ;; pi@4a080252f api/openai-completions.ts:892-940 — each entry
   ;; resolves a scalar verbatim or a $var reference to the current
   ;; thinking state; omitWhenOff drops the entry with no reasoning
   ;; active; an empty result omits the request field entirely.
@@ -394,7 +576,7 @@
          (when (stringp value)
            (json-put payload "thinking" value))))
       (:baseten
-       ;; pi@ecac0a9c4 api/openai-completions.ts:779-793 — chat
+       ;; pi@4a080252f api/openai-completions.ts:779-793 — chat
        ;; template args carry the thinking toggle, and reasoning_effort
        ;; follows only when the model supports it.
        (let ((args
@@ -447,27 +629,61 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
-                            thinking-budgets)
+                            thinking-budgets sampling-params
+                            &allow-other-keys)
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
+         ;; pi@4a080252f openai-completions.ts buildParams: mid-conversation
+         ;; tool additions anchor on the transcript. A removal rewrites
+         ;; the top-level list once; later loads stay on that prefix.
+         ;; The :kimi override still moves tool-result added names for
+         ;; catalogs that do not speak system-message tool changes.
+         (additions-p
+           (and (model-compat-value
+                 model :supports-mid-convo-system-messages nil)
+                (model-compat-value
+                 model :supports-mid-convo-tool-additions nil)))
+         (transcript
+           (when (and additions-p *provider-request-transcript*)
+             (resolve-transcript *provider-request-transcript* t)))
+         (transcript-tools
+           (when transcript
+             (resolve-transcript-tools
+              (transcript-context-messages transcript)
+              :additions)))
          (deferred-mode
-           (model-compat-value model :deferred-tools-mode nil))
+           (if transcript-tools
+               nil
+               (cond
+                 ((eq (model-compat-value model :deferred-tools-mode nil)
+                      :kimi)
+                  :kimi)
+                 (additions-p :kimi)
+                 (t
+                  (model-compat-value model :deferred-tools-mode nil)))))
          (deferred-names
            (and (eq deferred-mode :kimi)
                 (deferred-tool-names (context-messages context))))
          (active-tools
-           (if deferred-names
-               (remove-if
-                (lambda (tool) (gethash (tool-name tool) deferred-names))
-                (context-tools context))
+           (cond
+             (transcript-tools
+              (transcript-tools-request-tools transcript-tools))
+             (deferred-names
+              (remove-if
+               (lambda (tool) (gethash (tool-name tool) deferred-names))
                (context-tools context)))
+             (t
+              (context-tools context))))
          (payload
            (json-object
             "model" (model-id model)
             "messages"
             (openai-chat-messages
-             model context :deferred-tools-mode deferred-mode)
+             model context
+             :deferred-tools-mode deferred-mode
+             :transcript transcript
+             :transcript-tools transcript-tools)
             "stream" (and stream-p t))))
     (when (and stream-p
                (model-compat-value
@@ -488,13 +704,13 @@
     (when active-tools
       (json-put payload "tools"
                 (openai-chat-tools model active-tools)))
-    ;; pi@ecac0a9c4 openai-completions.ts:838 — omit tool_choice when
+    ;; pi@4a080252f openai-completions.ts:838 — omit tool_choice when
     ;; the request has no tools (#8607). Compaction no longer passes
     ;; toolChoice: "none" (6b36eb592).
     (when (and tool-choice active-tools)
       (json-put payload "tool_choice" tool-choice))
     (add-completions-reasoning payload model reasoning)
-    ;; pi@ecac0a9c4 api/openai-completions.ts:847-866 — vLLM caps
+    ;; pi@4a080252f api/openai-completions.ts:847-866 — vLLM caps
     ;; reasoning with a top-level thinking_token_budget, independent of
     ;; thinkingFormat; reasoning and the answer share max_tokens, so an
     ;; uncapped reasoning phase can consume the whole response.  The
@@ -528,6 +744,7 @@
             (json-put payload "prompt_cache_key" cache-key))))
       (when (and (eq retention :long) supports-long)
         (json-put payload "prompt_cache_retention" "24h")))
+    (apply-sampling-params payload model reasoning sampling-params)
     (multiple-value-bind (priority present-p)
         (plist-entry (model-compat model) :vllm-priority)
       (when present-p
@@ -536,6 +753,8 @@
      :url (chat-completions-url (model-base-url model))
      :headers
      (append
+      ;; User-Agent and attribution come from the client identity, under
+      ;; these headers and model.headers.
       `(("content-type" . "application/json")
         ("accept" . ,(if stream-p
                          "text/event-stream"
@@ -782,6 +1001,12 @@
                         :content-index index
                         :content (text-content-text block)))
            ((typep block 'thinking-content)
+            (let ((details
+                    (provider-stream-state-reasoning-details state)))
+              (when details
+                (setf (thinking-content-signature block)
+                      (stringify-json
+                       (list-json-array details)))))
             (emit-event emit :thinking-end message
                         :content-index index
                         :content
@@ -792,11 +1017,7 @@
                      key
                      (provider-stream-state-partial-json state)
                      "")))
-              (setf
-               (tool-call-arguments block)
-               (if (non-empty-string-p json)
-                   (parse-streaming-json json)
-                   (json-object)))
+              (finish-tool-call-arguments block json)
               (emit-event emit :tool-call-end message
                           :content-index index
                           :tool-call block))))))
@@ -809,7 +1030,6 @@
 
 (defmethod reduce-provider-sse-event
     ((provider openai-completions-provider) state event emit)
-  (declare (ignore provider))
   (let ((data (sse-event-data event))
         (message (provider-stream-state-message state)))
     (unless (string= data "[DONE]")
@@ -844,6 +1064,22 @@
                  (completions-thinking-signature
                   (assistant-message-provider message)
                   field))))
+            ;; pi@4a080252f #10926. reasoning_details are replay metadata.
+            ;; A proxy can put them in the same delta as content; the
+            ;; thinking block has to exist before the text block.
+            (let ((details (json-get delta "reasoning_details")))
+              (when (vectorp details)
+                (loop for detail across details
+                      when (openai-reasoning-detail-p detail)
+                        do
+                        (chat-stream-block
+                         state :thinking :thinking emit
+                         :signature "")
+                        (setf
+                         (provider-stream-state-reasoning-details state)
+                         (append-openai-reasoning-detail
+                          (provider-stream-state-reasoning-details state)
+                          detail)))))
             (append-chat-text-delta
              state :text :text
              (json-get delta "content") emit)
@@ -870,7 +1106,10 @@
                 (setf
                  (assistant-message-error-message message)
                  (format nil "Provider finish_reason: ~A"
-                         finish-reason))))))))))
+                         finish-reason)))
+              (when (typep provider 'mistral-provider)
+                (apply-mistral-finish-reason
+                 message finish-reason)))))))))
 
 (defmethod finalize-provider-stream
     ((provider openai-completions-provider)

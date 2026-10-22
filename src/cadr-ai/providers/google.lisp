@@ -58,12 +58,24 @@
                           part)))))
     ((typep message 'tool-result-message)
      (json-array
-      (let ((response
+      (let* ((content (tool-result-message-content message))
+             (raw (content-text content))
+             ;; pi@4a080252f google-shared.ts #8720. hasText is
+             ;; textResult.trim().length > 0. Images count only when
+             ;; the model accepts them. output and error share the value.
+             (text
+               (cond
+                 ((javascript-trim-nonempty-p raw) raw)
+                 ((and (model-supports-images-p model)
+                       (content-has-images-p content))
+                  "(see attached image)")
+                 (t "")))
+             (response
               (json-object
                (if (tool-result-message-is-error message)
                    "error"
                    "output")
-               (content-text (tool-result-message-content message)))))
+               text)))
         (json-object
          "functionResponse"
          (let ((function-response
@@ -168,60 +180,126 @@
 
 (defun resolve-google-thinking-level (model level)
   ;; Baseline google-shared.ts resolveGoogleThinkingLevel.
-  (let* ((mapped
-           (unless (eq level :off)
-             (model-thinking-level-value model level)))
+  (let* ((present-p (model-thinking-level-present-p model level))
+         (mapped (and present-p (model-thinking-level-value model level)))
          (resolved
-           (if (eq level :off)
-               :high
-               (or (google-parse-resolved-thinking-level mapped)
-                   level))))
+           (or (google-parse-resolved-thinking-level mapped)
+               (and (not (stringp mapped)) level))))
     (if (member resolved +google-resolved-thinking-levels+)
         resolved
         (error "Unsupported Google thinking level mapping for ~A/~A: ~A -> ~A"
                (model-provider model)
                (model-id model)
                level
-               mapped))))
+               (cond
+                 ((not present-p) "undefined")
+                 ((null mapped) "null")
+                 (t mapped))))))
 
 (defun google-api-thinking-level (resolved-level model)
-  ;; Baseline google-generative-ai.ts getThinkingLevel (GoogleApiThinkingLevel).
-  (cond
-    ((google-gemini-3-pro-p model)
-     (if (member resolved-level '(:minimal :low)) "LOW" "HIGH"))
-    ((google-gemma-4-p model)
-     (if (member resolved-level '(:minimal :low)) "MINIMAL" "HIGH"))
-    (t
-     (ecase resolved-level
-       (:minimal "MINIMAL")
-       (:low "LOW")
-       (:medium "MEDIUM")
-       (:high "HIGH")))))
+  (declare (ignore model))
+  (ecase resolved-level
+    (:minimal "MINIMAL")
+    (:low "LOW")
+    (:medium "MEDIUM")
+    (:high "HIGH")))
 
-(defun google-thinking-config (model reasoning)
+(defun uses-google-thinking-level-p (model)
+  ;; Baseline google-shared.ts usesGoogleThinkingLevel.
+  (let ((id (string-downcase (model-id model))))
+    (or (google-level-id-p id "gemini-3")
+        (google-major-at-least-p id "gemini-" 4)
+        (member id
+                '("gemini-flash-latest" "gemini-flash-lite-latest")
+                :test #'string=)
+        (search "gemma-4" id)
+        (search "gemma4" id))))
+
+(defun google-level-id-p (id prefix)
+  (let ((rest
+          (cond
+            ((uiop:string-prefix-p (concatenate 'string prefix "-") id)
+             (subseq id (1+ (length prefix))))
+            ((uiop:string-prefix-p (concatenate 'string prefix ".") id)
+             (let* ((start (1+ (length prefix)))
+                    (dash (position #\- id :start start)))
+               (when (and dash
+                          (plusp (- dash start))
+                          (every #'digit-char-p
+                                 (subseq id start dash)))
+                 (subseq id (1+ dash)))))
+            (t nil))))
+    (and rest
+         (or (uiop:string-prefix-p "pro" rest)
+             (uiop:string-prefix-p "flash" rest)))))
+
+(defun google-major-at-least-p (id prefix minimum)
+  (when (uiop:string-prefix-p prefix id)
+    (let* ((rest (subseq id (length prefix)))
+           (digits (loop for character across rest
+                         while (digit-char-p character)
+                         collect character)))
+      (and digits
+           (>= (parse-integer (coerce digits 'string)) minimum)))))
+
+(defun google-thinking-budget (model level custom-budgets)
+  (let ((custom (and custom-budgets (getf custom-budgets level))))
+    (when custom
+      (return-from google-thinking-budget custom)))
+  (let ((id (model-id model)))
+    (cond
+      ((search "2.5-pro" id)
+       (ecase level
+         (:minimal 128) (:low 2048) (:medium 8192) (:high 32768)))
+      ((search "2.5-flash-lite" id)
+       (ecase level
+         (:minimal 512) (:low 2048) (:medium 8192) (:high 24576)))
+      ((search "2.5-flash" id)
+       (ecase level
+         (:minimal 128) (:low 2048) (:medium 8192) (:high 24576)))
+      (t -1))))
+
+(defun disabled-google-thinking-config (model)
+  ;; Baseline getDisabledGoogleThinkingConfig. Omitted reasoning clamps
+  ;; off through the model map; a supported off stays a zero budget.
+  (if (not (uses-google-thinking-level-p model))
+      (json-object "thinkingBudget" 0)
+      (let ((fallback (clamp-thinking-level model :off)))
+        (if (eq fallback :off)
+            (json-object "thinkingBudget" 0)
+            (json-object
+             "thinkingLevel"
+             (google-api-thinking-level
+              (resolve-google-thinking-level model fallback)
+              model))))))
+
+(defun google-thinking-config (model reasoning &optional thinking-budgets)
   (when (model-reasoning-p model)
-    (if reasoning
-        (let* ((clamped (clamp-thinking-level model reasoning))
-               (resolved (resolve-google-thinking-level model clamped)))
-          (json-object
-           "includeThoughts" t
-           "thinkingLevel"
-           (google-api-thinking-level resolved model)))
-        (cond
-          ((google-gemini-3-pro-p model)
-           (json-object "thinkingLevel" "LOW"))
-          ((or (google-gemini-3-flash-p model)
-               (google-gemma-4-p model))
-           (json-object "thinkingLevel" "MINIMAL"))
-          (t
-           (json-object "thinkingBudget" 0))))))
+    (if (null reasoning)
+        (disabled-google-thinking-config model)
+        (let ((clamped (clamp-thinking-level model reasoning)))
+          (if (eq clamped :off)
+              (disabled-google-thinking-config model)
+              (let ((resolved
+                      (resolve-google-thinking-level model clamped)))
+                (if (uses-google-thinking-level-p model)
+                    (json-object
+                     "includeThoughts" t
+                     "thinkingLevel"
+                     (google-api-thinking-level resolved model))
+                    (json-object
+                     "includeThoughts" t
+                     "thinkingBudget"
+                     (google-thinking-budget
+                      model resolved thinking-budgets)))))))))
 
 (defmethod build-request ((provider google-provider)
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
+                            thinking-budgets
                             &allow-other-keys)
-  (declare (ignore cache-retention session-id metadata))
+  (declare (ignore cache-retention metadata))
   (ensure-supported-content model context)
   (let* ((key (require-api-key provider))
          (payload
@@ -251,7 +329,7 @@
                  :supports-strict-mode-p
                  (supports-google-strict-tool-sampling-p model))))
     (let ((thinking-config
-            (google-thinking-config model reasoning)))
+            (google-thinking-config model reasoning thinking-budgets)))
       (when thinking-config
         (json-put payload "thinkingConfig" thinking-config)))
     (when tool-choice
@@ -277,6 +355,10 @@
                          "text/event-stream"
                          "application/json"))
         ("x-goog-api-key" . ,key))
+      (opencode-request-headers
+       :provider (model-provider model)
+       :base-url (model-base-url model)
+       :session-id session-id)
       (model-headers model))
      :payload payload
      :stream-p stream-p

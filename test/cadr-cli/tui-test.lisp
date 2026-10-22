@@ -1598,7 +1598,7 @@
      '("--model" "--continue"))))
 
 (test tui-mode-flag-matches-the-baseline-diagnostics
-  ;; pi@ecac0a9c4 cli/args.ts:180-191: valid values are consumed; a
+  ;; pi@4a080252f cli/args.ts:180-191: valid values are consumed; a
   ;; missing or dash-prefixed value errors without consuming; anything
   ;; else is consumed and rejected by name.
   (let ((arguments
@@ -1647,7 +1647,7 @@
           (cadr-cli::render-tui-state
            state editor 40 8 :full-document-p t)
         (declare (ignore main-column alt-column))
-        ;; pi@ecac0a9c4 root composition is a natural document in both main
+        ;; pi@4a080252f root composition is a natural document in both main
         ;; and alt modes.  Only the renderer selects a viewport.  Pi's Text
         ;; component pads notice lines to the full width, so document-content
         ;; assertions must ignore only that baseline-owned right padding.
@@ -2945,7 +2945,7 @@
        (cadr-cli::render-tui-entry entry 80))))))
 
 (test goal17-operation-aborted-padding-is-outside-error-color-span
-  ;; Fixed pi@ecac0a9c4 assistant-message.ts:194 constructs
+  ;; Fixed pi@4a080252f assistant-message.ts:194 constructs
   ;; Text(theme.fg("error", message), outputPad=1, 0): Text owns the
   ;; padding, so the leading/trailing cells are not part of the red span.
   (let* ((entry
@@ -2977,7 +2977,7 @@
                    (char abort-line after-prefix)))))))
 
 (test goal17-transcript-text-entries-use-baseline-text-component-padding
-  ;; Fixed pi@ecac0a9c4 interactive-mode.ts:3244,3918-3924 and
+  ;; Fixed pi@4a080252f interactive-mode.ts:3244,3918-3924 and
   ;; 5915-5917 render these transcript messages through Text.  Text owns
   ;; full-width padding outside the themed content; hand-built lines do not.
   (dolist (spec
@@ -3018,7 +3018,7 @@
         (is (= width (cadr-tui:visible-width content)))))))
 
 (test goal17-oauth-provider-status-span-owns-its-leading-space
-  ;; Fixed pi@ecac0a9c4 oauth-selector.ts:98-151 includes the separator space
+  ;; Fixed pi@4a080252f oauth-selector.ts:98-151 includes the separator space
   ;; inside every status span.  It never inserts an unstyled gap between the
   ;; provider label and status.
   (let ((caps
@@ -3099,7 +3099,7 @@
          state))))))
 
 (test goal17-fork-help-wrap-keeps-text-padding-inside-muted-span
-  ;; Fixed pi@ecac0a9c4 user-message-selector.ts:123-130 renders the help as
+  ;; Fixed pi@4a080252f user-message-selector.ts:123-130 renders the help as
   ;; Text(theme.fg("muted", ...), 1, 0).  The ANSI-aware wrapper therefore
   ;; carries the muted span through intermediate-line padding, while the final
   ;; line resets at the end of the actual text before Text adds its padding.
@@ -3147,7 +3147,7 @@
       (cadr-tui:reset-current-theme))))
 
 (test goal17-session-delete-confirmation-keeps-key-and-row-error-styles
-  ;; Fixed pi@ecac0a9c4 session-selector.ts:158-161,448-509 preserves the
+  ;; Fixed pi@4a080252f session-selector.ts:158-161,448-509 preserves the
   ;; nested keyHint dim/muted styles inside the error prompt and marks both
   ;; the selected session label and its right metadata as error while delete
   ;; confirmation is active.
@@ -3219,7 +3219,7 @@
       (cadr-tui:reset-current-theme))))
 
 (test goal17-extension-selector-keeps-unselected-prefix-outside-text-color
-  ;; Fixed pi@ecac0a9c4 extension-selector.ts:92-95 constructs unselected
+  ;; Fixed pi@4a080252f extension-selector.ts:92-95 constructs unselected
   ;; rows as a plain two-cell prefix followed by only the themed label.  Text
   ;; then adds its own plain one-cell margin and full-width padding.
   (let* ((width 40)
@@ -3244,7 +3244,7 @@
     (is (= width (cadr-tui:visible-width beta-line)))))
 
 (test goal17-extension-confirm-renders-title-and-message-as-one-multiline-text
-  ;; Fixed pi@ecac0a9c4 interactive-mode.ts:2299-2305 passes one multiline
+  ;; Fixed pi@4a080252f interactive-mode.ts:2299-2305 passes one multiline
   ;; title to ExtensionSelectorComponent.  The first physical line therefore
   ;; keeps the outer accent active through Text's trailing padding, while the
   ;; countdown is appended after the final message line.
@@ -3283,7 +3283,7 @@
       (is (null (search "Import session (3s)" title-line))))))
 
 (test goal17-settings-submenu-uses-select-list-and-text-width-contracts
-  ;; Fixed pi@ecac0a9c4 settings-selector.ts:191-218 uses natural-width
+  ;; Fixed pi@4a080252f settings-selector.ts:191-218 uses natural-width
   ;; SelectList rows, but Automatic Theme diagnostics are Text components and
   ;; therefore pad to the full viewport width.
   (let ((state
@@ -4196,6 +4196,115 @@
       (is (search "⠹ Compacting context..."
                   screen)))))
 
+(test goal24-session-status-spinners-embed-in-editor-border
+  ;; pi@13cbf77df setActiveStatusIndicator: compaction, branch summary,
+  ;; and retry labels sit in the editor border, once.
+  (let ((editor (cadr-tui:make-multiline-editor))
+        (state (cadr-cli::make-tui-state :model "mock")))
+    (dolist (message '("Compacting context..."
+                       "Summarizing branch..."
+                       "Retrying (1/3) in 2s..."))
+      (setf (cadr-cli::tui-state-status-message state) message)
+      (let ((lines
+              (cadr-cli::render-tui-state
+               state editor 80 12 :spinner-frame "⠹")))
+        (is (= 1
+               (count-if
+                (lambda (line) (search message line))
+                lines)))
+        (is (find-if
+             (lambda (line)
+               (and (search message line)
+                    (search "─" line)))
+             lines))))
+    (cadr-tui:editor-set-embed-working-status editor nil)
+    (setf (cadr-cli::tui-state-status-message state)
+          "Compacting context...")
+    (let ((lines
+            (cadr-cli::render-tui-state
+             state editor 80 12 :spinner-frame "⠹")))
+      (is (find-if
+           (lambda (line) (search "Compacting context..." line))
+           lines))
+      (is (not
+           (find-if
+            (lambda (line)
+              (and (search "Compacting context..." line)
+                   (search "─" line)))
+            lines))))))
+
+(test compaction-status-uses-the-embedded-border-color
+  ;; pi@4a080252f #10810. Compaction in the editor border takes the
+  ;; border color for the spinner and the label. A bash border wins
+  ;; over the thinking color. Outside the border, the spinner stays
+  ;; accent and the label stays muted.
+  (let ((editor (cadr-tui:make-multiline-editor))
+        (state (cadr-cli::make-tui-state :model "mock"))
+        (message "Compacting context... (ctrl+c to cancel)")
+        (spinner "⠹"))
+    (cadr-tui:editor-set-embed-working-status editor t)
+    (cadr-tui:editor-set-border-mode editor :thinking :high)
+    (setf (cadr-cli::tui-state-status-message state) message)
+    (let* ((lines
+             (cadr-cli::render-tui-state
+              state editor 80 12 :spinner-frame spinner))
+           (border
+             (find-if
+              (lambda (line)
+                (and (search message line)
+                     (search "─" line)))
+              lines)))
+      (is (search
+           (cadr-tui:theme-foreground
+            :thinking-high spinner :enabled-p t)
+           border))
+      (is (search
+           (cadr-tui:theme-foreground
+            :thinking-high message :enabled-p t)
+           border))
+      (is (not (search
+                (cadr-tui:theme-foreground
+                 :accent spinner :enabled-p t)
+                border)))
+      (is (not (search
+                (cadr-tui:theme-foreground
+                 :muted message :enabled-p t)
+                border))))
+    (cadr-tui:editor-set-border-mode editor :bash)
+    (let* ((lines
+             (cadr-cli::render-tui-state
+              state editor 80 12 :spinner-frame spinner))
+           (border
+             (find-if
+              (lambda (line)
+                (and (search message line)
+                     (search "─" line)))
+              lines)))
+      (is (search
+           (cadr-tui:theme-foreground
+            :bash-mode spinner :enabled-p t)
+           border))
+      (is (search
+           (cadr-tui:theme-foreground
+            :bash-mode message :enabled-p t)
+           border)))
+    (cadr-tui:editor-set-embed-working-status editor nil)
+    (let* ((lines
+             (cadr-cli::render-tui-state
+              state editor 80 12 :spinner-frame spinner))
+           (status
+             (find-if
+              (lambda (line) (search message line))
+              lines)))
+      (is (search
+           (cadr-tui:theme-foreground
+            :accent spinner :enabled-p t)
+           status))
+      (is (search
+           (cadr-tui:theme-foreground
+            :muted message :enabled-p t)
+           status)))))
+
 (test goal9-startup-header-precedes-chat-and-expands-with-tools
   (let* ((version-line
            (format nil "cadr v~A" (cadr-ai::cadr-version)))
@@ -4229,7 +4338,9 @@
                 lines))))
       (let* ((compact (plain-render))
              (logo (position-if
-                    (lambda (line) (search version-line line))
+                    (lambda (line)
+                      (search (subseq version-line (length "cadr "))
+                              line))
                     compact))
              (chat
                (position-if
@@ -5193,7 +5304,7 @@
     (cadr-cli::tui-handle-agent-event
      state
      (cadr-agent::make-agent-event :type :agent-end))
-    ;; pi@ecac0a9c4 interactive-mode.ts:3088-3100 clears the working status
+    ;; pi@4a080252f interactive-mode.ts:3088-3100 clears the working status
     ;; on agent_end; agent_settled is reserved for shutdown coordination.
     (is (null (cadr-cli::tui-state-agent-working-p state)))
     (cadr-cli::tui-handle-agent-event
@@ -5202,7 +5313,7 @@
     (is (null (cadr-cli::tui-state-agent-working-p state)))))
 
 (test goal18-message-end-render-suppression-covers-the-settle-window
-  ;; pi@ecac0a9c4 interactive-mode.ts:3001-3042 finalizes the streaming
+  ;; pi@4a080252f interactive-mode.ts:3001-3042 finalizes the streaming
   ;; component at message_end and :3088-3102 removes the working
   ;; indicator at agent_end — one synchronous event chain its
   ;; timer-driven renderer cannot observe.  Cadr renders from a
@@ -5631,7 +5742,7 @@
     (is (null (search "Error:" screen)))))
 
 (test goal17-footer-provider-label-follows-the-live-scoped-model-projection
-  ;; pi@ecac0a9c4 interactive-mode.ts:4406-4414 and footer.ts:190-198
+  ;; pi@4a080252f interactive-mode.ts:4406-4414 and footer.ts:190-198
   ;; derive the optional provider badge from the live scoped-model projection.
   ;; Narrowing two providers to one must remove the badge immediately.
   (let* ((screen nil)
@@ -5706,7 +5817,7 @@
     (is (null (search "(faux) faux-1" screen)))))
 
 (test goal17-terminal-assistant-usage-does-not-replace-valid-context-state
-  ;; pi@ecac0a9c4 agent-session.ts:3164-3207 rejects error/aborted usage as
+  ;; pi@4a080252f agent-session.ts:3164-3207 rejects error/aborted usage as
   ;; context evidence.  footer.ts:87-104 still counts its billed totals.
   (dolist (reason '(:error :aborted))
     (let* ((state
@@ -5741,7 +5852,7 @@
              (cadr-cli::tui-state-context-percent state))))))
 
 (test goal17-message-end-usage-survives-the-pre-persistence-footer-refresh
-  ;; pi@ecac0a9c4 agent.ts:529-575 updates Agent state before message_end
+  ;; pi@4a080252f agent.ts:529-575 updates Agent state before message_end
   ;; listeners run.  Cadr persistence follows message_end, so a stale external
   ;; footer snapshot must not erase the final usage before turn_end catches up.
   (let ((event-consumer nil)
@@ -5904,3 +6015,162 @@
              (when (and answer warning)
                (is (< answer warning)))))
       (cadr-tui:set-keybindings previous))))
+
+(test goal24-summary-entries-toggle-on-left-click
+  ;; pi@ecac0a9c4 MouseRegion: left click expands and collapses a
+  ;; compaction summary, branch summary, or skill invocation.
+  (let* ((compaction
+           (cadr-cli::make-tui-entry
+            :type :compaction-summary
+            :text "compaction details"
+            :tokens-before 1234))
+         (branch
+           (cadr-cli::make-tui-entry
+            :type :branch-summary
+            :text "branch details"))
+         (skill
+           (cadr-cli::make-tui-entry
+            :type :skill-invocation
+            :text "skill details"
+            :label "example-skill"))
+         (state (cadr-cli::make-tui-state :model "mock"))
+         (editor (cadr-tui:make-multiline-editor))
+         (click (list :type :click :button :left))
+         (right (list :type :click :button :right)))
+    (dolist (entry (list compaction branch skill))
+      (cadr-cli::append-tui-entry state entry))
+    (cadr-cli::render-tui-state state editor 80 24)
+    (dolist (entry (list compaction branch skill))
+      (let ((range
+              (find entry
+                    (cadr-cli::tui-state-summary-click-ranges state)
+                    :key #'first)))
+        (is (not (null range)))
+        (is (not (cadr-cli::tui-entry-expanded-p entry)))
+        (is (not (search
+                  (cadr-cli::tui-entry-text entry)
+                  (format nil "~{~A~^~%~}"
+                          (cadr-cli::render-tui-entry entry 80)))))
+        (is (null
+             (cadr-cli::transcript-summary-click
+              state right (second range))))
+        (is (not (cadr-cli::tui-entry-expanded-p entry)))
+        (is (cadr-cli::transcript-summary-click
+             state click (second range)))
+        (is (cadr-cli::tui-entry-expanded-p entry))
+        (is (search
+             (cadr-cli::tui-entry-text entry)
+             (format nil "~{~A~^~%~}"
+                     (cadr-cli::render-tui-entry entry 80))))
+        (cadr-cli::render-tui-state state editor 80 24)
+        (let ((again
+                (find entry
+                      (cadr-cli::tui-state-summary-click-ranges state)
+                      :key #'first)))
+          (is (cadr-cli::transcript-summary-click
+               state click (second again))))
+        (is (not (cadr-cli::tui-entry-expanded-p entry)))))
+    (is (null
+         (cadr-cli::transcript-summary-click state click -1)))))
+
+(defun stacked-overlay-screen (terminal)
+  (format nil "~{~A~^~%~}"
+          (mapcar #'cadr-tui:strip-terminal-sequences
+                  (cadr-tui:virtual-terminal-snapshot terminal))))
+
+(test closing-a-lower-overlay-custom-ui-leaves-the-upper-one-open
+  ;; pi #10648: done() on a lower custom overlay must resolve only that
+  ;; overlay. The overlay opened later stays on screen.
+  (dolist (non-capturing-p '(nil t))
+    (let ((extension-ui nil)
+          (close-lower nil)
+          (close-upper nil)
+          (lower-result :pending)
+          (upper-result :pending)
+          (lower-worker nil)
+          (upper-worker nil)
+          (lower-options
+            (and non-capturing-p '(:non-capturing-p t))))
+      (cadr-cli::run-tui
+       (constantly nil)
+       :model "mock"
+       :terminal
+       (make-instance
+        'footer-sync-test-terminal
+        :columns 80 :rows 16
+        :inputs
+        (list
+         (footer-sync-submit-input "/stacked-overlay")
+         (footer-sync-wait-for-screen-text "LOWER")
+         (lambda (terminal)
+           (declare (ignore terminal))
+           (setf upper-worker
+                 (sb-thread:make-thread
+                  (lambda ()
+                    (setf upper-result
+                          (funcall
+                           extension-ui :custom-component
+                           (list
+                            :factory
+                            (lambda (tui theme keybindings done)
+                              (declare (ignore tui theme keybindings))
+                              (setf close-upper done)
+                              (cadr-tui:make-text-component
+                               "UPPER" :padding-x 0 :padding-y 0))
+                            :overlay-p t
+                            :overlay-options nil))))))
+           t)
+         (footer-sync-wait-for-screen-text "UPPER")
+         (let ((closed-p nil))
+           (lambda (terminal)
+             (cond
+               ((not closed-p)
+                (funcall close-lower "lower closed")
+                (setf closed-p t)
+                nil)
+               (t
+                (and (equal lower-result "lower closed")
+                     (sb-thread:thread-alive-p upper-worker)
+                     (search "UPPER"
+                             (stacked-overlay-screen terminal))
+                     (not (search "LOWER"
+                                  (stacked-overlay-screen terminal))))))))
+         (let ((closed-p nil))
+           (lambda (terminal)
+             (cond
+               ((not closed-p)
+                (funcall close-upper "upper closed")
+                (setf closed-p t)
+                nil)
+               (t
+                (and (equal upper-result "upper closed")
+                     (not (search "UPPER"
+                                  (stacked-overlay-screen terminal))))))))
+         (footer-sync-submit-input "/quit")))
+       :set-extension-ui-function
+       (lambda (function)
+         (setf extension-ui function))
+       :command-function
+       (lambda (line)
+         (when (string= line "/stacked-overlay")
+           (setf lower-worker
+                 (sb-thread:make-thread
+                  (lambda ()
+                    (setf lower-result
+                          (funcall
+                           extension-ui :custom-component
+                           (list
+                            :factory
+                            (lambda (tui theme keybindings done)
+                              (declare (ignore tui theme keybindings))
+                              (setf close-lower done)
+                              (cadr-tui:make-text-component
+                               "LOWER" :padding-x 0 :padding-y 0))
+                            :overlay-p t
+                            :overlay-options lower-options)))))))))
+      (when lower-worker
+        (sb-thread:join-thread lower-worker :timeout 2))
+      (when upper-worker
+        (sb-thread:join-thread upper-worker :timeout 2))
+      (is (equal "lower closed" lower-result))
+      (is (equal "upper closed" upper-result)))))

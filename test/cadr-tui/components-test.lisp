@@ -132,6 +132,67 @@
                block 60 :now 99d0)))))
       (is (search "Took 0.0s" finished)))))
 
+(test shell-duration-uses-minutes-after-one-minute
+  (labels ((screen (name start end)
+             (cadr-tui:strip-terminal-sequences
+              (format
+               nil "~{~A~%~}"
+               (cadr-tui:render-tool-block
+                (cadr-tui:make-tool-block
+                 :name name
+                 :summary "sleep"
+                 :status :complete
+                 :started-at start
+                 :ended-at end)
+                60)))))
+    (is (search "Took 1m 30s" (screen "bash" 0d0 90d0)))
+    (is (search "Took 1h 1m 1s" (screen "powershell" 0d0 3661d0)))
+    (is (search "Took 59.9s" (screen "bash" 0d0 59.94d0)))))
+
+(test recorded-tool-duration-replaces-the-wall-clock
+  ;; pi@4a080252f render-utils.ts toolTimerText. A stored duration
+  ;; wins over the renderer's clock, including after a reload that
+  ;; has no start time.
+  (let ((recorded
+          (cadr-tui:strip-terminal-sequences
+           (format
+            nil "~{~A~%~}"
+            (cadr-tui:render-tool-block
+             (cadr-tui:make-tool-block
+              :name "bash"
+              :summary "printf ok"
+              :status :complete
+              :started-at 0d0
+              :ended-at 99d0
+              :duration-ms 1300)
+             60)))))
+    (is (search "Took 1.3s" recorded))
+    (is (null (search "Took 99" recorded))))
+  (let ((reloaded
+          (cadr-tui:strip-terminal-sequences
+           (format
+            nil "~{~A~%~}"
+            (cadr-tui:render-tool-block
+             (cadr-tui:make-tool-block
+              :name "powershell"
+              :summary "Get-Date"
+              :status :complete
+              :duration-ms 90000)
+             60)))))
+    (is (search "Took 1m 30s" reloaded)))
+  (let ((other
+          (cadr-tui:strip-terminal-sequences
+           (format
+            nil "~{~A~%~}"
+            (cadr-tui:render-tool-block
+             (cadr-tui:make-tool-block
+              :name "read"
+              :summary "file"
+              :status :complete
+              :duration-ms 1300)
+             60)))))
+    (is (null (search "Took" other)))))
+
 (test status-bar-and-select-list
   (is (search "↑12"
               (cadr-tui:render-status-bar
@@ -303,7 +364,7 @@
     (is (search
          (format nil "~C[1m" #\Escape)
          (format nil "~{~A~^~%~}" lines)))
-    ;; pi@ecac0a9c4 packages/tui/src/components/markdown.ts:807-851
+    ;; pi@4a080252f packages/tui/src/components/markdown.ts:807-851
     ;; emits table borders as literal box glyphs.  Only inline cell content
     ;; and the header receive theme styling.
     (is (char= #\┌ (char (first lines) 0)))
@@ -1050,7 +1111,7 @@
       (cadr-tui:reset-current-theme))))
 
 (test goal17-autocomplete-unselected-description-owns-the-column-gap
-  ;; Fixed pi@ecac0a9c4 select-list.ts:139-171 keeps the unselected prefix
+  ;; Fixed pi@4a080252f select-list.ts:139-171 keeps the unselected prefix
   ;; and primary label plain, then starts the dim description span at the
   ;; entire inter-column gap.  This locks the span boundary independently of
   ;; a terminal screen diff.

@@ -189,15 +189,9 @@ Do NOT continue the conversation. Do NOT respond to any questions in the convers
                :system-prompt +summarization-system-prompt+
                :messages (list (cadr-ai:make-user-message :content prompt))
                :tools nil)
-              ;; Baseline #8845: raise the output cap to 4096 and clamp
-              ;; to the model limit so reasoning can share the budget.
-              (let ((limit
-                      (and model
-                           (cadr-ai:model-max-tokens model))))
-                (min 4096
-                     (if (and limit (plusp limit))
-                         limit
-                         most-positive-fixnum)))
+              ;; v1.4.0 #9512: no caller output cap. reserve-tokens above
+              ;; only budgets which branch entries are summarized.
+              nil
               :branch-summary)))
       (when (or (null response)
                 (eq :aborted (cadr-ai:assistant-message-stop-reason response)))

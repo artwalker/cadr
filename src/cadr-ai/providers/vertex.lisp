@@ -17,6 +17,7 @@
     ((provider vertex-provider) model context
      &key stream-p max-tokens temperature reasoning
        cache-retention session-id tool-choice metadata
+       thinking-budgets
        &allow-other-keys)
   (declare (ignore cache-retention session-id metadata))
   (ensure-supported-content model context)
@@ -99,7 +100,8 @@
                  (context-tools context)
                  :supports-strict-mode-p
                  (supports-google-strict-tool-sampling-p model))))
-    (let ((thinking (google-thinking-config model reasoning)))
+    (let ((thinking
+            (google-thinking-config model reasoning thinking-budgets)))
       (when thinking
         (json-put payload "thinkingConfig" thinking)))
     (when tool-choice

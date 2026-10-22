@@ -161,7 +161,7 @@
     (and value (plusp (length value)))))
 
 (defun parse-boolean-capability-override (value)
-  ;; pi@ecac0a9c4 terminal-image.ts:139-141 — only "1" and "0" override;
+  ;; pi@4a080252f terminal-image.ts:139-141 — only "1" and "0" override;
   ;; "auto" and anything else leave detection in place.
   (cond
     ((not (stringp value)) :unset)
@@ -255,6 +255,23 @@
                :images nil
                :true-color-p (not (null true-color-hint-p))
                :hyperlinks-p nil))
+             ;; pi@4a080252f #10774. Herdr speaks Kitty graphics and OSC 8.
+             ;; Check it before KITTY_WINDOW_ID: that variable leaks into
+             ;; Herdr panes and would force true color on the Kitty branch.
+             ((string= term-program "herdr")
+              (make-terminal-capabilities
+               :images :kitty
+               :true-color-p (not (null true-color-hint-p))
+               :hyperlinks-p t))
+             ;; pi@4a080252f #11131. Rex speaks OSC 8, truecolor, and
+             ;; enough of the Kitty graphics protocol for inline images.
+             ;; Check it before KITTY_WINDOW_ID and the other outer
+             ;; terminal variables, which leak into Rex panes.
+             ((string= term-program "rex")
+              (make-terminal-capabilities
+               :images :kitty
+               :true-color-p t
+               :hyperlinks-p t))
              ((or (truthy-environment-p "KITTY_WINDOW_ID"
                                         environment)
                   (string= term-program "kitty")
@@ -315,7 +332,7 @@
   (setf *terminal-capabilities* nil))
 
 (defun set-capability-overrides (overrides)
-  ;; pi@ecac0a9c4 terminal-image.ts:179-189 — skip work when the three
+  ;; pi@4a080252f terminal-image.ts:179-189 — skip work when the three
   ;; override fields are unchanged; otherwise drop the cached detection.
   (unless (equal overrides *capability-overrides*)
     (setf *capability-overrides* (copy-list overrides)

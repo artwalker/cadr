@@ -8,14 +8,35 @@
     "insufficient_quota"
     "out of budget"
     "quota exceeded"
-    "billing"))
+    "billing"
+    "subscription_sharing_usage_limit_exceeded"
+    ;; ChatGPT Business workspace cap. The personal usage-limit code is
+    ;; not a substring of this one, so a 429 that names only this code
+    ;; would otherwise match the retryable "429".
+    "subscription_sharing_workplace_individual_usage_limit_exceeded"))
+
+(defparameter +retryable-http-status-codes+
+  '("429" "500" "502" "503" "504" "520" "524"))
 
 (defparameter +retryable-assistant-error-patterns+
-  '("overloaded" "rate.?limit" "too many requests"
-    "429" "500" "502" "503" "504" "524"
-    "service.?unavailable" "server.?error" "internal.?error"
+  '("overloaded" "server_busy" "servers are currently busy"
+    "currently experiencing high demand" "model is at capacity"
+    "rate.?limit" "too many requests"
+    ;; Status codes are matched by retryable-http-status-text-p so
+    ;; digits inside request ids or byte counts do not count (#11057).
+    "service.?unavailable"
+    "service is unavailable"
+    "service temporarily unavailable"
+    "service is temporarily unavailable"
+    "server.?error" "internal.?error"
     "provider.?returned.?error"
+    "provider returned an error"
     "exceeded request buffer limit while retrying upstream"
+    "unable to forward upstream"
+    "upstream.?request.?failed"
+    "upstream_stream_read_error"
+    "stream was interrupted"
+    "http/?2 stream failed"
     "network.?error"
     "connection.?error" "connection.?refused"
     "connection.?lost" "other side closed" "fetch failed"
@@ -25,9 +46,80 @@
     "terminated" "websocket.?closed" "websocket.?error"
     "ended without" "stream ended before message_stop"
     "stream ended before a terminal response event"
-    "http2 request did not get a response" "retry delay"
+    "http2 request did not get a response"
+    "stream disconnected before completion"
+    "retry delay"
     "you can retry your request" "try your request again"
-    "please retry your request" "ResourceExhausted"))
+    "please retry your request" "ResourceExhausted"
+    "pending stream has been canceled"
+    "subscription_sharing_usage_unavailable"
+    "subscription_sharing_user_unavailable"))
+
+(defun ascii-alphanumeric-p (character)
+  ;; /[a-z0-9]/i without the u flag. alpha-char-p and digit-char-p also
+  ;; accept é, CJK, and fullwidth digits, which do not bound a status.
+  (or (char<= #\0 character #\9)
+      (char<= #\A character #\Z)
+      (char<= #\a character #\z)))
+
+(defun retryable-http-status-text-p (text)
+  ;; Same boundary as pi's (?<![a-z0-9])(?:429|...)(?![a-z0-9]).
+  (dolist (code +retryable-http-status-codes+)
+    (loop for start = 0 then (1+ position)
+          for position = (search code text :start2 start)
+          while position
+          do (let* ((end (+ position (length code)))
+                    (before
+                      (when (plusp position)
+                        (char text (1- position))))
+                    (after
+                      (when (< end (length text))
+                        (char text end))))
+               (when (and (or (null before)
+                              (not (ascii-alphanumeric-p before)))
+                          (or (null after)
+                              (not (ascii-alphanumeric-p after))))
+                 (return-from retryable-http-status-text-p t)))))
+  nil)
+
+(defun node-fetch-request-failure-text-p (text)
+  ;; node-fetch system errors from Google ADC OAuth refresh (#10996):
+  ;; "request to <url> failed, reason:" with a non-empty URL.
+  ;; JavaScript \S excludes /\s/ (no u flag): tab through carriage
+  ;; return, space, NBSP, and the other WhiteSpace and LineTerminator
+  ;; code points. One of those inside the URL is not this pattern.
+  (labels ((javascript-whitespace-p (character)
+             (let ((code (char-code character)))
+               (or (<= #x0009 code #x000D)
+                   (= code #x0020)
+                   (= code #x00A0)
+                   (= code #x1680)
+                   (<= #x2000 code #x200A)
+                   (= code #x2028)
+                   (= code #x2029)
+                   (= code #x202F)
+                   (= code #x205F)
+                   (= code #x3000)
+                   (= code #xFEFF)))))
+    (let ((needle "request to ")
+          (tail " failed, reason:"))
+      (loop for start = 0 then (1+ position)
+            for position = (search needle text :start2 start
+                                              :test #'char-equal)
+            while position
+            do (let* ((url-start (+ position (length needle)))
+                      (tail-position
+                        (search tail text :start2 url-start
+                                         :test #'char-equal)))
+                 (when (and tail-position
+                            (< url-start tail-position)
+                            (not
+                             (find-if #'javascript-whitespace-p
+                                      text
+                                      :start url-start
+                                      :end tail-position)))
+                   (return-from node-fetch-request-failure-text-p t))))))
+  nil)
 
 (defun text-contains-any-p (text fragments)
   (some
@@ -99,8 +191,10 @@
          (not
           (text-contains-any-p
            text +non-retryable-assistant-error-fragments+))
-         (text-matches-any-retry-pattern-p
-          text +retryable-assistant-error-patterns+))))
+         (or (retryable-http-status-text-p text)
+             (node-fetch-request-failure-text-p text)
+             (text-matches-any-retry-pattern-p
+              text +retryable-assistant-error-patterns+)))))
 
 (defstruct retry-policy
   (enabled-p t :type boolean)

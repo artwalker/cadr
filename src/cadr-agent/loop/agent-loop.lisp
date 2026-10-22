@@ -1,5 +1,21 @@
 (in-package #:cadr-agent)
 
+(defun normalize-finish-turn-decision (value)
+  (cond
+    ((or (null value) (eq value :end) (eq value :continue))
+     value)
+    ((and (listp value)
+          (member (getf value :action) '(:end :continue)))
+     (getf value :action))
+    (t nil)))
+
+(defun agent-finish-turn-decision (agent message results)
+  (let ((function (agent-finish-turn-function agent)))
+    (if (not function)
+        nil
+        (normalize-finish-turn-decision
+         (funcall function agent message results)))))
+
 (defun run-agent-loop (agent initial-messages)
   (run-agent-lifecycle agent :agent-start)
   (emit-agent-event agent :agent-start)
@@ -9,13 +25,14 @@
         (when (> turn (agent-max-turns agent))
           (let ((message (turn-limit-message agent)))
             (multiple-value-bind
-                  (final-message appended)
+                  (final-message appended entries)
                 (run-turn-end-hooks
                  agent turn message nil)
               (append-agent-message-with-events
                agent final-message)
               (append-agent-messages-with-events
                agent appended)
+              (accept-turn-boundary agent entries nil)
               (emit-agent-event
                agent :turn-end
                :message final-message
@@ -23,7 +40,7 @@
               (emit-agent-end agent)
               (return-from run-agent-loop
                 final-message))))
-        ;; pi@ecac0a9c4 agent-loop.ts #8782: compact before the next
+        ;; pi@4a080252f agent-loop.ts #8782: compact before the next
         ;; provider request once a turn has already completed, so
         ;; threshold compaction runs between tool rounds.
         (when (> turn 1)
@@ -57,49 +74,92 @@
               (when (or abort-from-tool-p
                         terminate-from-tool-p)
                 (setf terminal-p t))))
-          (multiple-value-bind
-                (message turn-hook-messages)
-              (run-turn-end-hooks
-               agent turn streamed-message results)
-            (commit-agent-turn
-             agent message results
-             tool-hook-messages
-             turn-hook-messages)
-            (emit-agent-event
-             agent :turn-end
-             :message message
-             :tool-results results)
-            (flush-agent-pending-custom-messages agent)
-            ;; Early terminal exit. LOOP's RETURN would leave the
-            ;; whole loop; fall through to the next turn instead.
-            (if terminal-p
-                (progn
-                  (emit-agent-end agent)
-                  (return-from run-agent-loop message))
-                (let ((steering
-                        (drain-agent-queue
-                         agent :steering)))
-                  (if (or calls steering)
-                      (begin-agent-turn
-                       agent (1+ turn) steering)
-                      (let ((follow-up
-                              (drain-agent-queue
-                               agent :follow-up)))
-                        (if follow-up
-                            (begin-agent-turn
-                             agent (1+ turn) follow-up)
-                            (progn
-                              (emit-agent-end agent)
-                              (let ((late-follow-up
-                                      (drain-agent-queue
-                                       agent :follow-up)))
-                                (if late-follow-up
-                                    (begin-agent-turn
-                                     agent (1+ turn)
-                                     late-follow-up)
-                                    (return-from
-                                        run-agent-loop
-                                      message)))))))))))))
+          (let* ((session (agent-session agent))
+                 (boundary-ids
+                   (and session
+                        (allocate-boundary-entry-ids
+                         session (1+ (length results)))))
+                 (message-entry-id (first boundary-ids))
+                 (tool-result-entry-ids
+                   (rest boundary-ids)))
+            (multiple-value-bind
+                  (message turn-hook-messages entries
+                   continue-p)
+                (run-turn-end-hooks
+                 agent turn streamed-message results
+                 :message-entry-id message-entry-id
+                 :tool-result-entry-ids
+                 tool-result-entry-ids)
+              (commit-agent-turn
+               agent message results
+               tool-hook-messages
+               turn-hook-messages
+               :message-id message-entry-id
+               :result-ids tool-result-entry-ids)
+              ;; pi@4a080252f agent-session.ts finishTurn wrapper:
+              ;; turn_end entries commit first. :end still wins.
+              ;; :continue or a valid boundary continue asks for one
+              ;; more provider turn when tools and steering would not.
+              (let ((decision
+                      (agent-finish-turn-decision
+                       agent message results))
+                    (boundary-continue-p
+                      (accept-turn-boundary
+                       agent entries continue-p)))
+                (emit-agent-event
+                 agent :turn-end
+                 :message message
+                 :tool-results results)
+                (let ((flushed
+                        (flush-agent-pending-custom-messages
+                         agent)))
+                  ;; Replacing the message spine drops conses that
+                  ;; eval harnesses still hold. Refresh only after a
+                  ;; boundary draft or a flushed custom message.
+                  (when (and (agent-session agent)
+                             (or entries flushed))
+                    (setf (agent-messages agent)
+                          (session-messages
+                           (agent-session agent)))))
+                (if terminal-p
+                    (progn
+                      (emit-agent-end agent)
+                      (return-from run-agent-loop message))
+                    (cond
+                      ((eq decision :end)
+                       (emit-agent-end agent)
+                       (return-from run-agent-loop message))
+                      (t
+                       (let ((steering
+                               (drain-agent-queue
+                                agent :steering)))
+                         (if (or calls steering)
+                             (begin-agent-turn
+                              agent (1+ turn) steering)
+                             (let ((follow-up
+                                     (drain-agent-queue
+                                      agent :follow-up)))
+                               (cond
+                                 (follow-up
+                                  (begin-agent-turn
+                                   agent (1+ turn) follow-up))
+                                 ((or
+                                   (eq decision :continue)
+                                   boundary-continue-p)
+                                  (begin-agent-turn
+                                   agent (1+ turn) nil))
+                               (t
+                                (emit-agent-end agent)
+                                (let ((late-follow-up
+                                        (drain-agent-queue
+                                         agent :follow-up)))
+                                  (if late-follow-up
+                                      (begin-agent-turn
+                                       agent (1+ turn)
+                                       late-follow-up)
+                                      (return-from
+                                          run-agent-loop
+                                        message)))))))))))))))))
 
 (defun call-with-agent-run (agent function)
     (sb-thread:with-mutex
@@ -129,7 +189,10 @@
             (close-session-journal-stream session)))
         (flush-agent-pending-custom-messages agent)
         (run-agent-lifecycle agent :agent-settled)
-        (emit-agent-event agent :agent-settled)
+        (emit-agent-event
+         agent :agent-settled
+         :aborted
+         (not (null (agent-abort-requested-p agent))))
         (sb-thread:with-mutex
             ((agent-state-lock agent))
           (setf
@@ -157,7 +220,12 @@
        (error
         'agent-busy-error
         :message
-        "Cannot navigate the session tree while the agent is running"))
+        "Wait for the current response to finish before navigating the session tree."))
+     (when (agent-compacting-p agent)
+       (error
+        'agent-busy-error
+        :message
+        "Wait for the current compaction or tree navigation to finish before navigating the session tree."))
      (let ((session (agent-session agent)))
        (unless session
          (error
@@ -186,94 +254,128 @@
                      :replace-instructions-p
                      (not (null replace-instructions-p))
                      :label label))
-                  (before
-                    (run-agent-lifecycle
-                     agent :session-before-tree
-                     (list
-                      :preparation preparation
-                      :signal
-                      (make-extension-cancellation-signal)))))
-         (when (getf before :cancel-p)
-           (return-from agent-navigate-tree
-             (values nil t nil nil)))
-         (let* ((summary-text (getf before :summary))
-                (summary-details (getf before :details))
-                (summary-usage (getf before :usage))
-                (from-hook-p (not (null summary-text))))
-           (when (and (null summary-text) summarize-p entries)
-             (let ((result
-                     (generate-branch-summary
-                      agent entries
-                      :custom-instructions
-                      (or (getf before :custom-instructions)
-                          custom-instructions)
-                      :replace-instructions-p
-                      (if (member :replace-instructions-p before)
-                          (getf before :replace-instructions-p)
-                          replace-instructions-p)
-                      :reserve-tokens reserve-tokens)))
-               (unless result
-                 (return-from agent-navigate-tree
-                   (values nil t nil nil)))
-               (setf summary-text (branch-summary-result-summary result)
-                     summary-usage (branch-summary-result-usage result)
-                     summary-details
-                     (list :read-files
-                           (branch-summary-result-read-files result)
-                           :modified-files
-                           (branch-summary-result-modified-files result)))))
-         (assert-agent-not-shutdown agent)
-         (let* ((user-target-p
-                  (and (eq :message (session-entry-type target-entry))
-                       (typep (session-entry-message target-entry)
-                              'cadr-ai:user-message)))
-                (custom-target-p
-                  (eq :custom-message (session-entry-type target-entry)))
-                (new-leaf-id
-                  (if (or user-target-p custom-target-p)
-                      (session-entry-parent-id target-entry)
-                      entry-id))
-                (editor-text
-                  (cond
-                    (user-target-p
-                     (content-text
-                      (cadr-ai:user-message-content
-                       (session-entry-message target-entry)) ""))
-                    (custom-target-p
-                     (content-text (session-entry-content target-entry) ""))))
-                (summary-entry nil))
-         (if new-leaf-id
-             (session-branch session new-leaf-id)
-             (setf (session-leaf-id session) nil))
-         (when (and summary-text
-                    (plusp (length summary-text)))
-           (let ((summary-id
-                   (session-append-branch-summary
-                    session old-leaf-id summary-text
-                    :details summary-details
-                    :usage summary-usage
-                    :from-hook-p from-hook-p)))
-             (setf summary-entry (session-entry-at session summary-id))))
-         (setf
-          (agent-messages agent)
-          (session-messages session))
-         (run-agent-lifecycle
-          agent :session-tree
-          (list
-           :target-id entry-id
-           :new-leaf-id (session-leaf-id session)
-           :old-leaf-id old-leaf-id
-           :summary-entry summary-entry
-           :from-hook-p from-hook-p
-           :messages
-           (copy-list
-            (agent-messages agent))))
-         (values
-          (copy-list
-           (agent-messages agent))
-          nil
-          editor-text
-          summary-entry))))))))))
+                  (signal
+                    (make-extension-cancellation-signal)))
+             ;; Baseline #9179: install the tree-navigation abort
+             ;; controller before session_before_tree so concurrent
+             ;; navigateTree sees isCompacting.
+             (sb-thread:with-mutex
+                 ((agent-state-lock agent))
+               (when (or (agent-compaction-cancellation agent)
+                         (agent-tree-navigation-cancellation agent))
+                 (error
+                  'agent-busy-error
+                  :message
+                  "Wait for the current compaction or tree navigation to finish before navigating the session tree."))
+               (setf (agent-tree-navigation-cancellation agent)
+                     signal))
+             (unwind-protect
+                  (progn
+                    (let ((before
+                            (run-agent-lifecycle
+                             agent :session-before-tree
+                             (list
+                              :preparation preparation
+                              :signal signal))))
+                      (when (getf before :cancel-p)
+                        (return-from agent-navigate-tree
+                          (values nil t nil nil)))
+                      (let* ((summary-text (getf before :summary))
+                             (summary-details (getf before :details))
+                             (summary-usage (getf before :usage))
+                             (from-hook-p (not (null summary-text))))
+                        (when (and (null summary-text) summarize-p entries)
+                          (let ((result
+                                  (generate-branch-summary
+                                   agent entries
+                                   :custom-instructions
+                                   (or (getf before :custom-instructions)
+                                       custom-instructions)
+                                   :replace-instructions-p
+                                   (if (member :replace-instructions-p before)
+                                       (getf before :replace-instructions-p)
+                                       replace-instructions-p)
+                                   :reserve-tokens reserve-tokens)))
+                            (unless result
+                              (return-from agent-navigate-tree
+                                (values nil t nil nil)))
+                            (setf summary-text
+                                  (branch-summary-result-summary result)
+                                  summary-usage
+                                  (branch-summary-result-usage result)
+                                  summary-details
+                                  (list
+                                   :read-files
+                                   (branch-summary-result-read-files result)
+                                   :modified-files
+                                   (branch-summary-result-modified-files
+                                    result)))))
+                        (assert-agent-not-shutdown agent)
+                        (let* ((user-target-p
+                                 (and (eq :message
+                                          (session-entry-type target-entry))
+                                      (typep
+                                       (session-entry-message target-entry)
+                                       'cadr-ai:user-message)))
+                               (custom-target-p
+                                 (eq :custom-message
+                                     (session-entry-type target-entry)))
+                               (new-leaf-id
+                                 (if (or user-target-p custom-target-p)
+                                     (session-entry-parent-id target-entry)
+                                     entry-id))
+                               (editor-text
+                                 (cond
+                                   (user-target-p
+                                    (content-text
+                                     (cadr-ai:user-message-content
+                                      (session-entry-message target-entry))
+                                     ""))
+                                   (custom-target-p
+                                    (content-text
+                                     (session-entry-content target-entry)
+                                     ""))))
+                               (summary-entry nil))
+                          (if new-leaf-id
+                              (session-branch session new-leaf-id)
+                              (setf (session-leaf-id session) nil))
+                          (when (and summary-text
+                                     (plusp (length summary-text)))
+                            (let ((summary-id
+                                    (session-append-branch-summary
+                                     session old-leaf-id summary-text
+                                     :details summary-details
+                                     :usage summary-usage
+                                     :from-hook-p from-hook-p)))
+                              (setf summary-entry
+                                    (session-entry-at session summary-id))))
+                          (setf
+                           (agent-messages agent)
+                           (session-messages session))
+                          (agent-restore-tools-from-transcript agent)
+                          (run-agent-lifecycle
+                           agent :session-tree
+                           (list
+                            :target-id entry-id
+                            :new-leaf-id (session-leaf-id session)
+                            :old-leaf-id old-leaf-id
+                            :summary-entry summary-entry
+                            :from-hook-p from-hook-p
+                            :messages
+                            (copy-list
+                             (agent-messages agent))))
+                          (values
+                           (copy-list
+                            (agent-messages agent))
+                           nil
+                           editor-text
+                           summary-entry)))))
+               (sb-thread:with-mutex
+                   ((agent-state-lock agent))
+                 (when (eq (agent-tree-navigation-cancellation agent)
+                           signal)
+                   (setf (agent-tree-navigation-cancellation agent)
+                         nil)))))))))))
 
 (defun user-message-input-values (message)
   (let ((content
@@ -345,6 +447,60 @@
                 final-text))
            nil))))))
 
+(defun finish-prepared-prompt
+    (agent prompt-options selected-before before-result starting)
+  (let ((handler-edited-tools-p
+          (let ((after
+                  (getf prompt-options :selected-tools)))
+            (or
+             (/= (length after) (length selected-before))
+             (notevery #'string= after selected-before)))))
+    (unless handler-edited-tools-p
+      (let* ((declared
+               (mapcar
+                #'cadr-ai:tool-name
+                (registry-tools
+                 (agent-tool-registry agent))))
+             (hidden (active-hidden-tool-names agent)))
+        (setf
+         (getf prompt-options :selected-tools)
+         (append
+          declared
+          (remove-if
+           (lambda (name)
+             (member name declared :test #'string=))
+           hidden))
+         (getf prompt-options :hidden-tools)
+         hidden)))
+    (let* ((force-system-prompt
+             (let ((sentinel (list :missing)))
+               (let ((system-prompt
+                       (getf before-result :system-prompt sentinel)))
+                 (unless (eq system-prompt sentinel)
+                   system-prompt))))
+           (loadout
+             (agent-prepare-prompt-loadout-function agent))
+           (update
+             (progn
+               (when force-system-prompt
+                 (setf
+                  (getf prompt-options :force-system-prompt)
+                  force-system-prompt))
+               (when loadout
+                 (funcall
+                  loadout
+                  agent
+                  prompt-options
+                  (agent-messages agent)))))
+           (pending
+             (if update
+                 (cons update starting)
+                 starting)))
+      (values
+       pending
+       (agent-system-prompt agent)
+       force-system-prompt))))
+
 (defun prepare-agent-prompt
     (agent message source)
   (multiple-value-bind (final-message handled-p)
@@ -352,10 +508,16 @@
        agent message source)
     (when handled-p
       (return-from prepare-agent-prompt
-        (values nil nil t)))
+        (values nil nil t nil)))
     (multiple-value-bind (final-text final-images)
         (user-message-input-values final-message)
-      (let* ((before-result
+      (let* ((prompt-options
+               (copy-tree
+                (agent-system-prompt-options agent)))
+             (selected-before
+               (copy-list
+                (getf prompt-options :selected-tools)))
+             (before-result
                (run-agent-lifecycle
                 agent :before-agent-start
                 (list
@@ -363,25 +525,77 @@
                  :images final-images
                  :system-prompt
                  (agent-system-prompt agent)
-                 :system-prompt-options
-                 (copy-tree
-                  (agent-system-prompt-options agent))))))
-        (values
+                 :system-prompt-options prompt-options))))
+        (multiple-value-bind
+              (pending system-prompt force-system-prompt)
+            (finish-prepared-prompt
+             agent prompt-options selected-before before-result
+             (nconc
+              (drain-agent-queue agent :next-turn)
+              (list final-message)
+              (copy-list (getf before-result :messages))
+              (drain-agent-queue agent :steering)))
+          (values
+           pending
+           system-prompt
+           nil
+           force-system-prompt))))))
+
+(defun custom-trigger-agent-message (message)
+  (make-custom-agent-message
+   :custom-type (or (getf message :custom-type) "")
+   :content (getf message :content)
+   :display-p (not (null (getf message :display-p)))
+   :details (getf message :details)))
+
+(defun prepare-custom-agent-prompt (agent message)
+  ;; pi@4a080252f agent-session.ts _prepareRun. An idle triggerTurn
+  ;; custom message is the run's starting message. The hook sees that
+  ;; message and no user prompt.
+  (let* ((prompt-options
+           (copy-tree (agent-system-prompt-options agent)))
+         (selected-before
+           (copy-list (getf prompt-options :selected-tools)))
+         (before-result
+           (run-agent-lifecycle
+            agent :before-agent-start
+            (list
+             :message-type :custom
+             :message (copy-tree message)
+             :system-prompt (agent-system-prompt agent)
+             :system-prompt-options prompt-options))))
+    (multiple-value-bind
+          (pending system-prompt force-system-prompt)
+        (finish-prepared-prompt
+         agent prompt-options selected-before before-result
          (nconc
+          (list (custom-trigger-agent-message message))
           (drain-agent-queue agent :next-turn)
-          (list final-message)
-          (copy-list
-           (getf before-result :messages))
-          (drain-agent-queue agent :steering))
-         (let ((sentinel (list :missing)))
-           (let ((system-prompt
-                   (getf
-                    before-result
-                    :system-prompt sentinel)))
-             (if (eq system-prompt sentinel)
-                 (agent-system-prompt agent)
-                 system-prompt)))
-         nil)))))
+          (copy-list (getf before-result :messages))
+          (drain-agent-queue agent :steering)))
+      (values pending system-prompt force-system-prompt))))
+
+(defun agent-prompt-custom (agent message)
+  (call-with-agent-run
+   agent
+   (lambda ()
+     (ensure-agent-session-started agent)
+     (flush-agent-pending-custom-messages agent)
+     (omit-resumed-length-stop agent)
+     (maybe-compact-agent agent)
+     (multiple-value-bind
+           (messages system-prompt force-system-prompt)
+         (prepare-custom-agent-prompt agent message)
+       (unless (agent-model agent)
+         (error
+          'cadr-ai:configuration-error
+          :message
+          (cadr-ai::no-api-key-found-message "unknown")))
+       (assert-agent-not-shutdown agent)
+       (let ((*agent-run-system-prompt* system-prompt)
+             (*agent-run-force-system-prompt*
+               force-system-prompt))
+         (run-agent-with-retries agent messages))))))
 
 (defun agent-prompt
     (agent prompt
@@ -395,9 +609,11 @@
      (lambda ()
        (ensure-agent-session-started agent)
        (flush-agent-pending-custom-messages agent)
+       (omit-resumed-length-stop agent)
        (maybe-compact-agent agent)
        (multiple-value-bind
-             (messages system-prompt handled-p)
+             (messages system-prompt handled-p
+              force-system-prompt)
            (prepare-agent-prompt
             agent message source)
          (if handled-p
@@ -422,7 +638,9 @@
                  (funcall preflight-function))
                (assert-agent-not-shutdown agent)
                (let ((*agent-run-system-prompt*
-                       system-prompt))
+                       system-prompt)
+                     (*agent-run-force-system-prompt*
+                       force-system-prompt))
                  (run-agent-with-retries
                   agent messages)))))))))
 

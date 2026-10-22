@@ -496,8 +496,8 @@ NIL means that the caller must send the original, uncompressed body."
     items))
 
 (defun read-codex-websocket-events
-    (provider model entry state emit abort-p on-first-event)
-  (declare (ignore model))
+    (provider model entry state emit abort-p on-first-event
+     &optional on-provider-stream-event)
   (let ((stream
           (codex-websocket-stream
            (codex-websocket-cache-entry-connection entry))))
@@ -513,6 +513,8 @@ NIL means that the caller must send the original, uncompressed body."
              (funcall on-first-event)
              (when (string= type "response.done")
                (setf (gethash "type" object) "response.completed"))
+             (notify-provider-stream-event
+              on-provider-stream-event object model)
              (reduce-provider-sse-event
               provider state
               (make-sse-event :data (stringify-json object)) emit)
@@ -545,28 +547,42 @@ NIL means that the caller must send the original, uncompressed body."
 
 (defmethod build-request :around
     ((provider openai-codex-provider) model context
-     &key &allow-other-keys)
-  (let* ((request (call-next-method))
-         (payload (request-spec-payload request))
-         (input (json-get payload "input" #()))
-         (first (and (plusp (length input)) (aref input 0))))
-    (when (and first
-               (member (json-get first "role") '("system" "developer")
-                       :test #'string=))
-      (json-put payload "input" (subseq input 1)))
-    (json-put payload "instructions"
-              (or (context-system-prompt context)
-                  "You are a helpful assistant."))
+     &rest args &key &allow-other-keys)
+  (let ((*provider-request-transcript* (ensure-transcript-context context))
+        (*responses-omit-leading-system-text* t))
+    (let* ((request-context
+             (coerce-provider-request-context model context))
+           (request
+             (apply #'call-next-method
+                    provider model request-context args))
+           (payload (request-spec-payload request))
+           (input (json-get payload "input" #()))
+           (first (and (plusp (length input)) (aref input 0)))
+           (initial
+             (get-initial-system-message
+              (transcript-context-messages *provider-request-transcript*)))
+           (initial-text
+             (and initial (get-system-message-text initial))))
+      (when (and first
+                 (not (json-present-p first "type"))
+                 (member (json-get first "role") '("system" "developer")
+                         :test #'string=))
+        (json-put payload "input" (subseq input 1)))
+      (json-put payload "instructions"
+                (or (and (non-empty-string-p initial-text) initial-text)
+                    (context-system-prompt request-context)
+                    "You are a helpful assistant."))
     (json-put payload "text" (json-object "verbosity" "low"))
     (json-put payload "include" (json-array "reasoning.encrypted_content"))
     (unless (json-present-p payload "tool_choice")
       (json-put payload "tool_choice" "auto"))
     (json-put payload "parallel_tool_calls" t)
-    request))
+    request)))
 
 (defmethod try-provider-websocket-stream
     ((provider openai-codex-provider) model context request state emit
      &key transport session-id abort-p on-response
+       on-provider-stream-event
        websocket-connect-timeout-ms http-proxy)
   (declare (ignore context))
   (let* ((mode (or transport :auto))
@@ -611,7 +627,8 @@ NIL means that the caller must send the original, uncompressed body."
                (unless websocket-started-p
                  (setf websocket-started-p t)
                  (emit-event emit :start
-                             (provider-stream-state-message state)))))
+                             (provider-stream-state-message state))))
+             on-provider-stream-event)
             (finalize-provider-stream provider model state emit)
             (let ((message (provider-stream-state-message state)))
               (unless (member (assistant-message-stop-reason message)

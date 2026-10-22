@@ -16,6 +16,28 @@
          (trimmed (string-right-trim "_" sanitized)))
     trimmed))
 
+(defun responses-failure-text (response)
+  ;; pi openai-responses-shared.ts response.failed
+  (let* ((error-object (json-get response "error"))
+         (reason (json-get (json-get response "incomplete_details")
+                           "reason")))
+    (cond
+      ((hash-table-p error-object)
+       (let ((code (json-get error-object "code"))
+             (message (json-get error-object "message")))
+         (format nil "~A: ~A"
+                 (if (non-empty-string-p code) code "unknown")
+                 (if (non-empty-string-p message) message "no message"))))
+      ((non-empty-string-p reason)
+       (format nil "incomplete: ~A" reason))
+      (t "Unknown error (no error details in response)"))))
+
+(defun responses-event-error-text (payload)
+  ;; pi throws `Error Code ${event.code}: ${event.message}`.
+  (format nil "Error Code ~A: ~A"
+          (or (json-get payload "code") "undefined")
+          (or (json-get payload "message") "undefined")))
+
 (defun responses-normalize-tool-call-id (id target source)
   (if (not (member (model-provider target)
                    '(:openai :openai-codex :opencode)
@@ -58,26 +80,235 @@
           (error () (values signature nil)))
         (values signature nil))))
 
+;; Fixed reasoning.effort while configuration_update items carry the
+;; thinking level (pi@4a080252f openai-responses.ts).
+(defparameter +configuration-update-request-effort+ "medium")
+
+;; pi@4a080252f openai-responses.ts. Only the workspace admin can raise this.
+(defparameter +chatgpt-workspace-limit-hint+
+  "You've reached your ChatGPT workspace's usage limit. Ask your workspace admin to increase it at admin.openai.com → Workspace → Usage limits.")
+
+(defun annotate-chatgpt-workspace-limit-message (model text)
+  ;; The personal code is checked first upstream and is not a substring
+  ;; of the workplace code. complete() is stream().result().
+  (if (and (eq (model-api model) :openai-responses)
+           (stringp text)
+           (not (search "subscription_sharing_usage_limit_exceeded" text))
+           (search
+            "subscription_sharing_workplace_individual_usage_limit_exceeded"
+            text))
+      (concatenate 'string
+                   text
+                   (string #\Newline)
+                   +chatgpt-workspace-limit-hint+)
+      text))
+
+(defun openai-chatgpt-sign-in-p (model api-key)
+  ;; Baseline isChatGPTSignIn: openai + api.openai.com/v1 + non-sk- key.
+  (and (eq (model-provider model) :openai)
+       (string= (model-base-url model) "https://api.openai.com/v1")
+       (non-empty-string-p api-key)
+       (not (uiop:string-prefix-p "sk-" api-key))))
+
+(defun openai-configuration-update-effort (model reasoning api-key)
+  (when (and (model-compat-value model :supports-mid-convo-effort nil)
+             reasoning
+             (not (openai-chatgpt-sign-in-p model api-key)))
+    (or (model-thinking-level-value model reasoning)
+        (string-downcase
+         (if (symbolp reasoning)
+             (symbol-name reasoning)
+             (princ-to-string reasoning))))))
+
+(defun configuration-update-item (effort)
+  (json-object
+   "type" "configuration_update"
+   "reasoning" (json-object "effort" effort)))
+
+(defvar *provider-request-transcript* nil
+  "Transcript captured before request coercion. Responses reads tool history from it.")
+
+(defvar *responses-omit-leading-system-text* nil
+  "Codex puts the leading system text in instructions, not in input.")
+
+(defun responses-instruction-role (model)
+  (if (responses-developer-role-p model) "developer" "system"))
+
+(defun responses-tool-support (model)
+  ;; additional_tools items accumulate and cannot replace a top-level tool
+  ;; or remove a tool. That transport is :changes only when a later system
+  ;; message can carry the item. Tool search can only add.
+  (cond
+    ((and (model-compat-value model :supports-mid-convo-system-messages nil)
+          (model-compat-value model :supports-additional-tools nil))
+     :changes)
+    ((model-compat-value model :supports-tool-search nil)
+     :additions)
+    (t :none)))
+
+(defun responses-tool-change-name (item)
+  (etypecase item
+    (tool-reference (tool-reference-name item))
+    (tool (tool-name item))
+    (string item)))
+
+(defun responses-true-removals (message)
+  (let ((added (make-hash-table :test #'equal)))
+    (dolist (tool (system-message-tools-added message))
+      (setf (gethash (tool-name tool) added) t))
+    (loop for item in (system-message-tools-removed message)
+          for name = (responses-tool-change-name item)
+          unless (gethash name added)
+            collect name)))
+
+(defparameter +incremental-tools-notice+
+  "This is an incremental tools update. Previously declared tools remain available unless explicitly marked unavailable. A tool declared again here is available again, and its latest definition replaces the earlier one.")
+
+(defun render-incremental-tools-notice (unavailable)
+  (if unavailable
+      (format nil "~A~%Still unavailable: ~{~A~^, ~}."
+              +incremental-tools-notice+ unavailable)
+      +incremental-tools-notice+))
+
+(defun render-tool-removal-notice (names)
+  (format nil "The following tools are no longer available. Do not call them:~%~{- ~A~^~%~}"
+          names))
+
+(defun responses-without-names (unavailable names)
+  (if names
+      (remove-if (lambda (name) (member name names :test #'string=))
+                 unavailable)
+      unavailable))
+
+(defun responses-system-input-items
+    (model message &key leading-p anchor-p include-text-p tool-support
+                      declared-p unavailable seed tool-options)
+  (let ((items nil)
+        (added (system-message-tools-added message)))
+    (when anchor-p
+      (setf unavailable
+            (responses-without-names
+             unavailable (mapcar #'tool-name added)))
+      (when added
+        (cond
+          ((eq tool-support :changes)
+           (when declared-p
+             (push (json-object
+                    "role" (responses-instruction-role model)
+                    "content" (render-incremental-tools-notice unavailable))
+                   items))
+           (setf declared-p t)
+           (push (json-object
+                  "type" "additional_tools"
+                  "role" "developer"
+                  "tools" (openai-tools model added :options tool-options))
+                 items))
+          ((eq tool-support :additions)
+           (let* ((names (mapcar #'tool-name added))
+                  (call-id
+                    (format nil "cadr_tool_load_~A"
+                            (short-hash
+                             (format nil "~A:~{~A~^,~}" seed names)))))
+             (push (json-object
+                    "type" "tool_search_call"
+                    "call_id" call-id
+                    "execution" "client"
+                    "status" "completed"
+                    "arguments"
+                    (json-object "query" (format nil "~{~A~^ ~}" names)
+                                 "limit" (length names)))
+                   items)
+             (push (json-object
+                    "type" "tool_search_output"
+                    "call_id" call-id
+                    "execution" "client"
+                    "status" "completed"
+                    "tools"
+                    (openai-tools model added
+                                  :defer-loading-p t
+                                  :options tool-options))
+                   items))))))
+    (when include-text-p
+      (let* ((parts
+               (list (if leading-p
+                         (get-system-message-text message)
+                         (render-system-message-update message))))
+             (removed (and anchor-p (responses-true-removals message))))
+        (when removed
+          (setf parts
+                (append parts (list (render-tool-removal-notice removed))))
+          (dolist (name removed)
+            (unless (member name unavailable :test #'string=)
+              (setf unavailable (append unavailable (list name))))))
+        (let ((text
+                (format nil "~{~A~^~%~%~}"
+                        (remove-if (lambda (part) (zerop (length part)))
+                                   parts))))
+          (when (plusp (length text))
+            (push (json-object
+                   "role" (responses-instruction-role model)
+                   "content" text)
+                  items)))))
+    (values (nreverse items) declared-p unavailable)))
+
 (defun openai-input-items
     (model context &key grammar-properties deferred-tools deferred-tools-mode
-                        tool-options)
+                        tool-options configuration-update-effort
+                        transcript-tools)
   (let ((items nil)
         (message-index 0)
-        (loaded-tool-names (make-hash-table :test #'equal)))
-    (when (non-empty-string-p (context-system-prompt context))
-      (push (json-object "role"
-                         (if (responses-developer-role-p model)
-                             "developer"
-                             "system")
-                         "content" (context-system-prompt context))
-            items))
+        (source-index 0)
+        (system-index 0)
+        (declared-additional-p nil)
+        (unavailable-tools nil)
+        (loaded-tool-names (make-hash-table :test #'equal))
+        (tool-support (and transcript-tools (responses-tool-support model))))
+    (unless transcript-tools
+      (when (non-empty-string-p (context-system-prompt context))
+        (push (json-object "role"
+                           (responses-instruction-role model)
+                           "content" (context-system-prompt context))
+              items)))
     (dolist (message
              (prepare-messages-for-model
-              (context-messages context)
+              (if transcript-tools
+                  (transcript-context-messages
+                   (resolve-transcript *provider-request-transcript* t))
+                  (context-messages context))
               model
               #'normalize-provider-id
               #'responses-normalize-tool-call-id))
-      (cond
+      (let ((leading-system-p
+              (and transcript-tools
+                   (zerop source-index)
+                   (system-message-p message))))
+        (incf source-index)
+        (cond
+          ((and transcript-tools (system-message-p message))
+           (let ((anchor-p
+                   (>= system-index
+                       (transcript-tools-folded-system-messages
+                        transcript-tools))))
+             (incf system-index)
+             (multiple-value-bind (emitted declared unavailable)
+                 (responses-system-input-items
+                  model message
+                  :leading-p leading-system-p
+                  :anchor-p anchor-p
+                  :include-text-p
+                  (or (not leading-system-p)
+                      (not *responses-omit-leading-system-text*))
+                  :tool-support tool-support
+                  :declared-p declared-additional-p
+                  :unavailable unavailable-tools
+                  :seed (format nil "system:~D" message-index)
+                  :tool-options tool-options)
+               (dolist (item emitted)
+                 (push item items))
+               (setf declared-additional-p declared
+                     unavailable-tools unavailable))))
+          (t
+           (cond
         ((typep message 'user-message)
          (let* ((source (user-message-content message))
                 (content
@@ -108,7 +339,15 @@
                     "content" content)
                    items))))
         ((typep message 'assistant-message)
-         (let ((text-index 0))
+         (let ((text-index 0)
+               (output nil)
+               (same-model-p
+                 (and (eq (assistant-message-provider message)
+                          (model-provider model))
+                      (eq (assistant-message-api message)
+                          (model-api model))
+                      (string= (assistant-message-model message)
+                               (model-id model)))))
            (dolist (block (assistant-message-content message))
              (cond
                ((typep block 'text-content)
@@ -138,7 +377,7 @@
                               "text" (text-content-text block)
                               "annotations" #())))))
                     (when phase (json-put item "phase" phase))
-                    (push item items)))
+                    (push item output)))
                 (incf text-index))
                ((typep block 'tool-call)
                 (multiple-value-bind (call-id item-id)
@@ -172,19 +411,26 @@
                     ;; deferred tool.
                     (let ((namespace (tool-call-namespace block)))
                       (when (and namespace
-                                 (or (and (eq (assistant-message-provider
-                                               message)
-                                              (model-provider model))
-                                          (eq (assistant-message-api message)
-                                              (model-api model))
-                                          (string=
-                                           (assistant-message-model message)
-                                           (model-id model)))
+                                 (or same-model-p
                                      (and deferred-tools
                                           (gethash (tool-call-name block)
                                                    deferred-tools))))
                         (json-put item "namespace" namespace)))
-                    (push item items))))))))
+                    (push item output))))))
+           (when output
+             ;; pi@4a080252f: configuration_update before each same-model
+             ;; reply that recorded providerThinkingLevel, so earlier
+             ;; input never changes when the level changes.
+             (when (and configuration-update-effort
+                        same-model-p
+                        (assistant-message-provider-thinking-level
+                         message))
+               (push
+                (configuration-update-item
+                 (assistant-message-provider-thinking-level message))
+                items))
+             (dolist (item (nreverse output))
+               (push item items)))))
         ((typep message 'tool-result-message)
          (multiple-value-bind (call-id item-id)
              (split-openai-tool-call-id
@@ -203,7 +449,8 @@
              (let ((text
                      (content-text
                       (tool-result-message-content message))))
-               (if (non-empty-string-p text)
+               ;; pi@4a080252f openai-responses-shared.ts #8720.
+               (if (javascript-trim-nonempty-p text)
                    text
                    "(no tool output)")))
             items)
@@ -274,8 +521,12 @@
                       (json-object
                        "type" "input_image"
                        "image_url" (data-url block)))))
-            items)))))
-      (incf message-index))
+            items)))))))
+        (unless leading-system-p
+          (incf message-index))))
+    (when configuration-update-effort
+      (push (configuration-update-item configuration-update-effort)
+            items))
     (list-json-array (nreverse items))))
 
 (defun openai-tools (model tools &key defer-loading-p options)
@@ -371,8 +622,9 @@
        (json-put
         payload "include"
         (json-array "reasoning.encrypted_content")))
-      ((or (not (model-thinking-level-present-p model :off))
-           (model-thinking-level-value model :off))
+      ((and (not (eq (model-provider model) :github-copilot))
+            (or (not (model-thinking-level-present-p model :off))
+                (model-thinking-level-value model :off)))
        (json-put
         payload "reasoning"
         (json-object
@@ -385,15 +637,42 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
+                            sampling-params
                             &allow-other-keys)
   (declare (ignore metadata))
-  (ensure-supported-content model context)
-  (let* ((oauth-token (provider-oauth-access-token provider))
+  ;; Models without mid-conversation system messages still receive one
+  ;; folded developer prompt and the current tool list. Callers that
+  ;; pass a raw context keep those facts on the system messages, so
+  ;; project the transcript before the request is built.
+  (let ((context
+          (if (and *provider-request-transcript*
+                   (not (model-compat-value
+                         model :supports-mid-convo-system-messages nil)))
+              (coerce-provider-request-context
+               model *provider-request-transcript*)
+              context)))
+    (ensure-supported-content model context)
+    (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))
          (account-id (provider-oauth-account-id provider))
+         (configuration-update-effort
+           (openai-configuration-update-effort model reasoning key))
+         (transcript-tools
+           (when (and *provider-request-transcript*
+                      (model-compat-value
+                       model :supports-mid-convo-system-messages nil))
+             (resolve-transcript-tools
+              (transcript-context-messages
+               (resolve-transcript *provider-request-transcript* t))
+              (responses-tool-support model))))
          (deferred-tools-mode
-           ;; Baseline buildParams: additional-tools beats tool-search.
+           ;; Tool results still carry added-tool-names for transports
+           ;; that have no mid-conversation system message to anchor.
+           ;; With mid-conversation system messages, the transcript
+           ;; declares tools in place and the top-level list must not
+           ;; be rewritten on every later load.
            (cond
+             (transcript-tools nil)
              ((model-compat-value model :supports-additional-tools nil)
               :additional-tools)
              ((model-compat-value model :supports-tool-search nil)
@@ -412,7 +691,10 @@
             "stream" (and stream-p t)
             "store" nil)))
     (multiple-value-setq (immediate-tools deferred-tools)
-      (split-deferred-tools context (not (null deferred-tools-mode))))
+      (if transcript-tools
+          (values (transcript-tools-request-tools transcript-tools)
+                  (make-hash-table :test #'equal))
+          (split-deferred-tools context (not (null deferred-tools-mode)))))
     (json-put
      payload "input"
      (openai-input-items
@@ -420,6 +702,8 @@
       :grammar-properties grammar-properties
       :deferred-tools deferred-tools
       :deferred-tools-mode deferred-tools-mode
+      :configuration-update-effort configuration-update-effort
+      :transcript-tools transcript-tools
       :tool-options
       (list
        :supports-strict-mode
@@ -460,7 +744,20 @@
                 (openai-tools model immediate-tools)))
     (when tool-choice
       (json-put payload "tool_choice" tool-choice))
-    (add-responses-reasoning payload model reasoning)
+    ;; When configuration_update carries the level, keep reasoning.effort
+    ;; fixed so mid-session changes do not bust the prompt cache.
+    (if configuration-update-effort
+        (progn
+          (json-put
+           payload "reasoning"
+           (json-object
+            "effort" +configuration-update-request-effort+
+            "summary" "auto"))
+          (json-put
+           payload "include"
+           (json-array "reasoning.encrypted_content")))
+        (add-responses-reasoning payload model reasoning))
+    (apply-sampling-params payload model reasoning sampling-params)
     (make-request-spec
      :url
      (let ((base (strip-trailing-slash (model-base-url model))))
@@ -491,10 +788,14 @@
           ("originator" . ,+openai-originator+)
           ("openai-beta" . "responses=experimental")))
       (responses-session-headers model session-id cache-retention)
+      (opencode-request-headers
+       :provider (model-provider model)
+       :base-url (model-base-url model)
+       :session-id session-id)
       (model-headers model))
      :payload payload
      :stream-p stream-p
-     :provider :openai)))
+     :provider (model-provider model)))))
 
 (defun parse-openai-output (output)
   (loop for item across (or output #())
@@ -788,9 +1089,7 @@
                              output-index
                              (provider-stream-state-partial-json state)
                              ""))))
-                  (when (non-empty-string-p arguments)
-                    (setf (tool-call-arguments block)
-                          (parse-streaming-json arguments)))
+                  (finish-tool-call-arguments block arguments)
                   (let ((namespace (json-get item "namespace")))
                     (when namespace
                       (setf (tool-call-namespace block) namespace))))
@@ -823,17 +1122,15 @@
              (setf (assistant-message-stop-reason message) :tool-use))))
         ((string= type "response.failed")
          (setf (provider-stream-state-terminal-p state) t)
-         (let* ((response (json-get payload "response"))
-                (error-object (json-get response "error")))
-           (error 'api-error
-                  :provider :openai
-                  :status 200
-                  :message (or (json-get error-object "message")
-                               "OpenAI response failed"))))
+         (error 'api-error
+                :provider (assistant-message-provider message)
+                :status 200
+                :message
+                (responses-failure-text
+                 (json-get payload "response"))))
         ((string= type "error")
          (error 'api-error
-                :provider :openai
+                :provider (assistant-message-provider message)
                 :status 200
-                :message (or (json-get payload "message")
-                             "OpenAI stream error")))))
+                :message (responses-event-error-text payload)))))
   nil))

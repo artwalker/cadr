@@ -7,13 +7,19 @@
   (last-usage-index nil :type (or null (integer 0 *))))
 
 (defconstant +estimated-image-characters+ 4800)
+(defconstant +context-safety-tokens+ 4096)
 
 (defun utf16-code-unit-length (text)
   (loop for character across text
         sum (if (> (char-code character) #xffff) 2 1)))
 
+(defun estimate-chars-as-tokens (chars)
+  ;; pi@4a080252f estimate.ts #10497. 3.5 characters per token, so a
+  ;; large input leaves less room for the output limit.
+  (ceiling (* chars 2) 7))
+
 (defun estimate-text-tokens (text)
-  (ceiling (utf16-code-unit-length text) 4))
+  (estimate-chars-as-tokens (utf16-code-unit-length text)))
 
 (defun estimated-content-characters (content)
   (if (stringp content)
@@ -29,7 +35,7 @@
               (t 0)))))
 
 (defun estimate-content-tokens (content)
-  (ceiling (estimated-content-characters content) 4))
+  (estimate-chars-as-tokens (estimated-content-characters content)))
 
 (defun safely-stringify (value)
   (handler-case
@@ -43,7 +49,7 @@
     ((typep message 'tool-result-message)
      (estimate-content-tokens (tool-result-message-content message)))
     ((typep message 'assistant-message)
-     (ceiling
+     (estimate-chars-as-tokens
       (loop for block in (assistant-message-content message)
             sum
             (cond
@@ -59,8 +65,7 @@
                   (utf16-code-unit-length
                    (safely-stringify
                     (tool-call-arguments block)))))
-              (t 0)))
-      4))
+              (t 0)))))
     (t 0)))
 
 (defun context-message-timestamp (message)
@@ -132,8 +137,20 @@
          (mapcar #'tool-estimate-object tools))))
       0))
 
+(defun transcript-as-estimate-context (transcript)
+  (let* ((messages (transcript-context-messages transcript))
+         (prompt (get-current-system-prompt messages)))
+    (make-context
+     :system-prompt (when (plusp (length prompt)) prompt)
+     :messages (without-initial-system-message messages)
+     :tools (get-current-tools messages))))
+
 (defun estimate-context-tokens (context-or-messages)
-  (if (typep context-or-messages 'context)
+  (cond
+    ((typep context-or-messages 'transcript-context)
+     (estimate-context-tokens
+      (transcript-as-estimate-context context-or-messages)))
+    ((typep context-or-messages 'context)
       (let* ((context context-or-messages)
              (messages (context-messages context))
              (estimate (estimate-message-list messages))
@@ -166,5 +183,16 @@
               prefix-tokens)
         (incf (context-usage-estimate-trailing-tokens estimate)
               prefix-tokens)
-        estimate)
-      (estimate-message-list context-or-messages)))
+        estimate))
+    (t (estimate-message-list context-or-messages))))
+
+(defun clamp-max-tokens-to-context (model context max-tokens)
+  ;; pi@4a080252f simple-options.ts clampMaxTokensToContext.
+  (if (<= (model-context-window model) 0)
+      (max 1 max-tokens)
+      (min max-tokens
+           (max 1
+                (- (model-context-window model)
+                   (context-usage-estimate-tokens
+                    (estimate-context-tokens context))
+                   +context-safety-tokens+)))))

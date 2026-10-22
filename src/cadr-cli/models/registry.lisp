@@ -9,6 +9,9 @@
   (provider-settings
     (make-hash-table :test #'eq)
     :type hash-table)
+  (classifier-models
+    (make-hash-table :test #'equal)
+    :type hash-table)
   error
   %available-models
   %available-models-key)
@@ -22,7 +25,7 @@
 
 (defun model-registry-sort-predicate (left right)
   ;; One owner for /model and --list-models order
-  ;; (pi@ecac0a9c4 model registry provider then id).
+  ;; (pi@4a080252f model registry provider then id).
   (let ((left-provider
           (provider-key (cadr-ai:model-provider left)))
         (right-provider
@@ -357,6 +360,8 @@
          (sort models #'model-registry-sort-predicate)
          (model-registry-provider-settings registry)
          settings
+         (model-registry-classifier-models registry)
+         (classifier-models-for-settings settings)
          (model-registry-error registry)
          nil)
         (when (model-registry-native-runtime registry)
@@ -417,7 +422,7 @@
 (defun model-registry-all (registry)
   (copy-list (model-registry-models registry)))
 
-(defun model-registry-find
+(defun model-registry-find-physical
     (registry provider model)
   (find-if
    (lambda (candidate)
@@ -432,6 +437,13 @@
                model)))
    (model-registry-models registry)))
 
+(defun model-registry-find
+    (registry provider model)
+  ;; pi@4a080252f withVirtualModels. A registered virtual model hides
+  ;; a physical chat model with the same id.
+  (or (cadr-agent:registered-virtual-model provider model)
+      (model-registry-find-physical registry provider model)))
+
 (defun known-provider-definition-p (provider)
   (find
    (provider-symbol-from-key provider)
@@ -444,6 +456,62 @@
   (gethash
    (provider-symbol-from-key provider)
    (model-registry-provider-settings registry)))
+
+(defun merge-classifier-compat (base override)
+  ;; Provider compat wins per field. A false sendImageOptInHeader stays
+  ;; present so it is distinct from leaving the field unset.
+  (let ((merged
+          (mapcar (lambda (cell) (cons (car cell) (cdr cell))) base)))
+    (loop for (key value) on override by #'cddr
+          for cell = (assoc key merged)
+          do (if cell
+                 (setf (cdr cell) value)
+                 (setf merged
+                       (nconc merged (list (cons key value))))))
+    merged))
+
+(defun overlay-classifier-provider-config (model config)
+  ;; pi@4a080252f provider-composer.ts applyModelsJson. Classifier models
+  ;; take baseUrl, and compat field-by-field. Headers stay on chat models.
+  (unless (hash-table-p config)
+    (return-from overlay-classifier-provider-config model))
+  (let* ((base-url (cadr-ai::json-get config "baseUrl"))
+         (oauth (cadr-ai::json-get config "oauth"))
+         (compat-object (cadr-ai::json-get config "compat"))
+         (override
+           (and (hash-table-p compat-object)
+                (parse-model-compat compat-object)))
+         (replace-base
+           (and (stringp base-url)
+                (not (equal oauth "radius"))))
+         (copy (cadr-ai::copy-classifier-model model)))
+    (when replace-base
+      (setf (cadr-ai:classifier-model-base-url copy) base-url))
+    (when override
+      (setf (cadr-ai:classifier-model-compat copy)
+            (merge-classifier-compat
+             (cadr-ai:classifier-model-compat model)
+             override)))
+    (if (or replace-base override)
+        copy
+        model)))
+
+(defun classifier-models-for-settings (settings)
+  (let ((table (make-hash-table :test #'equal)))
+    (dolist (model (cadr-ai:list-classifier-models) table)
+      (setf (gethash
+             (cons (cadr-ai:classifier-model-provider model)
+                   (cadr-ai:classifier-model-id model))
+             table)
+            (overlay-classifier-provider-config
+             model
+             (gethash (cadr-ai:classifier-model-provider model)
+                      settings))))))
+
+(defun model-registry-classifier (registry provider id)
+  (gethash
+   (cons (provider-symbol-from-key provider) id)
+   (model-registry-classifier-models registry)))
 
 (defun credential-kind-auth-type (kind)
   (cond
@@ -637,7 +705,11 @@
      &key api-key base-url
        (config-path (default-config-path))
        (auth-path (default-auth-path))
-       allow-missing-auth-p)
+       allow-missing-auth-p
+       abort-p)
+  (when (cadr-core:cancellation-predicate-aborted-p abort-p)
+    (error 'cadr-ai:configuration-error
+           :message "Authentication aborted"))
   (let* ((provider
            (cadr-ai:model-provider model))
          (provider-name
@@ -664,7 +736,8 @@
                 (model-registry-native-runtime
                  registry)
                 model
-                :api-key effective-key)))
+                :api-key effective-key
+                :abort-p abort-p)))
          (when
              (and
               (null auth)
@@ -817,7 +890,8 @@
                  (or (model-registry-path registry) config-path)
                  (model-registry-credentials registry))
                 config-path
-                auth-path))))
+                auth-path
+                (cadr-agent:virtual-model-generation)))))
     (when (and cache-key
                (equal cache-key
                       (model-registry-%available-models-key registry)))
@@ -862,6 +936,21 @@
               (remove-if-not
                #'configured-p
                (model-registry-models registry))))
+        (setf models
+              (remove-if
+               (lambda (model)
+                 (cadr-agent:registered-virtual-model
+                  (cadr-ai:model-provider model)
+                  (cadr-ai:model-id model)))
+               models))
+        (dolist (virtual (cadr-agent:registered-virtual-models))
+          (let ((provider (cadr-ai:model-provider virtual)))
+            (when (or (find provider models
+                            :key #'cadr-ai:model-provider)
+                      (not (find provider
+                                 (model-registry-models registry)
+                                 :key #'cadr-ai:model-provider)))
+              (push virtual models))))
         (when cache-key
           (setf (model-registry-%available-models registry) models
                 (model-registry-%available-models-key registry)

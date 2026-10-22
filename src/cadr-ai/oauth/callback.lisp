@@ -149,18 +149,51 @@
           body)
   (finish-output stream))
 
-(defun wait-for-oauth-code
-    (state port path provider-name &optional cancelled-p)
+(defun open-oauth-callback-socket (port)
   (let ((socket
           (make-instance 'sb-bsd-sockets:inet-socket
                          :type :stream
                          :protocol :tcp)))
+    (handler-case
+        (progn
+          (setf (sb-bsd-sockets:sockopt-reuse-address socket) t)
+          (sb-bsd-sockets:socket-bind socket #(127 0 0 1) port)
+          (sb-bsd-sockets:socket-listen socket 1)
+          socket)
+      (error (condition)
+        (ignore-errors (sb-bsd-sockets:socket-close socket))
+        (error condition)))))
+
+(defun oauth-callback-socket-port (socket)
+  (nth-value 1 (sb-bsd-sockets:socket-name socket)))
+
+(defun open-anthropic-oauth-callback-socket ()
+  ;; pi@4a080252f #10571. 53692 stays preferred so a forwarded port
+  ;; still works. Anthropic accepts any loopback port, so a taken
+  ;; preferred port falls back to one the OS chooses. No listener
+  ;; means login continues with the pasted redirect URL.
+  (handler-case
+      (open-oauth-callback-socket 53692)
+    (error ()
+      (handler-case
+          (open-oauth-callback-socket 0)
+        (error ()
+          nil)))))
+
+(defun anthropic-oauth-redirect-uri (socket)
+  (if socket
+      (format nil "http://localhost:~D/callback"
+              (oauth-callback-socket-port socket))
+      +anthropic-oauth-redirect-uri+))
+
+(defun wait-for-oauth-code
+    (state port path provider-name
+     &optional cancelled-p bound-socket)
+  (let ((socket
+          (or bound-socket
+              (open-oauth-callback-socket port))))
     (unwind-protect
          (progn
-           (setf (sb-bsd-sockets:sockopt-reuse-address socket) t)
-           (sb-bsd-sockets:socket-bind socket
-                                       #(127 0 0 1) port)
-           (sb-bsd-sockets:socket-listen socket 1)
            (when cancelled-p
              (loop
                (when (funcall cancelled-p)

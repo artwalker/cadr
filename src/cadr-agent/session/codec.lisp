@@ -16,11 +16,14 @@
   thinking-level
   provider
   model-id
+  kind
+  note
   active-tool-names
   from-id
   details
   usage
   (from-hook-p nil :type boolean)
+  system-message
   custom-type
   data
   content
@@ -269,8 +272,12 @@
   (let ((object
           (cadr-ai::json-object
            "type"
-           (symbol-json-name
-            (cadr-ai:assistant-message-diagnostic-type diagnostic))
+           (let ((type
+                   (cadr-ai:assistant-message-diagnostic-type
+                    diagnostic)))
+             (if (eq type :anthropic-input-transformations)
+                 "anthropic_input_transformations"
+                 (symbol-json-name type)))
            "timestamp"
            (cadr-ai:assistant-message-diagnostic-timestamp diagnostic))))
     (when (cadr-ai:assistant-message-diagnostic-details diagnostic)
@@ -292,8 +299,167 @@
     (t
      (intern (string-upcase key) "KEYWORD"))))
 
+(defun system-sections-to-json (sections)
+  (let ((object (cadr-ai::json-object)))
+    (dolist (pair sections)
+      (cadr-ai::json-put
+       object
+       (car pair)
+       (let ((value (cdr pair)))
+         (if (null value) 'null value))))
+    object))
+
+(defun system-sections-from-json (value)
+  (cond
+    ((null value) nil)
+    ((hash-table-p value)
+     (let ((result nil))
+       (maphash
+        (lambda (name item)
+          (push
+           (cons name
+                 (if (or (null item) (eq item 'null))
+                     nil
+                     item))
+           result))
+        value)
+       (nreverse result)))
+    ((cadr-ai::json-object-pairs-p value)
+     (loop for (name item) on (cdr value) by #'cddr
+           collect
+           (cons name
+                 (if (or (null item) (eq item 'null))
+                     nil
+                     item))))
+    (t
+     (error "System message sections must be an object"))))
+
+(defun tool-declaration-from-json (object)
+  ;; Session line parser keeps objects as (:json-object . pairs);
+  ;; message-to-json / json-object use hash tables.
+  (unless
+      (or (hash-table-p object)
+          (cadr-ai::json-object-pairs-p object))
+    (error "Tool declaration must be an object"))
+  (let ((constrained
+          (cadr-ai::json-get object "constrainedSampling"))
+        (present-p
+          (cadr-ai::json-present-p
+           object "constrainedSampling"))
+        (parameters
+          (cadr-ai::json-get object "parameters")))
+    (cadr-ai:make-tool
+     :name (or (cadr-ai::json-get object "name") "")
+     :description (or (cadr-ai::json-get object "description") "")
+     :parameters
+     (cond
+       ((null parameters) (cadr-ai::json-object))
+       ((hash-table-p parameters) parameters)
+       (t (json-safe-value parameters)))
+     :constrained-sampling
+     (cond
+       ((not present-p) nil)
+       ((or (null constrained)
+            (eq constrained 'null)
+            (eq constrained :false))
+        :false)
+       (t (copy-tree constrained)))
+     :executor nil)))
+
+(defun tools-added-from-json (value)
+  (cond
+    ((null value) nil)
+    ((listp value)
+     (mapcar #'tool-declaration-from-json value))
+    ((vectorp value)
+     (loop for object across value
+           collect (tool-declaration-from-json object)))
+    (t
+     (error "toolsAdded must be an array"))))
+
+(defun tools-removed-from-json (value)
+  (cond
+    ((null value) nil)
+    ((listp value)
+     (mapcar
+      (lambda (object)
+        (cadr-ai:make-tool-reference
+         :name
+         (or (if (hash-table-p object)
+                 (cadr-ai::json-get object "name")
+                 "")
+             "")))
+      value))
+    ((vectorp value)
+     (loop for object across value
+           collect
+           (cadr-ai:make-tool-reference
+            :name
+            (or (cadr-ai::json-get object "name") ""))))
+    (t
+     (error "toolsRemoved must be an array"))))
+
+(defun tools-added-to-json (tools)
+  (map
+   'vector
+   (lambda (tool)
+     (cadr-ai::%tool-declaration-json
+      (cadr-ai:to-tool-declaration tool)))
+   tools))
+
+(defun tools-removed-to-json (tools)
+  (map
+   'vector
+   (lambda (tool)
+     (cadr-ai::json-object
+      "name" (cadr-ai:tool-reference-name tool)))
+   tools))
+
+(defun system-message-to-json (message)
+  (let ((object
+          (cadr-ai::json-object
+           "role" "system"
+           "content"
+           (let ((content (cadr-ai:system-message-content message)))
+             (if (stringp content)
+                 content
+                 (content-blocks-to-json content)))
+           "timestamp"
+           (cadr-ai:system-message-timestamp message))))
+    (when (cadr-ai:system-message-sections message)
+      (cadr-ai::json-put
+       object "sections"
+       (system-sections-to-json
+        (cadr-ai:system-message-sections message))))
+    (when (cadr-ai:system-message-tools-added message)
+      (cadr-ai::json-put
+       object "toolsAdded"
+       (tools-added-to-json
+        (cadr-ai:system-message-tools-added message))))
+    (when (cadr-ai:system-message-tools-removed message)
+      (cadr-ai::json-put
+       object "toolsRemoved"
+       (tools-removed-to-json
+        (cadr-ai:system-message-tools-removed message))))
+    object))
+
+(defun system-message-from-fields
+    (content timestamp sections tools-added tools-removed)
+  (cadr-ai:make-system-message
+   :content
+   (cond
+     ((null content) "")
+     ((stringp content) content)
+     (t (content-blocks-from-json content)))
+   :sections (system-sections-from-json sections)
+   :tools-added (tools-added-from-json tools-added)
+   :tools-removed (tools-removed-from-json tools-removed)
+   :timestamp (or timestamp 0)))
+
 (defun message-to-json (message)
   (cond
+    ((typep message 'cadr-ai:system-message)
+     (system-message-to-json message))
     ((typep message 'cadr-ai:user-message)
      (cadr-ai::json-object
       "role" "user"
@@ -344,6 +510,11 @@
            'vector
            #'assistant-diagnostic-to-json
            (cadr-ai:assistant-message-diagnostics message))))
+       (when (integerp
+              (cadr-ai:assistant-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:assistant-message-duration-ms message)))
        (when (cadr-ai:assistant-message-provider-thinking-level
               message)
          (cadr-ai::json-put
@@ -379,22 +550,39 @@
           (bash-execution-message-full-output-path message)))
        object))
     ((typep message 'cadr-ai:tool-result-message)
-     (cadr-ai::json-object
-      "role" "toolResult"
-      "toolCallId"
-      (cadr-ai:tool-result-message-tool-call-id message)
-      "toolName"
-      (cadr-ai:tool-result-message-tool-name message)
-      "content"
-      (content-blocks-to-json
-       (cadr-ai:tool-result-message-content message))
-      "details"
-      (json-safe-value
-       (cadr-ai:tool-result-message-details message))
-      "isError"
-      (cadr-ai:tool-result-message-is-error message)
-      "timestamp"
-      (cadr-ai:tool-result-message-timestamp message)))
+     (let ((object
+             (cadr-ai::json-object
+              "role" "toolResult"
+              "toolCallId"
+              (cadr-ai:tool-result-message-tool-call-id message)
+              "toolName"
+              (cadr-ai:tool-result-message-tool-name message)
+              "content"
+              (content-blocks-to-json
+               (cadr-ai:tool-result-message-content message))
+              "details"
+              (json-safe-value
+               (cadr-ai:tool-result-message-details message))
+              "isError"
+              (cadr-ai:tool-result-message-is-error message)
+              "timestamp"
+              (cadr-ai:tool-result-message-timestamp message))))
+       (when (integerp
+              (cadr-ai:tool-result-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:tool-result-message-duration-ms message)))
+       (when (cadr-ai:tool-result-message-nested-calls message)
+         (cadr-ai::json-put
+          object "nestedCalls"
+          (nested-tool-calls-to-json
+           (cadr-ai:tool-result-message-nested-calls message))))
+       (when (cadr-ai:tool-result-message-usage message)
+         (cadr-ai::json-put
+          object "usage"
+          (usage-to-json
+           (cadr-ai:tool-result-message-usage message))))
+       object))
     (t
      (error "Unsupported session message: ~S" message))))
 
@@ -415,7 +603,9 @@
      ((or (eq value "user") (string= value "user")) :user)
      ((or (eq value "assistant") (string= value "assistant"))
       :assistant)
-     ((or (eq value "error") (string= value "error")) :error))
+     ((or (eq value "error") (string= value "error")) :error)
+     ((string= value "anthropic_input_transformations")
+      :anthropic-input-transformations))
    (intern (string-upcase value) "KEYWORD")))
 
 (defun json-get-either (object primary legacy)
@@ -539,8 +729,13 @@
           :total (usage-cost-amount cost "total"))
          (cadr-ai:make-cost)))))
 
+(defun json-duration-ms (value)
+  (when (realp value)
+    (max 0 (round value))))
+
 (defun message-from-json (object)
-  (when (or (typep object 'cadr-ai:user-message)
+  (when (or (typep object 'cadr-ai:system-message)
+            (typep object 'cadr-ai:user-message)
             (typep object 'cadr-ai:assistant-message)
             (typep object 'cadr-ai:tool-result-message)
             (typep object 'cadr-agent:bash-execution-message))
@@ -551,6 +746,13 @@
             (content (session-json-message-content object))
             (extra (session-json-message-extra object)))
         (cond
+          ((string= type "system")
+           (system-message-from-fields
+            content
+            (session-json-message-timestamp object)
+            (getf extra :sections)
+            (getf extra :tools-added)
+            (getf extra :tools-removed)))
           ((string= type "user")
            (cadr-ai:make-user-message
             :content
@@ -586,6 +788,8 @@
              (or (getf extra :diagnostics) #()))
             :provider-thinking-level
             (getf extra :provider-thinking-level)
+            :duration-ms
+            (json-duration-ms (getf extra :duration-ms))
             :timestamp
             (session-json-message-timestamp object)))
           ((member type '("toolResult" "tool_result")
@@ -596,6 +800,12 @@
             :content (content-blocks-from-json content)
             :details (getf extra :details)
             :is-error (eq t (getf extra :is-error))
+            :duration-ms
+            (json-duration-ms (getf extra :duration-ms))
+            :nested-calls
+            (nested-tool-calls-from-json
+             (getf extra :nested-calls))
+            :usage (session-json-message-usage object)
             :timestamp
             (session-json-message-timestamp object)))
           ((member type '("bashExecution" "bash_execution")
@@ -627,6 +837,13 @@
            (cadr-ai::json-get object "type")))
         (content (cadr-ai::json-get object "content")))
     (cond
+      ((string= type "system")
+       (system-message-from-fields
+        content
+        (cadr-ai::json-get object "timestamp")
+        (cadr-ai::json-get object "sections")
+        (json-get-either object "toolsAdded" "tools_added")
+        (json-get-either object "toolsRemoved" "tools_removed")))
       ((string= type "user")
        (cadr-ai:make-user-message
         :content
@@ -667,6 +884,9 @@
         :provider-thinking-level
         (json-get-either
          object "providerThinkingLevel" "provider_thinking_level")
+        :duration-ms
+        (json-duration-ms
+         (json-get-either object "durationMs" "duration_ms"))
         :timestamp (cadr-ai::json-get object "timestamp")))
       ((member type '("toolResult" "tool_result")
                :test #'string=)
@@ -680,6 +900,15 @@
         :is-error
         (eq t
             (json-get-either object "isError" "is_error"))
+        :duration-ms
+        (json-duration-ms
+         (json-get-either object "durationMs" "duration_ms"))
+        :nested-calls
+        (nested-tool-calls-from-json
+         (cadr-ai::json-get object "nestedCalls"))
+        :usage
+        (let ((usage (cadr-ai::json-get object "usage")))
+          (and usage (usage-from-json usage)))
         :timestamp (cadr-ai::json-get object "timestamp")))
       ((member type '("bashExecution" "bash_execution")
                :test #'string=)
@@ -999,6 +1228,30 @@
 (defun write-session-message (message buffer)
   (vector-push-extend #x7b buffer)
   (cond
+    ((typep message 'cadr-ai:system-message)
+     (let ((sections (cadr-ai:system-message-sections message))
+           (tools-added (cadr-ai:system-message-tools-added message))
+           (tools-removed (cadr-ai:system-message-tools-removed message)))
+       (emit-json-key buffer t "content")
+       (write-session-content
+        (cadr-ai:system-message-content message) buffer)
+       (emit-json-key buffer nil "role")
+       (emit-json-value buffer "system")
+       (when sections
+         (emit-json-key buffer nil "sections")
+         (emit-json-value buffer (system-sections-to-json sections)))
+       (emit-json-key buffer nil "timestamp")
+       (emit-json-value
+        buffer
+        (cadr-ai:system-message-timestamp message))
+       (when tools-added
+         (emit-json-key buffer nil "toolsAdded")
+         (emit-json-value buffer (tools-added-to-json tools-added)))
+       (when tools-removed
+         (emit-json-key buffer nil "toolsRemoved")
+         (emit-json-value
+          buffer
+          (tools-removed-to-json tools-removed)))))
     ((typep message 'cadr-ai:user-message)
      (emit-json-key buffer t "content")
      (write-session-content
@@ -1027,6 +1280,12 @@
          (emit-json-value
           buffer
           (map 'vector #'assistant-diagnostic-to-json diagnostics)))
+       (when (integerp
+              (cadr-ai:assistant-message-duration-ms message))
+         (emit-json-key buffer nil "durationMs")
+         (emit-json-value
+          buffer
+          (cadr-ai:assistant-message-duration-ms message)))
        (when error-message
          (emit-json-key buffer nil "errorMessage")
          (emit-json-value buffer error-message))
@@ -1103,10 +1362,22 @@
       buffer
       (json-safe-value
        (cadr-ai:tool-result-message-details message)))
+     (when (integerp
+            (cadr-ai:tool-result-message-duration-ms message))
+       (emit-json-key buffer nil "durationMs")
+       (emit-json-value
+        buffer
+        (cadr-ai:tool-result-message-duration-ms message)))
      (emit-json-key buffer nil "isError")
      (emit-json-value
       buffer
       (cadr-ai:tool-result-message-is-error message))
+     (when (cadr-ai:tool-result-message-nested-calls message)
+       (emit-json-key buffer nil "nestedCalls")
+       (emit-json-value
+        buffer
+        (nested-tool-calls-to-json
+         (cadr-ai:tool-result-message-nested-calls message))))
      (emit-json-key buffer nil "role")
      (emit-json-value buffer "toolResult")
      (emit-json-key buffer nil "timestamp")
@@ -1120,7 +1391,12 @@
      (emit-json-key buffer nil "toolName")
      (emit-json-value
       buffer
-      (cadr-ai:tool-result-message-tool-name message)))
+      (cadr-ai:tool-result-message-tool-name message))
+     (when (cadr-ai:tool-result-message-usage message)
+       (emit-json-key buffer nil "usage")
+       (write-session-usage
+        (cadr-ai:tool-result-message-usage message)
+        buffer)))
     (t
      (error "Unsupported session message: ~S" message)))
   (vector-push-extend #x7d buffer))

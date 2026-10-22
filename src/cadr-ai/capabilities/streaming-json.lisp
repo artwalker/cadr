@@ -60,7 +60,9 @@
 ;;; Repairable and partial JSON
 
 (defun valid-json-escape-character-p (character)
-  (and character (find character "\"\\/bfnrtu")))
+  ;; `u` is valid only with four hex digits. A bare `\u` such as
+  ;; `\usepackage` is an invalid escape and must be doubled.
+  (and character (find character "\"\\/bfnrt")))
 
 (defun write-json-control-escape (character output)
   (case character
@@ -151,6 +153,47 @@
       (dolist (closer stack)
         (write-char closer output)))))
 
+(defun strip-trailing-incomplete-unicode-escape (text)
+  ;; A finished `\u` with fewer than four hex digits at the end of an open
+  ;; string is a cut-off stream, not a literal. Drop that escape only.
+  (let ((in-string-p nil)
+        (escape-at nil)
+        (unicode-p nil)
+        (hex-count 0))
+    (loop for index from 0 below (length text)
+          for character = (char text index)
+          do
+          (cond
+            ((not in-string-p)
+             (when (char= character #\")
+               (setf in-string-p t)))
+            (escape-at
+             (cond
+               ((and (not unicode-p)
+                     (char= character #\u))
+                (setf unicode-p t
+                      hex-count 0))
+               ((and unicode-p
+                     (< hex-count 4)
+                     (digit-char-p character 16))
+                (incf hex-count)
+                (when (= hex-count 4)
+                  (setf escape-at nil
+                        unicode-p nil)))
+               (t
+                (setf escape-at nil
+                      unicode-p nil
+                      hex-count 0))))
+            ((char= character #\\)
+             (setf escape-at index
+                   unicode-p nil
+                   hex-count 0))
+            ((char= character #\")
+             (setf in-string-p nil))))
+    (if (and in-string-p escape-at unicode-p (< hex-count 4))
+        (subseq text 0 escape-at)
+        text)))
+
 (defun parse-streaming-json (partial-json)
   (when (or (null partial-json)
             (zerop (length (string-trim '(#\Space #\Tab #\Return #\Newline)
@@ -159,7 +202,10 @@
   (handler-case
       (parse-json-with-repair partial-json)
     (error ()
-      (let ((repaired (repair-json partial-json)))
+      (let ((repaired
+              (repair-json
+               (strip-trailing-incomplete-unicode-escape
+                partial-json))))
         (loop for end from (length repaired) downto 1
               for candidate = (complete-json-prefix (subseq repaired 0 end))
               when candidate
@@ -168,3 +214,34 @@
                          (parse-json candidate))
                      (error () nil))))
       (make-hash-table :test #'equal))))
+
+(defun json-object-value-p (value)
+  (hash-table-p value))
+
+(defun parse-tool-call-arguments (json)
+  "Parse a finished tool-call argument string. A partial prefix is not kept."
+  (let ((text (or json "")))
+    (if (zerop
+         (length
+          (string-trim
+           '(#\Space #\Tab #\Newline #\Return #\Page #\Vt)
+           text)))
+        (values (make-hash-table :test #'equal) nil)
+        (handler-case
+            (let ((parsed (parse-json-with-repair text)))
+              (unless (json-object-value-p parsed)
+                (error "Tool arguments must be a JSON object"))
+              (values parsed nil))
+          (error (condition)
+            (values
+             (make-hash-table :test #'equal)
+             (format nil "~A~%~%Received arguments:~%~A"
+                     (princ-to-string condition)
+                     text)))))))
+
+(defun finish-tool-call-arguments (block json)
+  (multiple-value-bind (arguments error)
+      (parse-tool-call-arguments json)
+    (setf (tool-call-arguments block) arguments
+          (tool-call-arguments-error block) error)
+    arguments))

@@ -122,7 +122,7 @@
       (request-spec-payload request)))))
 
 (test openai-completions-baseten-reasoning-matches-reference
-  ;; pi@ecac0a9c4 api/openai-completions.ts:779-793 — the baseten
+  ;; pi@4a080252f api/openai-completions.ts:779-793 — the baseten
   ;; thinking format sends chat_template_args plus reasoning_effort.
   (let* ((model
            (compat-model
@@ -166,7 +166,7 @@
       (request-spec-payload request)))))
 
 (test openai-completions-thinking-token-budget-matches-reference
-  ;; pi@ecac0a9c4 api/openai-completions.ts:847-866 — vLLM caps
+  ;; pi@4a080252f api/openai-completions.ts:847-866 — vLLM caps
   ;; reasoning with a top-level thinking_token_budget; the budget is
   ;; min(level budget, max_tokens - 1024), so 4096-1024=3072 caps high.
   (let ((model
@@ -620,3 +620,171 @@
     (is (cadr-ai::json-present-p zero-payload "priority"))
     (is (= 0 (cadr-ai::json-get zero-payload "priority")))
     (is (not (cadr-ai::json-present-p unset-payload "priority")))))
+
+(defun fireworks-catalog-model (id)
+  (cadr-ai::model-from-metadata
+   (cadr-ai:find-model-metadata :fireworks id)))
+
+(test goal24-fireworks-messages-replay-unsigned-thinking-and-send-effort
+  (let* ((id "accounts/fireworks/models/deepseek-v4-flash-0731")
+         (model (fireworks-catalog-model id))
+         (provider (make-anthropic-provider :api-key "key"))
+         (context
+           (make-context
+            :messages
+            (list
+             (make-user-message :content "test" :timestamp 1))))
+         (high
+           (request-spec-payload
+            (build-request provider model context :reasoning :high)))
+         (disabled
+           (request-spec-payload
+            (build-request provider model context)))
+         (replay
+           (request-spec-payload
+            (build-request
+             provider model
+             (make-context
+              :messages
+              (list
+               (cadr-ai:make-assistant-message
+                :content
+                (list
+                 (cadr-ai:make-thinking-content
+                  :thinking "internal reasoning"
+                  :signature nil))
+                :api :anthropic-messages
+                :provider :fireworks
+                :model id))))))
+         (replay-block
+           (aref
+            (cadr-ai::json-get
+             (aref (cadr-ai::json-get replay "messages") 0)
+             "content")
+            0))
+         (kimi (fireworks-catalog-model
+                "accounts/fireworks/models/kimi-k2p6")))
+    (is (eq t (getf (cadr-ai::model-compat model)
+                    :allow-empty-signature)))
+    (is (eq t (getf (cadr-ai::model-compat model)
+                    :force-adaptive-thinking)))
+    (is (eq t (getf (cadr-ai::model-compat model)
+                    :send-session-affinity-headers)))
+    (is (equal '(:off :low :high :max)
+               (cadr-ai:supported-thinking-levels model)))
+    (dolist (sibling
+             '("accounts/fireworks/models/deepseek-v4-flash-vision-exp"
+               "accounts/fireworks/models/deepseek-v4-pro-0813"))
+      (is (equal '(:off :low :high :max)
+                 (cadr-ai:supported-thinking-levels
+                  (fireworks-catalog-model sibling)))))
+    (is (string= "adaptive"
+                 (cadr-ai::json-get
+                  (cadr-ai::json-get high "thinking") "type")))
+    (is (string= "high"
+                 (cadr-ai::json-get
+                  (cadr-ai::json-get high "output_config") "effort")))
+    (is (string= "disabled"
+                 (cadr-ai::json-get
+                  (cadr-ai::json-get disabled "thinking") "type")))
+    (is (string= "thinking" (cadr-ai::json-get replay-block "type")))
+    (is (string= "internal reasoning"
+                 (cadr-ai::json-get replay-block "thinking")))
+    (is (string= "" (cadr-ai::json-get replay-block "signature")))
+    (is (eq t (getf (cadr-ai::model-compat kimi)
+                    :allow-empty-signature)))
+    (is (null (getf (cadr-ai::model-compat kimi)
+                    :force-adaptive-thinking)))))
+
+(test goal24-fireworks-qwen-effort-levels
+  (is (equal '(:off :low :medium :xhigh)
+             (cadr-ai:supported-thinking-levels
+              (fireworks-catalog-model
+               "accounts/fireworks/models/qwen3p8-max"))))
+  (is (equal '(:off :low :medium :xhigh)
+             (cadr-ai:supported-thinking-levels
+              (fireworks-catalog-model
+               "accounts/fireworks/models/qwen3p8-2p4t-a95b")))))
+
+(test goal24-fireworks-drops-aliased-effort-levels
+  (dolist (id '("accounts/fireworks/models/glm-5p2"
+                "accounts/fireworks/routers/glm-5p2-fast"))
+    (is (equal '(:off :high :max)
+               (cadr-ai:supported-thinking-levels
+                (fireworks-catalog-model id)))))
+  (dolist (id '("accounts/fireworks/models/kimi-k3"
+                "accounts/fireworks/routers/kimi-k3-fast"))
+    (is (equal '(:low :high :max)
+               (cadr-ai:supported-thinking-levels
+                (fireworks-catalog-model id)))))
+  (is (equal '(:low :high :max)
+             (cadr-ai:supported-thinking-levels
+              (fireworks-catalog-model
+               "accounts/fireworks/models/glm-5p3")))))
+
+(test goal24-vercel-models-allow-empty-thinking-signature
+  (let ((rows (cadr-ai:list-model-metadata :vercel-ai-gateway))
+        (openai
+          (cadr-ai:find-model-metadata :openai "gpt-4o")))
+    (is (plusp (length rows)))
+    (is (every
+         (lambda (metadata)
+           (eq t
+               (getf (cadr-ai:model-metadata-compat metadata)
+                     :allow-empty-signature)))
+         rows))
+    (is (equal
+         '(:allow-empty-signature t :force-adaptive-thinking t)
+         (cadr-ai:model-metadata-compat
+          (cadr-ai:find-model-metadata
+           :vercel-ai-gateway "anthropic/claude-fable-5"))))
+    (is (not (member :allow-empty-signature
+                     (cadr-ai:model-metadata-compat openai))))))
+
+(test goal24-vercel-unsigned-thinking-replays-as-thinking
+  (let* ((metadata
+           (cadr-ai:find-model-metadata
+            :vercel-ai-gateway "alibaba/qwen-3-14b"))
+         (model (cadr-ai::model-from-metadata metadata))
+         (context
+           (make-context
+            :messages
+            (list
+             (cadr-ai:make-assistant-message
+              :content
+              (list
+               (cadr-ai:make-thinking-content
+                :thinking "internal reasoning"
+                :signature nil)
+               (cadr-ai:make-text-content :text "answer"))
+              :api (cadr-ai:model-metadata-api metadata)
+              :provider (cadr-ai:model-metadata-provider metadata)
+              :model (cadr-ai:model-metadata-id metadata)))))
+         (payload
+           (request-spec-payload
+            (build-request
+             (make-anthropic-provider :api-key "key")
+             model
+             context)))
+         (content
+           (cadr-ai::json-get
+            (find-if
+             (lambda (message)
+               (string= "assistant"
+                        (cadr-ai::json-get message "role")))
+             (cadr-ai::json-get payload "messages"))
+            "content")))
+    (is (some
+         (lambda (block)
+           (and (string= "thinking"
+                         (cadr-ai::json-get block "type"))
+                (string= ""
+                         (cadr-ai::json-get block "signature"))))
+         content))
+    (is (not
+         (some
+          (lambda (block)
+            (and (string= "text" (cadr-ai::json-get block "type"))
+                 (string= "internal reasoning"
+                          (cadr-ai::json-get block "text"))))
+          content)))))

@@ -146,6 +146,55 @@
             (is (search "429:" text))
             (is (search "GoUsageLimitError" text))))))))
 
+(defparameter *workspace-limit-body*
+  "{\"code\":\"subscription_sharing_workplace_individual_usage_limit_exceeded\",\"message\":\"Usage limit reached.\"}")
+
+(defun workspace-limit-body-stream ()
+  (flexi-streams:make-in-memory-input-stream
+   (babel:string-to-octets *workspace-limit-body* :encoding :utf-8)))
+
+(test chatgpt-business-workspace-limit-is-not-retried-and-names-the-admin
+  ;; pi@4a080252f openai-responses.ts stream catch. complete() is
+  ;; stream().result(), so the non-stream path carries the same hint.
+  ;; Codex responses formats the error without this sentence.
+  (let ((hint
+          "You've reached your ChatGPT workspace's usage limit. Ask your workspace admin to increase it at admin.openai.com → Workspace → Usage limits."))
+    (dolist (entry '(:openai :codex))
+      (multiple-value-bind (provider model)
+          (provider-case entry)
+        (dolist (caller '(complete-chat stream-chat))
+          (let* ((attempts 0)
+                 (cadr-ai::*retry-sleep-function*
+                   (lambda (seconds)
+                     (declare (ignore seconds))
+                     (error "must not sleep on a ChatGPT Business workspace limit"))))
+            (declare (special cadr-ai::*retry-sleep-function*))
+            (let* ((*http-request-function*
+                     (lambda (url &rest arguments)
+                       (declare (ignore url arguments))
+                       (incf attempts)
+                       (values
+                        (if (eq caller 'stream-chat)
+                            (workspace-limit-body-stream)
+                            *workspace-limit-body*)
+                        429
+                        nil)))
+                   (message
+                     (if (eq caller 'complete-chat)
+                         (complete-chat provider model (sample-context))
+                         (stream-chat
+                          provider model (sample-context)
+                          (lambda (event) (declare (ignore event)))))))
+              (is (= 1 attempts))
+              (is (eq :error (assistant-message-stop-reason message)))
+              (let ((text (assistant-message-error-message message)))
+                (is (search
+                     "subscription_sharing_workplace_individual_usage_limit_exceeded"
+                     text))
+                (if (eq (cadr-ai:model-api model) :openai-responses)
+                    (is (search (format nil "~%~A" hint) text))
+                    (is (not (search hint text))))))))))))
+
 (test transient-429-without-quota-markers-still-retries
   (multiple-value-bind (provider model)
       (provider-case :anthropic)

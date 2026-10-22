@@ -59,7 +59,7 @@
 (defstruct execution-result
   (stdout "" :type string)
   (stderr "" :type string)
-  (exit-code 0 :type integer))
+  (exit-code 0 :type (or null integer)))
 
 (defstruct (node-execution-env
             (:constructor %make-node-execution-env))

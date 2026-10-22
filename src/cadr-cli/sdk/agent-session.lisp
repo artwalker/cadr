@@ -19,6 +19,10 @@
    (cwd
     :initarg :cwd
     :reader agent-session-cwd)
+   (cache-warmer
+    :initarg :cache-warmer
+    :initform nil
+    :accessor agent-session-cache-warmer)
    (listeners
     :initarg :listeners
     :accessor agent-session-listeners)
@@ -38,18 +42,20 @@
 
 (defun agent-session-prompt
     (session prompt
-     &key (streaming-behavior :prompt))
+     &key (streaming-behavior :prompt)
+          (source :interactive))
   (assert-agent-session-live session)
   (ecase streaming-behavior
     (:prompt
      (cadr-agent:agent-prompt
-      (agent-session-agent session) prompt))
-    (:steer
-     (cadr-agent:agent-steer
-      (agent-session-agent session) prompt))
-    (:follow-up
-     (cadr-agent:agent-follow-up
-      (agent-session-agent session) prompt))
+      (agent-session-agent session) prompt
+      :source source))
+    ((:steer :follow-up)
+     ;; Reuse apply-input-or-queue so SDK steer and follow-up run
+     ;; :input hooks the same way as the interactive TUI and RPC.
+     (apply-input-or-queue
+      (agent-session-agent session)
+      prompt source streaming-behavior))
     (:next-turn
      (cadr-agent:agent-next-turn
       (agent-session-agent session) prompt))))
@@ -129,8 +135,12 @@
   (unless (agent-session-disposed-p session)
     (setf (agent-session-disposed-p session) t)
     (let* ((agent (agent-session-agent session))
+           (warmer (agent-session-cache-warmer session))
            (host
              (cadr-agent::agent-extension-host agent)))
+      (when warmer
+        (cache-warmer-cancel warmer)
+        (setf (agent-session-cache-warmer session) nil))
       (when host
         (cadr-agent::run-extension-lifecycle-hooks
          host :session-shutdown
@@ -141,22 +151,32 @@
       (setf (agent-session-listeners session) nil)))
   nil)
 
+(defun agent-session-cache-warming-status (session)
+  (let ((warmer (agent-session-cache-warmer session)))
+    (and warmer (cache-warmer-status warmer))))
+
+(defun agent-session-set-cache-warming-mode (session mode)
+  (assert-agent-session-live session)
+  (set-cache-warming-mode
+   (agent-session-settings-manager session)
+   mode
+   (agent-session-cache-warmer session)))
+
 (defun sdk-session-restored-selection
     (persistent model-runtime)
   (when persistent
-    (let ((entry
-            (find :model-change
-                  (cadr-agent:session-entries
-                   persistent)
-                  :key
-                  #'cadr-agent:session-entry-type
-                  :from-end t)))
-      (when entry
+    (let ((selection
+            (cadr-agent:branch-selection
+             (cadr-agent::session-path-entries persistent)
+             (lambda (provider model-id)
+               (sdk-model-runtime-model
+                model-runtime provider model-id)))))
+      (when selection
         (sdk-model-runtime-model
          model-runtime
-         (cadr-agent:session-entry-provider entry)
-         (cadr-agent:session-entry-model-id
-          entry))))))
+         (cadr-agent:branch-selection-provider selection)
+         (cadr-agent:branch-selection-model-id
+          selection))))))
 
 (defun sdk-session-restored-thinking
     (persistent)
@@ -248,6 +268,29 @@
                           default-names
                           :test #'string=)))))))))
        candidates))))
+
+(defun sdk-resolve-selected-tool-names
+    (tools no-tools default-tool-names)
+  ;; pi@4a080252f sdk.ts selectedToolNames / defaultToolNames
+  (let* ((defaults
+           (if no-tools
+               '()
+               (or default-tool-names
+                   +default-coding-tool-names+)))
+         (modifiers (tool-modifiers tools)))
+    (cond
+      (modifiers (apply-tool-modifiers defaults modifiers))
+      (tools tools)
+      (t defaults))))
+
+(defun sdk-explicit-tool-allowlist
+    (tools no-tools selected-tool-names)
+  ;; pi@4a080252f sdk.ts allowedToolNames
+  (let ((modifiers (tool-modifiers tools)))
+    (if modifiers
+        (and (eq no-tools :all) selected-tool-names)
+        (or tools
+            (and (eq no-tools :all) '())))))
 
 (defun sdk-build-agent-system-prompt
     (loader tools cwd)
@@ -379,12 +422,33 @@
          (selected-model nil)
          (selected-thinking nil)
          (provider-config nil)
+         (tool-list-error-message
+           (and tools (tool-list-error tools)))
+         (default-tool-names
+           (and settings
+                (parse-default-tools-setting
+                 (sdk-settings-value settings "defaultTools"))))
+         (modifiers (tool-modifiers tools))
+         (selected-tool-names
+           (sdk-resolve-selected-tool-names
+            tools no-tools default-tool-names))
+         (explicit-tools
+           (sdk-explicit-tool-allowlist
+            tools no-tools selected-tool-names))
+         (uses-default-tools-p
+           ;; pi@4a080252f sdk.ts usesDefaultTools
+           (and (or (null tools) modifiers)
+                (null no-tools)))
          (tool-filter
+           ;; When modifiers change the default set, pass the resolved
+           ;; names as default-tool-names so the filter keeps them.
            (sdk-tool-filter
-            tools no-tools exclude-tools
-            (and settings
-                 (parse-default-tools-setting
-                  (sdk-settings-value settings "defaultTools")))))
+            explicit-tools
+            no-tools
+            exclude-tools
+            (if (and modifiers (null explicit-tools))
+                selected-tool-names
+                default-tool-names)))
          (base-tools
            (append
             (make-all-coding-tools
@@ -403,8 +467,14 @@
            (sb-thread:make-mutex
             :name "cadr SDK subscribers"))
          (wrapper nil)
-         (wrapper-cell (cons nil nil)))
+         (wrapper-cell (cons nil nil))
+         (agent-cell (cons nil nil))
+         (cache-warmer nil))
     (declare (ignore _loader))
+    (when tool-list-error-message
+      (error
+       "Invalid tools option: ~A"
+       tool-list-error-message))
     (multiple-value-setq (selected-model fallback)
       (sdk-select-initial-model
        runtime settings persistent model))
@@ -434,28 +504,12 @@
                loader selected-tools resolved-cwd)))
            (retry-settings
              (sdk-settings-retry-settings settings))
-           (agent
-             (cadr-agent:make-agent
-              :provider
-              (or provider
-                  (and provider-config
-                       (provider-config-provider
-                        provider-config)))
-              :model selected-model
-              :system-prompt
-              (first system-prompt-values)
-              :system-prompt-options
-              (second system-prompt-values)
-              :tools base-tools
-              :tool-filter-function tool-filter
-              :extension-host extension-host
-              :session persistent
-              :stream-function
-              (stream-function-with-provider-retry
-               (stream-function-with-http-proxy
-                (stream-function-with-http-idle-timeout
-                 (stream-function-with-websocket-connect-timeout
-                  (stream-function-with-thinking-budgets
+           (inner-stream
+             (stream-function-with-provider-retry
+              (stream-function-with-http-proxy
+               (stream-function-with-http-idle-timeout
+                (stream-function-with-websocket-connect-timeout
+                 (stream-function-with-thinking-budgets
                   (or stream-function
                       (sdk-model-runtime-stream-function
                        runtime))
@@ -470,7 +524,74 @@
                 (lambda ()
                   (sdk-settings-http-proxy settings)))
                (lambda ()
-                 (sdk-settings-retry-settings settings)))
+                 (sdk-settings-retry-settings settings))))
+           (warmer
+             (make-live-cache-warmer
+              settings
+              (lambda () (car agent-cell))
+              (lambda ()
+                (let* ((agent (car agent-cell))
+                       (session
+                         (and agent
+                              (cadr-agent:agent-session
+                               agent))))
+                  (and session
+                       (cadr-agent:session-entries
+                        session))))
+              inner-stream))
+           (wrapped-stream
+             (wrap-stream-function-with-cache-warmer
+              warmer
+              (lambda ()
+                (let* ((agent (car agent-cell))
+                       (session
+                         (and agent
+                              (cadr-agent:agent-session
+                               agent))))
+                  (and session
+                       (cadr-agent:session-id session))))
+              (lambda () (car agent-cell))
+              inner-stream))
+           (agent
+             (cadr-agent:make-agent
+              :provider
+              (or provider
+                  (and provider-config
+                       (provider-config-provider
+                        provider-config)))
+              :model selected-model
+              :system-prompt
+              (first system-prompt-values)
+              :system-prompt-options
+              (second system-prompt-values)
+              :tools base-tools
+              :tool-filter-function tool-filter
+              :prepare-prompt-loadout-function
+              #'apply-prepare-prompt-and-tool-loadout
+              :extension-host extension-host
+              :session persistent
+              :named-tool-names
+              (explicitly-named-tool-names
+               tools default-tool-names)
+              :tool-allowlist (or explicit-tools '())
+              :tool-allowlist-p
+              (or explicit-tools (eq no-tools :all))
+              :tool-allowlist-filters-mcp-p
+              (tool-allowlist-filters-mcp-names-p
+               (or explicit-tools '())
+               (or explicit-tools (eq no-tools :all)))
+              :excluded-tool-names (copy-list exclude-tools)
+              :stream-function wrapped-stream
+              :summarization-auth-function
+              (lambda (agent model signal)
+                (declare (ignore agent))
+                (when model
+                  (sdk-model-runtime-auth
+                   runtime model
+                   :abort-p
+                   (lambda ()
+                     (cadr-agent:extension-cancellation-aborted-p
+                      signal)))))
               :auto-retry-p
               (getf retry-settings :enabled-p)
               :auto-retry-max-attempts
@@ -479,11 +600,21 @@
               (/ (getf retry-settings :base-delay-ms) 1000)
               :on-event
               (lambda (event)
+                (when (eq (cadr-agent:agent-event-type event)
+                          :agent-settled)
+                  (cache-warmer-on-agent-settled warmer))
                 (sdk-agent-session-dispatch
                  event on-event listener-lock
                  (or (car wrapper-cell) listeners)
                  (and (car wrapper-cell)
                       #'agent-session-listeners))))))
+      (setf cache-warmer warmer
+            (car agent-cell) agent)
+      (when uses-default-tools-p
+        (restore-active-tools-from-transcript
+         agent
+         :modifiers (or modifiers '())
+         :exclude-tools exclude-tools))
       (when extension-host
         (setf
          (cadr-agent::extension-host-reload-function extension-host)
@@ -511,6 +642,7 @@
              :resource-loader loader
              :model-runtime runtime
              :cwd resolved-cwd
+             :cache-warmer cache-warmer
              :listeners listeners
              :listener-lock listener-lock)
             (car wrapper-cell) wrapper)
@@ -519,6 +651,9 @@
       (setf
        (cadr-agent::agent-on-event agent)
        (lambda (event)
+         (when (eq (cadr-agent:agent-event-type event)
+                   :agent-settled)
+           (cache-warmer-on-agent-settled warmer))
          (sdk-agent-session-dispatch
           event on-event listener-lock wrapper
           #'agent-session-listeners)))

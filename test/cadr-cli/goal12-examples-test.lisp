@@ -97,12 +97,12 @@
         (:gap
          (is (consp (getf row :gaps))))))))
 
-(test goal12-all-35-extension-events-have-production-dispatch-evidence
+(test goal12-all-41-extension-events-have-production-dispatch-evidence
   (let* ((audit
            (goal12-read-project-file
             "docs/acceptance/goal-v12-extension-event-dispatch.md"))
          (events cadr-agent::+extension-hook-events+))
-    (is (= 37 (length events)))
+    (is (= 41 (length events)))
     (dolist (event events)
       (let* ((prefix (format nil "| `:~(~A~)` |" (symbol-name event)))
              (start (search prefix audit))
@@ -161,7 +161,7 @@
               (string-downcase (symbol-name event)))
             cadr-agent::+extension-hook-events+)
            #'string<)))
-    (is (= 37 (length baseline)))
+    (is (= 41 (length baseline)))
     (is (equal expected actual)
         "cadr extension events drifted from the derived baseline set")))
 
@@ -172,7 +172,7 @@
         (performance (goal12-read-project-file "docs/performance.md"))
         (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
         (identity
-          "GOAL12_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc source=686/514/169/3 examples=99/99/0"))
+          "GOAL12_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 source=686/514/169/3 examples=99/99/0"))
     (is (search "| `coding-agent` | 316 | 266 | 47 | 3 |" ledger))
     (is (search "| `tui` | 47 | 40 | 7 | 0 |" ledger))
     (is (search "| **Total** | **686** | **514** | **169** | **3** |" ledger))

@@ -12,7 +12,7 @@
      (make-string padding :initial-element #\Space))))
 
 (defun goal15-fixed-input-row (text width)
-  ;; pi@ecac0a9c4 Input always reserves its software-cursor cell.
+  ;; pi@4a080252f Input always reserves its software-cursor cell.
   (goal15-fixed-text-row
    (concatenate 'string "> " text " ") width))
 
@@ -117,9 +117,8 @@
        (merge-pathnames "notes/generated/result.txt" directory))))))
 
 (test goal15-startup-chrome-matches-fixed-baseline-padding-and-styles
-  ;; pi@ecac0a9c4 interactive-mode.ts:754-812 constructs an ExpandableText
-  ;; with one horizontal cell of padding, styles the product and version
-  ;; separately, and styles key tokens independently from descriptions.
+  ;; pi@4a080252f pi-logo.ts: the header is the half-block mark plus a dim
+  ;; version, and the first hint line sits on the mark's second row.
   (let* ((width 72)
          (lines
            (cadr-cli::render-tui-startup-lines
@@ -133,18 +132,15 @@
     (is (= width (cadr-tui:visible-width help)))
     (is
      (uiop:string-prefix-p
-      " cadr v0.2.0"
+      " ▀▀█  v0.2.0"
       (cadr-tui:strip-terminal-sequences logo)))
     (is
-     (search
-      (cadr-tui:theme-bold
-       (cadr-tui:theme-foreground
-        :accent "cadr" :enabled-p t))
-      logo))
+     (search "█▀ █"
+             (cadr-tui:strip-terminal-sequences help)))
     (is
      (search
       (cadr-tui:theme-foreground
-       :dim " v0.2.0" :enabled-p t)
+       :dim "v0.2.0" :enabled-p t)
       logo))
     (is
      (search
@@ -158,7 +154,7 @@
       help))))
 
 (test goal15-root-composition-has-no-invented-idle-status-rows
-  ;; pi@ecac0a9c4 interactive-mode.ts:734-746 leaves statusContainer empty
+  ;; pi@4a080252f interactive-mode.ts:734-746 leaves statusContainer empty
   ;; while idle.  Only widgetContainerAbove contributes its default spacer.
   ;; Working... embeds in the default editor border (no extra status rows).
   (labels ((editor-top (working-p)
@@ -268,7 +264,7 @@
          (cadr-cli::model-footer-thinking-level reasoning-model :high)))))
 
 (test goal15-provider-stream-receives-the-active-session-id
-  ;; pi@ecac0a9c4 agent.ts:430-440 forwards Agent.sessionId into every normal
+  ;; pi@4a080252f agent.ts:430-440 forwards Agent.sessionId into every normal
   ;; provider stream request, enabling provider cache usage and footer totals.
   (let* ((captured nil)
         (stream
@@ -290,7 +286,7 @@
     (is (string= "session-15" (getf captured :session-id)))))
 
 (test goal15-terminal-title-matches-fixed-baseline-session-grammar
-  ;; pi@ecac0a9c4 interactive-mode.ts:843-854 uses APP_TITLE, optional session
+  ;; pi@4a080252f interactive-mode.ts:843-854 uses APP_TITLE, optional session
   ;; name, and the cwd basename, then delegates control-byte stripping to the
   ;; terminal title boundary.
   (is
@@ -315,7 +311,7 @@
      (format nil "branch~Cwork" #\Escape)))))
 
 (test goal15-selector-overlays-preserve-natural-height-and-input-cursor
-  ;; pi@ecac0a9c4 model-selector.ts:91-129 composes the selector from normal
+  ;; pi@4a080252f model-selector.ts:91-129 composes the selector from normal
   ;; components.  The root renderer owns viewport cropping; it does not delete
   ;; spacers or rebuild a compact selector.  Input supplies the real cursor.
   (let* ((models
@@ -341,7 +337,7 @@
       (multiple-value-bind (lines row column)
           (cadr-cli::render-tui-overlay-lines
            scoped-overlay width 0d0)
-        (is (= 22 (length lines)))
+        (is (= 23 (length lines)))
         (is (= 5 row))
         (is (= 7 column))
         (is
@@ -356,7 +352,7 @@
       (multiple-value-bind (lines row column)
           (cadr-cli::render-tui-overlay-lines
            unscoped-overlay width 0d0)
-        (is (= 21 (length lines)))
+        (is (= 22 (length lines)))
         (is (= 4 row))
         (is (= 2 column))
         (is
@@ -367,7 +363,7 @@
           (cadr-tui:strip-terminal-sequences (nth 2 lines))))))))
 
 (test goal15-model-scope-startup-copy-follows-baseline-gate-and-grammar
-  ;; pi@ecac0a9c4 interactive-mode.ts:719-731 emits this only for a nonempty
+  ;; pi@4a080252f interactive-mode.ts:719-731 emits this only for a nonempty
   ;; scope when verbose startup is enabled or quiet startup is disabled.
   (let* ((manager
            (cadr-tui:make-keybindings-manager
@@ -491,7 +487,7 @@
       (cadr-tui:theme-foreground :muted " (all/scoped)") line))))
 
 (test goal15-visible-directory-copy-strips-only-non-root-trailing-separators
-  ;; pi@ecac0a9c4 utils/paths.ts:81-85 canonicalizes display paths without a
+  ;; pi@4a080252f utils/paths.ts:81-85 canonicalizes display paths without a
   ;; trailing separator, while the filesystem trust key remains canonical.
   (is (string= "/" (cadr-cli::display-directory-name "/")))
   (is (string= "/tmp/project"
@@ -511,7 +507,7 @@
                 "/root/" "/root"))))
 
 (test goal15-trust-selector-copy-and-paths-match-baseline
-  ;; pi@ecac0a9c4 trust-selector.ts:52-87 renders normalized paths and the
+  ;; pi@4a080252f trust-selector.ts:52-87 renders normalized paths and the
   ;; keybinding-derived cancel alternatives verbatim.
   (let ((lines
           (mapcar
@@ -546,7 +542,7 @@
       :saved-entry '(:path "/tmp/" :decision t))))))
 
 (test goal17-trust-inherited-description-wraps-as-baseline-text
-  ;; pi@ecac0a9c4 trust-selector.ts renders the saved decision through Text,
+  ;; pi@4a080252f trust-selector.ts renders the saved decision through Text,
   ;; so a narrow inherited path wraps instead of being truncated.
   (let* ((width 48)
          (lines
@@ -612,7 +608,7 @@
         line)))))
 
 (test goal15-busy-status-and-queued-messages-use-baseline-text-padding
-  ;; pi@ecac0a9c4 TruncatedText and Loader both inherit Text's paddingX=1.
+  ;; pi@4a080252f TruncatedText and Loader both inherit Text's paddingX=1.
   ;; The dequeue hint uses keyDisplayText, which capitalizes Alt+Up.
   (let* ((width 40)
          (state

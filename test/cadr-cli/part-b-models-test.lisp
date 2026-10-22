@@ -1016,3 +1016,217 @@
         (is (= 0
                (cadr-ai::model-compat-value
                 model :vllm-priority nil)))))))
+
+(defun sampling-json-close-p (expected actual)
+  (and (numberp actual)
+       (< (abs (- (coerce expected 'double-float)
+                  (coerce actual 'double-float)))
+          1d-9)
+       t))
+
+(test custom-model-reads-sampling-params-by-thinking-level
+  (let ((model
+          (cadr-cli::json-model
+           :faux
+           (cadr-ai::parse-json
+            "{\"id\":\"m\",\"samplingParams\":{\"temperature\":1,\"top_p\":0.95},\"samplingParamsByThinkingLevel\":{\"high\":{\"temperature\":0.8,\"top_k\":64},\"low\":null}}")
+           "https://example.invalid/v1"
+           "openai-completions"
+           nil)))
+    (is (eq t
+            (sampling-json-close-p
+             1
+             (cadr-ai::json-get
+              (cadr-ai::model-sampling-params model)
+              "temperature"))))
+    (is (eq t
+            (sampling-json-close-p
+             0.95d0
+             (cadr-ai::json-get
+              (cadr-ai::model-sampling-params model)
+              "top_p"))))
+    (is (eq t
+            (sampling-json-close-p
+             0.8d0
+             (cadr-ai::json-get
+              (cdr
+               (assoc
+                :high
+                (cadr-ai::model-sampling-params-by-thinking-level
+                 model)))
+              "temperature"))))
+    (is (= 64
+           (cadr-ai::json-get
+            (cdr
+             (assoc
+              :high
+              (cadr-ai::model-sampling-params-by-thinking-level
+               model)))
+            "top_k")))
+    (is (null
+         (assoc
+          :low
+          (cadr-ai::model-sampling-params-by-thinking-level
+           model))))))
+
+(defun classifier-image-request (models-json provider id)
+  (with-test-directory (root)
+    (let ((models-path (merge-pathnames "agent/models.json" root))
+          (calls nil))
+      (write-json models-path models-json)
+      (let* ((registry (cadr-cli:make-model-registry :path models-path))
+             (model (cadr-cli::model-registry-classifier
+                     registry provider id))
+             (state (cadr-ai::json-object "text" "Looks good"))
+             (cadr-ai:*http-request-function*
+               (lambda (url &key headers content &allow-other-keys)
+                 (push (list :url url
+                             :headers headers
+                             :body (cadr-ai::parse-json content))
+                       calls)
+                 (values
+                  (cadr-ai::stringify-json
+                   (cadr-ai::json-object
+                    "answers"
+                    (cadr-ai::json-object
+                     "approved"
+                     (cadr-ai::json-object "type" "noul" "noul" 0.8d0))))
+                  200 nil))))
+        (is (null (cadr-cli:model-registry-error registry)))
+        (is (not (null model)))
+        (let ((result
+                (cadr-ai:classify-model
+                 model
+                 (cadr-ai:make-classifier-context
+                  :state state
+                  :questions
+                  (cadr-ai::json-object
+                   "approved"
+                   (cadr-ai::json-object
+                    "type" "bool"
+                    "instructions" "Does this express approval?"
+                    "criteria"
+                    (cadr-ai::json-object
+                     "true" "Approval"
+                     "false" "No approval")))
+                  :images
+                  (list
+                   (cadr-ai::make-image-content
+                    :data "cG5n" :mime-type "image/png")))
+                 :api-key "secret")))
+          (is (eq :stop (cadr-ai:classifier-result-stop-reason result)))
+          (values model (first calls) state))))))
+
+(test models-json-provider-compat-overrides-classifier-image-form
+  ;; pi@4a080252f model-runtime-classifiers.test.ts
+  ;; "applies provider compat from models.json to classifier models".
+  (multiple-value-bind (model call state)
+      (classifier-image-request
+       (args
+        "providers"
+        (args
+         "typesafe"
+         (args
+          "baseUrl" "https://proxy.example.com/v1"
+          "compat"
+          (args
+           "imageInput" "state-image-urls"
+           "sendImageOptInHeader" nil))))
+       :typesafe
+       "jev-latest")
+    (is (string= "https://proxy.example.com/v1"
+                 (cadr-ai:classifier-model-base-url model)))
+    (is (eq :state-image-urls
+            (cdr (assoc :image-input
+                        (cadr-ai:classifier-model-compat model)))))
+    (is (not (null (assoc :send-image-opt-in-header
+                          (cadr-ai:classifier-model-compat model)))))
+    (is (null (cdr (assoc :send-image-opt-in-header
+                          (cadr-ai:classifier-model-compat model)))))
+    (is (string= "https://proxy.example.com/v1/systemone" (getf call :url)))
+    (is (not (cadr-ai::json-present-p (getf call :body) "assets")))
+    (is (string=
+         (cadr-ai::stringify-json
+          (cadr-ai::json-array
+           (cadr-ai::json-object
+            "type" "image_url"
+            "image_url"
+            (cadr-ai::json-object "url" "data:image/png;base64,cG5n"))
+           state))
+         (cadr-ai::stringify-json
+          (cadr-ai::json-get (getf call :body) "state"))))
+    (is (not (assoc "typesafe-danger-zone-images"
+                    (getf call :headers)
+                    :test #'string-equal)))
+    (let ((builtin (cadr-ai:find-classifier-model :typesafe "jev-latest")))
+      (is (string= "https://api.typesafe.ai/v1/"
+                   (cadr-ai:classifier-model-base-url builtin)))
+      (is (eq :assets
+              (cdr (assoc :image-input
+                          (cadr-ai:classifier-model-compat builtin)))))
+      (is (eq t
+              (cdr (assoc :send-image-opt-in-header
+                          (cadr-ai:classifier-model-compat builtin))))))))
+
+(test models-json-compat-overrides-one-classifier-image-field
+  ;; A present imageInput replaces only that field. The opt-in header
+  ;; stays the catalog value when models.json does not set it.
+  (multiple-value-bind (model call state)
+      (classifier-image-request
+       (args
+        "providers"
+        (args
+         "typesafe"
+         (args
+          "baseUrl" "https://proxy.example.com/v1"
+          "compat"
+          (args "imageInput" "state-image-urls"))))
+       :typesafe
+       "jev-latest")
+    (declare (ignore state))
+    (is (eq :state-image-urls
+            (cdr (assoc :image-input
+                        (cadr-ai:classifier-model-compat model)))))
+    (is (eq t
+            (cdr (assoc :send-image-opt-in-header
+                        (cadr-ai:classifier-model-compat model)))))
+    (is (not (cadr-ai::json-present-p (getf call :body) "assets")))
+    (is (string=
+         "true"
+         (cdr (assoc "typesafe-danger-zone-images"
+                     (getf call :headers)
+                     :test #'string-equal))))))
+
+(test models-json-openrouter-proxy-keeps-state-image-urls
+  ;; pi@4a080252f model-runtime-classifiers.test.ts
+  ;; "keeps OpenRouter's image form when models.json routes OpenRouter through a proxy".
+  (multiple-value-bind (model call state)
+      (classifier-image-request
+       (args
+        "providers"
+        (args
+         "openrouter"
+         (args "baseUrl" "https://proxy.example.com/v1")))
+       :openrouter
+       "typesafe/jev-1.14")
+    (is (string= "https://proxy.example.com/v1"
+                 (cadr-ai:classifier-model-base-url model)))
+    (is (string= "https://proxy.example.com/v1/systemone" (getf call :url)))
+    (is (not (cadr-ai::json-present-p (getf call :body) "assets")))
+    (is (string=
+         (cadr-ai::stringify-json
+          (cadr-ai::json-array
+           (cadr-ai::json-object
+            "type" "image_url"
+            "image_url"
+            (cadr-ai::json-object "url" "data:image/png;base64,cG5n"))
+           state))
+         (cadr-ai::stringify-json
+          (cadr-ai::json-get (getf call :body) "state"))))
+    (is (not (assoc "typesafe-danger-zone-images"
+                    (getf call :headers)
+                    :test #'string-equal)))
+    (is (string= "https://openrouter.ai/api/v1"
+                 (cadr-ai:classifier-model-base-url
+                  (cadr-ai:find-classifier-model
+                   :openrouter "typesafe/jev-1.14"))))))

@@ -208,7 +208,9 @@
        (read-timeout nil)
        abort-p
        environment
-       on-response)
+       on-response
+       header-timeout
+       header-timeout-message)
   (ecase (request-spec-stream-format request)
     (:sse
      (request-sse request consumer
@@ -216,7 +218,9 @@
                   :read-timeout read-timeout
                   :abort-p abort-p
                   :environment environment
-                  :on-response on-response))
+                  :on-response on-response
+                  :header-timeout header-timeout
+                  :header-timeout-message header-timeout-message))
     (:aws-event-stream
      (request-aws-event-stream
       request consumer

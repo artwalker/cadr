@@ -84,7 +84,7 @@
             do (return nil))))
 
 (defun alt-scrollbar-visible-p (renderer content-height height)
-  ;; pi@ecac0a9c4 components/scroll-view.ts:62-70 — "always" whenever a
+  ;; pi@4a080252f components/scroll-view.ts:62-70 — "always" whenever a
   ;; viewport exists, "hidden" never, "auto" only while overflowing and
   ;; within the one-second hide delay after scroll activity.
   (and (plusp height)
@@ -106,7 +106,7 @@
 
 (defun style-alt-scrollbar-cell
     (line column width &optional (theme-key :scrollbar-thumb))
-  ;; pi@ecac0a9c4 layout.ts:249-327 — the last-column cell keeps its
+  ;; pi@4a080252f layout.ts:249-327 — the last-column cell keeps its
   ;; text and leading SGR; track/thumb background wraps only that cell
   ;; (cadr paints theme bg instead of replacing the glyph with │/┃).
   (if (image-line-p line)
@@ -144,7 +144,7 @@
          after))))
 
 (defun apply-alt-scrollbar (renderer lines width height)
-  ;; pi@ecac0a9c4 layout.ts:309-327 — paint every track row; thumb
+  ;; pi@4a080252f layout.ts:309-327 — paint every track row; thumb
   ;; height is track²/content clamped to [min(2, track), track], and
   ;; the offset maps scrollTop onto the remaining track.
   (let ((content-height
@@ -189,9 +189,9 @@
 
 (defun composite-scroll-to-end-indicator
     (renderer lines width height)
-  ;; pi@ecac0a9c4 tui-alt-screen.ts:1618-1635 — when follow-end is
-  ;; armed but the viewport is not at the bottom, center the jump
-  ;; label on the last transcript row (leaving the scrollbar column).
+  ;; pi@4a080252f tui-alt-screen.ts:1618-1645 — center the jump
+  ;; label on the full transcript width. Scrollbar visibility clips the
+  ;; drawn text before the last column and does not move the column.
   (setf (terminal-renderer-scroll-to-end-indicator-rect renderer)
         nil)
   (let ((indicator
@@ -206,26 +206,29 @@
       (return-from composite-scroll-to-end-indicator lines))
     (let* ((row (1- (min height (length lines))))
            (line (nth row lines))
-           (available-width
-             (if (alt-scrollbar-visible-p
-                  renderer
-                  (terminal-renderer-content-line-count renderer)
-                  height)
-                 (max 0 (1- width))
-                 width)))
-      (when (or (null line) (image-line-p line)
-                (<= available-width 0))
+           (scrollbar-p
+             (alt-scrollbar-visible-p
+              renderer
+              (terminal-renderer-content-line-count renderer)
+              height)))
+      (when (or (null line) (image-line-p line) (<= width 0))
         (return-from composite-scroll-to-end-indicator lines))
       (let* ((raw (funcall indicator))
-             (text
+             (label
                (if (stringp raw)
-                   (truncate-to-width raw available-width "")
+                   (truncate-to-width raw width "")
                    ""))
-             (text-width (visible-width text)))
-        (when (zerop text-width)
+             (label-width (visible-width label)))
+        (when (zerop label-width)
           (return-from composite-scroll-to-end-indicator lines))
-        (let ((column
-                (floor (- available-width text-width) 2)))
+        (let* ((column (floor (- width label-width) 2))
+               (right-edge (if scrollbar-p (1- width) width))
+               (text
+                 (truncate-to-width
+                  label (max 0 (- right-edge column)) ""))
+               (text-width (visible-width text)))
+          (when (zerop text-width)
+            (return-from composite-scroll-to-end-indicator lines))
           (setf (nth row lines)
                 (concatenate
                  'string
@@ -505,7 +508,7 @@
                (alt-viewport-lines
                 renderer document height))))
            (selected
-             ;; pi@ecac0a9c4 tui-alt-screen.ts:969-981
+             ;; pi@4a080252f tui-alt-screen.ts:969-981
              ;; compositeFlashes: surviving flash lines overlay the
              ;; top rows, right-aligned.
              (let ((flash-lines
@@ -609,20 +612,57 @@
                         (write-string
                          (delete-all-kitty-images)
                          stream)))))
-               (loop for row below height
-                     for new-tail = current then (cdr new-tail)
-                     for old-tail = previous then (cdr old-tail)
-                     for new = (if new-tail (car new-tail) "")
-                     for old = (and old-tail (car old-tail))
-                     when
-                     (or
-                      full-p
-                      image-change-p
-                      (null old)
-                      (not (string= new old)))
-                       do
-                       (render-frame-line
-                        stream current row new))
+               (let* ((redraw-images-p
+                        (or full-p image-change-p))
+                      (clear-before-draw-p
+                        (wezterm-kitty-clear-before-draw-p
+                         renderer current
+                         redraw-images-p)))
+                 (when clear-before-draw-p
+                   (loop for row below height
+                         for new-tail = current
+                           then (cdr new-tail)
+                         for old-tail = previous
+                           then (cdr old-tail)
+                         for new =
+                           (if new-tail
+                               (car new-tail)
+                               "")
+                         for old =
+                           (and old-tail
+                                (car old-tail))
+                         when
+                         (or
+                          full-p
+                          image-change-p
+                          (null old)
+                          (not (string= new old)))
+                           do
+                           (clear-frame-row
+                            stream row)))
+                 (loop for row below height
+                       for new-tail = current
+                         then (cdr new-tail)
+                       for old-tail = previous
+                         then (cdr old-tail)
+                       for new =
+                         (if new-tail
+                             (car new-tail)
+                             "")
+                       for old =
+                         (and old-tail
+                              (car old-tail))
+                       when
+                       (or
+                        full-p
+                        image-change-p
+                        (null old)
+                        (not (string= new old)))
+                         do
+                         (render-frame-line
+                          stream current row new
+                          :clear-p
+                          (not clear-before-draw-p))))
                (if cursor-visible-p
                    (progn
                      (ansi-position

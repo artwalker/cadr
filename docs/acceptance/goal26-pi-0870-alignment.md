@@ -1,0 +1,51 @@
+# Goal 26：pi 基线推进至 v0.87.0
+
+> **状态：** 已作废（2026-10-20）。用户明确改钉到已发布的 **v1.3.0**。本文件保留为
+> v0.87.0 钉点历史；现行验收见 `docs/acceptance/goal26-pi-130-alignment.md`。
+> 不宣布 Goal 20、24、25 或 26 完成。G.17 保持 `missing`。`version.sexp` 仍是 `0.2.0`。
+>
+> **自：** `13cbf77df2396303013a41646bcfa77b4271ae56` · `v0.86.1` +0
+> **原目标锚点：** `16787ad5b2dc748047f314ca1bfe7708f30f54f3` · `v0.87.0` +0（已由 v1.3.0 取代）
+
+## 差量
+
+测量 2026-09-22：
+
+```sh
+git rev-list --count \
+  13cbf77df2396303013a41646bcfa77b4271ae56..16787ad5b2dc748047f314ca1bfe7708f30f54f3
+git diff --stat \
+  13cbf77df2396303013a41646bcfa77b4271ae56..16787ad5b2dc748047f314ca1bfe7708f30f54f3 \
+  -- packages/coding-agent packages/tui packages/ai
+```
+
+18 个提交。上述三包 83 个文件，+4210 / −453 行。
+
+## 范围
+
+机械钉点已落地。v0.86.1 到 v0.87.0 的文件增删改名处置在 `docs/acceptance/goal26-evidence/source-dispositions.tsv`。命名集处置在 `docs/acceptance/goal26-evidence/enumerate-summary.md`。v0.86.0 与 v0.86.1 上尚未落地的缺口仍然有效。本钉点不把它们勾掉。不新造 intentional-difference 类。不追 `main`。
+
+发布说明是 [v0.87.0](https://github.com/earendil-works/pi/releases/tag/v0.87.0)。下表是必须跟进的面。完整增量以机械枚举为准。
+
+| 面 | 处置 |
+|---|---|
+| 追加式 context edit，省略或替换单条消息而不改写历史 | `context-edit-omits-a-message-without-rewriting-history`。`session-append-context-edit` 追加编辑；nil 从后续 `session-messages` 省略，字符串替换内容；原条目仍在 |
+| `turn_end` 与 `agent_before_settle` 可返回 entries 并要求下一轮请求 | https://github.com/artwalker/cadr/pull/866 。`turn-end-boundary-entries-request-another-provider-turn` 与 `agent-before-settle-entries-request-another-provider-turn`。条目写入会话后，能继续时再请求一轮；不能继续时停住 |
+| `context_with_system` 在完整转录上变换 system 消息 | https://github.com/artwalker/cadr/pull/867 。`context-with-system-replaces-the-request-prompt`。它看见完整转录，返回值原样成为请求 |
+| 按模型配置图片输入缩放 | https://github.com/artwalker/cadr/pull/864 。`model-image-input-limits-shrink-tool-result-images`。`input-limits` 的 resize 覆盖 2000x2000 默认，并用于进入历史的工具图片 |
+| 去掉 `shouldStopAfterTurn`，改用 `finishTurn` | `finish-turn-end-stops-the-run` 与 `finish-turn-continue-requests-another-provider-turn`。`:end` 停住；`:continue` 在没有工具和 steering 时再请求一轮；错误和中止仍直接结束 |
+| `context` 处理器不再看见 system 消息，请求仍恢复 prompt 与工具声明 | https://github.com/artwalker/cadr/pull/867 。`context-handler-omits-system-messages-and-restores-the-request`。切片后的对话仍带上重放后的 prompt 和工具 |
+| 未知 OpenAI 兼容 Chat Completions 端点默认不发 strict 工具 schema | https://github.com/artwalker/cadr/pull/856 。`unknown-openai-completions-endpoint-is-not-strict`。未知 provider 默认不发 strict；内置厂商保持原默认；显式 `:supports-strict-mode` 仍优先 |
+| `/bug` 离线只写本地 zip，不上传 | https://github.com/artwalker/cadr/pull/865 。`offline-bug-report-writes-a-local-zip`。`CADR_OFFLINE=1` 时 `/bug` 仍写出本地 zip，状态是 `Bug report exported to` |
+| 过期的 prompt-cache warming 不再补刷新 | https://github.com/artwalker/cadr/pull/868 。`late-cache-refresh-is-not-sent` 与 `late-cache-refresh-is-rechecked-after-the-extension-decision`。超过 refresh deadline 的补刷新不发出，状态是 `cache refresh deadline missed` |
+| 崩溃栈里标出已加载扩展 | `crash-stack-names-the-loaded-extension`。致命错误的用户消息附上 `cadr -ne` 提示 |
+| 以 `GIF` 开头但不是 `GIF87a`/`GIF89a` 的文本不当成图片 | `gif-image-detection-requires-a-complete-signature`。`detect-image-mime-type` 只认完整签名 |
+| 坏掉的 prompt template frontmatter 要报资源警告 | `malformed-prompt-frontmatter-is-a-resource-warning`。缺冒号的 frontmatter 不加载模板，并给出 `:parse-failed` |
+| compaction 可用 `null` keep 边界 | `compaction-null-keep-boundary-uses-its-own-id`。`first-kept-id` 为 nil 时记下本条 compaction 的 id |
+| 滚动条隐藏时 jump-to-end 标签不移位 | `alt-screen-jump-label-column-ignores-scrollbar-visibility`。标签按整行居中，滚动条只裁切末列 |
+
+v0.86.0 与 v0.86.1 上尚未落地的缺口仍然有效。
+
+核心 render-diff 的可见字符串清单已按 v0.87.0 重抽（552 个位点，1234 个分支）。unmodeled-sink 审查里 9 个位点只是行号平移，原文判定没变。173 个检查点的语义屏哈希更新，是因为横幅、changelog 和自定义标题里的版本从 v0.86.1 换成 v0.87.0。I04 仍只覆盖产品身份换行。
+
+页脚上下文百分比只在这一轮声明了工具之后计入。空闲会话仍是 `0.0%`。进行中且没有可用 usage 的回合，默认七个工具加固定提示是 1262 token，128k 窗口上显示 `1.0%`。测试是 `projected-context-tokens-count-tool-declarations-without-usage`。新鲜的核心渲染捕获在锁上 `fatal-crash` 的真实屏哈希之后分析退出码为 0。

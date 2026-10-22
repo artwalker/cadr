@@ -306,8 +306,8 @@
 ;; footer, arrows, and muted descriptions every frame.
 (defparameter *thinking-selector-title-by-width*
   (make-hash-table :test #'eql))
-(defparameter *thinking-selector-footer-by-width*
-  (make-hash-table :test #'eql))
+(defparameter *thinking-selector-footer-by-key*
+  (make-hash-table :test #'equal))
 (defparameter *thinking-selector-empty-by-width*
   (make-hash-table :test #'eql))
 (defparameter *thinking-selector-cycle-by-key*
@@ -348,14 +348,28 @@
               (cadr-tui:theme-bold "Thinking Level"))
              width :padding-x 0))))
 
-(defun thinking-selector-footer-line (width)
-  (or (gethash width *thinking-selector-footer-by-width*)
-      (setf (gethash width *thinking-selector-footer-by-width*)
-            (selector-component-text-line
-             (cadr-tui:theme-foreground
-              :dim
-              "  Enter to select · Ctrl+S to set as default · Esc to cancel")
-             width :padding-x 0))))
+(defun thinking-selector-footer-line (state width)
+  (let* ((kb (thinking-selector-keybindings state))
+         (confirm
+           (selector-keybinding-display-text
+            kb "tui.select.confirm"))
+         (save
+           (selector-keybinding-display-text
+            kb "app.thinking.save"))
+         (cancel
+           (selector-keybinding-display-text
+            kb "tui.select.cancel"))
+         (cache-key (list width confirm save cancel)))
+    (or (gethash cache-key *thinking-selector-footer-by-key*)
+        (setf (gethash cache-key *thinking-selector-footer-by-key*)
+              (selector-component-text-line
+               (cadr-tui:theme-foreground
+                :dim
+                (format
+                 nil
+                 "  ~A to select · ~A to set as default · ~A to cancel"
+                 confirm save cancel))
+               width :padding-x 0)))))
 
 (defun thinking-selector-empty-line (width)
   (or (gethash width *thinking-selector-empty-by-width*)
@@ -488,6 +502,6 @@
            :blank
            (list
             :lines
-            (list (thinking-selector-footer-line width)))
+            (list (thinking-selector-footer-line state width)))
            :border))
          width)))))

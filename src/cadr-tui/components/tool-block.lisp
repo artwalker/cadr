@@ -15,7 +15,8 @@
   preview-status
   (collapsed-p nil :type boolean)
   started-at
-  ended-at)
+  ended-at
+  (duration-ms nil :type (or null integer)))
 
 (defun make-tool-block (&key (name "") (summary "")
                              header-segments
@@ -26,6 +27,7 @@
                              supplemental-lines
                              (status :running) preview-status
                              started-at ended-at
+                             duration-ms
                              (collapsed-p nil
                               collapsed-p-supplied-p))
   (%make-tool-block
@@ -42,6 +44,7 @@
    :preview-status preview-status
    :started-at started-at
    :ended-at ended-at
+   :duration-ms duration-ms
    :collapsed-p
    (if collapsed-p-supplied-p
        collapsed-p
@@ -529,8 +532,22 @@
            :enabled-p ansi-theme-p)
           content-width "...")))))))
 
+(defun format-tool-duration (seconds)
+  ;; pi@71023aec render-utils.ts formatToolDuration. Input is seconds.
+  (let ((seconds (max 0d0 (float seconds 1d0))))
+    (if (< seconds 60d0)
+        (format nil "~,1Fs" seconds)
+        (multiple-value-bind (minutes remainder)
+            (floor (floor seconds) 60)
+          (if (< minutes 60)
+              (format nil "~Dm ~Ds" minutes remainder)
+              (format nil "~Dh ~Dm ~Ds"
+                      (floor minutes 60)
+                      (mod minutes 60)
+                      remainder))))))
+
 (defun render-tool-block
-    (block width &key (ansi-theme-p nil) now)
+    (block width &key (ansi-theme-p nil) now (output-pad 1))
   (multiple-value-bind
         (status-token background-token indicator)
       (tool-status-theme-tokens
@@ -562,28 +579,38 @@
                 ansi-theme-p)))
            (timing-line
              (and
-              (string-equal
-               (tool-block-name block) "bash")
-              (tool-block-started-at block)
-              (let* ((running-p
-                       (eq (tool-block-status block)
-                           :running))
-                     (end
-                       (or
-                        (tool-block-ended-at block)
-                        now
-                        (tool-block-started-at block)))
-                     (elapsed
-                       (max
-                        0d0
-                        (- end
-                           (tool-block-started-at block)))))
-                (theme-foreground
-                 :muted
-                 (format nil "~A ~,1Fs"
-                         (if running-p "Elapsed" "Took")
-                         elapsed)
-                 :enabled-p ansi-theme-p))))
+              (member
+               (string-downcase (tool-block-name block))
+               '("bash" "powershell")
+               :test #'string=)
+              (let ((running-p
+                      (eq (tool-block-status block) :running))
+                    (recorded (tool-block-duration-ms block)))
+                (cond
+                  ((and (not running-p) (integerp recorded))
+                   (theme-foreground
+                    :muted
+                    (format nil "Took ~A"
+                            (format-tool-duration
+                             (/ recorded 1000d0)))
+                    :enabled-p ansi-theme-p))
+                  ((tool-block-started-at block)
+                   (let* ((end
+                            (or
+                             (tool-block-ended-at block)
+                             now
+                             (tool-block-started-at block)))
+                          (elapsed
+                            (max
+                             0d0
+                             (- end
+                                (tool-block-started-at block)))))
+                     (theme-foreground
+                      :muted
+                      (format nil "~A ~A"
+                              (if running-p "Elapsed" "Took")
+                              (format-tool-duration elapsed))
+                      :enabled-p ansi-theme-p)))))))
            (box-lines
              (append
               (list "")
@@ -607,14 +634,19 @@
       (cons
        ""
        (loop for line in box-lines
+             for pad = (if (member output-pad '(0 1))
+                           output-pad
+                           1)
              for padded =
                (concatenate
-                'string " " line
+                'string
+                (make-string pad :initial-element #\Space)
+                line
                 (make-string
                  (max
                   1
                   (- width
-                     1
+                     pad
                      (visible-width line)))
                  :initial-element #\Space))
              collect

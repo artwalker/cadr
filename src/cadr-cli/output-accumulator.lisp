@@ -118,16 +118,11 @@
 
 (defun output-accumulator-ensure-file (accumulator)
   (unless (output-accumulator-temp-file-path accumulator)
-    (let* ((path
-             (merge-pathnames
-              (format nil "~A-~16,'0X.log"
-                      (output-accumulator-temp-file-prefix accumulator)
-                      (random (ash 1 64)))
-              (uiop:temporary-directory)))
-           (stream
-             (open path :direction :output :if-exists :supersede
-                        :if-does-not-exist :create
-                        :element-type '(unsigned-byte 8))))
+    (multiple-value-bind (path stream)
+        (open-output-file-stream
+         (output-accumulator-temp-file-prefix accumulator)
+         ".log"
+         :element-type '(unsigned-byte 8))
       (write-sequence (output-accumulator-raw-history accumulator) stream)
       (setf (output-accumulator-temp-file-path accumulator) path
             (output-accumulator-temp-file-stream accumulator) stream

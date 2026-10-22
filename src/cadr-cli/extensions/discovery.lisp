@@ -25,6 +25,8 @@
   (extension-factories nil :type list)
   configured-package-paths
   (no-discovery-p nil :type boolean)
+  ;; pi@4a080252f resource-loader disabledBuiltinExtensions, e.g. ("mcp")
+  (disabled-builtin-extensions nil :type list)
   output
   (secret-function (constantly nil) :type function)
   host

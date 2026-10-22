@@ -713,7 +713,7 @@
                     "[compaction: 42k tokens]")))
                (goal13-note-semantic-probe
                 seen (first probe) (second probe) (third probe))))
-           ;; v0.86.0 search highlight tokens style the alt-screen find bar.
+           ;; v1.4.0 search highlight tokens style the alt-screen find bar.
            (goal13-note-semantic-probe
             seen :search-match-bg
             (cadr-tui::style-search-match-text "find" nil)
@@ -1107,7 +1107,7 @@
             "Obsolete ledger count remains: ~A" obsolete)))
     (is
      (search
-      "GOAL13_PRESENTATION_LEDGER baseline=ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
+      "GOAL13_PRESENTATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
       presentation))
     (is
      (search
@@ -1266,10 +1266,10 @@
             (merge-pathnames "docs/lisp-idiom-audit.md" root)))
          (systems
            '(("cadr-core" 7)
-             ("cadr-ai" 62)
-             ("cadr-agent" 37)
-             ("cadr-cli" 117)
-             ("cadr-tui" 50)
+             ("cadr-ai" 67)
+             ("cadr-agent" 42)
+             ("cadr-cli" 124)
+             ("cadr-tui" 53)
              ("cadr-storage" 2)
              ("cadr-server" 11)
              ("cadr-protocol" 5)
@@ -1277,7 +1277,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=299 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=319 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1295,7 +1295,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 299 total))
+    (is (= 319 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1329,3 +1329,65 @@
       (is (search path audit)
           "Post-audit source addition has no disposition: ~A"
           path))))
+
+(defun goal13-read-summary (offset limit)
+  (cadr-cli::tool-arguments-summary
+   (cadr-ai:make-tool-call
+    :id "read-range"
+    :name "read"
+    :arguments
+    (cadr-ai::json-object
+     "path" "a.txt"
+     "offset" offset
+     "limit" limit))
+   "/tmp"))
+
+(test read-line-range-accepts-numeric-strings-and-drops-malformed-bounds
+  ;; pi@4a080252f formatReadLineRange.
+  (is (string= "a.txt:2-4" (goal13-read-summary 2 3)))
+  (is (string= "a.txt:2-4" (goal13-read-summary "2" "3")))
+  (is (string= "a.txt:8-9" (goal13-read-summary "  8 " "2")))
+  (is (string= "a.txt:4" (goal13-read-summary 4 nil)))
+  (is (string= "a.txt:1-3" (goal13-read-summary nil 3)))
+  (is (string= "a.txt:1" (goal13-read-summary 1 0)))
+  (is (string= "a.txt:0" (goal13-read-summary 0 1)))
+  (is (string= "a.txt" (goal13-read-summary "nope" 3)))
+  (is (string= "a.txt" (goal13-read-summary 4 "nope")))
+  (is (string= "a.txt"
+               (cadr-cli::tool-arguments-summary
+                (cadr-ai:make-tool-call
+                 :id "read-plain"
+                 :name "read"
+                 :arguments (cadr-ai::json-object "path" "a.txt"))
+                "/tmp")))
+  (is (string= "a.txt:1-13" (goal13-read-summary 'null "13"))))
+
+(test session-tree-uses-the-shared-read-line-range
+  ;; pi@4a080252f #10938. String bounds are numbers, not concatenation.
+  ;; JSON null is an omitted argument. A bad bound drops the range.
+  (labels ((label (offset limit)
+             (cadr-cli::tree-selector-format-tool-call
+              "read"
+              (cadr-ai::json-object
+               "path" "notes.txt"
+               "offset" offset
+               "limit" limit))))
+    (is (string= "[read: notes.txt:25-37]" (label "25" "13")))
+    (is (string= "[read: notes.txt:25-37]" (label 25 13)))
+    (is (string= "[read: notes.txt:1-13]" (label 'null "13")))
+    (is (string= "[read: notes.txt:25]" (label "25" 'null)))
+    (is (string= "[read: notes.txt]" (label "abc" 13)))
+    (is (string= "[read: notes.txt]" (label 25 "")))
+    (is (string= "[read: notes.txt]" (label 25 "Infinity")))
+    (is (string= "[read: notes.txt:1]" (label 1 0))))
+  (let ((template
+          (uiop:read-file-string
+           (merge-pathnames
+            "src/cadr-agent/export-html/template.js"
+            (asdf:system-source-directory "cadr-agent")))))
+    (is (search
+         "[read: ${path}${formatReadLineRange(args.offset, args.limit)}]"
+         template))
+    (is (search "function formatReadLineRange(offset, limit)" template))
+    (is (search "escapeHtml(readLineRange)" template))
+    (is (not (search "start + limit - 1" template)))))

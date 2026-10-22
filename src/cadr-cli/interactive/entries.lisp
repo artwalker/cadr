@@ -44,7 +44,13 @@
                    append
                    (cadr-tui:wrap-text line width))))))
 
-(defun replace-tui-entries (state entries)
+(defun replace-tui-entries (state entries &key renderer)
+  ;; pi@4a080252f #10567. Session switches and other full transcript
+  ;; replacements go through here. Only the fullscreen renderer has
+  ;; the selection that would highlight the new text.
+  (when (and renderer
+             (cadr-tui:alt-screen-renderer-p renderer))
+    (cadr-tui:renderer-reset-text-selection renderer))
   (dolist (entry (tui-state-entries state))
     (when (tui-entry-custom-component entry)
       (ignore-errors
@@ -94,6 +100,7 @@
    nil
    (tui-entry-render-cache-mermaid-mode entry) nil
    (tui-entry-render-cache-code-block-indent entry) nil
+   (tui-entry-render-cache-output-pad entry) nil
    (tui-entry-render-cache-lines entry) nil)
   entry)
 
@@ -136,12 +143,131 @@
   ;; as baseline status text, but must not coalesce adjacent lines.
   (add-tui-message-entry state :notice text))
 
+(defun add-cache-miss-notice (state miss)
+  "Warning-styled transcript notice. It is not persisted."
+  (when (and miss (cache-miss-notice-significant-p miss))
+    (add-tui-notice
+     state
+     (cadr-tui:theme-foreground
+      :warning
+      (format-cache-miss-notice-text miss)
+      :enabled-p t)))
+  state)
+
+(defun dropped-thinking-count (message)
+  (let ((count 0))
+    (dolist (diagnostic (cadr-ai:assistant-message-diagnostics message))
+      (when (eq (cadr-ai:assistant-message-diagnostic-type diagnostic)
+                :anthropic-input-transformations)
+        (dolist (item (getf (cadr-ai:assistant-message-diagnostic-details
+                             diagnostic)
+                            :transformations))
+          (when (and (listp item)
+                     (string= (or (getf item :type) "")
+                              "thinking_dropped"))
+            (incf count)))))
+    count))
+
+(defun previous-assistant-message (entries)
+  (loop for item in (reverse entries)
+        for message =
+          (if (typep item 'cadr-agent:session-entry)
+              (cadr-agent:session-entry-message item)
+              item)
+        when (typep message 'cadr-ai:assistant-message)
+          return message))
+
+(defun format-thinking-drop-notice (count)
+  (format nil
+          "Anthropic dropped ~D thinking block~:[~;s~] (details in session)"
+          count
+          (> count 1)))
+
+(defun maybe-show-thinking-drop-notice
+    (state message &key show-p session-entries)
+  "Warn when this assistant message dropped more thinking than the previous one."
+  (when (and show-p (typep message 'cadr-ai:assistant-message))
+    (let* ((dropped (dropped-thinking-count message))
+           (previous (previous-assistant-message session-entries))
+           (previous-dropped
+             (if previous (dropped-thinking-count previous) 0)))
+      (when (> dropped previous-dropped)
+        (add-tui-notice
+         state
+         (cadr-tui:theme-foreground
+          :warning
+          (format-thinking-drop-notice dropped)
+          :enabled-p t)))))
+  state)
+
+(defun maybe-show-cache-miss-notice
+    (state message
+     &key show-p session-entries model-price-function)
+  "Assistant message-end may append one cache-miss notice."
+  (when
+      (and
+       show-p
+       (typep message 'cadr-ai:assistant-message)
+       (not
+        (member
+         (cadr-ai:assistant-message-stop-reason message)
+         '(:aborted :error))))
+    (add-cache-miss-notice
+     state
+     (detect-cache-miss-from-entries
+      (or session-entries '())
+      message
+      :model-price-function model-price-function)))
+  state)
+
+(defstruct (compaction-cost-notice
+            (:constructor make-compaction-cost-notice))
+  "Derived billing notice. It is not persisted."
+  (kind :compaction)
+  usage)
+
+(defun compaction-cost-notice-token-count (usage)
+  (+ (cadr-ai:usage-input usage)
+     (cadr-ai:usage-output usage)
+     (cadr-ai:usage-cache-read usage)
+     (cadr-ai:usage-cache-write usage)))
+
+(defun format-compaction-cost-notice-text (kind usage)
+  (let* ((tokens (compaction-cost-notice-token-count usage))
+         (total
+           (cadr-ai:cost-total
+            (cadr-ai:usage-cost usage)))
+         (cost-suffix
+           (if (>= total 0.01d0)
+               (format nil " (~~$~,2F)" total)
+               ""))
+         (label
+           (if (eq kind :branch-summary)
+               "Branch summary"
+               "Compaction")))
+    (format
+     nil
+     "~A: ~A tokens billed~A"
+     label
+     (cadr-tui::format-footer-tokens tokens)
+     cost-suffix)))
+
+(defun add-compaction-cost-notice
+    (state kind usage &key show-p)
+  (when (and show-p usage)
+    (add-tui-notice
+     state
+     (cadr-tui:theme-foreground
+      :warning
+      (format-compaction-cost-notice-text kind usage)
+      :enabled-p t)))
+  state)
+
 (defun add-tui-error (state text)
   (add-tui-message-entry state :error text))
 
 (defun add-tui-warning (state text)
   (add-tui-message-entry state :warning text))
-
 (defun add-tui-project-trust-warning (state text)
   (add-tui-message-entry state :project-trust-warning text))
 
@@ -196,18 +322,45 @@
           #\Escape url (code-char 7) label
           #\Escape (code-char 7)))
 
-(defun render-auth-url-lines (url width)
+(defun auth-url-click-label (&optional (platform (cli-platform)))
+  ;; pi@4a080252f AuthUrlComponent: macOS uses Cmd+click.
+  (if (eq platform :darwin)
+      "Cmd+click to open"
+      "Ctrl+click to open"))
+
+(defun render-auth-url-lines
+    (url width &key copy-hint-p status (platform (cli-platform)))
+  ;; pi@4a080252f auth-url.ts. The click hint stays; copy replaces only
+  ;; the suffix after the bullet.
   (let* ((linked
            (cadr-tui:theme-foreground
             :accent
             (terminal-hyperlink url url)
             :enabled-p t))
-         (hint
+         (suffix
+           (cond
+             ((eq status :copied)
+              (cadr-tui:theme-foreground
+               :success "Copied URL to clipboard" :enabled-p t))
+             ((stringp status)
+              (cadr-tui:theme-foreground :error status :enabled-p t))
+             (copy-hint-p
+              (key-hint "app.message.copy" "to copy"))
+             (t nil)))
+         (click
            (cadr-tui:theme-foreground
             :dim
             (terminal-hyperlink
-             url "Ctrl+click to open")
-            :enabled-p t)))
+             url (auth-url-click-label platform))
+            :enabled-p t))
+         (hint
+           (if suffix
+               (format nil "~A ~A ~A"
+                       click
+                       (cadr-tui:theme-foreground
+                        :dim "•" :enabled-p t)
+                       suffix)
+               click)))
     (append
      (cadr-tui:wrap-text linked width)
      (list hint))))
@@ -481,7 +634,8 @@ directory-style extensions."
      &key
        (version (cadr-ai::cadr-version))
        extensions
-       extension-issues)
+       extension-issues
+       (include-resources-p t))
   (labels
       ((namestring-of (path)
          (if (pathnamep path) (namestring path) path))
@@ -746,11 +900,15 @@ directory-style extensions."
                   (format
                    nil "~{~A~^/~} to cycle models"
                    (append cycle-keys backward-cycle-keys))))
+           (help-hint
+             (if include-resources-p
+                 "Press ctrl+o to show full startup help and loaded resources."
+                 "Press ctrl+o to show full startup help."))
            (compact
              (list
               logo
               "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more"
-              "Press ctrl+o to show full startup help and loaded resources."
+              help-hint
               ""
               "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr."))
            (expanded
@@ -763,19 +921,31 @@ directory-style extensions."
                 (list
                  ""
                  "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr.")))
-              (let ((blocks (sections t)))
-                (when blocks
-                  (append (list "") blocks))))))
+              (when include-resources-p
+                (let ((blocks (sections t)))
+                  (when blocks
+                    (append (list "") blocks)))))))
       (values
        (append
         compact
-        (let ((blocks (sections nil)))
-          (when blocks
-            (append (list "") blocks))))
+        (when include-resources-p
+          (let ((blocks (sections nil)))
+            (when blocks
+              (append (list "") blocks)))))
        expanded))))
 
-(defun render-tui-startup-lines (lines width)
-  (labels
+(defun startup-version-line-p (line)
+  (and (stringp line)
+       (uiop:string-prefix-p "cadr v" line)
+       (not (find #\Esc line))))
+
+(defun render-tui-startup-lines
+    (lines width &key (logo-p nil logo-supplied-p))
+  (let ((logo-p
+          (if logo-supplied-p
+              logo-p
+              (startup-logo-supported-p))))
+    (labels
       ((key-hint (key description)
          (concatenate
           'string
@@ -818,12 +988,22 @@ directory-style extensions."
                        (- (length line)
                           (length " to cycle models")))
                "to cycle models")))))
-       (style-line (line index)
+       (style-content (line index)
          (cond
            ((find #\Esc line)
             ;; Section/conflict lines arrive pre-themed by
             ;; make-tui-startup-lines; pass them through untouched.
             line)
+           ((startup-version-line-p line)
+            (let ((version (subseq line (length "cadr "))))
+              (concatenate
+               'string
+               (if logo-p
+                   (nth-value 0 (pi-logo-lines))
+                   (cadr-startup-wordmark))
+               " "
+               (cadr-tui:theme-foreground
+                :dim version :enabled-p t))))
            ((zerop index)
             (let ((split (position #\Space line)))
               (if split
@@ -851,7 +1031,18 @@ directory-style extensions."
              :md-heading line :enabled-p t))
            (t
             (cadr-tui:theme-foreground
-             :dim line :enabled-p t)))))
+             :dim line :enabled-p t))))
+       (style-line (line index previous)
+         (if (and logo-p
+                  (startup-version-line-p previous)
+                  (plusp (length line))
+                  (not (find #\Esc line)))
+             (concatenate
+              'string
+              (nth-value 1 (pi-logo-lines))
+              " "
+              (style-content line index))
+             (style-content line index))))
     (when lines
       ;; The baseline renders the banner (paddingX 1) and the loaded
       ;; resource sections (paddingX 0, in a separate container) as
@@ -880,9 +1071,10 @@ directory-style extensions."
            (cadr-tui:make-text-component
             (format
              nil "~{~A~^~%~}"
-             (loop for line in banner
+             (loop for previous = nil then line
+                   for line in banner
                    for index from 0
-                   collect (style-line line index)))
+                   collect (style-line line index previous)))
             :padding-x 1 :padding-y 0)
            width))
          ;; Render each section block through the component (content
@@ -916,4 +1108,4 @@ directory-style extensions."
                      (format nil "~{~A~^~%~}" (nreverse block))
                      :padding-x 0 :padding-y 0)
                     width))))
-               (return rendered)))))))
+               (return rendered))))))))

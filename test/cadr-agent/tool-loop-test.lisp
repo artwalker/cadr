@@ -38,14 +38,16 @@
              :on-event (lambda (event) (push event events)))))
       (agent-prompt agent "echo")
       (is (equal '("hello") executed))
-      (is (= 4 (length (agent-messages agent))))
-      (is (typep (third (agent-messages agent))
-                 'tool-result-message))
-      (is (not (tool-result-message-is-error
-                (third (agent-messages agent)))))
+      (let ((transcript (agent-messages-without-system agent)))
+        (is (= 4 (length transcript)))
+        (is (typep (third transcript) 'tool-result-message))
+        (is (not (tool-result-message-is-error
+                  (third transcript)))))
       (setf events (nreverse events))
       (is (equal
-           '(:agent-start :turn-start :message-start :message-end
+           '(:agent-start :turn-start
+             :message-start :message-end
+             :message-start :message-end
              :message-start :message-end
              :tool-execution-start :tool-execution-end
              :message-start :message-end :turn-end
@@ -56,13 +58,18 @@
               (cadr-agent:agent-event-messages
                (find :agent-end events
                      :key #'agent-event-type))))
-        (is (= 4 (length messages)))
-        (is (typep (first messages) 'cadr-ai:user-message))
-        (is (typep (second messages) 'cadr-ai:assistant-message))
-        (is (typep (third messages) 'cadr-ai:tool-result-message))
-        (is (typep (fourth messages) 'cadr-ai:assistant-message)))
-      (let ((second-context (first *contexts*)))
-        (is (typep (third (cadr-ai:context-messages second-context))
+        (is (= 5 (length messages)))
+        (is (typep (first messages) 'cadr-agent:agent-system-message))
+        (is (typep (second messages) 'cadr-ai:user-message))
+        (is (typep (third messages) 'cadr-ai:assistant-message))
+        (is (typep (fourth messages) 'cadr-ai:tool-result-message))
+        (is (typep (fifth messages) 'cadr-ai:assistant-message)))
+      (let* ((second-context (first *contexts*))
+             (llm-messages
+               (remove-if
+                #'cadr-ai:system-message-p
+                (cadr-ai:context-messages second-context))))
+        (is (typep (third llm-messages)
                    'tool-result-message))))))
 
 (test pairing-agent-tool-loop-observed-stays-put
@@ -102,7 +109,7 @@
              :stream-function
              (faux-stream '*responses* '*contexts*))))
       (agent-prompt agent "echo")
-      (let* ((messages (agent-messages agent))
+      (let* ((messages (agent-messages-without-system agent))
              (result (third messages))
              (last (car (last messages))))
         (is (string= "hello" executed))
@@ -152,7 +159,9 @@
                  :stream-function
                  (faux-stream '*responses* '*contexts*))))
           (agent-prompt agent "run")
-          (let ((result (third (agent-messages agent))))
+          (let ((result
+                  (first-tool-result-message
+                   (agent-messages agent))))
             (is (tool-result-message-is-error result))
             (is (plusp (length (text-result result))))))))
     (is (= 0 executions))))
@@ -444,7 +453,9 @@
       (is-true cleanup-ran-p)
       (is (equal '("bad" "good")
                  (nreverse attempts)))
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-false (tool-result-message-is-error result))
         (is (string= "good" (text-result result)))))))
 
@@ -499,7 +510,9 @@
               (faux-stream '*responses* '*contexts*))))
       (declare (special *responses* *contexts*))
       (agent-prompt agent "run")
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-true (tool-result-message-is-error result))
         (is (string= condition-message
                      (text-result result)))))))
@@ -559,7 +572,9 @@
       (declare (special *responses* *contexts*))
       (agent-prompt agent "run")
       (is (= 1 provider-calls))
-      (let ((result (third (agent-messages agent))))
+      (let ((result
+              (first-tool-result-message
+               (agent-messages agent))))
         (is-true (tool-result-message-is-error result))
         (is (string= "stopped by host"
                      (text-result result)))))))
@@ -1158,3 +1173,175 @@
             ("parallel-update-b" "b-1")
             ("parallel-update-a" "a-2"))
           (nreverse updates)))))))
+
+(defun nested-call-tool (name executor)
+  (cadr-ai:make-tool
+   :name name
+   :description name
+   :parameters (cadr-ai::json-object "type" "object")
+   :execution-mode :parallel
+   :executor executor))
+
+(test nested-execute-tool-records-calls-on-the-parent-result
+  ;; pi@4a080252f nested-tool-calls.ts. A tool's ctx.executeTool calls
+  ;; are kept on the calling result, not on the nested result.
+  (let* ((events nil)
+         (inner
+           (nested-call-tool
+            "inner"
+            (lambda (call-id arguments)
+              (declare (ignore call-id arguments))
+              (list (cadr-ai:make-text-content :text "inner-ok")))))
+         (outer
+           (nested-call-tool
+            "outer"
+            (lambda (call-id arguments)
+              (declare (ignore call-id arguments))
+              (let ((outcome
+                      (cadr-agent:extension-context-execute-tool
+                       nil "inner" (cadr-ai::json-object))))
+                (is (not (cadr-agent::nested-tool-call-outcome-is-error
+                          outcome))))
+              (list (cadr-ai:make-text-content :text "outer-ok")))))
+         (agent
+           (cadr-agent:make-agent
+            :provider :mock
+            :model nil
+            :tools (list outer inner)
+            :on-event
+            (lambda (event)
+              (when (cadr-agent::agent-event-parent-tool-call-id event)
+                (push event events))))))
+    (multiple-value-bind (results)
+        (cadr-agent::execute-tool-batch
+         agent
+         (list
+          (cadr-ai:make-tool-call
+           :id "parent"
+           :name "outer"
+           :arguments (cadr-ai::json-object)))
+         :turn-index 0)
+      (let* ((result (first results))
+             (nested (cadr-ai:tool-result-message-nested-calls result))
+             (call (first (cadr-agent::nested-tool-calls-calls nested))))
+        (is (typep result 'cadr-ai:tool-result-message))
+        (is (string= "outer-ok"
+                     (cadr-ai:text-content-text
+                      (first (cadr-ai:tool-result-message-content result)))))
+        (is (cadr-agent::nested-tool-calls-p nested))
+        (is (cadr-agent::nested-tool-calls-complete nested))
+        (is (string= "parent/1"
+                     (cadr-agent::nested-tool-call-record-id call)))
+        (is (string= "inner"
+                     (cadr-agent::nested-tool-call-record-name call)))
+        (is (eq :ok (cadr-agent::nested-tool-call-record-status call)))))
+    (is (find :tool-execution-end events
+              :key #'cadr-agent:agent-event-type))
+    (is (string= "parent"
+                 (cadr-agent::agent-event-parent-tool-call-id
+                  (find :tool-execution-end events
+                        :key #'cadr-agent:agent-event-type)))))
+  (let ((outcome
+          (cadr-agent:extension-context-execute-tool
+           nil "inner" (cadr-ai::json-object))))
+    (is (cadr-agent::nested-tool-call-outcome-is-error outcome))
+    (is (search
+         "not available"
+         (cadr-ai:text-content-text
+          (first
+           (cadr-ai:tool-result-message-content
+            (cadr-agent::nested-tool-call-outcome-result
+             outcome)))))))
+  (let ((scope (cadr-agent::make-nested-call-scope)))
+    (loop for index from 1 to 256
+          do (is (cadr-agent::nested-call-recorder-start
+                  scope
+                  (cadr-ai:make-tool-call
+                   :id (format nil "c/~D" index)
+                   :name "t"
+                   :arguments (cadr-ai::json-object)))))
+    (is (null
+         (cadr-agent::nested-call-recorder-start
+          scope
+          (cadr-ai:make-tool-call
+           :id "c/257" :name "t"
+           :arguments (cadr-ai::json-object)))))
+    (is (not (cadr-agent::nested-tool-calls-complete
+              (cadr-agent::nested-call-recorder-snapshot scope)))))
+  (let* ((scope (cadr-agent::make-nested-call-scope))
+         (record
+           (cadr-agent::nested-call-recorder-start
+            scope
+            (cadr-ai:make-tool-call
+             :id "big" :name "t"
+             :arguments
+             (cadr-ai::json-object
+              "blob" (make-string 9000 :initial-element #\a))))))
+    (is (null (cadr-agent::nested-tool-call-record-arguments record)))
+    (is (integerp
+         (cadr-agent::nested-tool-call-record-arguments-bytes record)))
+    (is (> (cadr-agent::nested-tool-call-record-arguments-bytes record)
+           8192)))
+  (let* ((directory
+           (ensure-directories-exist
+            (merge-pathnames
+             (format nil "cadr-nested-~D/" (random 1000000))
+             (uiop:temporary-directory))))
+         (session
+           (cadr-agent::create-session
+            :directory directory :cwd directory :id "nested-rt"))
+         (nested
+           (cadr-agent::make-nested-tool-calls
+            :complete t
+            :calls
+            (list
+             (cadr-agent::make-nested-tool-call-record
+              :id "parent/1"
+              :name "inner"
+              :status :ok
+              :duration-ms 3
+              :arguments (cadr-ai::json-object "k" "v")))))
+         (result
+           (cadr-ai:make-tool-result-message
+            :tool-call-id "parent"
+            :tool-name "outer"
+            :content
+            (list (cadr-ai:make-text-content :text "outer-ok"))
+            :nested-calls nested
+            :usage (cadr-ai:make-usage :input 1 :output 2 :total 3)
+            :timestamp 9)))
+    (unwind-protect
+         (progn
+           (cadr-agent::session-append-message
+            session
+            (cadr-ai:make-assistant-message
+             :content
+             (list (cadr-ai:make-text-content :text "turn"))
+             :timestamp 8))
+           (cadr-agent::session-append-message session result)
+           (is (search
+                "nestedCalls"
+                (uiop:read-file-string
+                 (cadr-agent::session-path session)
+                 :external-format :utf-8)))
+           (let* ((loaded
+                    (cadr-agent::load-session
+                     (cadr-agent::session-path session)))
+                  (got
+                    (find-if
+                     (lambda (message)
+                       (typep message 'cadr-ai:tool-result-message))
+                     (cadr-agent::session-messages loaded)))
+                  (call
+                    (first
+                     (cadr-agent::nested-tool-calls-calls
+                      (cadr-ai:tool-result-message-nested-calls got)))))
+             (is (string= "parent/1"
+                          (cadr-agent::nested-tool-call-record-id call)))
+             (is (eq :ok
+                     (cadr-agent::nested-tool-call-record-status call)))
+             (is (= 3
+                   (cadr-ai:usage-total
+                    (cadr-ai:tool-result-message-usage got))))))
+      (uiop:delete-directory-tree
+       directory :validate t :if-does-not-exist :ignore))))

@@ -246,3 +246,235 @@
              :cache-retention :none)))
       (is (string= "low"
                    (assistant-message-provider-thinking-level message))))))
+
+(defun goal24-drive-anthropic-stream (model events)
+  (let ((state
+          (cadr-ai::make-provider-stream-state
+           :message (cadr-ai::empty-assistant-message model)
+           :model model)))
+    (dolist (data events)
+      (cadr-ai::reduce-provider-sse-event
+       (make-anthropic-provider :api-key "test-key")
+       state
+       (cadr-ai::make-sse-event :data data)
+       (lambda (event) (declare (ignore event)))))
+    (cadr-ai::provider-stream-state-message state)))
+
+(defun goal24-anthropic-stream-events (reported-model block-json)
+  (list
+   (format nil
+           "{\"type\":\"message_start\",\"message\":{\"id\":\"msg_goal24\",\"model\":~S,\"usage\":{\"input_tokens\":100,\"output_tokens\":0}}}"
+           reported-model)
+   block-json
+   "{\"type\":\"content_block_stop\",\"index\":0}"
+   "{\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\"},\"usage\":{\"output_tokens\":20}}"
+   "{\"type\":\"message_stop\"}"))
+
+(defun goal24-replayed-thinking-signature (model message)
+  (let ((encoded (cadr-ai::anthropic-messages model (list message))))
+    (loop for row across encoded
+          for content = (cadr-ai::json-get row "content")
+          when (vectorp content)
+            do (loop for block across content
+                     when (string=
+                           "thinking"
+                           (or (cadr-ai::json-get block "type") ""))
+                       do (return-from goal24-replayed-thinking-signature
+                            (cadr-ai::json-get block "signature"))))))
+
+(test goal24-anthropic-relay-keeps-signed-thinking
+  (let* ((model
+           (make-model
+            :id "claude-opus-5"
+            :provider :anthropic
+            :api :anthropic-messages
+            :base-url "https://api.anthropic.com"
+            :max-tokens 4096))
+         (message
+           (goal24-drive-anthropic-stream
+            model
+            (goal24-anthropic-stream-events
+             "kimi-for-coding"
+             "{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"reasoning\",\"signature\":\"signature\"}}"))))
+    (is (string= "claude-opus-5"
+                 (cadr-ai:assistant-message-model message)))
+    (is (string= "kimi-for-coding"
+                 (cadr-ai:assistant-message-response-model message)))
+    (is (string= "signature"
+                 (goal24-replayed-thinking-signature model message)))))
+
+(test goal24-anthropic-fallback-model-prices-response
+  (let* ((compat
+           '(:allowed-fallback-models
+             ((:provider "anthropic"
+               :model "fallback-model"
+               :cost (:input 3d0 :output 5d0
+                      :cache-read 0d0 :cache-write 0d0)))))
+         (model
+           (make-model
+            :id "goal24-requested"
+            :provider :anthropic
+            :api :anthropic-messages
+            :base-url "https://api.anthropic.com"
+            :max-tokens 4096
+            :compat compat))
+         (events
+           (goal24-anthropic-stream-events
+            "fallback-model"
+            "{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"done\"}}"))
+         (message (goal24-drive-anthropic-stream model events))
+         (cost (cadr-ai:usage-cost (assistant-message-usage message)))
+         (plain
+           (make-model
+            :id "goal24-requested"
+            :provider :anthropic
+            :api :anthropic-messages
+            :base-url "https://api.anthropic.com"
+            :max-tokens 4096))
+         (unpriced (goal24-drive-anthropic-stream plain events))
+         (unpriced-cost
+           (cadr-ai:usage-cost (assistant-message-usage unpriced))))
+    (is (string= "goal24-requested"
+                 (cadr-ai:assistant-message-model message)))
+    (is (string= "fallback-model"
+                 (cadr-ai:assistant-message-response-model message)))
+    (is (= (* (/ 100d0 1000000d0) 3d0)
+           (cadr-ai:cost-input cost)))
+    (is (= (* (/ 20d0 1000000d0) 5d0)
+           (cadr-ai:cost-output cost)))
+    (is (string= "fallback-model"
+                 (cadr-ai:assistant-message-response-model unpriced)))
+    (is (or (null unpriced-cost)
+            (not (= 0.0003d0 (cadr-ai:cost-input unpriced-cost)))))
+    (let* ((response
+             (parse-json
+              "{\"id\":\"msg_goal24\",\"model\":\"fallback-model\",\"stop_reason\":\"end_turn\",\"content\":[{\"type\":\"text\",\"text\":\"done\"}],\"usage\":{\"input_tokens\":100,\"output_tokens\":20}}"))
+           (complete
+             (parse-complete-response
+              (make-anthropic-provider :api-key "test-key")
+              model response))
+           (complete-cost
+             (cadr-ai:usage-cost (assistant-message-usage complete))))
+      (is (string= "goal24-requested"
+                   (cadr-ai:assistant-message-model complete)))
+      (is (string= "fallback-model"
+                   (cadr-ai:assistant-message-response-model complete)))
+      (is (= (* (/ 100d0 1000000d0) 3d0)
+             (cadr-ai:cost-input complete-cost)))
+      (is (= (* (/ 20d0 1000000d0) 5d0)
+             (cadr-ai:cost-output complete-cost))))))
+
+(test anthropic-message-delta-records-thinking-drops
+  (let* ((model (mid-convo-model))
+         (state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai::empty-assistant-message model)
+            :model model))
+         (payload
+           (cadr-ai::stringify-json
+            (cadr-ai::json-object
+             "type" "message_delta"
+             "delta" (cadr-ai::json-object "stop_reason" "end_turn")
+             "input_transformations"
+             (cadr-ai::json-array
+              (cadr-ai::json-object
+               "type" "thinking_dropped"
+               "path" "messages.1.content.0"
+               "reason" "prefix_binding_mismatch"))))))
+    (cadr-ai::reduce-provider-sse-event
+     (make-anthropic-provider :api-key "test")
+     state
+     (cadr-ai::make-sse-event :data payload)
+     (lambda (event) (declare (ignore event))))
+    (let* ((diagnostic
+             (first
+              (cadr-ai:assistant-message-diagnostics
+               (cadr-ai::provider-stream-state-message state))))
+           (item
+             (first
+              (getf (cadr-ai:assistant-message-diagnostic-details
+                     diagnostic)
+                    :transformations))))
+      (is (eq :anthropic-input-transformations
+              (cadr-ai:assistant-message-diagnostic-type diagnostic)))
+      (is (string= "thinking_dropped" (getf item :type)))
+      (is (string= "messages.1.content.0" (getf item :path)))
+      (is (string= "prefix_binding_mismatch" (getf item :reason))))))
+
+(test anthropic-unsupported-off-keeps-adaptive-thinking
+  (let* ((model (mid-convo-model))
+         (request
+           (mid-convo-request
+            model
+            (mid-convo-context (list (mid-convo-user "one" 1)))))
+         (payload (request-spec-payload request)))
+    (is (string=
+         "adaptive"
+         (cadr-ai::json-get
+          (cadr-ai::json-get payload "thinking")
+          "type")))
+    (is (json-equal-p
+         (mid-convo-effort-marker "high")
+         (first (mid-convo-effort-messages payload))))
+    (is (string=
+         "high"
+         (cadr-ai:assistant-message-provider-thinking-level
+          (cadr-ai::empty-assistant-message model))))))
+
+(test anthropic-supported-off-sends-disabled-thinking-without-effort
+  (let* ((model (mid-convo-model))
+         (request
+           (progn
+             (setf (cadr-ai::model-thinking-level-map model)
+                   (remove :off
+                           (cadr-ai::model-thinking-level-map model)
+                           :key #'car))
+             (mid-convo-request
+              model
+              (mid-convo-context
+               (list
+                (mid-convo-user "one" 1)
+                (mid-convo-assistant model "low")
+                (mid-convo-user "two" 2))))))
+         (payload (request-spec-payload request)))
+    (is (json-equal-p
+         (cadr-ai::json-object "type" "disabled")
+         (cadr-ai::json-get payload "thinking")))
+    (is (null (cadr-ai::json-get payload "output_config")))
+    (is (null (mid-convo-effort-messages payload)))
+    (is (null
+         (cadr-ai:assistant-message-provider-thinking-level
+          (cadr-ai::empty-assistant-message model nil))))))
+
+(test anthropic-opus-5-catalog-accepts-disabled-thinking
+  (let* ((meta
+           (cadr-ai:find-model-metadata :anthropic "claude-opus-5"))
+         (model
+           (make-model
+            :id "claude-opus-5"
+            :provider :anthropic
+            :api :anthropic-messages
+            :base-url (cadr-ai:model-metadata-base-url meta)
+            :reasoning-p t
+            :thinking-level-map
+            (cadr-ai:model-metadata-thinking-level-map meta)
+            :compat (cadr-ai:model-metadata-compat meta)))
+         (payload
+           (request-spec-payload
+            (mid-convo-request
+             model
+             (mid-convo-context (list (mid-convo-user "one" 1)))))))
+    (is (null
+         (assoc :off
+                (cadr-ai:model-metadata-thinking-level-map meta))))
+    (is (eq t
+            (getf (cadr-ai:model-metadata-compat meta)
+                  :supports-mid-convo-effort)))
+    (is (json-equal-p
+         (cadr-ai::json-object "type" "disabled")
+         (cadr-ai::json-get payload "thinking")))
+    (is (null (mid-convo-effort-messages payload)))
+    (let ((fable
+            (cadr-ai:find-model-metadata :anthropic "claude-fable-5-1")))
+      (is (assoc :off
+                 (cadr-ai:model-metadata-thinking-level-map fable))))))

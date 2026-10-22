@@ -57,7 +57,8 @@
        full-document-p
        (now (tui-monotonic-seconds))
        (spinner-frame
-         (aref +tui-spinner-frames+ 0)))
+         (aref +tui-spinner-frames+ 0))
+       floating-overlay)
   (when (and (extension-custom-ui-state-p overlay)
              (extension-custom-ui-state-overlay-p overlay))
     (return-from render-tui-state
@@ -70,65 +71,76 @@
            (and (typep editor 'cadr-tui:multiline-editor)
                 (cadr-tui:multiline-editor-embed-working-status-p
                  editor)))
+         (status-message
+           (tui-state-status-message state))
+         ;; Compaction, branch summary, and retry share the editor
+         ;; border with Working...
+         (embedded-status-message
+           (and embed-working-p status-message))
          (embedded-working-message
            (and embed-working-p
-                (null (tui-state-status-message state))
+                (null status-message)
                 busy-p
                 (tui-state-working-visible-p state)
                 (or (tui-state-working-message state)
                     "Working...")))
+         (embedded-border-message
+           (or embedded-status-message
+               embedded-working-message))
          (embedded-working-spinner-frame
-           (when embedded-working-message
-             (let ((frames
-                     (tui-state-working-indicator-frames state)))
-               (if (consp frames)
-                   (nth
-                    (mod
-                     (floor
-                      (* now 1000)
-                      (or
-                       (tui-state-working-indicator-interval-ms state)
-                       80))
-                     (length frames))
-                    frames)
-                   spinner-frame)))))
+           (when embedded-border-message
+             (if embedded-status-message
+                 spinner-frame
+                 (let ((frames
+                         (tui-state-working-indicator-frames state)))
+                   (if (consp frames)
+                       (nth
+                        (mod
+                         (floor
+                          (* now 1000)
+                          (or
+                           (tui-state-working-indicator-interval-ms state)
+                           80))
+                         (length frames))
+                        frames)
+                       spinner-frame))))))
     (multiple-value-bind
           (editor-lines editor-row editor-column)
         (render-editor-component editor width rows (null overlay)
-         :working-message embedded-working-message
+         :working-message embedded-border-message
          :working-spinner-frame embedded-working-spinner-frame)
       (let* ((pending-message-lines
                (render-tui-pending-message-lines
                 state width))
              (status-indicator
-               (or
-                (render-tui-status-indicator
-                 (tui-state-status-message state)
-                 width :reserve-idle-p nil
-                 :spinner-frame spinner-frame)
-                (and
-                 (not embedded-working-message)
-                 busy-p
-                 (tui-state-working-visible-p state)
-                 (render-tui-status-indicator
-                  (or (tui-state-working-message state)
-                      "Working...") width
-                  :reserve-idle-p nil
-                  :spinner-frame
-                  (let ((frames
-                          (tui-state-working-indicator-frames state)))
-                    (if (consp frames)
-                        (nth
-                         (mod
-                          (floor
-                           (* now 1000)
-                           (or
-                            (tui-state-working-indicator-interval-ms state)
-                            80))
-                          (length frames))
-                         frames)
-                        spinner-frame))))
-                nil))
+               (unless embedded-border-message
+                 (or
+                  (render-tui-status-indicator
+                   (tui-state-status-message state)
+                   width :reserve-idle-p nil
+                   :spinner-frame spinner-frame)
+                  (and
+                   busy-p
+                   (tui-state-working-visible-p state)
+                   (render-tui-status-indicator
+                    (or (tui-state-working-message state)
+                        "Working...") width
+                    :reserve-idle-p nil
+                    :spinner-frame
+                    (let ((frames
+                            (tui-state-working-indicator-frames state)))
+                      (if (consp frames)
+                          (nth
+                           (mod
+                            (floor
+                             (* now 1000)
+                             (or
+                              (tui-state-working-indicator-interval-ms state)
+                              80))
+                            (length frames))
+                           frames)
+                          spinner-frame))))
+                  nil)))
            (header-lines
              (and (tui-state-header-component state)
                   (cadr-tui:component-render
@@ -205,20 +217,25 @@
              (if overlay
                  overlay-lines
                  editor-lines))
-           (entry-content
-             (render-tui-entries
-              (tui-state-entries state)
-              width
-              :extension-host extension-host
-              :now now
-              :hide-thinking-block-p
-              (tui-state-hide-thinking-block-p state)
-              :hidden-thinking-label
-              (tui-state-hidden-thinking-label state)
-              :mermaid-mode
-              (tui-state-mermaid-mode state)
-              :code-block-indent
-              (tui-state-code-block-indent state)))
+           (entry-rendering
+             (multiple-value-list
+              (render-tui-entries
+               (tui-state-entries state)
+               width
+               :extension-host extension-host
+               :now now
+               :hide-thinking-block-p
+               (tui-state-hide-thinking-block-p state)
+               :hidden-thinking-label
+               (tui-state-hidden-thinking-label state)
+               :mermaid-mode
+               (tui-state-mermaid-mode state)
+               :code-block-indent
+               (tui-state-code-block-indent state)
+               :output-pad
+               (tui-state-output-pad state))))
+           (entry-content (first entry-rendering))
+           (entry-hits (second entry-rendering))
            (startup-lines
              (if
                  (tui-state-tools-expanded-p state)
@@ -262,16 +279,70 @@
                 (length pending-message-lines)
                 (length status-indicator)
                 (length widget-above-lines))))
-      (values
-       (nconc visible
-              pending-message-lines
-              status-indicator
-              widget-above-lines
-              active-editor-lines
-              widget-below-lines
-       footer-lines)
-       cursor-row
-       (if overlay
-           overlay-column
-           editor-column)
-       editor-origin)))))
+      (setf
+       (tui-state-summary-click-ranges state)
+       (let ((entry-origin
+               (+ (length header-lines)
+                  (if startup-lines
+                      (+ 2 (length startup-lines))
+                      0))))
+         (mapcar
+          (lambda (hit)
+            (list (first hit)
+                  (+ entry-origin (second hit))
+                  (+ entry-origin (third hit))))
+          entry-hits)))
+      (let ((frame
+              (nconc visible
+                     pending-message-lines
+                     status-indicator
+                     widget-above-lines
+                     active-editor-lines
+                     widget-below-lines
+                     footer-lines)))
+        (when (and floating-overlay
+                   (extension-custom-ui-visible-p floating-overlay))
+          (let ((options
+                  (or (extension-overlay-options floating-overlay)
+                      nil)))
+            (multiple-value-bind (overlay-width ignored-row
+                                  ignored-column ignored-max-height)
+                (cadr-tui:resolve-overlay-layout
+                 width rows 0
+                 :width (getf options :width)
+                 :min-width (getf options :min-width)
+                 :max-height (getf options :max-height)
+                 :anchor (or (getf options :anchor) :center)
+                 :offset-x (or (getf options :offset-x) 0)
+                 :offset-y (or (getf options :offset-y) 0)
+                 :row (getf options :row)
+                 :col (getf options :col)
+                 :margin (getf options :margin))
+              (declare (ignore ignored-row ignored-column
+                               ignored-max-height))
+              (setf frame
+                    (cadr-tui:composite-overlay-frame
+                     frame
+                     (list
+                      (cadr-tui:make-overlay-placement
+                       :lines
+                       (render-extension-custom-ui
+                        floating-overlay overlay-width)
+                       :width (getf options :width)
+                       :min-width (getf options :min-width)
+                       :max-height (getf options :max-height)
+                       :anchor (or (getf options :anchor) :center)
+                       :offset-x (or (getf options :offset-x) 0)
+                       :offset-y (or (getf options :offset-y) 0)
+                       :row (getf options :row)
+                       :col (getf options :col)
+                       :margin (getf options :margin)
+                       :visible-p t))
+                     width rows)))))
+        (values
+         frame
+         cursor-row
+         (if overlay
+             overlay-column
+             editor-column)
+         editor-origin))))))

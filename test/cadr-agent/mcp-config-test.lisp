@@ -1,0 +1,481 @@
+(in-package #:cadr-agent/tests)
+(in-suite cadr-agent-suite)
+
+(defun mcp-config-write (path text)
+  (ensure-directories-exist path)
+  (with-open-file (out path
+                       :direction :output
+                       :if-exists :supersede
+                       :if-does-not-exist :create
+                       :external-format :utf-8)
+    (write-string text out))
+  path)
+
+(defun mcp-config-root ()
+  (namestring
+   (uiop:ensure-directory-pathname
+    (format nil "/tmp/cadr-mcp-~A/" (random 1000000)))))
+
+(defun mcp-config-entry (loaded name)
+  (find name (cadr-agent:loaded-mcp-config-servers loaded)
+        :key #'cadr-agent:mcp-server-entry-name
+        :test #'string=))
+
+(defun mcp-config-names (loaded)
+  (mapcar #'cadr-agent:mcp-server-entry-name
+          (cadr-agent:loaded-mcp-config-servers loaded)))
+
+(test mcp-config-merges-validates-and-resolves-exposure
+  ;; pi@4a080252f extensions/mcp/config.ts loadMcpConfig.
+  (let* ((root (mcp-config-root))
+         (agent (merge-pathnames "agent/" root))
+         (cwd (merge-pathnames "project/" root)))
+    (mcp-config-write
+     (merge-pathnames "mcp.json" agent)
+     "{
+  \"mcpServers\": {
+    \"shared\": { \"command\": \"global-cmd\" },
+    \"remote\": { \"url\": \"https://example.com/mcp\", \"headers\": { \"Authorization\": \"Bearer ${TOKEN}\" } },
+    \"off\": { \"command\": \"x\", \"enabled\": false },
+    \"bad\": { \"args\": [\"no command\"] },
+    \"legacy\": { \"type\": \"sse\", \"url\": \"https://example.com/sse\" },
+    \"badUrl\": { \"url\": \"example.com/mcp\" },
+    \"bad name\": { \"command\": \"x\" }
+  }
+}
+")
+    (mcp-config-write
+     (merge-pathnames ".pi/mcp.json" cwd)
+     "{ \"mcpServers\": { \"shared\": { \"command\": \"project-cmd\", \"exposure\": \"direct\" } } }
+")
+    (let ((trusted
+            (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (equal (mcp-config-names trusted) '("shared" "remote" "off")))
+      (is (eq :project (cadr-agent:mcp-server-entry-scope
+                        (mcp-config-entry trusted "shared"))))
+      (is (equal (cadr-agent:mcp-server-entry-config
+                  (mcp-config-entry trusted "shared"))
+                 '(:json-object "command" "project-cmd" "exposure" "direct")))
+      (is (equal (cadr-agent:mcp-server-entry-config
+                  (mcp-config-entry trusted "remote"))
+                 '(:json-object
+                   "url" "https://example.com/mcp"
+                   "headers" (:json-object "Authorization" "Bearer ${TOKEN}"))))
+      (is (equal (cadr-agent:mcp-server-entry-config
+                  (mcp-config-entry trusted "off"))
+                 '(:json-object "command" "x" "enabled" nil)))
+      (is (= 4 (length (cadr-agent:loaded-mcp-config-errors trusted))))
+      (is (search "needs either \"command\""
+                  (first (cadr-agent:loaded-mcp-config-errors trusted))))
+      (is (search "legacy SSE transport is not supported"
+                  (second (cadr-agent:loaded-mcp-config-errors trusted))))
+      (is (search "url must be an http or https URL"
+                  (third (cadr-agent:loaded-mcp-config-errors trusted))))
+      (is (search "invalid server name \"bad name\""
+                  (fourth (cadr-agent:loaded-mcp-config-errors trusted)))))
+    (let ((untrusted
+            (cadr-agent:load-mcp-config agent cwd :project-trusted nil)))
+      (is (equal (cadr-agent:mcp-server-entry-config
+                  (mcp-config-entry untrusted "shared"))
+                 '(:json-object "command" "global-cmd"))))
+    (mcp-config-write
+     (merge-pathnames "mcp.json" agent)
+     "{ \"mcpServers\": { \"tools\": { \"command\": \"x\", \"env\": { \"TOKEN\": \"secret\" } } } }
+")
+    (mcp-config-write
+     (merge-pathnames ".pi/mcp.json" cwd)
+     "{ \"mcpServers\": { \"tools\": { \"enabled\": false, \"args\": [\"y\"] }, \"missing\": { \"enabled\": false } } }
+")
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (equal (mcp-config-names loaded) '("tools")))
+      (is (null (cadr-agent:mcp-server-entry-override
+                 (mcp-config-entry loaded "tools"))))
+      (is (equal (cadr-agent:mcp-server-entry-config
+                  (mcp-config-entry loaded "tools"))
+                 '(:json-object
+                   "command" "x"
+                   "env" (:json-object "TOKEN" "secret"))))
+      (is (search "an override can only set enabled, exposure, toolExposure"
+                  (first (cadr-agent:loaded-mcp-config-errors loaded))))
+      (is (search "needs \"command\" or \"url\""
+                  (second (cadr-agent:loaded-mcp-config-errors loaded)))))
+    (let ((project (merge-pathnames ".pi/mcp.json" cwd)))
+      (mcp-config-write
+       project
+       "{ \"mcpServers\": { \"tools\": { \"enabled\": false } } }
+")
+      (let* ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted t))
+             (tools (mcp-config-entry loaded "tools")))
+        (is (search "mcp.json" (cadr-agent:mcp-server-entry-override tools)))
+        (is (equal (cadr-agent:mcp-server-entry-config tools)
+                   '(:json-object
+                     "command" "x"
+                     "env" (:json-object "TOKEN" "secret")
+                     "enabled" nil))))
+      (cadr-agent:update-mcp-server-config project "tools" '(:enabled t))
+      (let ((parsed
+              (cadr-agent::read-mcp-json-object
+               (uiop:read-file-string project :external-format :utf-8))))
+        (is (equal (nth-value 0 (cadr-agent::mcp-get
+                                 (nth-value 0 (cadr-agent::mcp-get parsed "mcpServers"))
+                                 "tools"))
+                   '(:json-object "enabled" t)))))
+    (mcp-config-write
+     (merge-pathnames "mcp.json" agent)
+     "{ \"mcpServers\": { \"work-files\": { \"command\": \"a\" }, \"work_files\": { \"command\": \"b\" } } }
+")
+    (mcp-config-write (merge-pathnames ".pi/mcp.json" cwd) "{}\n")
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted nil)))
+      (is (equal (mcp-config-names loaded) '("work-files")))
+      (is (search "conflicts with \"work-files\""
+                  (first (cadr-agent:loaded-mcp-config-errors loaded)))))
+    (mcp-config-write
+     (merge-pathnames "mcp.json" agent)
+     "{
+  \"autoEnableCodemode\": false,
+  \"mcpServers\": {
+    \"later\": { \"command\": \"x\", \"exposure\": \"deferred\" },
+    \"scripts\": { \"command\": \"x\", \"exposure\": \"codemode-deferred\", \"toolExposure\": { \"a\": \"codemode-deferred\" } },
+    \"off\": { \"command\": \"x\", \"exposure\": \"hidden\" },
+    \"wrong\": { \"command\": \"x\", \"exposure\": \"model-only\" },
+    \"described\": { \"command\": \"x\", \"description\": \"Docs search\" },
+    \"badDescription\": { \"command\": \"x\", \"description\": 1 }
+  }
+}
+")
+    (mcp-config-write
+     (merge-pathnames ".pi/mcp.json" cwd)
+     "{ \"autoEnableCodemode\": \"yes\", \"mcpServers\": {} }
+")
+    (let ((untrusted (cadr-agent:load-mcp-config agent cwd :project-trusted nil)))
+      (is (cadr-agent:loaded-mcp-config-auto-enable-codemode-p untrusted))
+      (is (not (cadr-agent:loaded-mcp-config-auto-enable-codemode untrusted)))
+      (is (equal (mapcar
+                  (lambda (entry)
+                    (list (cadr-agent:mcp-server-entry-name entry)
+                          (nth-value 0
+                                     (cadr-agent::mcp-get
+                                      (cadr-agent:mcp-server-entry-config entry)
+                                      "exposure"))))
+                  (cadr-agent:loaded-mcp-config-servers untrusted))
+                 '(("later" "deferred")
+                   ("scripts" "codemode")
+                   ("off" "hidden")
+                   ("described" nil))))
+      (is (equal (nth-value 0
+                            (cadr-agent::mcp-get
+                             (cadr-agent:mcp-server-entry-config
+                              (second (cadr-agent:loaded-mcp-config-servers untrusted)))
+                             "toolExposure"))
+                 '(:json-object "a" "codemode")))
+      (is (equal (cadr-agent:mcp-server-entry-config
+                  (fourth (cadr-agent:loaded-mcp-config-servers untrusted)))
+                 '(:json-object "command" "x" "description" "Docs search")))
+      (is (search "exposure must be one of"
+                  (first (cadr-agent:loaded-mcp-config-errors untrusted))))
+      (is (search "description must be a string"
+                  (second (cadr-agent:loaded-mcp-config-errors untrusted)))))
+    (let ((trusted (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (not (cadr-agent:loaded-mcp-config-auto-enable-codemode trusted)))
+      (is (some (lambda (message)
+                  (search "autoEnableCodemode must be a boolean" message))
+                (cadr-agent:loaded-mcp-config-errors trusted))))
+    (mcp-config-write
+     (merge-pathnames "mcp.json" agent)
+     "{
+  \"mcpServers\": {
+    \"gh\": {
+      \"command\": \"x\",
+      \"exposure\": \"deferred\",
+      \"toolExposure\": { \"get_*\": \"codemode\", \"get_me\": \"direct\", \"*delete*\": \"hidden\", \"get_file.*\": \"direct\" }
+    },
+    \"bad\": { \"command\": \"x\", \"toolExposure\": { \"a\": \"visible\" } }
+  }
+}
+")
+    (let* ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted nil))
+           (config (cadr-agent:mcp-server-entry-config
+                    (mcp-config-entry loaded "gh"))))
+      (is (search "toolExposure \"a\" must be one of"
+                  (first (cadr-agent:loaded-mcp-config-errors loaded))))
+      (is (string= "direct" (cadr-agent:mcp-tool-exposure config "get_me")))
+      (is (string= "codemode" (cadr-agent:mcp-tool-exposure config "get_issue")))
+      (is (string= "codemode" (cadr-agent:mcp-tool-exposure config "get_delete_hint")))
+      (is (string= "hidden" (cadr-agent:mcp-tool-exposure config "delete_repo")))
+      (is (string= "deferred" (cadr-agent:mcp-tool-exposure config "list_issues")))
+      (is (string= "codemode"
+                  (cadr-agent:mcp-tool-exposure
+                   '(:json-object "command" "x"
+                     "toolExposure" (:json-object "get_file.*" "direct"))
+                   "get_file_x"))))
+    (mcp-config-write
+     (merge-pathnames "mcp.json" agent)
+     "{
+  \"mcpServers\": {
+    \"ok\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"callbackUrl\": \"http://localhost:8080/callback\", \"scope\": \"a b\" } },
+    \"ipv6\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"callbackUrl\": \"http://[::1]/cb\", \"callbackPort\": 9000 } },
+    \"same\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"callbackUrl\": \"http://127.0.0.1:2/cb\", \"callbackPort\": 2 } },
+    \"remote\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"callbackUrl\": \"https://example.com/callback\" } },
+    \"both\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"callbackUrl\": \"http://127.0.0.1:1/cb\", \"callbackPort\": 2 } },
+    \"scope\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"scope\": [\"a\"] } },
+    \"named\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"clientName\": \"Claude Code\" } },
+    \"unnamed\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"clientName\": \" \" } },
+    \"metadata\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"authServerMetadataUrl\": \"https://idp.example/m\" } },
+    \"plainMetadata\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"authServerMetadataUrl\": \"http://idp.example/m\" } },
+    \"cimd\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"clientRegistration\": \"cimd\", \"callbackUrl\": \"http://localhost/callback\" } },
+    \"badRegistration\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"clientRegistration\": \"auto\" } },
+    \"cimdClient\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"clientRegistration\": \"cimd\", \"clientId\": \"x\" } },
+    \"cimdPath\": { \"url\": \"https://a.example/mcp\", \"oauth\": { \"clientRegistration\": \"cimd\", \"callbackUrl\": \"http://127.0.0.1/cb\" } }
+  }
+}
+")
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted nil)))
+      (is (equal (mcp-config-names loaded)
+                 '("ok" "ipv6" "same" "named" "metadata" "cimd")))
+      (let ((errors (cadr-agent:loaded-mcp-config-errors loaded)))
+        (is (search "oauth.callbackUrl must be an http URI on localhost" (first errors)))
+        (is (search "oauth.callbackUrl and oauth.callbackPort name different ports" (second errors)))
+        (is (search "oauth.scope must be a string" (third errors)))
+        (is (search "oauth.clientName must be a non-empty string" (fourth errors)))
+        (is (search "oauth.authServerMetadataUrl must be an https URL" (fifth errors)))
+        (is (search "oauth.clientRegistration must be \"dcr\" or \"cimd\"" (sixth errors)))
+        (is (search "oauth.clientRegistration \"cimd\" cannot be combined" (seventh errors)))
+        (is (search "oauth.clientRegistration \"cimd\" requires oauth.callbackUrl" (eighth errors)))))
+    (mcp-config-write
+     (merge-pathnames "mcp.json" agent)
+     "{
+  \"mcpServers\": {
+    \"radius\": { \"url\": \"https://radius.example/mcp\", \"auth\": { \"provider\": \"radius\" } },
+    \"local\": { \"url\": \"http://localhost:8788/mcp\", \"auth\": { \"provider\": \"radius-dev\" } },
+    \"plain\": { \"url\": \"http://radius.example/mcp\", \"auth\": { \"provider\": \"radius\" } },
+    \"empty\": { \"url\": \"https://radius.example/mcp\", \"auth\": { \"provider\": \"\" } }
+  }
+}
+")
+    (mcp-config-write
+     (merge-pathnames ".pi/mcp.json" cwd)
+     "{ \"mcpServers\": { \"radius\": { \"url\": \"https://evil.example/mcp\", \"auth\": { \"provider\": \"radius\" } } } }
+")
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (equal (mapcar
+                  (lambda (entry)
+                    (list (cadr-agent:mcp-server-entry-name entry)
+                          (cadr-agent:mcp-server-entry-scope entry)
+                          (nth-value 0
+                                     (cadr-agent::mcp-get
+                                      (cadr-agent:mcp-server-entry-config entry)
+                                      "url"))))
+                  (cadr-agent:loaded-mcp-config-servers loaded))
+                 '(("radius" :global "https://radius.example/mcp")
+                   ("local" :global "http://localhost:8788/mcp"))))
+      (let ((errors (cadr-agent:loaded-mcp-config-errors loaded)))
+        (is (search "auth requires an https URL" (first errors)))
+        (is (search "auth.provider must be a provider name" (second errors)))
+        (is (search "auth is only allowed in the global mcp.json" (third errors)))))))
+
+(defun mcp-config-raw (path)
+  (uiop:read-file-string path :external-format :utf-8))
+
+(defun mcp-config-prefix-bom (path)
+  (let ((raw (mcp-config-raw path)))
+    (mcp-config-write
+     path
+     (concatenate 'string
+                  (string (code-char #xfeff))
+                  (if (and (plusp (length raw))
+                           (char= (char raw 0) (code-char #xfeff)))
+                      (subseq raw 1)
+                      raw)))))
+
+(defun mcp-config-servers-object (path)
+  ;; Parser that does not strip a leading U+FEFF, matching JSON.parse.
+  (nth-value 0
+             (cadr-agent::mcp-get
+              (cadr-agent::read-mcp-json-object (mcp-config-raw path))
+              "mcpServers")))
+
+(defun mcp-config-no-bom-p (path)
+  (let ((raw (mcp-config-raw path)))
+    (and (plusp (length raw))
+         (char/= (char raw 0) (code-char #xfeff)))))
+
+(test mcp-config-reads-and-edits-utf8-bom
+  ;; pi@4a080252f packages/coding-agent/test/mcp-extension.test.ts
+  ;; "reads and edits mcp.json files that start with a UTF-8 BOM" (#11191).
+  ;; loadMcpConfig errors are empty and the servers are demo/global plus
+  ;; local/project. addMcpServerConfig(global, "other", {command:"other-cmd"})
+  ;; returns false. JSON.parse of that file keeps demo enabled false.
+  ;; CHANGELOG: the same strip covers `pi mcp add` and `pi mcp remove`.
+  ;; updateMcpServerConfig on a real server deletes enabled when the patch
+  ;; turns it on, and writes enabled false when the patch turns it off
+  ;; (packages/coding-agent/src/extensions/mcp/config.ts). A missing name
+  ;; does not rewrite, so a leading BOM stays. Each successful add, update,
+  ;; and remove on both files drops the BOM.
+  (let* ((root (mcp-config-root))
+         (agent (merge-pathnames "agent/" root))
+         (cwd (merge-pathnames "project/" root))
+         (global (merge-pathnames "mcp.json" agent))
+         (project (merge-pathnames ".pi/mcp.json" cwd))
+         (missing (merge-pathnames "missing.json" agent))
+         (bom (string (code-char #xfeff)))
+         (demo-and-other
+           '(:json-object
+             "demo" (:json-object "command" "echo" "enabled" nil)
+             "other" (:json-object "command" "other-cmd")))
+         (demo-on-and-other
+           '(:json-object
+             "demo" (:json-object "command" "echo")
+             "other" (:json-object "command" "other-cmd")))
+         (local-off
+           '(:json-object
+             "local" (:json-object "command" "local-cmd" "enabled" nil)))
+         (local-off-and-extra
+           '(:json-object
+             "local" (:json-object "command" "local-cmd" "enabled" nil)
+             "extra" (:json-object "command" "extra-cmd"))))
+    (mcp-config-write
+     global
+     (concatenate
+      'string bom
+      "{\"mcpServers\":{\"demo\":{\"command\":\"echo\",\"enabled\":false}}}"
+      (string #\Newline)))
+    (mcp-config-write
+     project
+     (concatenate
+      'string bom
+      "{\"mcpServers\":{\"local\":{\"command\":\"local-cmd\"}}}"
+      (string #\Newline)))
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (null (cadr-agent:loaded-mcp-config-errors loaded)))
+      (is (equal (mapcar (lambda (entry)
+                           (list (cadr-agent:mcp-server-entry-name entry)
+                                 (cadr-agent:mcp-server-entry-scope entry)))
+                         (cadr-agent:loaded-mcp-config-servers loaded))
+                 '(("demo" :global) ("local" :project)))))
+    (let ((before (mcp-config-raw project)))
+      (is (not (cadr-agent:remove-mcp-server-config project "absent")))
+      (is (string= before (mcp-config-raw project))))
+    (cadr-agent:update-mcp-server-config project "local" '(:enabled nil))
+    (is (mcp-config-no-bom-p project))
+    (is (equal (mcp-config-servers-object project) local-off))
+    (mcp-config-prefix-bom project)
+    (is (not (cadr-agent:add-mcp-server-config
+              project "extra" '(:command "extra-cmd"))))
+    (is (mcp-config-no-bom-p project))
+    (is (equal (mcp-config-servers-object project) local-off-and-extra))
+    (is (not (cadr-agent:add-mcp-server-config
+              global "other" '(:command "other-cmd"))))
+    (is (mcp-config-no-bom-p global))
+    (is (equal (mcp-config-servers-object global) demo-and-other))
+    (is (cadr-agent:add-mcp-server-config
+         global "other" '(:command "other-cmd")))
+    (is (equal (mcp-config-servers-object global) demo-and-other))
+    (mcp-config-prefix-bom global)
+    (cadr-agent:update-mcp-server-config global "demo" '(:enabled t))
+    (is (mcp-config-no-bom-p global))
+    (is (equal (mcp-config-servers-object global) demo-on-and-other))
+    (mcp-config-prefix-bom global)
+    (let ((before (mcp-config-raw global)))
+      (is (not (cadr-agent:remove-mcp-server-config global "absent")))
+      (is (string= before (mcp-config-raw global))))
+    (is (cadr-agent:remove-mcp-server-config global "demo"))
+    (is (mcp-config-no-bom-p global))
+    (is (equal (mcp-config-servers-object global)
+               '(:json-object "other" (:json-object "command" "other-cmd"))))
+    (mcp-config-prefix-bom project)
+    (is (cadr-agent:remove-mcp-server-config project "local"))
+    (is (mcp-config-no-bom-p project))
+    (is (equal (mcp-config-servers-object project)
+               '(:json-object "extra" (:json-object "command" "extra-cmd"))))
+    (is (not (cadr-agent:remove-mcp-server-config project "local")))
+    (is (not (cadr-agent:remove-mcp-server-config missing "demo")))
+    (is (not (uiop:file-exists-p missing)))
+    (let ((loaded (cadr-agent:load-mcp-config agent cwd :project-trusted t)))
+      (is (null (cadr-agent:loaded-mcp-config-errors loaded)))
+      (is (equal (mapcar (lambda (entry)
+                           (list (cadr-agent:mcp-server-entry-name entry)
+                                 (cadr-agent:mcp-server-entry-scope entry)))
+                         (cadr-agent:loaded-mcp-config-servers loaded))
+                 '(("other" :global) ("extra" :project)))))))
+
+(defun mcp-hex-suffix-p (name)
+  (and (>= (length name) 9)
+       (char= (char name (- (length name) 9)) #\_)
+       (every (lambda (character)
+                (digit-char-p character 16))
+              (subseq name (- (length name) 8)))))
+
+(test mcp-tool-names-and-servers-section
+  ;; pi@4a080252f createMcpToolName and renderServersSection.
+  (is (string= "mcp__docs__search"
+               (cadr-agent:create-mcp-tool-name "docs" "search")))
+  (is (string= "mcp__my_server__get_item_v2"
+               (cadr-agent:create-mcp-tool-name "my-server" "get.item/v2")))
+  (let* ((long (cadr-agent:create-mcp-tool-name "server" (make-string 100 :initial-element #\x)))
+         (other (cadr-agent:create-mcp-tool-name
+                 "server"
+                 (concatenate 'string
+                              (make-string 100 :initial-element #\x)
+                              "y")))
+         (taken (cadr-agent:create-mcp-tool-name "s" "a_b"))
+         (second (cadr-agent:create-mcp-tool-name
+                  "s" "a-b"
+                  (lambda (name) (string= name taken)))))
+    (is (= 64 (length long)))
+    (is (uiop:string-prefix-p "mcp__server__" long))
+    (is (mcp-hex-suffix-p long))
+    (is (not (string= long other)))
+    (is (mcp-hex-suffix-p second))
+    (is (uiop:string-prefix-p "mcp__s__a_b_" second)))
+  (let* ((section
+           (cadr-agent:render-mcp-servers-section
+            (list
+             (cadr-agent:make-mcp-server-listing
+              :name "docs"
+              :description "Docs search.
+More.")
+             (cadr-agent:make-mcp-server-listing
+              :name "later"
+              :exposure "deferred")
+             (cadr-agent:make-mcp-server-listing
+              :name "direct"
+              :description "Declared."
+              :exposure "direct")
+             (cadr-agent:make-mcp-server-listing
+              :name "plain"
+              :instructions "From instructions."))))
+         (lines (uiop:split-string section :separator '(#\Newline))))
+    (is (string= (first lines)
+                 "MCP servers whose tools are not declared to you. Call the tools of `codemode` servers from codemode scripts. Load the tools of `tool_search` servers with `tool_search`."))
+    (is (equal (rest lines)
+               '("- mcp__docs (codemode): Docs search."
+                 "- mcp__later (tool_search)"
+                 "- mcp__plain (codemode): From instructions."))))
+  (is (null (cadr-agent:render-mcp-servers-section
+             (list (cadr-agent:make-mcp-server-listing
+                    :name "direct"
+                    :description "Declared."
+                    :exposure "direct")))))
+  (let* ((servers
+           (loop for index from 0 below 40
+                 collect (cadr-agent:make-mcp-server-listing
+                          :name (format nil "server~D" index)
+                          :description (make-string 400 :initial-element #\x))))
+         (section (cadr-agent:render-mcp-servers-section servers))
+         (lines (uiop:split-string section :separator '(#\Newline))))
+    (is (<= (length section) 4096))
+    (is (= 41 (length lines)))
+    (is (search "- mcp__server39 (codemode): x" section)))
+  (let* ((servers
+           (loop for index from 0 below 200
+                 collect (cadr-agent:make-mcp-server-listing
+                          :name (format nil "server-with-a-long-name-~D" index)
+                          :description "desc")))
+         (section (cadr-agent:render-mcp-servers-section servers))
+         (lines (uiop:split-string section :separator '(#\Newline)))
+         (last (car (last lines)))
+         (count (parse-integer last :start (1+ (position #\… last))
+                               :junk-allowed t)))
+    (is (<= (length section) 4096))
+    (is (search "more servers; find their tools with searchTools()" last))
+    (is (= 200 (+ (- (length lines) 2) count)))))

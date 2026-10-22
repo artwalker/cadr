@@ -157,8 +157,30 @@
         (getf result :details))))
     object))
 
+(defun wire-system-message-to-json (message)
+  (let ((object
+          (cadr-ai::json-object
+           "role" "system"
+           "content" ""
+           "timestamp"
+           (cadr-agent::agent-system-message-timestamp message))))
+    (let ((sections
+            (cadr-agent::agent-system-message-sections message)))
+      (when sections
+        (cadr-ai::json-put object "sections" sections)))
+    (let ((tools
+            (cadr-agent::agent-system-message-tools-added message)))
+      (when tools
+        (cadr-ai::json-put
+         object "toolsAdded"
+         (cadr-ai::list-json-array
+          (mapcar #'cadr-agent::declared-tool-json tools)))))
+    object))
+
 (defun wire-message-to-json (message)
   (cond
+    ((typep message 'cadr-agent:agent-system-message)
+     (wire-system-message-to-json message))
     ((typep message 'cadr-ai:user-message)
      (let ((content (cadr-ai:user-message-content message)))
        (cadr-ai::json-object
@@ -192,6 +214,11 @@
                (cadr-ai:assistant-message-stop-reason message))
               "timestamp"
               (cadr-ai:assistant-message-timestamp message))))
+       (when (integerp
+              (cadr-ai:assistant-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:assistant-message-duration-ms message)))
        (when (cadr-ai:assistant-message-response-id message)
          (cadr-ai::json-put
           object "responseId"
@@ -236,6 +263,11 @@
               (cadr-ai:tool-result-message-is-error message)
               "timestamp"
               (cadr-ai:tool-result-message-timestamp message))))
+       (when (integerp
+              (cadr-ai:tool-result-message-duration-ms message))
+         (cadr-ai::json-put
+          object "durationMs"
+          (cadr-ai:tool-result-message-duration-ms message)))
        (when (cadr-ai:tool-result-message-added-tool-names message)
          (cadr-ai::json-put
           object "addedToolNames"
@@ -345,6 +377,13 @@
           object "reason"
           (json-event-type-name
            (cadr-agent:agent-event-reason event)))))
+      (:entry-appended
+       (let* ((entry (cadr-agent::agent-event-entry event))
+              (payload
+                (cadr-agent::session-entry-to-json entry)))
+         (when (eq (cadr-agent::session-entry-data entry) :omit)
+           (cadr-ai::json-put payload "replacement" 'null))
+         (cadr-ai::json-put object "entry" payload)))
       (:compaction-start
        (cadr-ai::json-put
         object "reason"
@@ -583,7 +622,20 @@
                                  (text
                                   (assistant-text-content
                                    last))
-                               (format output "~A~%" text)))
+                               (format output "~A~%" text))
+                             ;; pi@4a080252f print-mode.ts #10799. Partial
+                             ;; text still prints; length is a failed run.
+                             (when
+                                 (eq
+                                  :length
+                                  (cadr-ai:assistant-message-stop-reason
+                                   last))
+                               (format
+                                error-output
+                                "Response was truncated: the model reached its output token limit.~%")
+                               (finish-output output)
+                               (finish-output error-output)
+                               (return-from run-print-mode 1)))
                            (finish-output output)
                            0)))))
            (error (condition)

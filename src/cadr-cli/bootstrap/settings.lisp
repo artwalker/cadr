@@ -7,6 +7,7 @@
     ("output-padding" . "outputPad")
     ("autocomplete-max-visible" . "autocompleteMaxVisible")
     ("transport" . "transport")
+    ("share-destination" . "sessionShareDestination")
     ("http-idle-timeout" . "httpIdleTimeoutMs")
     ("hide-thinking" . "hideThinkingBlock")
     ("cache-miss-notices" . "showCacheMissNotices")
@@ -17,6 +18,9 @@
     ("double-escape-action" . "doubleEscapeAction")
     ("tree-filter-mode" . "treeFilterMode")
     ("theme" . "theme")))
+
+(defparameter +cache-warming-modes+
+  '("off" "streaming" "idle"))
 
 (defun default-agent-directory ()
   ;; Thin forwarder: cadr-core owns the layout decision (including the
@@ -44,6 +48,27 @@
        answer))
      '("y" "yes")
      :test #'string=)))
+
+(defun install-telemetry-enabled-p
+    (manager &key (environment :unset))
+  ;; pi@4a080252f isInstallTelemetryEnabled. CADR_TELEMETRY wins when the
+  ;; variable is set, including an empty string. Unset falls through to
+  ;; enableInstallTelemetry. The value check stays inline so it does not
+  ;; replace tool-manager's truthy-env-flag-p, which reads a variable name.
+  (let ((env
+          (if (eq environment :unset)
+              (uiop:getenv "CADR_TELEMETRY")
+              environment)))
+    (if (null env)
+        (settings-boolean-value
+         manager "enableInstallTelemetry" t)
+        (and (stringp env)
+             (plusp (length env))
+             (or (string= env "1")
+                 (member (string-downcase env)
+                         '("true" "yes")
+                         :test #'string=))
+             t))))
 
 (defun settings-boolean-value
     (manager key default &optional nested-key)
@@ -317,7 +342,7 @@
     (if (member value '(60 80 120)) value 60)))
 
 (defun settings-clear-on-shrink-p (manager)
-  ;; pi@ecac0a9c4 settings-manager.ts:1093-1099 gives an explicit setting
+  ;; pi@4a080252f settings-manager.ts:1093-1099 gives an explicit setting
   ;; precedence over the environment and defaults to false.
   (settings-boolean-value
    manager "terminal"
@@ -341,45 +366,74 @@
         default)))
 
 (defun settings-tui-mode (manager)
-  ;; pi@ecac0a9c4 settings-manager.ts:1128-1130 — only the exact string
-  ;; "fullscreen" selects fullscreen; everything else is regular.
-  (if (string= (settings-value manager "tuiMode" "") "fullscreen")
-      :fullscreen
-      :regular))
+  ;; pi@4a080252f settings-manager.ts:1256-1257 — only the exact string
+  ;; "regular" selects regular; everything else (including unset) is
+  ;; SETTINGS_DEFAULTS.tuiMode, which is fullscreen since v1.0.0.
+  (if (string= (settings-value manager "tuiMode" "") "regular")
+      :regular
+      :fullscreen))
 
 (defun parse-default-tools-setting (value)
-  ;; Baseline v0.86.0 settings-manager.ts getDefaultTools: a string array
-  ;; passes through as a copy; anything else is absent.
+  ;; pi@4a080252f settings-manager.ts getDefaultTools / resolveDefaultTools:
+  ;; a string array resolves plain names and +name/-name overlays; else absent.
   (and (vectorp value)
        (every #'stringp value)
-       (coerce value 'list)))
+       (resolve-default-tools (coerce value 'list))))
 
 (defun settings-default-tools (manager)
   (parse-default-tools-setting
    (settings-value manager "defaultTools")))
 
 (defun settings-fullscreen-scrollbar (manager)
-  ;; pi@ecac0a9c4 settings-manager.ts:1138-1141 — "always"/"hidden" pass
+  ;; pi@4a080252f settings-manager.ts:1138-1141 — "always"/"hidden" pass
   ;; through; everything else falls back to "auto".  No effect in
   ;; regular TUI mode.
   (settings-choice-value
    manager "fullscreenScrollbar" '("auto" "always" "hidden") "auto"))
 
+(defun settings-session-share-destination (manager)
+  ;; pi@4a080252f settings-manager.ts getSessionShareDestination
+  (settings-choice-value
+   manager "sessionShareDestination"
+   '("auto" "gist" "radius") "auto"))
+
 (defun settings-fullscreen-exit-output (manager)
-  ;; Baseline v0.86.0 settings-manager.ts getFullscreenExitOutput.
+  ;; Baseline v1.4.0 settings-manager.ts getFullscreenExitOutput.
   (if (string= (settings-value manager "fullscreenExitOutput" "")
                "resume-hint")
       :resume-hint
       :transcript))
 
 (defun settings-fullscreen-copy-on-select-p (manager)
-  ;; pi@ecac0a9c4 settings-manager.ts getFullscreenCopyOnSelect: default true.
+  ;; pi@4a080252f settings-manager.ts getFullscreenCopyOnSelect: default true.
   (let ((value
           (settings-value manager "fullscreenCopyOnSelect" t)))
     (not (eq value nil))))
 
+(defun settings-fullscreen-wheel-scroll-lines (manager)
+  ;; pi@4a080252f settings-manager.ts getFullscreenWheelScrollLines (#9758).
+  (let ((value
+          (settings-value
+           manager "fullscreenWheelScrollLines" "auto")))
+    (cond
+      ((or (null value)
+           (eq value :null)
+           (and (stringp value)
+                (string= value "auto")))
+       :auto)
+      ((and (realp value) (<= 1 value 100))
+       (floor value))
+      ((stringp value)
+       (let ((parsed
+               (ignore-errors
+                (parse-integer value :junk-allowed t))))
+         (if (and parsed (<= 1 parsed 100))
+             parsed
+             :auto)))
+      (t :auto))))
+
 (defun settings-terminal-capability-overrides (manager)
-  ;; pi@ecac0a9c4 settings-manager.ts getTerminalCapabilityOverrides.
+  ;; pi@4a080252f settings-manager.ts getTerminalCapabilityOverrides.
   (let ((terminal
           (settings-value manager "terminal"))
         (overrides nil))
@@ -409,7 +463,7 @@
     overrides))
 
 (defun settings-mermaid-rendering-mode (manager)
-  ;; pi@ecac0a9c4 settings-manager.ts:1252-1255 — markdown.mermaid is
+  ;; pi@4a080252f settings-manager.ts:1252-1255 — markdown.mermaid is
   ;; nested; "off"/"final" pass through, anything else is "streaming".
   (let ((mode
           (settings-nested-value
@@ -475,6 +529,24 @@
              (0 . "disabled"))))
    (format nil "~,3G sec"
            (/ timeout-ms 1000.0))))
+
+(defun settings-cache-warming-mode (manager)
+  ;; Baseline settings-manager.ts getCacheWarmingMode: globalSettings only.
+  (let ((mode
+          (cadr-ai::json-get
+           (settings-manager-global manager)
+           "cacheWarming"
+           :missing)))
+    (if (and (not (eq mode :missing))
+             (member mode +cache-warming-modes+ :test #'equal))
+        mode
+        "streaming")))
+
+(defun settings-set-cache-warming-mode (manager mode)
+  (unless (member mode +cache-warming-modes+ :test #'equal)
+    (error "Invalid cacheWarming mode ~S" mode))
+  (settings-set manager "cacheWarming" mode :scope :global)
+  mode)
 
 (defun default-project-trust-label (value)
   (cond
@@ -630,7 +702,7 @@
          (theme-names
            (remove-duplicates
             (append
-             '("dark" "light")
+             '("system" "dark" "light")
              (loop
                for theme
                  in (and resources
@@ -732,7 +804,7 @@
              :id "output-padding"
              :label "Output padding"
              :description
-             "Horizontal padding for user messages, assistant messages, and thinking"
+             "Horizontal padding for transcript content."
              :value
              (settings-output-padding
               settings-manager)
@@ -804,6 +876,15 @@
              '("sse" "websocket"
                "websocket-cached" "auto"))
             (make-settings-option
+             :id "share-destination"
+             :label "Session share destination"
+             :description
+             "Where to upload sessions with /share (auto prefers Radius when authenticated, otherwise GitHub Gist)"
+             :value
+             (settings-session-share-destination
+              settings-manager)
+             :values '("auto" "gist" "radius"))
+            (make-settings-option
              :id "http-idle-timeout"
              :label "HTTP idle timeout"
              :description
@@ -816,6 +897,14 @@
              :format-function
              #'http-idle-timeout-label)
             (make-settings-option
+             :id "cache-warming-mode"
+             :label "Cache warming"
+             :description
+             "off; streaming while the agent runs; idle also between runs while continuation stays profitable"
+             :value
+             (settings-cache-warming-mode settings-manager)
+             :values +cache-warming-modes+)
+            (make-settings-option
              :id "hide-thinking"
              :label "Hide thinking"
              :description
@@ -825,7 +914,7 @@
               settings-manager
               "hideThinkingBlock" nil)
             :values (list t nil))
-           ;; pi@ecac0a9c4 settings-selector.ts:539-546
+           ;; pi@4a080252f settings-selector.ts:539-546
            (make-settings-option
             :id "mermaid-rendering"
             :label "Mermaid diagrams"
@@ -858,12 +947,16 @@
              :id "quiet-startup"
              :label "Quiet startup"
              :description
-             "Disable verbose printing at startup"
+             "Disable verbose printing at startup (header: keep only the startup header)"
              :value
-             (settings-boolean-value
-              settings-manager
-              "quietStartup" nil)
-             :values (list t nil))
+             (let ((quiet
+                     (settings-quiet-startup
+                      settings-manager)))
+               (cond
+                 ((eq quiet t) "true")
+                 ((eq quiet :header) "header")
+                 (t "false")))
+             :values (list "true" "header" "false"))
             (make-settings-option
              :id "install-telemetry"
              :label "Install telemetry"
@@ -969,12 +1062,12 @@
                (model-thinking-overrides-summary
                 settings-manager))
              :submenu :model-thinking)
-           ;; pi@ecac0a9c4 settings-selector.ts:634-646
+           ;; pi@4a080252f settings-selector.ts:634-646
            (make-settings-option
             :id "tui-mode"
             :label "TUI mode"
             :description
-            "Interface layout; fullscreen mode is experimental"
+            "Interface layout; regular mode uses the terminal's normal scrollback"
             :value
             (string-downcase
              (symbol-name
@@ -1009,6 +1102,33 @@
                 "true"
                 "false")
             :values '("true" "false"))
+           (make-settings-option
+            :id "fullscreen-wheel-scroll-lines"
+            :label "Fullscreen wheel scrolling"
+            :description
+            "Lines per mouse-wheel event in fullscreen mode; 'auto' speeds up fast wheel spins where the terminal does not"
+            :value
+            (let ((lines
+                    (settings-fullscreen-wheel-scroll-lines
+                     settings-manager)))
+              (if (eq lines :auto)
+                  "auto"
+                  (princ-to-string lines)))
+            :values
+            (let* ((current
+                     (settings-fullscreen-wheel-scroll-lines
+                      settings-manager))
+                   (numbers
+                     (remove-duplicates
+                      (append
+                       '(1 2 3 5 10)
+                       (and (integerp current)
+                            (list current)))
+                      :test #'=)))
+              (cons
+               "auto"
+               (mapcar #'princ-to-string
+                       (sort (copy-list numbers) #'<)))))
            (make-settings-option
             :id "theme"
              :label "Theme"
@@ -1102,7 +1222,7 @@
            "markdown" "mermaid" value
            :scope :global))
          ((string= id "tui-mode")
-          ;; pi@ecac0a9c4 interactive-mode.ts:4557-4567: switch the
+          ;; pi@4a080252f interactive-mode.ts:4557-4567: switch the
           ;; running renderer first, persist only on success.
           (if *tui-mode-switch-hook*
               (when (funcall *tui-mode-switch-hook* value)
@@ -1127,6 +1247,24 @@
              :scope :global)
             (when *fullscreen-copy-on-select-hook*
               (funcall *fullscreen-copy-on-select-hook* enabled))))
+         ((string= id "fullscreen-wheel-scroll-lines")
+          (let ((lines
+                  (if (string= value "auto")
+                      :auto
+                      (or
+                       (ignore-errors
+                        (parse-integer value
+                                       :junk-allowed t))
+                       :auto))))
+            (settings-set
+             settings-manager
+             "fullscreenWheelScrollLines"
+             (if (eq lines :auto) "auto" lines)
+             :scope :global)
+            (when *fullscreen-wheel-scroll-lines-hook*
+              (funcall
+               *fullscreen-wheel-scroll-lines-hook*
+               lines))))
          ((string= id "steering-mode")
           (setf
            (cadr-agent:agent-steering-mode agent)
@@ -1145,6 +1283,9 @@
            (string-downcase
             (symbol-name value))
            :scope :global))
+         ((string= id "cache-warming-mode")
+          (settings-set-cache-warming-mode
+           settings-manager value))
          ((string= id "model-thinking-level")
           (let* ((model-key (getf value :model-key))
                  (model
@@ -1181,6 +1322,14 @@
                        settings-manager)
                       +default-thinking-level+)
                      level))))))
+         ((string= id "quiet-startup")
+          (settings-set
+           settings-manager "quietStartup"
+           (cond
+             ((equal value "header") "header")
+             ((equal value "true") t)
+             (t nil))
+           :scope :global))
          (t
           (let ((key
                   (cdr

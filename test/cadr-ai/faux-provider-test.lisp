@@ -355,7 +355,7 @@
               (cadr-ai:assistant-message-usage second))))))))
 
 (test faux-provider-usage-counts-the-complete-tool-contract
-  ;; pi@ecac0a9c4 providers/faux.ts:197-212 serializes each complete tool
+  ;; pi@4a080252f providers/faux.ts:197-212 serializes each complete tool
   ;; object.  Counting names alone materially under-reports footer context.
   (let* ((parameters
            (cadr-ai::json-object
@@ -377,15 +377,12 @@
             :tools (list tool)))
          (expected-prompt
            (format
-            nil "system:S~%~%user:U~%~%tools:~A"
+            nil "system:S~%tool+:~A~%~%user:U"
             (cadr-ai::stringify-json
-             (cadr-ai::list-json-array
-              (list
-               (cadr-ai::json-object
-                "name" "read"
-                "label" "read"
-                "description" "Read file"
-                "parameters" parameters))))))
+             (cadr-ai::json-object
+              "description" "Read file"
+              "name" "read"
+              "parameters" parameters))))
          (handle (cadr-ai:make-faux-provider)))
     (cadr-ai:faux-set-responses
      handle (list (cadr-ai:faux-assistant-message "ok")))

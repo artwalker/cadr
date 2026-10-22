@@ -21,6 +21,71 @@
     (is (search "originator=cadr" url))
     (is (not (search "originator=pi" url)))))
 
+(test openai-codex-browser-login-uses-the-caller-name
+  ;; pi@4a080252f #10433. The Codex browser authorize URL takes the
+  ;; caller's name. Omitting it stays cadr. Sign in with ChatGPT's
+  ;; agent_name_hint is not in this tree.
+  (let ((named
+          (cadr-ai:openai-authorization-url
+           "challenge" "state-1" "my-app"))
+        (spaced
+          (cadr-ai:openai-authorization-url
+           "challenge" "state-1" "my app")))
+    (is (search "originator=my-app" named))
+    (is (not (search "originator=cadr" named)))
+    (is (search "originator=my%20app" spaced)))
+  (let ((seen nil))
+    (handler-case
+        (cadr-ai::login-openai-oauth
+         nil
+         :agent-name "my-app"
+         :open-browser (lambda (url) (declare (ignore url)) nil)
+         :auth-prompt-function
+         (lambda (prompt)
+           (setf seen (getf prompt :url))
+           nil))
+      (cadr-ai:authentication-cancelled ()))
+    (is (search "originator=my-app" seen)))
+  (let* ((seen nil)
+         (interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (if (eq :select (getf prompt :type))
+                  "browser"
+                  (progn
+                    (setf seen (getf prompt :url))
+                    nil))))))
+    (let ((cadr-ai::*oauth-login-agent-name* "my-app"))
+      (handler-case
+          (cadr-ai::login-openai-runtime-oauth interaction)
+        (cadr-ai:authentication-cancelled ())))
+    (is (search "originator=my-app" seen)))
+  (let* ((seen nil)
+         (store (cadr-ai:make-memory-credential-store))
+         (runtime
+           (cadr-ai:make-models-runtime :credential-store store))
+         (interaction (cadr-ai:make-runtime-auth-interaction))
+         (provider
+           (cadr-ai:make-runtime-provider
+            :id :fixture
+            :name "Fixture"
+            :oauth-auth-p t
+            :oauth-login-function
+            (lambda (actual-interaction)
+              (declare (ignore actual-interaction))
+              (setf seen cadr-ai::*oauth-login-agent-name*)
+              (cadr-ai:make-oauth-credential
+               :provider :fixture
+               :access "access"
+               :refresh "refresh"
+               :expires
+               (+ (cadr-ai::unix-milliseconds) 3600000))))))
+    (cadr-ai:models-runtime-set-provider runtime provider)
+    (cadr-ai::models-runtime-login
+     runtime :fixture :oauth interaction :agent-name "my-app")
+    (is (string= "my-app" seen))))
+
 (test openai-token-credentials-use-openai-codex-provider-identity
   (let* ((payload
            (cadr-ai::json-object
@@ -111,6 +176,55 @@
          "redirect_uri=http%3A%2F%2Flocalhost%3A53692%2Fcallback"
          url))
     (is (search "state=state-1" url))))
+
+(test anthropic-oauth-uses-a-free-port-when-53692-is-taken
+  ;; pi@4a080252f #10571. The authorize URL, paste placeholder, and
+  ;; token exchange all use the listener that actually bound.
+  (let ((blocker (cadr-ai::open-oauth-callback-socket 53692)))
+    (unwind-protect
+         (let ((prompt nil))
+           (signals cadr-ai:authentication-cancelled
+             (cadr-ai:login-anthropic-oauth
+              nil
+              :output (make-string-output-stream)
+              :open-browser (constantly nil)
+              :auth-prompt-function
+              (lambda (value)
+                (setf prompt value)
+                (funcall (getf value :cancel-function))
+                nil)))
+           (let* ((placeholder (getf prompt :placeholder))
+                  (colon (position #\: placeholder :from-end t))
+                  (slash (position #\/ placeholder :start colon))
+                  (port
+                    (parse-integer
+                     placeholder :start (1+ colon) :end slash)))
+             (is (/= port 53692))
+             (is (string=
+                  (format nil "http://localhost:~D/callback" port)
+                  placeholder))
+             (is (search
+                  (format nil
+                          "redirect_uri=http%3A%2F%2Flocalhost%3A~D%2Fcallback"
+                          port)
+                  (getf prompt :url)))
+             (let ((released
+                     (cadr-ai::open-oauth-callback-socket port)))
+               (sb-bsd-sockets:socket-close released))))
+      (ignore-errors
+        (sb-bsd-sockets:socket-close blocker))))
+  (let ((sent nil))
+    (let ((cadr-ai::*oauth-http-request-function*
+            (lambda (url &key content &allow-other-keys)
+              (declare (ignore url))
+              (setf sent content)
+              (values
+               "{\"access_token\":\"access\",\"refresh_token\":\"refresh\",\"expires_in\":3600}"
+               200))))
+      (cadr-ai::exchange-anthropic-authorization-code
+       "code" "state" "verifier"
+       "http://localhost:9/callback"))
+    (is (search "http://localhost:9/callback" sent))))
 
 (test oauth-callback-parser-validates-path-and-state
   (multiple-value-bind (code status)
@@ -616,6 +730,71 @@
                  (cdr (assoc "openai-beta" headers
                              :test #'string-equal))))))
 
+(test codex-caller-headers-override-originator-and-user-agent
+  ;; pi@4a080252f #10429. Model headers, then caller headers, replace
+  ;; the Codex originator and User-Agent. Authorization and the
+  ;; account id stay on the credential. A null caller value removes
+  ;; the name.
+  (let* ((provider
+           (cadr-ai:make-openai-codex-provider
+            :oauth-access-token "oauth-secret"
+            :oauth-account-id "acct-7"))
+         (model
+           (cadr-ai:make-model
+            :id "gpt-5.5"
+            :provider :openai-codex
+            :api :openai-codex-responses
+            :base-url "https://chatgpt.com/backend-api"
+            :headers '(("originator" . "my-app"))))
+         (headers
+           (cadr-ai:request-spec-headers
+            (cadr-ai:build-request
+             provider model (sample-context)
+             :stream-p t
+             :headers '(("user-agent" . "my-app/1.0")
+                        ("Authorization" . "Bearer ignored")
+                        ("chatgpt-account-id" . "other-acct"))))))
+    (is (string= "my-app"
+                 (cdr (assoc "originator" headers
+                             :test #'string-equal))))
+    (is (string= "my-app/1.0"
+                 (cdr (assoc "user-agent" headers
+                             :test #'string-equal))))
+    (is (string= "Bearer oauth-secret"
+                 (cdr (assoc "authorization" headers
+                             :test #'string-equal))))
+    (is (string= "acct-7"
+                 (cdr (assoc "chatgpt-account-id" headers
+                             :test #'string-equal))))
+    (is (string= "responses=experimental"
+                 (cdr (assoc "openai-beta" headers
+                             :test #'string-equal))))
+    (is (= 1
+           (count "originator" headers
+                  :key #'car :test #'string-equal))))
+  (let* ((provider
+           (cadr-ai:make-openai-codex-provider
+            :oauth-access-token "oauth-secret"
+            :oauth-account-id "acct-7"))
+         (model
+           (cadr-ai:make-model
+            :id "gpt-5.5"
+            :provider :openai-codex
+            :api :openai-codex-responses
+            :base-url "https://chatgpt.com/backend-api"
+            :headers '(("originator" . "my-app"))))
+         (headers
+           (cadr-ai:request-spec-headers
+            (cadr-ai:build-request
+             provider model (sample-context)
+             :stream-p t
+             :headers '(("originator" . nil))))))
+    (is (null
+         (assoc "originator" headers :test #'string-equal)))
+    (is (string= "Bearer oauth-secret"
+                 (cdr (assoc "authorization" headers
+                             :test #'string-equal))))))
+
 (test oauth-access-token-is-redacted-from-provider-errors
   (let* ((secret "oauth-access-must-not-leak")
          (provider
@@ -981,3 +1160,134 @@
        "client_id=pi-gateway"
        (cadr-ai::radius-authorization-url
         "https://gateway.example" "challenge" "state"))))
+
+(test anthropic-runtime-login-offers-copy-code
+  ;; pi@4a080252f anthropic.ts #10194.
+  (let* ((prompts nil)
+         (events nil)
+         (requests nil)
+         (opened nil)
+         (interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (push (copy-tree prompt) prompts)
+              (case (getf prompt :type)
+                (:select "copy_code")
+                (:manual-code
+                 (let ((state
+                         (gethash
+                          "state"
+                          (cadr-ai::parse-query
+                           (subseq
+                            (getf (first events) :url)
+                            (1+
+                             (position
+                              #\?
+                              (getf (first events) :url))))))))
+                   (format nil "copied-code#~A" state)))
+                (t nil)))
+            :notify-function
+            (lambda (event)
+              (push (copy-tree event) events))))
+         (cadr-ai::*oauth-browser-open-function*
+           (lambda (url) (push url opened)))
+         (cadr-ai::*oauth-http-request-function*
+           (lambda (url &rest options)
+             (push (list url (copy-tree options)) requests)
+             (values
+              (cadr-ai::stringify-json
+               (cadr-ai::json-object
+                "access_token" "access-token"
+                "refresh_token" "refresh-token"
+                "expires_in" 3600))
+              200 nil))))
+    (let ((credential
+            (cadr-ai::login-anthropic-runtime-oauth interaction)))
+      (is (string=
+           "access-token"
+           (cadr-ai:oauth-credential-access credential)))
+      (is (string=
+           "refresh-token"
+           (cadr-ai:oauth-credential-refresh credential))))
+    (is (null opened))
+    (is (equal
+         '((:type :select
+            :message "Select Anthropic login method:"
+            :options
+            ((:id "browser" :label "Browser login (default)")
+             (:id "copy_code"
+              :label "Copy code login (headless)")))
+           (:type :manual-code
+            :message
+            "Paste the code Anthropic shows after you sign in:"
+            :placeholder "code#state"))
+         (reverse prompts)))
+    (let ((notices (reverse events)))
+      (is (eq :auth-url (getf (first notices) :type)))
+      (is (string=
+           "Complete login in your browser, then copy the code Anthropic shows and paste it here."
+           (getf (first notices) :instructions)))
+      (is (search
+           "redirect_uri=https%3A%2F%2Fplatform.claude.com%2Foauth%2Fcode%2Fcallback"
+           (getf (first notices) :url)))
+      (is (eq :progress (getf (second notices) :type)))
+      (is (string=
+           "Exchanging authorization code for tokens..."
+           (getf (second notices) :message))))
+    (let* ((body
+             (cadr-ai::parse-json
+              (getf (second (first requests)) :content)))
+           (state
+             (cadr-ai::json-get body "state")))
+      (is (string=
+           cadr-ai::+anthropic-oauth-token-url+
+           (first (first requests))))
+      (is (string= "copied-code" (cadr-ai::json-get body "code")))
+      (is (string=
+           "https://platform.claude.com/oauth/code/callback"
+           (cadr-ai::json-get body "redirect_uri")))
+      (is (string=
+           state
+           (cadr-ai::json-get body "code_verifier")))))
+  (let ((condition
+          (handler-case
+              (cadr-ai::login-anthropic-runtime-oauth
+               (cadr-ai:make-runtime-auth-interaction
+                :prompt-function (constantly "nope")))
+            (cadr-ai:authentication-error (caught) caught))))
+    (is (string=
+         "Unknown Anthropic login method: nope"
+         (cadr-ai:cadr-error-message condition))))
+  (let ((condition
+          (handler-case
+              (cadr-ai::login-anthropic-runtime-oauth
+               (cadr-ai:make-runtime-auth-interaction
+                :prompt-function
+                (lambda (prompt)
+                  (if (eq :select (getf prompt :type))
+                      "copy_code"
+                      "copied-code#wrong"))
+                :notify-function (constantly nil)))
+            (cadr-ai:authentication-error (caught) caught))))
+    (is (string=
+         "OAuth state mismatch"
+         (cadr-ai:cadr-error-message condition))))
+  (let ((condition
+          (handler-case
+              (cadr-ai::login-anthropic-runtime-oauth
+               (cadr-ai:make-runtime-auth-interaction
+                :prompt-function
+                (lambda (prompt)
+                  (if (eq :select (getf prompt :type))
+                      "copy_code"
+                      "   "))
+                :notify-function (constantly nil)))
+            (cadr-ai:authentication-error (caught) caught))))
+    (is (string=
+         "Missing authorization code"
+         (cadr-ai:cadr-error-message condition))))
+  (signals cadr-ai:authentication-cancelled
+    (cadr-ai::login-anthropic-runtime-oauth
+     (cadr-ai:make-runtime-auth-interaction
+      :prompt-function (constantly nil)))))

@@ -10,11 +10,11 @@
 (defparameter +goal28-pin-extension-events+
   '("after_provider_response" "agent_end" "agent_settled"
     "agent_start" "before_agent_start" "before_provider_headers"
-    "before_provider_request" "context" "input" "message_end"
-    "message_start" "message_update" "model_select"
-    "project_trust" "resources_discover" "session_before_compact"
-    "session_before_fork" "session_before_switch"
-    "session_before_tree" "session_compact"
+    "before_provider_request" "context" "input" "mcp_servers_change"
+    "message_end" "message_start" "message_update" "model_select"
+    "project_trust" "provider_stream_event" "resources_discover"
+    "session_before_compact" "session_before_fork"
+    "session_before_switch" "session_before_tree" "session_compact"
     "session_compact_failed" "session_info_changed"
     "session_shutdown" "session_start" "session_tree"
     "thinking_level_select" "tool_execution_end"
@@ -23,7 +23,7 @@
 
 (defparameter +goal28-pin-provider-files+
   '("amazon-bedrock.ts" "ant-ling.ts" "anthropic.ts"
-    "azure-openai-responses.ts" "baseten.ts" "cerebras.ts"
+    "azure.ts" "baseten.ts" "cerebras.ts"
     "cloudflare-ai-gateway.ts" "cloudflare-workers-ai.ts"
     "deepseek.ts" "fireworks.ts" "github-copilot.ts"
     "google-vertex.ts" "google.ts" "groq.ts" "huggingface.ts"

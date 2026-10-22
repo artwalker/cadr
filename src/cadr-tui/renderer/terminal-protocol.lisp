@@ -13,7 +13,10 @@
    (rows
     :initarg :rows
     :initform 24
-    :accessor terminal-rows)))
+    :accessor terminal-rows)
+   (exit-renderer
+    :initform nil
+    :accessor terminal-exit-renderer)))
 
 (defgeneric terminal-start (terminal))
 (defgeneric terminal-stop (terminal))
@@ -22,6 +25,9 @@
 (defgeneric terminal-resized-p (terminal))
 (defgeneric terminal-query-background-color
     (terminal &key timeout-seconds))
+(defgeneric terminal-query-theme-colors
+    (terminal &key timeout-seconds))
+(defgeneric terminal-take-theme-colors (terminal))
 (defgeneric terminal-query-color-scheme
     (terminal &key timeout-seconds))
 (defgeneric terminal-set-color-scheme-notifications
@@ -29,6 +35,7 @@
 (defgeneric terminal-color-scheme-change (terminal))
 (defgeneric terminal-set-progress (terminal active))
 (defgeneric terminal-poll-progress (terminal))
+(defgeneric terminal-set-program-status (terminal status))
 
 (defmethod terminal-start ((terminal terminal))
   (declare (ignore terminal))
@@ -55,6 +62,15 @@
   (declare (ignore terminal timeout-seconds))
   nil)
 
+(defmethod terminal-query-theme-colors
+    ((terminal terminal) &key (timeout-seconds 0.1d0))
+  (declare (ignore terminal timeout-seconds))
+  nil)
+
+(defmethod terminal-take-theme-colors ((terminal terminal))
+  (declare (ignore terminal))
+  nil)
+
 (defmethod terminal-query-color-scheme
     ((terminal terminal) &key (timeout-seconds 0.1d0))
   (declare (ignore terminal timeout-seconds))
@@ -75,4 +91,8 @@
 
 (defmethod terminal-poll-progress ((terminal terminal))
   (declare (ignore terminal))
+  nil)
+
+(defmethod terminal-set-program-status ((terminal terminal) status)
+  (declare (ignore terminal status))
   nil)

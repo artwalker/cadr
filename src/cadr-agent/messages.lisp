@@ -25,6 +25,57 @@
   (timestamp (cadr-ai::unix-milliseconds) :type integer)
   (exclude-from-context-p nil :type boolean))
 
+(defstruct agent-system-message
+  (content "" :type string)
+  (tools-added nil :type list)
+  (sections nil :type (or null hash-table))
+  (timestamp 0 :type integer))
+
+(defun conversation-messages (messages)
+  (remove-if #'agent-system-message-p messages))
+
+(defun same-message-sequence-p (left right)
+  (and
+   (= (length left) (length right))
+   (every #'eq left right)))
+
+(defun current-system-message (messages)
+  (let ((parts nil)
+        (tools nil)
+        (seen-p nil)
+        (timestamp 0))
+    (dolist (message messages)
+      (when (agent-system-message-p message)
+        (unless seen-p
+          (setf timestamp
+                (agent-system-message-timestamp message)))
+        (setf seen-p t)
+        (let ((text (agent-system-message-content message)))
+          (when (and (stringp text) (plusp (length text)))
+            (push text parts)))
+        (dolist (tool (agent-system-message-tools-added message))
+          (setf tools
+                (remove
+                 (cadr-ai:tool-name tool)
+                 tools
+                 :key #'cadr-ai:tool-name
+                 :test #'string=))
+          (setf tools (append tools (list tool))))))
+    (when seen-p
+      (make-agent-system-message
+       :content
+       (format nil "~{~A~^~%~%~}" (nreverse parts))
+       :tools-added tools
+       :timestamp timestamp))))
+
+(defun restore-system-messages (current visible returned)
+  (if (same-message-sequence-p returned visible)
+      current
+      (let ((head (current-system-message current)))
+        (if head
+            (cons head returned)
+            returned))))
+
 (defstruct custom-agent-message
   (custom-type "" :type string)
   content
@@ -98,6 +149,7 @@
     (branch-summary-message-to-llm message))
   (:method ((message compaction-summary-agent-message))
     (compaction-summary-agent-message-to-llm message))
+  (:method ((message cadr-ai:system-message)) message)
   (:method ((message cadr-ai:user-message)) message)
   (:method ((message cadr-ai:assistant-message)) message)
   (:method ((message cadr-ai:tool-result-message)) message)
@@ -106,7 +158,8 @@
 
 (defun llm-passthrough-message-p (message)
   (typep message
-         '(or cadr-ai:user-message
+         '(or cadr-ai:system-message
+           cadr-ai:user-message
            cadr-ai:assistant-message
            cadr-ai:tool-result-message)))
 

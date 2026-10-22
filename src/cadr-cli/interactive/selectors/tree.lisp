@@ -1266,37 +1266,16 @@
     (name arguments)
   (cond
     ((string= name "read")
-     (let* ((path
-              (tree-selector-shorten-path
-               (or
-                (tree-selector-tool-argument
-                 arguments "path" "file_path")
-                "")))
-            (offset-present-p
-              (cadr-ai::json-present-p
-               arguments "offset"))
-            (limit-present-p
-              (cadr-ai::json-present-p
-               arguments "limit"))
-            (offset
-              (and offset-present-p
-                   (cadr-ai::json-get
-                    arguments "offset")))
-            (limit
-              (and limit-present-p
-                   (cadr-ai::json-get
-                    arguments "limit"))))
-       (format
-        nil "[read: ~A~A]"
-        path
-        (if (or offset-present-p limit-present-p)
-            (let* ((start (or offset 1))
-                   (end
-                     (and limit
-                          (+ start limit -1))))
-              (format nil ":~A~@[-~A~]"
-                      start end))
-            ""))))
+     (format
+      nil "[read: ~A~A]"
+      (tree-selector-shorten-path
+       (or
+        (tree-selector-tool-argument
+         arguments "path" "file_path")
+        ""))
+      (format-read-line-range
+       (cadr-ai::json-get arguments "offset")
+       (cadr-ai::json-get arguments "limit"))))
     ((member name '("write" "edit")
              :test #'string=)
      (format

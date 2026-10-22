@@ -18,7 +18,7 @@
      (make-string padding :initial-element #\Space))))
 
 (defun goal9-b3-overlay-text-line (value width)
-  ;; pi@ecac0a9c4 Text/TruncatedText owns the complete row.  This oracle is
+  ;; pi@4a080252f Text/TruncatedText owns the complete row.  This oracle is
   ;; intentionally implemented from the baseline width contract instead of
   ;; calling Cadr's selector helpers.
   (let* ((limited
@@ -179,13 +179,13 @@
             :done-function (constantly nil))))))
 
 (test goal15-overlay-cursor-contract-follows-the-focused-input-component
-  ;; Fixed pi@ecac0a9c4 input components own the cursor.  Selectors without an
+  ;; Fixed pi@4a080252f input components own the cursor.  Selectors without an
   ;; Input/Focusable component return no cursor metadata at all; they do not
   ;; invent a (0, 0) cursor that the terminal renderer can accidentally show.
   (let ((expected
           '(("model" 4 2)
             ("model-scoped" 5 2)
-            ;; pi@ecac0a9c4 focuses SettingsList, which does not implement
+            ;; pi@4a080252f focuses SettingsList, which does not implement
             ;; Focusable.  Its private Input therefore never emits the
             ;; hardware-cursor marker.
             ("settings" nil nil)
@@ -212,7 +212,7 @@
           (is (eql expected-column column)))))))
 
 (test goal15-overlay-viewport-crops-the-natural-document-and-hides-offscreen-cursor
-  ;; pi@ecac0a9c4 Tui.ts:1076-1151 lays components out at natural height,
+  ;; pi@4a080252f Tui.ts:1076-1151 lays components out at natural height,
   ;; then the terminal viewport selects the visible rows.  A focused Input
   ;; above that viewport does not leak a synthetic cursor onto the screen.
   (let* ((models
@@ -235,13 +235,13 @@
             :show-hardware-cursor-p t)))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-overlay-lines overlay 80 0d0)
-      (is (= 21 (length lines)))
+      (is (= 22 (length lines)))
       (is (= 4 row))
       (let ((output
               (cadr-tui:render-frame
                renderer lines
                :cursor-row row :cursor-column column)))
-        (is (= 11 (cadr-tui:renderer-viewport-top renderer)))
+        (is (= 12 (cadr-tui:renderer-viewport-top renderer)))
         (is (search (format nil "~C[?25l" #\Escape) output))
         (is (null (search (format nil "~C[?25h" #\Escape) output)))
         (is
@@ -258,7 +258,7 @@
            (cadr-tui:virtual-terminal-snapshot terminal))))))))
 
 (defparameter +goal9-b3-overlay-baseline-semantic-oracles+
-  ;; Each row is copied from the fixed pi@ecac0a9c4 component contract named
+  ;; Each row is copied from the fixed pi@4a080252f component contract named
   ;; in its second field.  The ordered strings are intentionally independent
   ;; of Cadr's SHA fixtures and rendering implementation.
   '(("model"
@@ -275,7 +275,7 @@
      (">" "→ Auto-compact" "Auto-resize images" "Block images"
       "Skill commands" "Show hardware cursor" "Editor padding"
       "Output padding" "Autocomplete max items" "Clear on shrink"
-      "Terminal progress" "(1/30)"
+      "Terminal progress" "(1/33)"
       "Automatically compact context when it gets too large"
       "Type to search · Enter/Space to change · Esc to cancel"))
     ("resume"
@@ -398,9 +398,9 @@
 
 (test goal9-b3-every-overlay-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected
-          '(("model" . "828CFA77C89D3FA8E84E4ACC72FC9AFC797E8C82A26AEFA3FE0FC46438195869")
-            ("model-scoped" . "9031A4EA00CFEAA9E9A931B0A493414B76AAB46BEC10A0C81204003DAA466DB1")
-            ("settings" . "BEBF2D0C4FFB197A65CE953AECB2B542A2AB2B72E0A5F52115DF0211F4A24FC6")
+          '(            ("model" . "EC38393C54D8BCF85F2B6C43D29C28BD2B587C00D7CE674D04A29763FD3D7A4C")
+            ("model-scoped" . "36A1D3104EDAA3B46E2A1E930125148A641118756FD2E4C2B0C6F621687025C1")
+            ("settings" . "CE5F8656D49383947C171C7076916911E7B93762D551ACD7DC80D6B873A38CF2")
             ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
             ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
             ("tree" . "B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117")
@@ -446,7 +446,11 @@
             (goal9-b3-overlay-text-line "→ one [faux] ✓" width)
             (goal9-b3-overlay-text-line "  two [other]" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width)
-            "" border)
+            ""
+            (goal9-b3-overlay-text-line
+             "  Enter to select · Ctrl+S to set as default · Escape/Ctrl+C to cancel"
+             width)
+            border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-model-selector
         (cadr-cli::make-model-selector-state
@@ -462,7 +466,11 @@
             (goal9-b3-overlay-text-line "→ one [faux] ✓" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
             (goal9-b3-overlay-text-line "  Model catalogs refreshed." width)
-            "" border)
+            ""
+            (goal9-b3-overlay-text-line
+             "  Enter to select · Ctrl+S to set as default · Escape/Ctrl+C to cancel"
+             width)
+            border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-model-selector
         (cadr-cli::make-model-selector-state

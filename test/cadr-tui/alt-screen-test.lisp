@@ -98,7 +98,7 @@
       renderer
       (format nil "~C[<64;1;1M" #\Escape)))
     (alt-render renderer ten)
-    (is (= 3
+    (is (= 5
            (cadr-tui:renderer-viewport-top
             renderer)))
     (is (not
@@ -108,7 +108,7 @@
      renderer
      (loop for index from 1 to 12
            collect (format nil "line ~D" index)))
-    (is (= 3
+    (is (= 5
            (cadr-tui:renderer-viewport-top
             renderer)))))
 
@@ -254,14 +254,14 @@
     (is
      (cadr-tui:renderer-handle-input
       renderer
-      (format nil "~C[F" #\Escape)))
+      (format nil "~C[8^" #\Escape)))
     (alt-render renderer lines)
     (is (= 4
            (cadr-tui:renderer-viewport-top
             renderer)))))
 
 (test alt-screen-half-page-and-prompt-jump-follow-the-baseline-rules
-  ;; pi@ecac0a9c4 tui-alt-screen.ts:435-449 — half-page scrolls by
+  ;; pi@4a080252f tui-alt-screen.ts:435-449 — half-page scrolls by
   ;; floor(viewport/2); prompt jumps land on the next OSC 133;A row.
   (let ((previous (cadr-tui:get-keybindings)))
     (unwind-protect
@@ -320,7 +320,7 @@
       (cadr-tui:set-keybindings previous))))
 
 (test alt-screen-scrollbar-follows-the-baseline-geometry-and-visibility
-  ;; pi@ecac0a9c4 layout.ts:268-303 + components/scroll-view.ts:62-70:
+  ;; pi@4a080252f layout.ts:268-303 + components/scroll-view.ts:62-70:
   ;; auto mode paints the thumb only after real scroll activity while
   ;; the content overflows; thumb height is track²/content clamped to
   ;; [min(2, track), track]; the offset maps scrollTop onto the free
@@ -626,7 +626,7 @@
             renderer)))))
 
 (test alt-screen-alt-wheel-scrolls-five-times-faster
-  ;; pi@ecac0a9c4 tui-alt-screen.ts:75,968-970 — SGR bit 3 (8) is Alt.
+  ;; pi@4a080252f tui-alt-screen.ts:75,968-970 — SGR bit 3 (8) is Alt.
   (let* ((terminal
            (make-alt-recording-terminal :rows 4))
          (renderer
@@ -652,7 +652,7 @@
     (is (= 18 (cadr-tui:renderer-viewport-top renderer)))))
 
 (test alt-screen-jump-to-latest-indicator-when-scrolled-up
-  ;; pi@ecac0a9c4 tui-alt-screen.ts:1618-1635
+  ;; pi@4a080252f tui-alt-screen.ts:1618-1635
   (let* ((terminal
            (make-alt-recording-terminal :rows 4 :columns 48))
          (renderer
@@ -685,6 +685,44 @@
         (1+ (getf rect :column))
         (1+ (getf rect :row))))
       (is (cadr-tui:renderer-following-output-p renderer)))))
+
+(test alt-screen-jump-label-column-ignores-scrollbar-visibility
+  ;; pi@4a080252f tui-alt-screen.ts — auto scrollbar hide must not
+  ;; move the jump-to-end label (#9136).
+  (let* ((label " ↓ Jump to latest message · End ")
+         (lines
+           (loop for index from 1 to 20
+                 collect (format nil "line ~D" index)))
+         (hidden
+           (cadr-tui:make-terminal-renderer
+            (make-alt-recording-terminal :rows 4 :columns 48)
+            :alt-p t
+            :scrollbar-mode :hidden
+            :scroll-to-end-indicator-function (lambda () label)))
+         (shown
+           (cadr-tui:make-terminal-renderer
+            (make-alt-recording-terminal :rows 4 :columns 48)
+            :alt-p t
+            :scrollbar-mode :always
+            :scroll-to-end-indicator-function (lambda () label))))
+    (cadr-tui:renderer-start hidden)
+    (cadr-tui:renderer-start shown)
+    (alt-render hidden lines)
+    (alt-render shown lines)
+    (cadr-tui:renderer-scroll-to-top hidden)
+    (cadr-tui:renderer-scroll-to-top shown)
+    (alt-render hidden lines)
+    (alt-render shown lines)
+    (let ((hidden-rect
+            (cadr-tui::terminal-renderer-scroll-to-end-indicator-rect
+             hidden))
+          (shown-rect
+            (cadr-tui::terminal-renderer-scroll-to-end-indicator-rect
+             shown)))
+      (is (not (null hidden-rect)))
+      (is (not (null shown-rect)))
+      (is (= (getf hidden-rect :column)
+             (getf shown-rect :column))))))
 
 (test alt-screen-restores-terminal-before-exit-and-prints-document
   (let* ((terminal
@@ -732,7 +770,7 @@
                (search "sixth" restore)))))))
 
 (test renderer-live-mode-switch-round-trips-main-screen-state
-  ;; pi@ecac0a9c4 interactive-mode.ts:788-832 — a live tuiMode switch
+  ;; pi@4a080252f interactive-mode.ts:788-832 — a live tuiMode switch
   ;; preserves the main-screen render state across the fullscreen
   ;; round-trip and emits the preserveScreen exit sequence.
   (let* ((terminal (make-alt-recording-terminal))
@@ -766,7 +804,7 @@
     (is (cadr-tui::terminal-renderer-invalid-p renderer))))
 
 (test renderer-multi-click-selects-word-then-line
-  ;; pi@ecac0a9c4 tui-alt-screen.ts:644-713 — double click selects the
+  ;; pi@4a080252f tui-alt-screen.ts:644-713 — double click selects the
   ;; word under the cursor, triple click the line, and the streak
   ;; cycles back to a character selection on the fourth click.
   (let ((renderer
@@ -821,7 +859,7 @@
                  renderer 0))))))
 
 (test renderer-flash-composites-and-expires
-  ;; pi@ecac0a9c4 components/alt-screen-flash.ts — flashes render as
+  ;; pi@4a080252f components/alt-screen-flash.ts — flashes render as
   ;; reverse-video padded messages and expire after their duration.
   (let ((renderer
           (cadr-tui:make-terminal-renderer
@@ -843,7 +881,7 @@
 
 (test alt-screen-search-overlay-literals-match-baseline
   ;; Baseline packages/tui/src/alt-screen-search.ts:143-149
-  ;; (pi@ecac0a9c4). AltScreenSearchComponent.render composes the
+  ;; (pi@4a080252f). AltScreenSearchComponent.render composes the
   ;; overlay title at runtime, so the extractor never sees these
   ;; literals. Expected strings are copied from the TypeScript, not
   ;; from cadr.
@@ -870,3 +908,171 @@
              (cadr-tui::selection-word-range "foo-bar" 3)))
   (is (equal '(0 . 3)
              (cadr-tui::selection-word-range "a/b" 0))))
+
+(test goal24-copy-selection-flash-names-the-backend-error
+  (multiple-value-bind (message duration)
+      (cadr-tui::renderer-copy-selection-flash t)
+    (is (string= "Copied!" message))
+    (is (= 1000 duration)))
+  (multiple-value-bind (message duration)
+      (cadr-tui::renderer-copy-selection-flash
+       "Clipboard unavailable: install `xclip` or `xsel`, or check X11 access")
+    (is (search "xclip" message))
+    (is (= 5000 duration)))
+  (multiple-value-bind (message duration)
+      (cadr-tui::renderer-copy-selection-flash nil)
+    (is (string= "Copy failed" message))
+    (is (= 5000 duration))))
+
+(test goal24-wezterm-clears-before-kitty-draw
+  (let ((previous-pane (uiop:getenv "WEZTERM_PANE")))
+    (unwind-protect
+         (progn
+           (setf (uiop:getenv "WEZTERM_PANE") "1")
+           (cadr-tui:reset-terminal-capabilities)
+           (cadr-tui:set-terminal-capabilities
+            (cadr-tui:make-terminal-capabilities
+             :images :kitty
+             :true-color-p t
+             :hyperlinks-p t))
+           (let* ((terminal
+                    (make-alt-recording-terminal
+                     :columns 20 :rows 3))
+                  (renderer
+                    (cadr-tui:make-terminal-renderer
+                     terminal :alt-p t))
+                  (image
+                    (cadr-tui:encode-kitty-image
+                     "AAAA"
+                     :columns 2 :rows 1
+                     :image-id 42
+                     :move-cursor-p nil)))
+             (cadr-tui:register-kitty-image-metadata
+              :image-id 42 :columns 2 :rows 1
+              :width-px 20 :height-px 10)
+             (cadr-tui:renderer-start renderer)
+             (alt-render
+              renderer (list image "text" "end")
+              :cursor-row 2 :cursor-column 0)
+             (let* ((payload
+                      (with-output-to-string (out)
+                        (dolist
+                            (event
+                             (alt-recording-events
+                              terminal))
+                          (when
+                              (and
+                               (eq :write
+                                   (getf event :type))
+                               (stringp
+                                (getf event :data)))
+                            (write-string
+                             (getf event :data)
+                             out)))))
+                    (last-clear
+                      (search
+                       (format nil "~C[2K" #\Escape)
+                       payload
+                       :from-end t))
+                    (image-mark
+                      (search "i=42" payload)))
+               (is (not (null last-clear)))
+               (is (not (null image-mark)))
+               (is (< last-clear image-mark)))))
+      (if previous-pane
+          (setf (uiop:getenv "WEZTERM_PANE")
+                previous-pane)
+          (sb-posix:unsetenv "WEZTERM_PANE"))
+      (cadr-tui:reset-terminal-capabilities))))
+
+(test unhandled-wheel-scrolls-the-transcript-under-a-focused-overlay
+  ;; pi@4a080252f #10769. A focused overlay that does not handle the
+  ;; wheel must not swallow it. The transcript scrolls, and the input
+  ;; is consumed so it is not delivered again as raw overlay input.
+  (let* ((terminal
+           (make-alt-recording-terminal :columns 20 :rows 6))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p t))
+         (gestures nil)
+         (lines
+           (loop for index from 1 to 12
+                 collect (format nil "line ~D" index))))
+    (cadr-tui:renderer-set-wheel-scroll-lines renderer 1)
+    (setf
+     (cadr-tui::terminal-renderer-component-mouse-function
+      renderer)
+     (lambda (gesture)
+       (push gesture gestures)
+       nil))
+    (cadr-tui:renderer-start renderer)
+    (alt-render renderer lines)
+    (let ((top (cadr-tui:renderer-viewport-top renderer)))
+      (is (eq t
+              (cadr-tui:renderer-handle-input
+               renderer
+               (format nil "~C[<64;3;1M" #\Escape))))
+      (is (< (cadr-tui:renderer-viewport-top renderer) top))
+      (is (eq :wheel (getf (first gestures) :type))))
+    (setf gestures nil
+          (cadr-tui::terminal-renderer-component-mouse-function
+           renderer)
+          (lambda (gesture)
+            (push gesture gestures)
+            t))
+    (alt-render renderer lines)
+    (let ((top (cadr-tui:renderer-viewport-top renderer)))
+      (is (eq t
+              (cadr-tui:renderer-handle-input
+               renderer
+               (format nil "~C[<64;3;1M" #\Escape))))
+      (is (= top (cadr-tui:renderer-viewport-top renderer)))
+      (is (eq :wheel (getf (first gestures) :type))))))
+
+(test fullscreen-home-does-not-scroll-the-transcript
+  ;; pi@4a080252f tui-alt-screen.test.ts #10314. The viewport sees the
+  ;; key before the editor, so Home/End must not match top/bottom.
+  (let* ((terminal
+           (make-alt-recording-terminal :rows 4))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t))
+         (home (format nil "~COH" #\Escape))
+         (end (format nil "~C[F" #\Escape))
+         (ctrl-home (format nil "~C[1;5H" #\Escape))
+         (ctrl-end (format nil "~C[1;5F" #\Escape))
+         (legacy-ctrl-home (format nil "~C[7^" #\Escape))
+         (kitty-ctrl-home (format nil "~C[57423;5u" #\Escape)))
+    (cadr-tui:renderer-start renderer)
+    (alt-render
+     renderer
+     (loop for index from 1 to 12
+           collect (format nil "line ~A" index)))
+    (is (eq t
+            (cadr-tui:renderer-following-output-p renderer)))
+    (dolist (input (list home end))
+      (is (null
+           (cadr-tui:renderer-handle-input renderer input)))
+      (is (eq t
+              (cadr-tui:renderer-following-output-p renderer))))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer ctrl-home)))
+    (is (null
+         (cadr-tui:renderer-following-output-p renderer)))
+    (is (= 0
+           (cadr-tui:renderer-viewport-top renderer)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer ctrl-end)))
+    (is (eq t
+            (cadr-tui:renderer-following-output-p renderer)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer legacy-ctrl-home)))
+    (is (null
+         (cadr-tui:renderer-following-output-p renderer)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer kitty-ctrl-home)))
+    (is (null
+         (cadr-tui:renderer-following-output-p renderer)))))

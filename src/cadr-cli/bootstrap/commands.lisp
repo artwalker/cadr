@@ -252,7 +252,10 @@
              (cli-arguments-extensions command)
              (settings-extension-paths settings-manager))
             :no-discovery-p
-            (cli-arguments-no-extensions-p command))))
+            (cli-arguments-no-extensions-p command)
+            :disabled-builtin-extensions
+            (and (cli-arguments-no-mcp-p command)
+                 '("mcp")))))
     (unless (cli-arguments-no-extensions-p command)
       (let ((package-records
               (package-resource-paths
@@ -291,6 +294,15 @@
        (cli-extension-manager-host manager))))))
 
 (defun cli-handler (command)
+  (when (and (cli-arguments-provider command)
+             (null (cli-arguments-model command)))
+    (error
+     'cadr-ai:configuration-error
+     :message
+     (format
+      nil
+      "Error: --provider requires --model (for example: --provider ~A --model <pattern>)"
+      (cli-arguments-provider command))))
   (let* ((input-terminal-p
            (cadr-tui:terminal-stream-p
             *standard-input* :input))
@@ -404,6 +416,9 @@
                 (default-agent-directory)))))
             :no-discovery-p
             (cli-arguments-no-extensions-p command)
+            :disabled-builtin-extensions
+            (and (cli-arguments-no-mcp-p command)
+                 '("mcp"))
             :secret-function
             (lambda ()
               (provider-config-secrets config))))
@@ -452,7 +467,7 @@
              (cadr-core:project-config-directory cwd))
             :project-trusted-p project-trusted-p))
          (_use-theme-override
-           ;; Baseline v0.86.0 main.ts: --use-theme applies a runtime
+           ;; Baseline v1.4.0 main.ts: --use-theme applies a runtime
            ;; (non-persisted) settings override for this invocation.
            (when (cli-arguments-use-theme command)
              (settings-override-runtime-value
@@ -468,17 +483,18 @@
             (make-file-auth-storage
              (default-auth-path))))
          (image-normalizer
-           ;; pi@ecac0a9c4 utils/tool-result-images.ts via
+           ;; pi@4a080252f utils/tool-result-images.ts via
            ;; agent-session.ts:517-520.
            (progn
              (setf
               cadr-agent::*tool-result-image-normalize-function*
-              (lambda (content)
+              (lambda (content &optional model)
                 (normalize-tool-result-images
                  content
                  :auto-resize-p
                  (settings-auto-resize-images-p
-                  settings-manager))))
+                  settings-manager)
+                 :model model)))
              t))
          (available-models
            (model-registry-available-models
@@ -587,31 +603,59 @@
                 (getf initial-scope-entry
                       :thinking)))
          (_startup-model-config
-           (when startup-model
-             (let ((matched-provider-p
-                     (and
-                      (cli-arguments-provider command)
-                      (string-equal
-                       (provider-key
-                        (cadr-ai:model-provider startup-model))
-                       (provider-key
-                        (cli-arguments-provider command))))))
-               (setf
-                config
-                (provider-config-for-model
-                 model-registry startup-model
-                 :api-key
-                 (and matched-provider-p
-                      (cli-arguments-api-key command))
-                 :base-url
-                 (and matched-provider-p
-                      (cli-arguments-base-url command))
-                 :allow-missing-auth-p t)))))
+           (cond
+             ((cli-arguments-model command)
+              (multiple-value-bind
+                    (resolved-model error thinking warning)
+                  (resolve-cli-model
+                   model-registry
+                   (cli-arguments-model command)
+                   :provider (cli-arguments-provider command)
+                   :inline-api-key-p
+                   (cadr-ai::non-empty-string-p
+                    (cli-arguments-api-key command))
+                   :explicit-thinking
+                   (cli-arguments-thinking command))
+                (when error
+                  (error 'cadr-ai:configuration-error
+                         :message error))
+                (when warning
+                  (format frontend-output "Warning: ~A~%" warning)
+                  (finish-output frontend-output))
+                (when resolved-model
+                  (setf config
+                        (provider-config-for-model
+                         model-registry resolved-model
+                         :api-key (cli-arguments-api-key command)
+                         :base-url (cli-arguments-base-url command)
+                         :allow-missing-auth-p t))
+                  (unless (cli-arguments-thinking command)
+                    (setf startup-thinking thinking)))))
+             (startup-model
+              (let ((matched-provider-p
+                      (and
+                       (cli-arguments-provider command)
+                       (string-equal
+                        (provider-key
+                         (cadr-ai:model-provider startup-model))
+                        (provider-key
+                         (cli-arguments-provider command))))))
+                (setf
+                 config
+                 (provider-config-for-model
+                  model-registry startup-model
+                  :api-key
+                  (and matched-provider-p
+                       (cli-arguments-api-key command))
+                  :base-url
+                  (and matched-provider-p
+                       (cli-arguments-base-url command))
+                  :allow-missing-auth-p t))))))
          ;; Baseline model-resolver.ts:650-651 — with no authenticated
-         ;; model and no explicit --model/--provider the session keeps a
-         ;; NIL model (the footer sentinel "no-model"); sending then
-         ;; fails with formatNoModelSelectedMessage.  An explicit
-         ;; --provider still resolves that provider's default model.
+         ;; model and no explicit --model the session keeps a NIL model
+         ;; (the footer sentinel "no-model"); sending then fails with
+         ;; formatNoModelSelectedMessage. --provider without --model is
+         ;; rejected in cli-handler before this point.
          (bare-sentinel-p
            (and
             (null startup-model)
@@ -735,6 +779,22 @@
             (settings-shell-path settings-manager)))
          (builtin-names
            +builtin-coding-tool-names+)
+         (cli-tools-option
+           (cli-arguments-tools command))
+         (cli-tool-modifiers
+           (tool-modifiers cli-tools-option))
+         (cli-default-tool-names
+           (or
+            (settings-default-tools settings-manager)
+            +default-coding-tool-names+))
+         (cli-uses-default-tools-p
+           ;; pi@4a080252f sdk.ts usesDefaultTools; --no-tools and
+           ;; --no-builtin-tools both map to a noTools mode.
+           (and
+            (or (null cli-tools-option) cli-tool-modifiers)
+            (not (cli-arguments-no-tools-p command))
+            (not
+             (cli-arguments-no-builtin-tools-p command))))
          (tool-filter
            (lambda (tools)
              (if
@@ -744,23 +804,36 @@
                  (select-coding-tools
                   tools
                   :allow
-                  (or
-                   (cli-arguments-tools command)
-                   (append
-                    ;; Baseline v0.86.0 sdk.ts: the defaultTools setting
-                    ;; overrides the built-in default selection.
-                    (or
-                     (settings-default-tools settings-manager)
-                     +default-coding-tool-names+)
-                    (mapcar
-                     #'cadr-ai:tool-name
-                     (remove-if
-                      (lambda (tool)
-                        (member
-                         (cadr-ai:tool-name tool)
-                         builtin-names
-                         :test #'string=))
-                      tools))))
+                  (cond
+                    (cli-tool-modifiers
+                     (append
+                      (apply-tool-modifiers
+                       cli-default-tool-names
+                       cli-tool-modifiers)
+                      (mapcar
+                       #'cadr-ai:tool-name
+                       (remove-if
+                        (lambda (tool)
+                          (member
+                           (cadr-ai:tool-name tool)
+                           builtin-names
+                           :test #'string=))
+                        tools))))
+                    (cli-tools-option cli-tools-option)
+                    (t
+                     (append
+                      ;; Baseline v1.4.0 sdk.ts: the defaultTools setting
+                      ;; overrides the built-in default selection.
+                      cli-default-tool-names
+                      (mapcar
+                       #'cadr-ai:tool-name
+                       (remove-if
+                        (lambda (tool)
+                          (member
+                           (cadr-ai:tool-name tool)
+                           builtin-names
+                           :test #'string=))
+                        tools)))))
                   :exclude
                   (cli-arguments-exclude-tools
                    command)
@@ -777,35 +850,24 @@
              selected-baseline-tools cwd)))
          (retry-settings
            (settings-retry-settings settings-manager))
-        (agent
-          (cadr-agent:make-agent
-           :provider (provider-config-provider config)
-           :model
-           (and
-            (not bare-sentinel-p)
-            (provider-config-model config))
-            :system-prompt
-            (first system-prompt-values)
-            :system-prompt-options
-            (second system-prompt-values)
-            :tools baseline-tools
-            :tool-filter-function tool-filter
-            :extension-host
-            (cli-extension-manager-host
-             extension-manager)
-            :stream-function
-            (stream-function-with-provider-retry
-             (stream-function-with-http-proxy
-              (stream-function-with-http-idle-timeout
-               (stream-function-with-websocket-connect-timeout
-                (stream-function-with-thinking-budgets
+         (agent-cell (cons nil nil))
+         (cache-warmer nil)
+         (inner-stream
+           (stream-function-with-provider-retry
+            (stream-function-with-http-proxy
+             (stream-function-with-http-idle-timeout
+              (stream-function-with-websocket-connect-timeout
+               (stream-function-with-thinking-budgets
                 (make-extension-aware-stream-function
                  (cli-extension-manager-host
                   extension-manager)
                  :session-id
                  (and session
                       (cadr-agent:session-id
-                       session)))
+                       session))
+                 :telemetry-p
+                 (install-telemetry-enabled-p
+                  settings-manager))
                 (lambda ()
                   (settings-thinking-budgets
                    settings-manager)))
@@ -818,31 +880,119 @@
               (lambda ()
                 (settings-http-proxy settings-manager)))
              (lambda ()
-               (settings-retry-settings settings-manager)))
-            :session session
-            :auto-retry-p
-            (getf retry-settings :enabled-p)
-            :auto-retry-max-attempts
-            (getf retry-settings :max-retries)
-            :auto-retry-base-delay
-            (/ (getf retry-settings :base-delay-ms) 1000)
-            :auto-compact-p
-            (settings-boolean-value
-             settings-manager
-             "compaction" t "enabled")
-            :abort-p
-            (lambda () abort-requested-p)
-            :on-event
-            (lambda (event)
-              (when event-consumer
-                (funcall event-consumer event)))))
-         (anthropic-warning-state
-           (make-anthropic-warning-state)))
+               (settings-retry-settings settings-manager))))
+         (warmer
+           (make-live-cache-warmer
+            settings-manager
+            (lambda () (car agent-cell))
+            (lambda ()
+              (let* ((agent (car agent-cell))
+                     (active
+                       (and agent
+                            (cadr-agent:agent-session agent))))
+                (and active
+                     (cadr-agent:session-entries active))))
+            inner-stream))
+         (agent
+           (cadr-agent:make-agent
+            :provider (provider-config-provider config)
+            :model
+            (and
+             (not bare-sentinel-p)
+             (provider-config-model config))
+             :system-prompt
+             (first system-prompt-values)
+             :system-prompt-options
+             (second system-prompt-values)
+             :tools baseline-tools
+             :tool-filter-function tool-filter
+             :extension-host
+             (cli-extension-manager-host
+              extension-manager)
+             :named-tool-names
+             (explicitly-named-tool-names
+              cli-tools-option
+              (settings-default-tools settings-manager))
+             :tool-allowlist
+             (if (and cli-tools-option
+                      (null cli-tool-modifiers))
+                 cli-tools-option
+                 '())
+             :tool-allowlist-p
+             (or (and cli-tools-option
+                      (null cli-tool-modifiers))
+                 (cli-arguments-no-tools-p command))
+             :tool-allowlist-filters-mcp-p
+             (tool-allowlist-filters-mcp-names-p
+              (if (and cli-tools-option
+                       (null cli-tool-modifiers))
+                  cli-tools-option
+                  '())
+              (or (and cli-tools-option
+                       (null cli-tool-modifiers))
+                  (cli-arguments-no-tools-p command)))
+             :excluded-tool-names
+             (copy-list
+              (cli-arguments-exclude-tools command))
+             :stream-function
+             (wrap-stream-function-with-cache-warmer
+              warmer
+              (lambda ()
+                (let* ((agent (car agent-cell))
+                       (active
+                         (and agent
+                              (cadr-agent:agent-session
+                               agent))))
+                  (and active
+                       (cadr-agent:session-id active))))
+              (lambda () (car agent-cell))
+              inner-stream)
+             :summarization-auth-function
+             (lambda (agent model signal)
+               (declare (ignore agent))
+               (when model
+                 (provider-config-for-model
+                  model-registry model
+                  :allow-missing-auth-p t
+                  :abort-p
+                  (lambda ()
+                    (cadr-agent:extension-cancellation-aborted-p
+                     signal)))))
+             :session session
+             :auto-retry-p
+             (getf retry-settings :enabled-p)
+             :auto-retry-max-attempts
+             (getf retry-settings :max-retries)
+             :auto-retry-base-delay
+             (/ (getf retry-settings :base-delay-ms) 1000)
+             :auto-compact-p
+             (settings-boolean-value
+              settings-manager
+              "compaction" t "enabled")
+             :abort-p
+             (lambda () abort-requested-p)
+             :on-event
+             (lambda (event)
+               (when (eq (cadr-agent:agent-event-type event)
+                         :agent-settled)
+                 (cache-warmer-on-agent-settled warmer))
+               (when event-consumer
+                 (funcall event-consumer event)))))
+          (anthropic-warning-state
+            (make-anthropic-warning-state)))
     (declare
      (ignore _extension-report
              _package-extension-report
              _startup-model-config
              _scope-diagnostic-report))
+    (setf cache-warmer warmer
+          (car agent-cell) agent)
+    (when cli-uses-default-tools-p
+      (restore-active-tools-from-transcript
+       agent
+       :modifiers (or cli-tool-modifiers '())
+       :exclude-tools
+       (cli-arguments-exclude-tools command)))
     (when (and tui-p *pending-deprecation-warnings*)
       ;; Baseline main.ts:837-839 — deprecated-directory warnings are
       ;; shown before the TUI takes over, interactive mode only.
@@ -933,7 +1083,7 @@
            (let ((provider
                    (provider-config-provider config)))
              (or
-              ;; pi@ecac0a9c4 footer.ts:139-141 — Kimi Coding is
+              ;; pi@4a080252f footer.ts:139-141 — Kimi Coding is
               ;; subscription-backed despite API-key authentication.
               (string-equal
                (provider-key
@@ -1008,8 +1158,10 @@
                   :start
                   (1+ compaction-position)))
                (let ((estimate
-                       (cadr-agent::context-estimated-tokens
-                        (cadr-agent:agent-messages agent))))
+                       (cadr-agent::projected-context-tokens
+                        (cadr-agent:agent-messages agent)
+                        (cadr-agent::agent-declared-system-message
+                         agent))))
                  (* 100d0
                     (/ estimate window))))))
          (current-cache-hit-rate ()
@@ -1181,7 +1333,9 @@
          (refresh-auth (provider action)
            (let ((previous-auth-source
                    (provider-config-auth-source
-                    config)))
+                    config))
+                 (previous-model
+                   (provider-config-model config)))
              (refresh-available-models)
              (if
                  (and
@@ -1192,10 +1346,21 @@
                     (eq
                      provider
                      (cadr-ai:model-provider
-                      (provider-config-model
-                       config))))))
+                      previous-model)))))
+                 ;; If the snapshot still lacks the default after the first
+                 ;; refresh, wait for one more catalog refresh before
+                 ;; erroring. Skip selection when the session model
+                 ;; changed mid-refresh.
                  (post-login-selection-result
-                  provider available-models #'select-model)
+                  provider available-models #'select-model
+                  :refresh-models-function
+                  (lambda (provider-id)
+                    (declare (ignore provider-id))
+                    (refresh-available-models))
+                  :model-unchanged-p
+                  (lambda ()
+                    (eq (provider-config-model config)
+                        previous-model)))
                  (let ((updated
                          (resolve-provider-config
                           :provider
@@ -1221,7 +1386,7 @@
            (refresh-auth provider :logout)
            (values
             provider
-            ;; pi@ecac0a9c4 model-runtime.ts:532 — non-nil when the
+            ;; pi@4a080252f model-runtime.ts:532 — non-nil when the
             ;; credential was removed but the local snapshot did not
             ;; sync.
             (model-registry-error model-registry)))
@@ -1368,6 +1533,24 @@
              :output frontend-output
              :status-function status-consumer
              :ansi-theme-p tui-p
+             :share-destination
+             (settings-session-share-destination
+              settings-manager)
+             :cache-warming-mode
+             (%read-cache-warming-mode settings-manager)
+             :cache-warming-status
+             (and warmer (cache-warmer-status warmer))
+             :ui-function
+             (or
+              (cadr-agent::extension-host-ui-function
+               (cli-extension-manager-host
+                extension-manager))
+              (let ((host
+                      (cadr-agent::agent-extension-host
+                       agent)))
+                (and host
+                     (cadr-agent::extension-host-ui-function
+                      host))))
              :model-price-function
              (lambda (provider model-id)
                (handler-case
@@ -1481,7 +1664,7 @@
          (refresh-model-catalogs ()
            ;; Worker side of the selector-open catalog refresh: re-read
            ;; the registry without holding the TUI lock.  Baseline
-           ;; v0.86.0 model-catalog-refresh.ts: a second caller while one
+           ;; v1.4.0 model-catalog-refresh.ts: a second caller while one
            ;; refresh is in flight shares that run's result.
            (sb-thread:with-mutex (catalog-refresh-lock)
              (when catalog-refresh-in-flight-p
@@ -1735,7 +1918,7 @@
               status-consumer
               "Model selection saved to settings")))
          (scoped-models-selector ()
-           ;; v0.86.0: the selector opens even with an empty catalog; the
+           ;; v1.4.0: the selector opens even with an empty catalog; the
            ;; baseline dropped the "No models available" early exit.
            (make-scoped-models-selector-state
             :all-models available-models
@@ -1835,12 +2018,19 @@
                    "trusted"
                    "untrusted"))))
            (getf selection :trusted-p))
-         (confirm-import (line &key cwd-confirm)
+           (confirm-import (line &key cwd-confirm)
            (handle-session-command
             line agent
             :directory session-directory
             :cwd cwd
             :output frontend-output
+            :share-destination
+            (settings-session-share-destination
+             settings-manager)
+            :cache-warming-mode
+            (%read-cache-warming-mode settings-manager)
+            :cache-warming-status
+            (and warmer (cache-warmer-status warmer))
             :confirm-function
             (lambda (title message)
               (declare (ignore title message))
@@ -2041,7 +2231,8 @@
                     :prompt-snippet (getf metadata :prompt-snippet)
                     :prompt-guidelines
                     (copy-list (getf metadata :prompt-guidelines))
-                    :source (or (getf metadata :source) :builtin)))))
+                    :source (or (getf metadata :source) :builtin)
+                    :exposure (or (getf metadata :exposure) :direct)))))
          (extension-context-usage ()
            (let* ((model (cadr-agent:agent-model agent))
                   (window
@@ -2113,7 +2304,10 @@
                :abort-function
                (lambda () (cadr-agent:agent-abort agent))))
              (:abort (cadr-agent:agent-abort agent))
-             (:shutdown (cadr-agent:agent-shutdown agent))
+             (:shutdown
+              (when warmer
+                (cache-warmer-cancel warmer))
+              (cadr-agent:agent-shutdown agent))
              (:has-pending-messages-p
               (or (cadr-agent::agent-steering-queue agent)
                   (cadr-agent::agent-follow-up-queue agent)
@@ -2187,7 +2381,8 @@
          (call-with-cli-signal-handlers
           agent
           (lambda ()
-            (case mode
+            (unwind-protect
+                (case mode
            (:tui
             (setf
              startup-scope-line
@@ -2197,8 +2392,11 @@
               :verbose-p
               (cli-arguments-verbose-p command)
               :quiet-startup-p
-              (settings-value
-               settings-manager "quietStartup" nil)))
+              (and
+               (not
+                (cli-arguments-verbose-p command))
+               (settings-quiet-startup
+                settings-manager))))
             (when startup-scope-line
               (write-line startup-scope-line)
               (finish-output))
@@ -2221,21 +2419,31 @@
             (multiple-value-bind
                   (startup-compact
                    startup-expanded)
-                (if
-                    (or
-                     (cli-arguments-verbose-p command)
-                     (not
-                      (settings-value
-                       settings-manager
-                       "quietStartup" nil)))
-                    (make-tui-startup-lines
-                     resources
-                     :extensions
-                     (startup-extension-entries extension-manager)
-                     :extension-issues
-                     (cli-extension-manager-startup-issues
-                      extension-manager))
-                    (values nil nil))
+                (let ((quiet
+                        (and
+                         (not
+                          (cli-arguments-verbose-p command))
+                         (settings-quiet-startup
+                          settings-manager))))
+                  (cond
+                    ((eq quiet t) (values nil nil))
+                    ((eq quiet :header)
+                     (make-tui-startup-lines
+                      resources
+                      :extensions
+                      (startup-extension-entries extension-manager)
+                      :extension-issues
+                      (cli-extension-manager-startup-issues
+                       extension-manager)
+                      :include-resources-p nil))
+                    (t
+                     (make-tui-startup-lines
+                      resources
+                      :extensions
+                      (startup-extension-entries extension-manager)
+                      :extension-issues
+                      (cli-extension-manager-startup-issues
+                       extension-manager)))))
               (setf
                startup-compact
                (apply-changelog-to-startup-compact-lines
@@ -2418,7 +2626,13 @@
                    (push
                     (list :name name :path nil)
                     themes)))
-               (nreverse themes)))
+               (setf themes (nreverse themes))
+               (unless
+                   (find "system" themes
+                         :key (lambda (theme) (getf theme :name))
+                         :test #'string=)
+                 (push (list :name "system" :path nil) themes))
+               themes))
            :get-theme-function
            (lambda (name)
              (or
@@ -2430,7 +2644,7 @@
                  (getf theme :name))
                :test #'string=)
               (and
-               (member name '("dark" "light")
+               (member name '("system" "dark" "light")
                        :test #'string=)
                (list :name name :path nil))))
            :set-theme-function
@@ -2448,7 +2662,7 @@
                        (stringp name)
                        (or
                         (member
-                         name '("dark" "light")
+                         name '("system" "dark" "light")
                          :test #'string=)
                         (find
                          name
@@ -2473,6 +2687,24 @@
                             name)))))
            :session-state-function
            #'current-session-display-state
+           :show-cache-miss-notices-function
+           (lambda ()
+             (settings-boolean-value
+              settings-manager
+              "showCacheMissNotices" nil))
+           :session-entries-function
+           (lambda ()
+             (let ((session
+                     (cadr-agent:agent-session agent)))
+               (and session
+                    (cadr-agent:session-entries session))))
+           :model-price-function
+           (lambda (provider model-id)
+             (handler-case
+                 (cadr-ai:model-metadata-cache-read-price
+                  (cadr-ai:find-model-metadata
+                   provider model-id))
+               (cadr-ai:configuration-error () 0d0)))
            :debug-messages-function
            (lambda ()
              (with-output-to-string (out)
@@ -2527,6 +2759,9 @@
            (lambda ()
              (settings-markdown-code-block-indent
               settings-manager))
+           :output-pad-function
+           (lambda ()
+             (settings-output-padding settings-manager))
            :external-editor-command-function
            (lambda ()
              (settings-external-editor-command
@@ -2673,8 +2908,8 @@
            :startup-expanded-lines
            startup-expanded
            :alt-p
-           ;; pi@ecac0a9c4 interactive-mode.ts:530-531 — the CLI flag
-           ;; wins over the tuiMode setting; default regular.
+           ;; pi@4a080252f interactive-mode.ts:611-612 — the CLI flag
+           ;; wins over the tuiMode setting; default fullscreen.
            (eq :fullscreen
                (or (cli-arguments-tui-mode command)
                    (settings-tui-mode settings-manager)))
@@ -2702,6 +2937,9 @@
            :copy-on-select-p
            (settings-fullscreen-copy-on-select-p
             settings-manager)
+           :wheel-scroll-lines
+           (settings-fullscreen-wheel-scroll-lines
+            settings-manager)
            :last-assistant-text-function
            (lambda ()
              (last-assistant-text agent))
@@ -2709,15 +2947,20 @@
            ;; Baseline interactive-mode.ts:910-911 — the SDK's
            ;; modelFallbackMessage is a startup warning; with no
            ;; authenticated model it is formatNoModelsAvailableMessage
-           ;; (sdk.ts:217-219).
+           ;; (sdk.ts:217-219). Crash notice matches takeUnnotifiedCrash
+           ;; (interactive-mode.ts:1128-1133).
            (let ((fallback
                    (and bare-sentinel-p
                         (cadr-ai::no-models-available-message)))
                  (warning
-                   (anthropic-warning)))
+                   (anthropic-warning))
+                 (crash
+                   (take-unnotified-crash)))
              (append
               (and fallback (list fallback))
-              (and warning (list warning))))
+              (and warning (list warning))
+              (and crash
+                   (list (crash-announcement-text crash)))))
            :initial-statuses
            (let ((status
                    (session-compaction-status
@@ -2819,4 +3062,6 @@
                  settings-manager)
                 :shell-path
                 (settings-shell-path
-                 settings-manager)))))))))))
+                 settings-manager))))
+              (when warmer
+                (cache-warmer-cancel warmer))))))))))

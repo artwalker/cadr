@@ -29,6 +29,11 @@
            :oauth-account-id oauth-account-id
            :provider-id provider-id
            :options effective-options)))
+    ;; pi@4a080252f azure.ts: both APIs stay on the Azure provider so the
+    ;; endpoint and deployment name are resolved before dispatch.
+    (when (eq provider-id :azure)
+      (return-from make-protocol-provider
+        (apply #'make-azure-openai-provider common)))
     (case protocol
       (:anthropic-messages
        (apply #'make-anthropic-provider common))

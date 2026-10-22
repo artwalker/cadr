@@ -6,7 +6,7 @@
   login-label
   auth-url-instructions
   manual-input-message
-  ;; pi@ecac0a9c4 packages/ai/src/auth/oauth/*.ts — subscription-backed
+  ;; pi@4a080252f packages/ai/src/auth/oauth/*.ts — subscription-backed
   ;; OAuth access (footer "(sub)" marker via isUsingSubscription).
   (is-subscription-p nil :type boolean))
 
@@ -64,6 +64,8 @@
   "https://platform.claude.com/v1/oauth/token")
 (defparameter +anthropic-oauth-redirect-uri+
   "http://localhost:53692/callback")
+(defparameter +anthropic-copy-code-redirect-uri+
+  "https://platform.claude.com/oauth/code/callback")
 (defparameter +anthropic-oauth-scopes+
   "org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload")
 
@@ -75,6 +77,7 @@
      (list "xdg-open" url)
      :output nil
      :error-output nil)))
+(defparameter *oauth-login-agent-name* nil)
 
 (defparameter +sha256-constants+
   #(#x428a2f98 #x71374491 #xb5c0fbcf #xe9b5dba5
@@ -291,7 +294,14 @@
                         (percent-encode key)
                         (percent-encode value)))))
 
-(defun openai-authorization-url (challenge state)
+(defun openai-login-originator (agent-name)
+  "Use a caller's name when one was given. Otherwise keep cadr."
+  (if (stringp agent-name)
+      agent-name
+      +openai-originator+))
+
+(defun openai-authorization-url
+    (challenge state &optional (originator +openai-originator+))
   (format
    nil "~A?~A"
    +openai-oauth-authorize-url+
@@ -305,9 +315,11 @@
       ("state" . ,state)
       ("id_token_add_organizations" . "true")
       ("codex_cli_simplified_flow" . "true")
-      ("originator" . ,+openai-originator+)))))
+      ("originator" . ,originator)))))
 
-(defun anthropic-authorization-url (challenge state)
+(defun anthropic-authorization-url
+    (challenge state
+     &optional (redirect-uri +anthropic-oauth-redirect-uri+))
   (format
    nil "~A?~A"
    +anthropic-oauth-authorize-url+
@@ -315,7 +327,7 @@
     `(("code" . "true")
       ("client_id" . ,+anthropic-oauth-client-id+)
       ("response_type" . "code")
-      ("redirect_uri" . ,+anthropic-oauth-redirect-uri+)
+      ("redirect_uri" . ,redirect-uri)
       ("scope" . ,+anthropic-oauth-scopes+)
       ("code_challenge" . ,challenge)
       ("code_challenge_method" . "S256")

@@ -1980,6 +1980,25 @@
        (plusp (length (string-trim '(#\Space #\Tab #\Newline #\Return)
                                    value)))))
 
+(defun javascript-trim-nonempty-p (value)
+  ;; ECMAScript String.prototype.trim: WhiteSpace plus LineTerminator.
+  ;; pi@4a080252f tool-result hasText is textResult.trim().length > 0.
+  ;; The original text is what gets sent; trim only decides emptiness.
+  (and (stringp value)
+       (plusp
+        (length
+         (string-trim
+          (load-time-value
+           (map 'string #'code-char
+                #(#x0009 #x000A #x000B #x000C #x000D
+                  #x0020 #x00A0 #x1680
+                  #x2000 #x2001 #x2002 #x2003 #x2004
+                  #x2005 #x2006 #x2007 #x2008 #x2009 #x200A
+                  #x2028 #x2029 #x202F #x205F
+                  #x3000 #xFEFF))
+           t)
+          value)))))
+
 (defun content-text (content &optional (separator (string #\Newline)))
   (cond
     ((stringp content)

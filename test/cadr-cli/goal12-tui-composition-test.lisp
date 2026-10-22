@@ -371,3 +371,108 @@
         (is (find "Indexing" plain :test #'search))
         (is (find "Reasoning hidden" plain :test #'search))
         (is (not (find "private chain" plain :test #'search)))))))
+
+(test closing-a-lower-custom-overlay-keeps-the-upper-one
+  ;; pi #10648: done() on a lower overlay must hide that overlay, not the
+  ;; topmost one opened later.
+  (dolist (non-capturing-p '(nil t))
+    (let* ((editor (cadr-tui:make-multiline-editor))
+           (stack
+             (cadr-tui:make-overlay-stack
+              :focused-component editor))
+           (lower (cadr-tui:make-text-component "LOWER"))
+           (upper (cadr-tui:make-text-component "UPPER"))
+           (lower-handle
+             (cadr-tui:overlay-stack-show
+              stack lower nil :non-capturing-p non-capturing-p))
+           (upper-handle
+             (cadr-tui:overlay-stack-show stack upper nil))
+           (lower-state
+             (cadr-cli::make-extension-custom-ui-state
+              :component lower
+              :overlay-p t
+              :handle lower-handle))
+           (upper-state
+             (cadr-cli::make-extension-custom-ui-state
+              :component upper
+              :overlay-p t
+              :handle upper-handle)))
+      (is (eq upper
+              (cadr-tui::overlay-stack-focused-component stack)))
+      (is (eq upper-state
+              (cadr-cli::complete-extension-custom-ui
+               lower-state "lower closed" upper-state)))
+      (is (cadr-cli::extension-custom-ui-state-done-p lower-state))
+      (is (string=
+           "lower closed"
+           (cadr-cli::extension-custom-ui-state-result lower-state)))
+      (is (not (cadr-cli::extension-custom-ui-state-done-p upper-state)))
+      (is (equal
+           (list upper)
+           (mapcar
+            #'cadr-tui::overlay-stack-entry-component
+            (cadr-tui::overlay-stack-entries stack))))
+      (is (eq upper
+              (cadr-tui::overlay-stack-focused-component stack)))
+      (is (null
+           (cadr-cli::complete-extension-custom-ui
+            upper-state "upper closed" upper-state)))
+      (is (null (cadr-tui::overlay-stack-entries stack)))
+      (is (eq editor
+              (cadr-tui::overlay-stack-focused-component stack))))))
+
+(defun goal12-mark-fullscreen-selection (renderer)
+  (cadr-tui:render-frame
+   renderer '("alpha" "beta" "gamma" "delta")
+   :cursor-row 3 :cursor-column 0)
+  (setf
+   (cadr-tui::terminal-renderer-selection-anchor renderer)
+   (cons 0 0)
+   (cadr-tui::terminal-renderer-selection-focus renderer)
+   (cons 0 4)
+   (cadr-tui::terminal-renderer-selection-granularity renderer)
+   :word
+   (cadr-tui::terminal-renderer-last-click-at renderer)
+   12d0
+   (cadr-tui::terminal-renderer-last-click-count renderer)
+   3
+   (cadr-tui::terminal-renderer-last-click-row renderer)
+   0
+   (cadr-tui::terminal-renderer-last-click-word-start renderer)
+   0
+   (cadr-tui::terminal-renderer-last-click-word-end renderer)
+   5))
+
+(test transcript-rebuild-drops-fullscreen-selection
+  ;; pi@4a080252f #10567. Replacing the transcript must drop the
+  ;; highlight and the multi-click word. A main-screen renderer has
+  ;; no such selection.
+  (let* ((terminal
+           (cadr-tui:make-virtual-terminal :columns 20 :rows 6))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p t))
+         (state (cadr-cli::make-tui-state)))
+    (goal12-mark-fullscreen-selection renderer)
+    (is (eq t (cadr-tui:renderer-has-active-selection-p renderer)))
+    (cadr-cli::reset-tui-messages state nil :renderer renderer)
+    (is (not (cadr-tui:renderer-has-active-selection-p renderer)))
+    (is (null
+         (cadr-tui::terminal-renderer-last-click-at renderer)))
+    (is (zerop
+         (cadr-tui::terminal-renderer-last-click-count renderer)))
+    (is (eq :character
+            (cadr-tui::terminal-renderer-selection-granularity
+             renderer)))
+    (goal12-mark-fullscreen-selection renderer)
+    (cadr-cli::replace-tui-entries state nil :renderer renderer)
+    (is (not (cadr-tui:renderer-has-active-selection-p renderer)))
+    (is (zerop
+         (cadr-tui::terminal-renderer-last-click-count renderer)))
+    (let ((main
+            (cadr-tui:make-terminal-renderer terminal)))
+      (setf
+       (cadr-tui::terminal-renderer-last-click-count main)
+       2)
+      (cadr-cli::replace-tui-entries state nil :renderer main)
+      (is (= 2
+             (cadr-tui::terminal-renderer-last-click-count main))))))

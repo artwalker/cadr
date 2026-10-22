@@ -142,3 +142,45 @@
           settings)))
     (is (null (cadr-cli:sdk-settings-thinking-budgets settings)))
     (is (null (cadr-cli:sdk-settings-theme-paths settings)))))
+
+(test settings-patterns-expand-home-tilde
+  ;; pi #10765: !pattern, +path, and -path expand a leading ~/.
+  (with-test-directory (root)
+    (let* ((home (merge-pathnames "home/" root))
+           (skills (merge-pathnames "extra/skills/" home))
+           (previous (uiop:getenv "HOME")))
+      (dolist (name '("keep" "glob-excluded" "exact-excluded"))
+        (let ((dir (merge-pathnames
+                    (concatenate 'string name "/") skills)))
+          (ensure-directories-exist dir)
+          (write-text (merge-pathnames "SKILL.md" dir) "body")))
+      (unwind-protect
+           (let ((keep (merge-pathnames "keep/SKILL.md" skills))
+                 (glob (merge-pathnames "glob-excluded/SKILL.md" skills))
+                 (exact (merge-pathnames
+                         "exact-excluded/SKILL.md" skills))
+                 (patterns '("!~/extra/skills/glob-*"
+                             "-~/extra/skills/exact-excluded")))
+             (setf (uiop:getenv "HOME") (namestring home))
+             (is (eq t
+                     (cadr-cli::config-enabled-by-patterns-p
+                      keep patterns home)))
+             (is (null
+                  (cadr-cli::config-enabled-by-patterns-p
+                   glob patterns home)))
+             (is (null
+                  (cadr-cli::config-enabled-by-patterns-p
+                   exact patterns home)))
+             (is (eq t
+                     (cadr-cli::config-enabled-by-patterns-p
+                      exact
+                      '("!*" "+~/extra/skills/exact-excluded")
+                      home)))
+             (is (null
+                  (cadr-cli::config-enabled-by-patterns-p
+                   keep
+                   '("!*" "+~/extra/skills/exact-excluded")
+                   home))))
+        (if previous
+            (setf (uiop:getenv "HOME") previous)
+            (setf (uiop:getenv "HOME") nil))))))

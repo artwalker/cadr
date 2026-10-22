@@ -700,7 +700,14 @@
                :absent
                :off)))
       (:openai-codex-responses
-       (if reasoning :on :absent))
+       (if reasoning
+           :on
+           (if (and
+                (cadr-ai::model-thinking-level-present-p model :off)
+                (null
+                 (cadr-ai::model-thinking-level-value model :off)))
+               :absent
+               :off)))
       ((:google-generative-ai :google-vertex)
        (if reasoning
            :on
@@ -768,7 +775,8 @@
   (let ((events nil)
         (state
           (cadr-ai::make-provider-stream-state
-           :message (cadr-ai::empty-assistant-message model))))
+           :message (cadr-ai::empty-assistant-message model)
+           :model model)))
     (dolist (data
              (thinking-matrix-event-data
               (cadr-ai:model-api model) thinking-p))
@@ -844,3 +852,276 @@
                   (thinking-matrix-event-types
                    provider model expected-thinking-events-p))
                  "~A thinking event sequence differs" label))))))))
+
+(defun strict-fallback-parameters ()
+  (cadr-ai::json-object
+   "type" "object"
+   "properties"
+   (cadr-ai::json-object
+    "path" (cadr-ai::json-object "type" "string"))
+   "required" #("path")))
+
+(defun strict-fallback-tool (strict)
+  (make-tool
+   :name "read"
+   :description "Read a file"
+   :parameters (strict-fallback-parameters)
+   :constrained-sampling (list :type :json-schema :strict strict)))
+
+(defun strict-fallback-model ()
+  (make-model
+   :id "claude-test"
+   :provider :anthropic
+   :api :anthropic-messages
+   :base-url "https://api.anthropic.com"
+   :max-tokens 1024
+   :compat '(:supports-strict-tools t)))
+
+(defun strict-fallback-payload-tool (payload)
+  (aref (cadr-ai::json-get payload "tools") 0))
+
+(defun strict-fallback-http (box status-message)
+  (lambda (url &rest arguments)
+    (declare (ignore url))
+    (setf (cdr box)
+          (cons (cadr-ai::parse-json (getf arguments :content))
+                (cdr box)))
+    (if (and status-message
+             (= (length (cdr box)) 1))
+        (error 'cadr-ai::api-error
+               :provider :anthropic
+               :status 400
+               :code "invalid_request_error"
+               :message status-message)
+        (values
+         (open (fixture-path
+                "test/fixtures/goal20-paired-paths/anthropic-messages.sse")
+               :direction :input
+               :element-type '(unsigned-byte 8))
+         200
+         '(("content-type" . "text/event-stream"))))))
+
+(test anthropic-retries-preferred-strict-tools-once-after-a-grammar-limit
+  ;; pi #10409
+  (let* ((box (cons nil nil))
+         (*http-request-function*
+           (strict-fallback-http
+            box
+            "The compiled grammar is too large"))
+         (message
+           (stream-chat
+            (make-anthropic-provider :api-key "key")
+            (strict-fallback-model)
+            (make-context
+             :messages (list (make-user-message :content "hi"))
+             :tools (list (strict-fallback-tool :prefer)))
+            (lambda (event) (declare (ignore event)))))
+         (payloads (cdr box)))
+    (is (= 2 (length payloads)))
+    (let ((first (strict-fallback-payload-tool (second payloads)))
+          (second (strict-fallback-payload-tool (first payloads))))
+        (is (eq t (cadr-ai::json-get first "strict")))
+        (is (cadr-ai::json-present-p
+             (cadr-ai::json-get first "input_schema")
+             "additionalProperties"))
+        (is (not (cadr-ai::json-present-p second "strict")))
+        (is (not (cadr-ai::json-present-p
+                  (cadr-ai::json-get second "input_schema")
+                  "additionalProperties"))))
+      (let ((diagnostic
+              (find :anthropic-strict-tools-fallback
+                    (cadr-ai:assistant-message-diagnostics message)
+                    :key #'cadr-ai:assistant-message-diagnostic-type)))
+        (is (not (null diagnostic)))
+        (is (string=
+             "strict_tool_limits_exceeded"
+             (getf (cadr-ai:assistant-message-diagnostic-details
+                    diagnostic)
+                   :reason)))))
+  (is (cadr-ai::strict-tool-limit-rejection-p
+       (make-condition
+        'cadr-ai::api-error
+        :status 400
+        :code "error"
+        :message "Too many strict tools (12)")))
+  (is (cadr-ai::strict-tool-limit-rejection-p
+       (make-condition
+        'cadr-ai::api-error
+        :status 400
+        :code "invalid_request_error"
+        :message "Schemas contains too many parameters with union types (3)")))
+  (is (not
+       (cadr-ai::strict-tool-limit-rejection-p
+        (make-condition
+         'cadr-ai::api-error
+         :status 400
+         :code "invalid_request_error"
+         :message "other request error"))))
+  (let ((payloads nil))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url))
+              (push (cadr-ai::parse-json (getf arguments :content))
+                    payloads)
+              (error 'cadr-ai::api-error
+                     :provider :anthropic
+                     :status 400
+                     :code "invalid_request_error"
+                     :message "The compiled grammar is too large"))))
+      (let ((message
+              (stream-chat
+               (make-anthropic-provider :api-key "key")
+               (strict-fallback-model)
+               (make-context
+                :messages (list (make-user-message :content "hi"))
+                :tools (list (strict-fallback-tool :prefer)))
+               (lambda (event) (declare (ignore event))))))
+        (is (= 2 (length payloads)))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (not (cadr-ai::json-present-p
+                  (strict-fallback-payload-tool (first payloads))
+                  "strict"))))))
+  (let ((payloads nil))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url))
+              (push (cadr-ai::parse-json (getf arguments :content))
+                    payloads)
+              (error 'cadr-ai::api-error
+                     :provider :anthropic
+                     :status 400
+                     :code "invalid_request_error"
+                     :message "model not found"))))
+      (let ((message
+              (stream-chat
+               (make-anthropic-provider :api-key "key")
+               (strict-fallback-model)
+               (make-context
+                :messages (list (make-user-message :content "hi"))
+                :tools (list (strict-fallback-tool :require)))
+               (lambda (event) (declare (ignore event))))))
+        (is (= 1 (length payloads)))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (eq t
+                (cadr-ai::json-get
+                 (strict-fallback-payload-tool (first payloads))
+                 "strict")))))
+  (let ((payloads nil))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url))
+              (push (cadr-ai::parse-json (getf arguments :content))
+                    payloads)
+              (error 'cadr-ai::api-error
+                     :provider :anthropic
+                     :status 400
+                     :code "invalid_request_error"
+                     :message "The compiled grammar is too large"))))
+      (let ((message
+              (stream-chat
+               (make-anthropic-provider :api-key "key")
+               (strict-fallback-model)
+               (make-context
+                :messages (list (make-user-message :content "hi"))
+                :tools (list (strict-fallback-tool :require)))
+               (lambda (event) (declare (ignore event))))))
+        (is (= 1 (length payloads)))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (eq t
+                (cadr-ai::json-get
+                 (strict-fallback-payload-tool (first payloads))
+                 "strict"))))))))
+
+(defclass mistral-slow-char-stream
+    (sb-gray:fundamental-character-input-stream)
+  ((text :initarg :text)
+   (index :initform 0)
+   (delay :initarg :delay)
+   (delayed-p :initform nil)))
+
+(defmethod sb-gray:stream-read-char ((stream mistral-slow-char-stream))
+  (unless (slot-value stream 'delayed-p)
+    (setf (slot-value stream 'delayed-p) t)
+    (sleep (slot-value stream 'delay)))
+  (let ((text (slot-value stream 'text))
+        (index (slot-value stream 'index)))
+    (if (< index (length text))
+        (prog1 (char text index)
+          (setf (slot-value stream 'index) (1+ index)))
+        :eof)))
+
+(test mistral-timeout-covers-response-headers-only
+  ;; pi@4a080252f #10609
+  (is (= 60000 (cadr-ai::mistral-header-timeout-ms nil)))
+  (is (= 30 (cadr-ai::mistral-header-timeout-ms 30)))
+  (multiple-value-bind (provider model)
+      (provider-case :mistral)
+    (let* ((*http-request-function*
+             (lambda (url &rest arguments)
+               (declare (ignore url arguments))
+               (sleep 0.4)
+               (values (make-string-input-stream "data: [DONE]~%")
+                       200 nil)))
+           (message
+             (stream-chat
+              provider model (sample-context)
+              (lambda (event) (declare (ignore event)))
+              :timeout-ms 30)))
+      (is (eq :error (assistant-message-stop-reason message)))
+      (is (string=
+           "Mistral response headers timed out after 30ms"
+           (assistant-message-error-message message))))
+    (let* ((text
+             (format nil
+                     "data: {\"id\":\"m\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"},\"finish_reason\":null}]}~%~%data: {\"id\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}~%~%data: [DONE]~%~%"))
+           (*http-request-function*
+             (lambda (url &rest arguments)
+               (declare (ignore url arguments))
+               (values
+                (make-instance 'mistral-slow-char-stream
+                               :text text
+                               :delay 0.08)
+                200
+                '(("content-type" . "text/event-stream")))))
+           (message
+             (stream-chat
+              provider model (sample-context)
+              (lambda (event) (declare (ignore event)))
+              :timeout-ms 30)))
+      (is (eq :stop (assistant-message-stop-reason message)))
+      (is (string= "ok" (first-text message))))))
+
+(test mistral-finish-reason-error-is-a-retryable-server-error
+  ;; pi@4a080252f #10487
+  (multiple-value-bind (provider model)
+      (provider-case :mistral)
+    (flet ((finish (reason)
+             (let* ((body
+                      (format nil
+                              "data: {\"id\":\"m\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":~S}]}~%~%data: [DONE]~%~%"
+                              reason))
+                    (*http-request-function*
+                      (lambda (url &rest arguments)
+                        (declare (ignore url arguments))
+                        (values (make-string-input-stream body) 200
+                                '(("content-type" . "text/event-stream"))))))
+               (stream-chat
+                provider model (sample-context)
+                (lambda (event) (declare (ignore event)))))))
+      (let ((message (finish "error")))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (string= "error"
+                     (cadr-ai:assistant-message-raw-stop-reason message)))
+        (is (string=
+             "Provider stopped with: error (server error)"
+             (assistant-message-error-message message)))
+        (is (eq t (cadr-ai:retryable-assistant-error-p message))))
+      (let ((message (finish "unmapped_error")))
+        (is (eq :error (assistant-message-stop-reason message)))
+        (is (string=
+             "Provider stopped with: unmapped_error"
+             (assistant-message-error-message message)))
+        (is (not (cadr-ai:retryable-assistant-error-p message))))
+      (let ((message (finish "model_length")))
+        (is (eq :length (assistant-message-stop-reason message)))
+        (is (null (assistant-message-error-message message)))))))

@@ -113,6 +113,57 @@
           (request-spec-payload codex-request)
           "max_output_tokens")))))
 
+(test goal24-codex-omitted-reasoning-sends-off-effort
+  (let ((provider
+          (cadr-ai:make-openai-codex-provider
+           :oauth-access-token "oauth-test"
+           :oauth-account-id "acct-test"))
+        (unmapped
+          (make-model
+           :id "goal24-codex"
+           :provider :openai-codex
+           :api :openai-codex-responses
+           :base-url "https://chatgpt.com/backend-api"
+           :reasoning-p t))
+        (null-off
+          (make-model
+           :id "goal24-codex"
+           :provider :openai-codex
+           :api :openai-codex-responses
+           :base-url "https://chatgpt.com/backend-api"
+           :reasoning-p t
+           :thinking-level-map '((:off . nil))))
+        (mapped-low
+          (make-model
+           :id "goal24-codex"
+           :provider :openai-codex
+           :api :openai-codex-responses
+           :base-url "https://chatgpt.com/backend-api"
+           :reasoning-p t
+           :thinking-level-map '((:off . "low")))))
+    (let* ((payload
+             (request-spec-payload
+              (build-request provider unmapped (sample-context)
+                             :stream-p t)))
+           (reasoning (cadr-ai::json-get payload "reasoning")))
+      (is (string= "none" (cadr-ai::json-get reasoning "effort")))
+      (is (not (cadr-ai::json-present-p reasoning "summary"))))
+    (is (not
+         (cadr-ai::json-present-p
+          (request-spec-payload
+           (build-request provider null-off (sample-context)
+                          :stream-p t))
+          "reasoning")))
+    (is (string=
+         "low"
+         (cadr-ai::json-get
+          (cadr-ai::json-get
+           (request-spec-payload
+            (build-request provider mapped-low (sample-context)
+                           :stream-p t))
+           "reasoning")
+          "effort")))))
+
 (test providers-reject-missing-api-key
   (let ((model (make-model :id "gpt-test"
                            :provider :openai

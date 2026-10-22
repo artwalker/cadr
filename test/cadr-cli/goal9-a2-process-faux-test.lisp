@@ -101,21 +101,26 @@
      (= 1 (length content))
      (cadr-ai::json-get (aref content 0) "text"))))
 
-(defun goal9-a2-assert-process-faux-event-contract (records expected-text)
+(defun goal9-a2-assert-process-faux-event-contract
+    (records expected-text &key system-message-p)
   (let* ((event-types (goal9-a2-process-event-types records))
          (update-types (goal9-a2-process-update-types records))
-         (deltas (goal9-a2-process-text-deltas records)))
-    (is
-     (equal
-      '("agent_start" "turn_start" "message_start" "message_end"
-        "message_start")
-      (subseq event-types 0 5)))
+         (deltas (goal9-a2-process-text-deltas records))
+         (prefix
+           (if system-message-p
+               '("agent_start" "turn_start" "message_start" "message_end"
+                 "message_start" "message_end" "message_start")
+               '("agent_start" "turn_start" "message_start" "message_end"
+                 "message_start")))
+         (updates-start (length prefix)))
+    (is (equal prefix (subseq event-types 0 updates-start)))
     (is
      (equal
       '("message_end" "turn_end" "agent_end" "agent_settled")
       (last event-types 4)))
     (is (every (lambda (type) (string= "message_update" type))
-               (subseq event-types 5 (- (length event-types) 4))))
+               (subseq event-types updates-start
+                       (- (length event-types) 4))))
     (is (string= "text_start" (first update-types)))
     (is (string= "text_end" (car (last update-types))))
     (is (plusp (length deltas)))
@@ -249,7 +254,7 @@
                        (cadr-ai::json-get
                         (first responses) "success")))))
            (goal9-a2-assert-process-faux-event-contract
-            records "rpc-final"))
+            records "rpc-final" :system-message-p t))
       (when input
         (ignore-errors (close input)))
       (when (and process (uiop:process-alive-p process))

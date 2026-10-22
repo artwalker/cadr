@@ -255,6 +255,12 @@
                              property-value property-schema)))))))))))
 
 (defun validate-tool-arguments (tool call)
+  (let ((arguments-error (tool-call-arguments-error call)))
+    (when (and (stringp arguments-error)
+               (plusp (length arguments-error)))
+      (error "Invalid arguments for tool \"~A\": ~A"
+             (tool-call-name call)
+             arguments-error)))
   (let* ((schema (tool-parameters tool))
          (arguments
            (copy-json-value (tool-call-arguments call))))

@@ -202,6 +202,12 @@
    #:daxnuts-component-tick
    #:make-earendil-announcement-component
    #:build-system-prompt
+   #:normalize-build-system-prompt-options
+   #:build-system-prompt-sections
+   #:build-system-prompt-state
+   #:diff-system-prompt-sections
+   #:prepare-prompt-and-tool-loadout
+   #:apply-prepare-prompt-and-tool-loadout
    #:sdk-settings-manager
    #:make-sdk-settings-manager
    #:make-memory-sdk-settings-manager
@@ -301,6 +307,49 @@
    #:native-image-save-arguments
    #:active-agent
    #:executable-main
-   #:main))
+   #:main
+   #:cache-warm-model
+   #:make-cache-warm-model
+   #:cache-warming-decision
+   #:make-cache-warming-decision
+   #:cache-warming-decision-phase
+   #:cache-warming-decision-warm-cost
+   #:cache-warming-decision-miss-cost
+   #:cache-warming-decision-continuation-probability
+   #:cache-warming-decision-expected-savings
+   #:cache-warming-decision-economics-available
+   #:cache-warming-decision-action
+   #:cache-warming-status
+   #:make-cache-warming-status
+   #:cache-warming-status-state
+   #:cache-warming-status-reason
+   #:cache-warming-status-next-warm-at
+   #:cache-warming-status-decision
+   #:cache-warming-status-extension-override
+   #:cache-warm-request
+   #:make-cache-warm-request
+   #:cache-warm-usage-entry
+   #:make-cache-warm-usage-entry
+   #:cache-warmer
+   #:make-cache-warmer
+   #:cache-warmer-status
+   #:cache-warmer-start
+   #:cache-warmer-on-agent-settled
+   #:cache-warmer-on-mode-changed
+   #:cache-warmer-cancel
+   #:get-cache-warming-delay-ms
+   #:get-prompt-cache-ttl-ms
+   #:is-replayable
+   #:format-cache-warming-status
+   #:format-cache-warming-usage
+   #:model-as-cache-warm-model
+   #:set-cache-warming-mode
+   #:cache-context-is-current
+   #:wrap-stream-function-with-cache-warmer
+   #:make-live-cache-warmer
+   #:make-cache-warmer-stream-simple
+   #:agent-session-cache-warmer
+   #:agent-session-cache-warming-status
+   #:agent-session-set-cache-warming-mode))
 
 (in-package #:cadr-cli)

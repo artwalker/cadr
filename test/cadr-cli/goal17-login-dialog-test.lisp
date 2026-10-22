@@ -26,11 +26,53 @@
       (is (search "Login to xAI" text))
       (is (search "https://auth.invalid/device" text))
       (is (search "Ctrl+click to open" text))
+      (is (not (search "to copy" text))
+          "device-code URLs do not offer the sign-in copy hint")
       (is (search "Enter code: RENDER-42" text))
       (is (search "Waiting for authentication..." text))
       (is (search "to cancel" text))
       (is (not (search "Device code:" text))
           "device code copy must not use the retired status-line phrasing"))))
+
+(test goal17-login-dialog-auth-url-copies-on-message-copy
+  ;; pi@4a080252f auth-url.ts + login-dialog.ts: showAuth offers the
+  ;; platform click hint and app.message.copy, then replaces the suffix.
+  (let ((plain
+          (mapcar #'cadr-tui::strip-ansi
+                  (cadr-cli::render-auth-url-lines
+                   "https://auth.invalid/authorize" 80
+                   :copy-hint-p t :platform :darwin))))
+    (is (search "Cmd+click to open"
+                (format nil "~{~A~^~%~}" plain))))
+  (let* ((copied nil)
+         (state (cadr-cli::make-login-dialog-state "Render Auth"))
+         (cadr-cli::*auth-url-copy-function*
+           (lambda (url) (setf copied url))))
+    (cadr-cli::login-dialog-show-auth
+     state "https://auth.invalid/authorize?state=copy" nil)
+    (let ((text
+            (format nil "~{~A~^~%~}"
+                    (goal17-login-dialog-lines state))))
+      (is (search "Ctrl+click to open" text))
+      (is (search "to copy" text)))
+    (multiple-value-bind (action value)
+        (cadr-cli::login-dialog-state-handle-event
+         state (cadr-tui:make-input-event :kind :copy))
+      (declare (ignore value))
+      (is (eq :changed action)))
+    (is (string= "https://auth.invalid/authorize?state=copy" copied))
+    (is (search "Copied URL to clipboard"
+                (format nil "~{~A~^~%~}"
+                        (goal17-login-dialog-lines state))))
+    (setf cadr-cli::*auth-url-copy-function*
+          (lambda (url)
+            (declare (ignore url))
+            (error "clipboard unavailable")))
+    (cadr-cli::login-dialog-state-handle-event
+     state (cadr-tui:make-input-event :kind :copy))
+    (is (search "clipboard unavailable"
+                (format nil "~{~A~^~%~}"
+                        (goal17-login-dialog-lines state))))))
 
 (test goal17-login-dialog-auth-url-and-manual-input-preserve-content-order
   ;; Baseline: showAuth keeps the URL block; showManualInput appends the

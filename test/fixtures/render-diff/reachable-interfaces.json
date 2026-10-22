@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineCommit": "ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc",
+  "baselineCommit": "4a080252f06caf63a525d7873c5d94d3c23887e0",
   "slashCommands": [
     {
       "name": "settings",
@@ -586,22 +586,22 @@
     ]
   },
   "baselineConstructorSites": {
-    "packages/coding-agent/src/modes/interactive/bug-report.ts:235:ExtensionInputComponent": [
-      "extension-input"
+    "packages/coding-agent/src/modes/interactive/bug-report.ts:241:ExtensionEditorComponent": [
+      "extension-editor"
     ],
-    "packages/coding-agent/src/modes/interactive/bug-report.ts:261:ExtensionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/bug-report.ts:267:ExtensionSelectorComponent": [
       "extension-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:292:SelectSubmenu": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:313:SelectSubmenu": [
       "settings-theme"
     ],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:408:SelectSubmenu": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:429:SelectSubmenu": [
       "settings-theme"
     ],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:579:WarningSettingsSubmenu": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:608:WarningSettingsSubmenu": [
       "settings-warnings"
     ],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:723:ThemeSubmenu": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:766:ThemeSubmenu": [
       "settings-theme",
       "settings-theme-automatic",
       "settings-theme-light",
@@ -610,59 +610,62 @@
     "packages/coding-agent/src/modes/interactive/components/settings-submenu.ts:211:SelectSubmenu": [
       "settings-theme"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2562:ExtensionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2741:ExtensionSelectorComponent": [
       "extension-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2638:ExtensionInputComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2798:ExtensionInputComponent": [
       "extension-input"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2679:ExtensionEditorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2818:ExtensionEditorComponent": [
       "extension-editor"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4666:SettingsSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4884:SettingsSelectorComponent": [
       "settings-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4934:ThinkingSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5152:ThinkingSelectorComponent": [
       "thinking-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5078:TrustSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5295:TrustSelectorComponent": [
       "trust-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5117:ModelSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5333:ModelSelectorComponent": [
       "model-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5184:ScopedModelsSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5400:ScopedModelsSelectorComponent": [
       "scoped-models-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5268:UserMessageSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5484:UserMessageSelectorComponent": [
       "fork-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5327:TreeSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5543:TreeSelectorComponent": [
       "tree-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5467:SessionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5683:SessionSelectorComponent": [
       "session-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5668:ExtensionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5929:ExtensionSelectorComponent": [
       "extension-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5706:OAuthSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5948:OAuthSelectorComponent": [
       "login-provider-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5756:OAuthSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6000:OAuthSelectorComponent": [
       "login-provider-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5900:LoginDialogComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6143:LoginDialogComponent": [
       "login-dialog"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5922:LoginDialogComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6168:LoginDialogComponent": [
       "login-dialog"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5980:ExtensionSelectorComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6229:ExtensionSelectorComponent": [
       "extension-selector"
     ],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6052:LoginDialogComponent": [
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6313:LoginDialogComponent": [
       "login-dialog"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:6373:ExtensionSelectorComponent": [
+      "extension-selector"
     ]
   },
   "cadrOverlayKinds": {

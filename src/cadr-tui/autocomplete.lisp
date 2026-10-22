@@ -68,9 +68,20 @@
    :should-trigger-file-completion-function
    should-trigger-file-completion-function))
 
+(defun autocomplete-cjk-punctuation-p (character)
+  (find character
+        "，．：；！？（）［］｛｝“”‘’…—。、「」『』《》【】"))
+
+(defun autocomplete-separator-p (character)
+  (or (member character
+              '(#\Space #\Tab #\Newline #\Return #\Page)
+              :test #'char=)
+      (char= character (code-char #x3000))
+      (autocomplete-cjk-punctuation-p character)))
+
 (defun autocomplete-delimiter-p (character)
-  (member character
-          '(#\Space #\Tab #\" #\' #\=)))
+  (or (member character '(#\" #\' #\=))
+      (autocomplete-separator-p character)))
 
 (defun last-autocomplete-delimiter (text)
   (position-if #'autocomplete-delimiter-p
@@ -157,7 +168,8 @@
 (defun autocomplete-quote-value
     (path at-prefix-p quoted-p)
   (let* ((needs-quotes-p
-           (or quoted-p (find #\Space path)))
+           (or quoted-p
+               (find-if #'autocomplete-separator-p path)))
          (prefix (if at-prefix-p "@" "")))
     (if needs-quotes-p
         (format nil "~A\"~A\"" prefix path)
@@ -322,6 +334,38 @@
                      (autocomplete-item-label right))
                     left-dir-p)))))))
 
+(defun autocomplete-escape-regex (value)
+  (with-output-to-string (output)
+    (loop for character across value
+          do (when (find character ".*+?^${}()|[]\\")
+               (write-char #\\ output))
+             (write-char character output))))
+
+(defun autocomplete-fd-path-query (query)
+  ;; pi@4a080252f autocomplete.ts buildFdPathQuery. fd treats the
+  ;; query as a regex, so a literal [ or ( must be escaped.
+  (let ((normalized (autocomplete-display-path query)))
+    (unless (find #\/ normalized)
+      (return-from autocomplete-fd-path-query
+        (autocomplete-escape-regex normalized)))
+    (let* ((trailing-p
+             (and (plusp (length normalized))
+                  (char= (char normalized (1- (length normalized)))
+                         #\/)))
+           (trimmed (string-trim '(#\/) normalized)))
+      (when (zerop (length trimmed))
+        (return-from autocomplete-fd-path-query normalized))
+      (let ((pattern
+              (format nil "~{~A~^[\\\\/]~}"
+                      (mapcar #'autocomplete-escape-regex
+                              (remove ""
+                                      (uiop:split-string
+                                       trimmed :separator "/")
+                                      :test #'string=)))))
+        (if trailing-p
+            (concatenate 'string pattern "[/\\\\]")
+            pattern)))))
+
 (defun run-fd-autocomplete
     (provider query &key base max-depth)
   (let ((fd (autocomplete-provider-fd-path provider))
@@ -347,10 +391,10 @@
                   (when max-depth
                     (list "--max-depth"
                           (princ-to-string max-depth)))
-                  (when (find #\/ query)
+                  (when (find #\/ (autocomplete-display-path query))
                     '("--full-path"))
                   (when (plusp (length query))
-                    (list query))))
+                    (list (autocomplete-fd-path-query query)))))
                (output
                  (uiop:run-program
                   arguments
@@ -519,6 +563,12 @@
        ((plusp (length description)) description)
        (t nil)))))
 
+(defun autocomplete-command-score-text (item)
+  (let ((name (autocomplete-item-value item)))
+    (if (string-prefix-p "skill:" name)
+        (subseq name (length "skill:"))
+        name)))
+
 (defun autocomplete-command-suggestions
     (provider text)
   (let* ((space (position #\Space text))
@@ -527,15 +577,33 @@
                (subseq text 1 space)
                (subseq text 1))))
     (if (null space)
-        (let ((items
-                (fuzzy-filter
+        (let* ((command-items
                  (autocomplete-provider-command-items
-                  provider)
-                 prefix
-                 #'autocomplete-item-value)))
-          (and items
-               (make-autocomplete-suggestions
-                :items items :prefix text)))
+                  provider))
+               (bare-matches
+                 (fuzzy-filter
+                  command-items prefix
+                  #'autocomplete-command-score-text))
+               (matched (make-hash-table :test #'eq))
+               (full-name-candidates nil))
+          (dolist (item bare-matches)
+            (setf (gethash item matched) t))
+          (dolist (item command-items)
+            (when (and (string-prefix-p
+                        "skill:"
+                        (autocomplete-item-value item))
+                       (not (gethash item matched)))
+              (push item full-name-candidates)))
+          (let ((items
+                  (append
+                   bare-matches
+                   (fuzzy-filter
+                    (nreverse full-name-candidates)
+                    prefix
+                    #'autocomplete-item-value))))
+            (and items
+                 (make-autocomplete-suggestions
+                  :items items :prefix text))))
         (let* ((command
                  (find
                   prefix
@@ -586,12 +654,16 @@
           (and items
                (make-autocomplete-suggestions
                 :items items :prefix at-prefix)))))
-    (when (and (plusp (length before))
-               (char= (char before 0) #\/)
-               (not force-p))
-      (return-from autocomplete-get-suggestions
-        (autocomplete-command-suggestions
-         provider before)))
+    (when (not force-p)
+      (let ((command-text
+              (string-left-trim
+               '(#\Space #\Tab #\Newline #\Return #\Page)
+               before)))
+        (when (and (plusp (length command-text))
+                   (char= (char command-text 0) #\/))
+          (return-from autocomplete-get-suggestions
+            (autocomplete-command-suggestions
+             provider command-text)))))
     (let ((path-prefix
             (autocomplete-path-prefix before force-p)))
       (when path-prefix
