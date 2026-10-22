@@ -1292,9 +1292,13 @@
             (goal14-source-block
              registration "(defparameter +extension-hook-events+"
              "    :ui-prompt-end))")))
+      ;; v1.4.0 #11191 adds #:add-mcp-server-config and
+      ;; #:remove-mcp-server-config between #:load-mcp-config and
+      ;; #:update-mcp-server-config. Parent freeze was
+      ;; f52b974189f593b4abc2d46ce05885345f743663a8ea1498958daceef3764cb1.
       (is (and exports
                (string=
-                "f52b974189f593b4abc2d46ce05885345f743663a8ea1498958daceef3764cb1"
+                "04a231e373e1e3d3fb1a4bf618fd8c4d1d3eaa710bffb48ca6c006d819578993"
                 (goal14-sha256 exports)))
           "B9 changed the frozen extension export text")
       (is (and events

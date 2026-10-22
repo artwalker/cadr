@@ -273,21 +273,44 @@
         (is (search "auth.provider must be a provider name" (second errors)))
         (is (search "auth is only allowed in the global mcp.json" (third errors)))))))
 
+(defun mcp-config-raw (path)
+  (uiop:read-file-string path :external-format :utf-8))
+
+(defun mcp-config-prefix-bom (path)
+  (let ((raw (mcp-config-raw path)))
+    (mcp-config-write
+     path
+     (concatenate 'string
+                  (string (code-char #xfeff))
+                  (if (and (plusp (length raw))
+                           (char= (char raw 0) (code-char #xfeff)))
+                      (subseq raw 1)
+                      raw)))))
+
 (defun mcp-config-servers-object (path)
   ;; Parser that does not strip a leading U+FEFF, matching JSON.parse.
   (nth-value 0
              (cadr-agent::mcp-get
-              (cadr-agent::read-mcp-json-object
-               (uiop:read-file-string path :external-format :utf-8))
+              (cadr-agent::read-mcp-json-object (mcp-config-raw path))
               "mcpServers")))
+
+(defun mcp-config-no-bom-p (path)
+  (let ((raw (mcp-config-raw path)))
+    (and (plusp (length raw))
+         (char/= (char raw 0) (code-char #xfeff)))))
 
 (test mcp-config-reads-and-edits-utf8-bom
   ;; pi@4a080252f packages/coding-agent/test/mcp-extension.test.ts
   ;; "reads and edits mcp.json files that start with a UTF-8 BOM" (#11191).
-  ;; addMcpServerConfig("other", {command:"other-cmd"}) returns false.
-  ;; CHANGELOG: the same strip makes `pi mcp remove` succeed. A missing
-  ;; name does not rewrite, so the BOM stays. A removed name is gone and
-  ;; the rewrite has no BOM.
+  ;; loadMcpConfig errors are empty and the servers are demo/global plus
+  ;; local/project. addMcpServerConfig(global, "other", {command:"other-cmd"})
+  ;; returns false. JSON.parse of that file keeps demo enabled false.
+  ;; CHANGELOG: the same strip covers `pi mcp add` and `pi mcp remove`.
+  ;; updateMcpServerConfig on a real server deletes enabled when the patch
+  ;; turns it on, and writes enabled false when the patch turns it off
+  ;; (packages/coding-agent/src/extensions/mcp/config.ts). A missing name
+  ;; does not rewrite, so a leading BOM stays. Each successful add, update,
+  ;; and remove on both files drops the BOM.
   (let* ((root (mcp-config-root))
          (agent (merge-pathnames "agent/" root))
          (cwd (merge-pathnames "project/" root))
@@ -298,7 +321,18 @@
          (demo-and-other
            '(:json-object
              "demo" (:json-object "command" "echo" "enabled" nil)
-             "other" (:json-object "command" "other-cmd"))))
+             "other" (:json-object "command" "other-cmd")))
+         (demo-on-and-other
+           '(:json-object
+             "demo" (:json-object "command" "echo")
+             "other" (:json-object "command" "other-cmd")))
+         (local-off
+           '(:json-object
+             "local" (:json-object "command" "local-cmd" "enabled" nil)))
+         (local-off-and-extra
+           '(:json-object
+             "local" (:json-object "command" "local-cmd" "enabled" nil)
+             "extra" (:json-object "command" "extra-cmd"))))
     (mcp-config-write
      global
      (concatenate
@@ -318,24 +352,41 @@
                                  (cadr-agent:mcp-server-entry-scope entry)))
                          (cadr-agent:loaded-mcp-config-servers loaded))
                  '(("demo" :global) ("local" :project)))))
+    (let ((before (mcp-config-raw project)))
+      (is (not (cadr-agent:remove-mcp-server-config project "absent")))
+      (is (string= before (mcp-config-raw project))))
+    (cadr-agent:update-mcp-server-config project "local" '(:enabled nil))
+    (is (mcp-config-no-bom-p project))
+    (is (equal (mcp-config-servers-object project) local-off))
+    (mcp-config-prefix-bom project)
+    (is (not (cadr-agent:add-mcp-server-config
+              project "extra" '(:command "extra-cmd"))))
+    (is (mcp-config-no-bom-p project))
+    (is (equal (mcp-config-servers-object project) local-off-and-extra))
     (is (not (cadr-agent:add-mcp-server-config
               global "other" '(:command "other-cmd"))))
-    (let ((raw (uiop:read-file-string global :external-format :utf-8)))
-      (is (and (plusp (length raw))
-               (char/= (char raw 0) (code-char #xfeff))))
-      (is (equal (mcp-config-servers-object global) demo-and-other)))
+    (is (mcp-config-no-bom-p global))
+    (is (equal (mcp-config-servers-object global) demo-and-other))
     (is (cadr-agent:add-mcp-server-config
          global "other" '(:command "other-cmd")))
     (is (equal (mcp-config-servers-object global) demo-and-other))
-    (let ((before (uiop:read-file-string project :external-format :utf-8)))
-      (is (not (cadr-agent:remove-mcp-server-config project "absent")))
-      (is (string= before
-                   (uiop:read-file-string project :external-format :utf-8))))
+    (mcp-config-prefix-bom global)
+    (cadr-agent:update-mcp-server-config global "demo" '(:enabled t))
+    (is (mcp-config-no-bom-p global))
+    (is (equal (mcp-config-servers-object global) demo-on-and-other))
+    (mcp-config-prefix-bom global)
+    (let ((before (mcp-config-raw global)))
+      (is (not (cadr-agent:remove-mcp-server-config global "absent")))
+      (is (string= before (mcp-config-raw global))))
+    (is (cadr-agent:remove-mcp-server-config global "demo"))
+    (is (mcp-config-no-bom-p global))
+    (is (equal (mcp-config-servers-object global)
+               '(:json-object "other" (:json-object "command" "other-cmd"))))
+    (mcp-config-prefix-bom project)
     (is (cadr-agent:remove-mcp-server-config project "local"))
-    (let ((raw (uiop:read-file-string project :external-format :utf-8)))
-      (is (and (plusp (length raw))
-               (char/= (char raw 0) (code-char #xfeff))))
-      (is (equal (mcp-config-servers-object project) '(:json-object))))
+    (is (mcp-config-no-bom-p project))
+    (is (equal (mcp-config-servers-object project)
+               '(:json-object "extra" (:json-object "command" "extra-cmd"))))
     (is (not (cadr-agent:remove-mcp-server-config project "local")))
     (is (not (cadr-agent:remove-mcp-server-config missing "demo")))
     (is (not (uiop:file-exists-p missing)))
@@ -345,7 +396,7 @@
                            (list (cadr-agent:mcp-server-entry-name entry)
                                  (cadr-agent:mcp-server-entry-scope entry)))
                          (cadr-agent:loaded-mcp-config-servers loaded))
-                 '(("demo" :global) ("other" :global)))))))
+                 '(("other" :global) ("extra" :project)))))))
 
 (defun mcp-hex-suffix-p (name)
   (and (>= (length name) 9)
