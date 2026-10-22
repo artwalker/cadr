@@ -236,20 +236,27 @@ in-place repaint executes.  Production leaves this NIL; the harness
   (format nil "~C[?7l" #\Escape))
 (defparameter +autowrap-enable+
   (format nil "~C[?7h" #\Escape))
-(defun multiplexer-mouse-environment-p ()
-  ;; pi@4a080252f tui-alt-screen.ts:236-247 — multiplexers lag when
-  ;; every pointer movement is forwarded, so they get button-motion
-  ;; tracking (1002) while other terminals get all-motion (1003).
-  (let ((term
-          (string-downcase (or (uiop:getenv "TERM") ""))))
-    (or (uiop:getenv "TMUX")
-        (uiop:getenv "ZELLIJ")
-        (uiop:getenv "STY")
-        (uiop:string-prefix-p "tmux" term)
-        (uiop:string-prefix-p "screen" term))))
+(defun multiplexer-mouse-environment-p
+    (&key (environment nil environment-p))
+  ;; pi@4a080252f tui-alt-screen.ts beforeTerminalStart. A set variable
+  ;; counts even when the value is empty (JS !== undefined). Multiplexers
+  ;; get button-motion tracking (1002); other terminals get all-motion (1003).
+  (flet ((env (name)
+           (if environment-p
+               (cdr (assoc name environment :test #'string=))
+               (uiop:getenv name))))
+    (let ((term (string-downcase (or (env "TERM") ""))))
+      (or (env "TMUX")
+          (env "ZELLIJ")
+          (env "STY")
+          (uiop:string-prefix-p "tmux" term)
+          (uiop:string-prefix-p "screen" term)))))
 
-(defun mouse-enable-sequence ()
-  (if (multiplexer-mouse-environment-p)
+(defun mouse-enable-sequence
+    (&key (environment nil environment-p))
+  (if (if environment-p
+          (multiplexer-mouse-environment-p :environment environment)
+          (multiplexer-mouse-environment-p))
       (format nil "~C[?1000h~C[?1002h~C[?1004h~C[?1006h"
               #\Escape #\Escape #\Escape #\Escape)
       (format nil "~C[?1000h~C[?1002h~C[?1003h~C[?1004h~C[?1006h"

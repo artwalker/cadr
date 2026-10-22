@@ -194,3 +194,73 @@
        (cadr-tui:parse-key
         (format nil "~C[57417u" #\Escape))))
   (cadr-tui:set-kitty-protocol-active nil))
+
+(defun set-test-env (name value)
+  (if (null value)
+      (sb-posix:unsetenv name)
+      (setf (uiop:getenv name) value)))
+
+(defun call-with-restored-env (pairs function)
+  (let ((saved
+          (loop for (name) in pairs
+                collect (cons name (uiop:getenv name)))))
+    (unwind-protect
+         (progn
+           (dolist (pair pairs)
+             (set-test-env (car pair) (cdr pair)))
+           (funcall function))
+      (dolist (pair saved)
+        (set-test-env (car pair) (cdr pair))))))
+
+(test raw-backspace-follows-local-windows-terminal
+  ;; pi@4a080252f keys.test.ts. Byte 0x08 is ctrl+backspace only in a
+  ;; local Windows Terminal. Empty WT_SESSION is absent. Empty SSH_*
+  ;; does not suppress WT_SESSION. Byte 0x7f stays backspace.
+  (cadr-tui:set-kitty-protocol-active nil)
+  (let ((bs (string (code-char 8)))
+        (del (string (code-char 127))))
+    (call-with-restored-env
+     '(("WT_SESSION" . nil)
+       ("SSH_CONNECTION" . nil)
+       ("SSH_CLIENT" . nil)
+       ("SSH_TTY" . nil))
+     (lambda ()
+       (is (cadr-tui:matches-key bs "backspace"))
+       (is (not (cadr-tui:matches-key bs "ctrl+backspace")))
+       (is (string= "backspace" (cadr-tui:parse-key bs)))
+       (is (cadr-tui:matches-key bs "ctrl+h"))
+       (is (string= "backspace" (cadr-tui:parse-key del)))))
+    (call-with-restored-env
+     '(("WT_SESSION" . "test-session")
+       ("SSH_CONNECTION" . nil)
+       ("SSH_CLIENT" . nil)
+       ("SSH_TTY" . nil))
+     (lambda ()
+       (is (cadr-tui:matches-key bs "ctrl+backspace"))
+       (is (not (cadr-tui:matches-key bs "backspace")))
+       (is (string= "ctrl+backspace" (cadr-tui:parse-key bs)))
+       (is (cadr-tui:matches-key bs "ctrl+h"))))
+    (call-with-restored-env
+     '(("WT_SESSION" . "")
+       ("SSH_CONNECTION" . nil)
+       ("SSH_CLIENT" . nil)
+       ("SSH_TTY" . nil))
+     (lambda ()
+       (is (string= "backspace" (cadr-tui:parse-key bs)))))
+    (call-with-restored-env
+     '(("WT_SESSION" . "test-session")
+       ("SSH_CONNECTION" . "")
+       ("SSH_CLIENT" . nil)
+       ("SSH_TTY" . nil))
+     (lambda ()
+       (is (string= "ctrl+backspace" (cadr-tui:parse-key bs)))))
+    (call-with-restored-env
+     '(("WT_SESSION" . "test-session")
+       ("SSH_CONNECTION" . "1 2 3 4")
+       ("SSH_CLIENT" . "1 2 3")
+       ("SSH_TTY" . "/dev/pts/1"))
+     (lambda ()
+       (is (not (cadr-tui:matches-key bs "ctrl+backspace")))
+       (is (cadr-tui:matches-key bs "backspace"))
+       (is (string= "backspace" (cadr-tui:parse-key bs)))
+       (is (cadr-tui:matches-key bs "ctrl+h"))))))

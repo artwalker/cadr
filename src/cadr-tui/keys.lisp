@@ -370,10 +370,15 @@
                  (list name)))))))
 
 (defun local-windows-terminal-p ()
-  (and (uiop:getenv "WT_SESSION")
-       (not (uiop:getenv "SSH_CONNECTION"))
-       (not (uiop:getenv "SSH_CLIENT"))
-       (not (uiop:getenv "SSH_TTY"))))
+  ;; pi@4a080252f keys.ts isWindowsTerminalSession. Empty strings are
+  ;; absent: Boolean("") is false, and !"" does not suppress WT_SESSION.
+  (flet ((present (name)
+           (let ((value (uiop:getenv name)))
+             (and (stringp value) (plusp (length value))))))
+    (and (present "WT_SESSION")
+         (not (present "SSH_CONNECTION"))
+         (not (present "SSH_CLIENT"))
+         (not (present "SSH_TTY")))))
 
 (defun parse-key (data)
   (let ((kitty (parse-kitty-key-data data)))

@@ -323,10 +323,25 @@
 (defun resolve-session-directory
     (&key cli-directory settings-directory
           (cwd (uiop:getcwd)))
-  (let ((chosen (or cli-directory settings-directory)))
+  ;; pi@4a080252f main.ts: --session-dir, then
+  ;; CADR_CODING_AGENT_SESSION_DIR, then settings sessionDir.
+  ;; An empty environment value does not override settings.
+  (let* ((env
+           (funcall cadr-core::*path-environment-function*
+                    "CADR_CODING_AGENT_SESSION_DIR"))
+         (env-directory
+           (and (null cli-directory)
+                (stringp env)
+                (plusp (length env))
+                env))
+         (chosen (or cli-directory env-directory settings-directory)))
     (if chosen
         (uiop:ensure-directory-pathname
-         (merge-pathnames (pathname chosen) cwd))
+         (merge-pathnames
+          (if env-directory
+              (cadr-core::expand-config-path-override env-directory)
+              (pathname chosen))
+          cwd))
         (cadr-agent:default-session-directory))))
 
 (defun settings-show-terminal-progress-p (manager)
@@ -435,26 +450,58 @@
     (not (eq value nil))))
 
 (defun settings-fullscreen-wheel-scroll-lines (manager)
-  ;; pi@4a080252f settings-manager.ts getFullscreenWheelScrollLines (#9758).
+  ;; pi@4a080252f settings-manager.ts getFullscreenWheelScrollLines.
+  ;; A finite number is floored and clamped to 1..100. Everything else,
+  ;; including numeric strings, is the default "auto".
   (let ((value
           (settings-value
-           manager "fullscreenWheelScrollLines" "auto")))
+           manager "fullscreenWheelScrollLines" :missing)))
     (cond
-      ((or (null value)
-           (eq value :null)
-           (and (stringp value)
-                (string= value "auto")))
+      ((or (eq value :missing)
+           (and (stringp value) (string= value "auto")))
        :auto)
-      ((and (realp value) (<= 1 value 100))
-       (floor value))
-      ((stringp value)
-       (let ((parsed
-               (ignore-errors
-                (parse-integer value :junk-allowed t))))
-         (if (and parsed (<= 1 parsed 100))
-             parsed
-             :auto)))
+      ((realp value)
+       (max 1 (min 100 (floor value))))
       (t :auto))))
+
+(defun settings-assign-fullscreen-wheel-scroll-lines
+    (manager value)
+  ;; pi@4a080252f setFullscreenWheelScrollLines. The stored value is
+  ;; already clamped, so a later read does not reinterpret 0 or 1000.
+  (let ((lines
+          (cond
+            ((or (eq value :auto)
+                 (and (stringp value) (string= value "auto")))
+             :auto)
+            ((realp value)
+             (max 1 (min 100 (floor value))))
+            ((stringp value)
+             (let ((parsed (ignore-errors (parse-integer value))))
+               (if parsed
+                   (max 1 (min 100 parsed))
+                   :auto)))
+            (t :auto))))
+    (settings-set
+     manager "fullscreenWheelScrollLines"
+     (if (eq lines :auto) "auto" lines)
+     :scope :global)
+    lines))
+
+(defun settings-show-hardware-cursor-p
+    (manager &key (environment :unset))
+  ;; pi@4a080252f getShowHardwareCursor. An explicit boolean wins,
+  ;; including false. Only a missing key consults CADR_HARDWARE_CURSOR,
+  ;; and only the exact string "1" enables it.
+  (let ((value
+          (settings-value
+           manager "showHardwareCursor" :missing)))
+    (if (eq value :missing)
+        (let ((env
+                (if (eq environment :unset)
+                    (uiop:getenv "CADR_HARDWARE_CURSOR")
+                    environment)))
+          (and (stringp env) (string= env "1") t))
+        (eq value t))))
 
 (defun settings-terminal-capability-overrides (manager)
   ;; pi@4a080252f settings-manager.ts getTerminalCapabilityOverrides.
@@ -817,9 +864,8 @@
              :description
              "Show the terminal cursor while still positioning it for IME support"
              :value
-             (settings-boolean-value
-              settings-manager
-              "showHardwareCursor" nil)
+             (settings-show-hardware-cursor-p
+              settings-manager)
              :values (list t nil))
             (make-settings-option
              :id "editor-padding"
@@ -1280,18 +1326,8 @@
               (funcall *fullscreen-copy-on-select-hook* enabled))))
          ((string= id "fullscreen-wheel-scroll-lines")
           (let ((lines
-                  (if (string= value "auto")
-                      :auto
-                      (or
-                       (ignore-errors
-                        (parse-integer value
-                                       :junk-allowed t))
-                       :auto))))
-            (settings-set
-             settings-manager
-             "fullscreenWheelScrollLines"
-             (if (eq lines :auto) "auto" lines)
-             :scope :global)
+                  (settings-assign-fullscreen-wheel-scroll-lines
+                   settings-manager value)))
             (when *fullscreen-wheel-scroll-lines-hook*
               (funcall
                *fullscreen-wheel-scroll-lines-hook*

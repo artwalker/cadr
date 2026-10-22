@@ -72,10 +72,18 @@ short-commit)."
 (defvar *cadr-cli-source-directory* nil)
 
 (defun cadr-cli-source-directory ()
-  "Memoized ASDF source root for cadr-cli (hot paths call this repeatedly)."
-  (or *cadr-cli-source-directory*
-      (setf *cadr-cli-source-directory*
-            (asdf:system-source-directory "cadr-cli"))))
+  "Package asset root. CADR_PACKAGE_DIR, when non-empty, overrides the
+ASDF source root (pi@4a080252f getPackageDir / PI_PACKAGE_DIR). The
+override is read on every call; the ASDF root stays memoized."
+  (let ((override
+          (funcall cadr-core::*path-environment-function*
+                   "CADR_PACKAGE_DIR")))
+    (if (and (stringp override) (plusp (length override)))
+        (uiop:ensure-directory-pathname
+         (cadr-core::expand-config-path-override override))
+        (or *cadr-cli-source-directory*
+            (setf *cadr-cli-source-directory*
+                  (asdf:system-source-directory "cadr-cli"))))))
 
 (defun cadr-docs-directory ()
   ;; The product docs live in docs/ beside the ASDF source root; the

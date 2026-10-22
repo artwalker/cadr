@@ -905,20 +905,103 @@
                            terminal candidate))))))))
   forward)
 
-(defun resolve-escape-timeout-milliseconds ()
-  ;; Baseline terminal.ts resolveEscapeTimeoutMs (v0.84.2): an explicit
-  ;; CADR_TUI_ESC_TIMEOUT override wins; SSH transports get a longer
-  ;; reassembly window for legacy Alt+key input.
-  (let ((configured
-          (ignore-errors
-           (parse-integer
-            (or (uiop:getenv "CADR_TUI_ESC_TIMEOUT") "")))))
-    (cond
-      ((and configured (plusp configured)) configured)
-      ((or (uiop:getenv "SSH_CONNECTION")
-           (uiop:getenv "SSH_TTY"))
-       100)
-      (t 10))))
+(defun parse-positive-escape-timeout (text)
+  ;; JS Number(text) when the result is finite and > 0. Zero, negatives,
+  ;; junk, and non-finite values return NIL so the caller can fall through.
+  (unless (stringp text)
+    (return-from parse-positive-escape-timeout nil))
+  (let* ((trimmed
+           (string-trim
+            '(#\Space #\Tab #\Newline #\Return) text))
+         (index 0)
+         (length (length trimmed))
+         (negative-p nil))
+    (when (zerop length)
+      (return-from parse-positive-escape-timeout nil))
+    (case (char trimmed 0)
+      (#\+ (incf index))
+      (#\- (setf negative-p t) (incf index)))
+    (when (>= index length)
+      (return-from parse-positive-escape-timeout nil))
+    (let ((integer 0)
+          (saw-digit-p nil)
+          (fraction 0)
+          (fraction-digits 0)
+          (exponent 0)
+          (exponent-sign 1))
+      (loop while (and (< index length)
+                       (digit-char-p (char trimmed index)))
+            do (setf saw-digit-p t
+                     integer
+                     (+ (* integer 10)
+                        (digit-char-p (char trimmed index))))
+               (incf index))
+      (when (and (< index length)
+                 (char= (char trimmed index) #\.))
+        (incf index)
+        (loop while (and (< index length)
+                         (digit-char-p (char trimmed index)))
+              do (setf saw-digit-p t
+                       fraction
+                       (+ (* fraction 10)
+                          (digit-char-p (char trimmed index)))
+                       fraction-digits
+                       (1+ fraction-digits))
+                 (incf index)))
+      (unless saw-digit-p
+        (return-from parse-positive-escape-timeout nil))
+      (when (and (< index length)
+                 (find (char trimmed index) "eE"))
+        (incf index)
+        (when (>= index length)
+          (return-from parse-positive-escape-timeout nil))
+        (case (char trimmed index)
+          (#\+ (incf index))
+          (#\- (setf exponent-sign -1) (incf index)))
+        (unless (and (< index length)
+                     (digit-char-p (char trimmed index)))
+          (return-from parse-positive-escape-timeout nil))
+        (loop while (and (< index length)
+                         (digit-char-p (char trimmed index)))
+              do (setf exponent
+                       (+ (* exponent 10)
+                          (digit-char-p (char trimmed index))))
+                 (incf index)))
+      (unless (= index length)
+        (return-from parse-positive-escape-timeout nil))
+      (let* ((scale (- (* exponent exponent-sign) fraction-digits))
+             (magnitude
+               (* (+ (* integer (expt 10 fraction-digits)) fraction)
+                  (expt 10d0 scale)))
+             (value (if negative-p (- magnitude) magnitude)))
+        (when (and (not negative-p)
+                   (plusp value)
+                   (not (sb-ext:float-infinity-p value))
+                   (not (sb-ext:float-nan-p value)))
+          value)))))
+
+(defun resolve-escape-timeout-milliseconds
+    (&key (environment nil environment-p))
+  ;; pi@4a080252f terminal.ts resolveEscapeTimeoutMs. CADR_TUI_ESC_TIMEOUT
+  ;; wins when it is a finite number greater than zero. Otherwise
+  ;; SSH_CONNECTION or SSH_TTY (truthy, so an empty string does not
+  ;; count) waits 100ms, and every other case waits 10ms. SSH_CLIENT
+  ;; is not an escape-timeout signal.
+  (flet ((env (name)
+           (if environment-p
+               (cdr (assoc name environment :test #'string=))
+               (uiop:getenv name)))
+         (truthy (value)
+           (and (stringp value) (plusp (length value)))))
+    (let ((configured
+            (parse-positive-escape-timeout
+             (env "CADR_TUI_ESC_TIMEOUT"))))
+      (cond
+        (configured configured)
+        ((or (truthy (env "SSH_CONNECTION"))
+             (truthy (env "SSH_TTY")))
+         100)
+        (t 10)))))
 
 (defun elapsed-seconds (start)
   (/ (- (get-internal-real-time) start)

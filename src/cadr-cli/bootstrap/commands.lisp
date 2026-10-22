@@ -2946,16 +2946,8 @@
                (or (cli-arguments-tui-mode command)
                    (settings-tui-mode settings-manager)))
            :show-hardware-cursor-p
-           (or
-            (settings-value
-             settings-manager
-             "showHardwareCursor" nil)
-            (string=
-             (or
-              (uiop:getenv
-               "CADR_HARDWARE_CURSOR")
-              "")
-             "1"))
+           (settings-show-hardware-cursor-p
+            settings-manager)
            :clear-on-shrink-p
            (settings-clear-on-shrink-p
             settings-manager)

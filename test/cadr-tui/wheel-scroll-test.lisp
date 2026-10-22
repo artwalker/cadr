@@ -24,6 +24,34 @@
         (cadr-tui:wheel-scroll-accelerator-next
          accelerator 1 2000)))))
 
+(test wheel-scroll-ssh-hides-macos-acceleration
+  ;; pi@4a080252f wheel-scroll.ts terminalAcceleratesWheel. A present
+  ;; SSH_CONNECTION, SSH_CLIENT, or SSH_TTY disables OS acceleration
+  ;; even when the value is empty. The accelerator then scales fast spins.
+  (is (cadr-tui:terminal-accelerates-wheel-p
+       :darwin-p t :environment nil))
+  (is (not (cadr-tui:terminal-accelerates-wheel-p
+            :darwin-p nil :environment nil)))
+  (dolist (pairs '((("SSH_CONNECTION" . "1 2 3 4"))
+                   (("SSH_CLIENT" . ""))
+                   (("SSH_TTY" . "/dev/pts/1"))))
+    (is (not (cadr-tui:terminal-accelerates-wheel-p
+              :darwin-p t :environment pairs))
+        pairs))
+  (let ((local
+          (cadr-tui:make-wheel-scroll-accelerator
+           :auto
+           (not (cadr-tui:terminal-accelerates-wheel-p
+                 :darwin-p t :environment nil))))
+        (remote
+          (cadr-tui:make-wheel-scroll-accelerator
+           :auto
+           (not (cadr-tui:terminal-accelerates-wheel-p
+                 :darwin-p t
+                 :environment '(("SSH_TTY" . "/dev/pts/1")))))))
+    (is (equal '(1 1 1) (wheel-scroll-at local '(0 20 40))))
+    (is (equal '(1 5 5) (wheel-scroll-at remote '(0 20 40))))))
+
 (test wheel-scroll-auto-without-acceleration
   (let ((accelerator
           (cadr-tui:make-wheel-scroll-accelerator

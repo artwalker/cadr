@@ -7,12 +7,21 @@
 (defconstant +wheel-scroll-reference-gap-ms+ 100d0)
 (defconstant +wheel-scroll-max-auto-lines+ 6)
 
-(defun terminal-accelerates-wheel-p ()
-  ;; Local macOS already accelerates; SSH hides the client platform.
-  (and (uiop:os-macosx-p)
-       (null (uiop:getenv "SSH_CONNECTION"))
-       (null (uiop:getenv "SSH_CLIENT"))
-       (null (uiop:getenv "SSH_TTY"))))
+(defun terminal-accelerates-wheel-p
+    (&key (darwin-p (uiop:os-macosx-p))
+          (environment nil environment-p))
+  ;; pi@4a080252f wheel-scroll.ts terminalAcceleratesWheel. A present
+  ;; SSH_* variable disables this even when the value is empty
+  ;; (=== undefined). That is not the truthiness test used for the
+  ;; escape timeout.
+  (flet ((env (name)
+           (if environment-p
+               (cdr (assoc name environment :test #'string=))
+               (uiop:getenv name))))
+    (and darwin-p
+         (null (env "SSH_CONNECTION"))
+         (null (env "SSH_CLIENT"))
+         (null (env "SSH_TTY")))))
 
 (defun wheel-scroll-lines-value (lines)
   (cond

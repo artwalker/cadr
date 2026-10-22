@@ -447,7 +447,9 @@
     ;; tool-allowlist-filters-mcp-names-p (bootstrap/tools.lisp).
     ;; +1 Goal 26 client identity: install-telemetry-enabled-p
     ;; (bootstrap/settings.lisp).
-    (is (= 191 definition-count)
+    ;; +2 GAP-46: settings-assign-fullscreen-wheel-scroll-lines and
+    ;; settings-show-hardware-cursor-p (bootstrap/settings.lisp).
+    (is (= 193 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
