@@ -58,12 +58,18 @@
                           part)))))
     ((typep message 'tool-result-message)
      (json-array
-      (let ((response
+      (let* ((raw
+               (content-text
+                (tool-result-message-content message)))
+             ;; pi@4a080252f google-shared.ts #8720. Whitespace-only
+             ;; tool text is the same as no text.
+             (text (if (non-empty-string-p raw) raw ""))
+             (response
               (json-object
                (if (tool-result-message-is-error message)
                    "error"
                    "output")
-               (content-text (tool-result-message-content message)))))
+               text)))
         (json-object
          "functionResponse"
          (let ((function-response

@@ -51,7 +51,7 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | ChatGPT Business 用量上限不重试 | v1.4.0 changelog | open |
 | 折叠和分支摘要用模型输出上限；`reserveTokens` 只决定何时开始；`/compact` 指令在被切开的回合开头仍生效 | v1.4.0 #9512 #9075 #11058 | open |
 | 客户端身份、`User-Agent`、OpenRouter / NIM / OpenCode attribution | v1.4.0 `identity.ts` | open |
-| 只含空白的工具输出改成和空输出一样的占位 | v1.4.0 #8720 | open |
+| 只含空白的工具输出改成和空输出一样的占位 | v1.4.0 #8720 | done：`""`、`\r\n`、空格加换行加 tab 在 OpenAI Responses 和 Completions 上写成 `(no tool output)`，在 Google 上写成空字符串。有可见文字的结果仍原文送出 |
 | 重试认更多上游失败、Vertex 令牌刷新、Codex 代理断流；请求号里的数字不当成 HTTP 状态 | v1.4.0 #10920 #11057 #10996 | open |
 | Responses 在删过工具之后继续加载 deferred 工具时不改写前缀 | v1.4.0 #10940 | open |
 | GitHub Copilot HTTP 413 算上下文溢出 | v1.4.0 #11016 | open |

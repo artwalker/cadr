@@ -41,6 +41,81 @@
       :thought-signature "foreign-signature")))
    (cadr-ai:make-user-message :content "Never mind.")))
 
+(defun blank-tool-history (api provider model-id text)
+  (list
+   (cadr-ai:make-user-message :content "Run it.")
+   (cadr-ai:make-assistant-message
+    :api api
+    :provider provider
+    :model model-id
+    :stop-reason :tool-use
+    :content
+    (list
+     (cadr-ai:make-tool-call
+      :id "call-1"
+      :name "bash"
+      :arguments (cadr-ai::json-object "command" "true"))))
+   (cadr-ai:make-tool-result-message
+    :tool-call-id "call-1"
+    :tool-name "bash"
+    :content
+    (list (cadr-ai:make-text-content :text text)))))
+
+(test whitespace-only-tool-output-uses-the-empty-placeholder
+  ;; pi@4a080252f #8720. A bare CR LF is not tool output.
+  (dolist (text (list ""
+                      (format nil "~C~C" #\Return #\Newline)
+                      (format nil " ~C~C" #\Newline #\Tab)))
+    (let* ((openai
+             (request-spec-payload
+              (history-request
+               :openai
+               (blank-tool-history
+                :openai-responses :openai "gpt-test" text))))
+           (output
+             (object-with-key
+              (cadr-ai::json-get openai "input") "output")))
+      (is (string= "(no tool output)"
+                   (cadr-ai::json-get output "output"))))
+    (let* ((messages
+             (cadr-ai::openai-chat-messages
+              (cadr-ai:make-model
+               :id "gpt-test"
+               :provider :openai
+               :api :openai-completions
+               :base-url "https://api.openai.com"
+               :max-tokens 16)
+              (make-context
+               :messages
+               (blank-tool-history
+                :openai-completions :openai "gpt-test" text))))
+           (tool
+             (find-if
+              (lambda (message)
+                (string= "tool"
+                         (cadr-ai::json-get message "role")))
+              (coerce messages 'list))))
+      (is (string= "(no tool output)"
+                   (cadr-ai::json-get tool "content"))))
+    (let* ((google
+             (request-spec-payload
+              (history-request
+               :google
+               (blank-tool-history
+                :google-generative-ai :google
+                "gemini-3.6-flash" text))))
+           (contents (cadr-ai::json-get google "contents"))
+           (part
+             (object-with-key
+              (cadr-ai::json-get (aref contents 2) "parts")
+              "functionResponse"))
+           (response
+             (cadr-ai::json-get
+              (cadr-ai::json-get part "functionResponse")
+              "response")))
+      (is (string= ""
+                   (cadr-ai::json-get response "output"))))))
+
 (test orphaned-tool-calls-receive-synthetic-error-results
   (let* ((anthropic
            (request-spec-payload
