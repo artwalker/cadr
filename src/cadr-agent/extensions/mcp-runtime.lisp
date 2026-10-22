@@ -402,7 +402,10 @@
                                  (- (length text) +mcp-stderr-tail-chars+)))))))
         (error condition)))))
 
-(defun open-mcp-server (name config cwd &key on-tools)
+(defun open-mcp-server (name config cwd &key on-tools probe)
+  ;; pi@4a080252f McpServerConnection.getClient. PROBE keeps the
+  ;; connection after a failure so `cadr mcp list` can print its state
+  ;; and error. Callers that omit PROBE still receive the condition.
   (let ((connection
           (make-mcp-server-connection
            :name name
@@ -427,8 +430,10 @@
                        (sleep (/ (nth attempt retries) 1000.0))
                        (when (mcp-server-connection-closed-p connection)
                          (error (mcp-connection-fail connection condition)))))))
-    (error (condition)
-      (error condition)))))
+      (error (condition)
+        (if probe
+            connection
+            (error condition))))))
 
 (defun mcp-server-client (connection)
   (when (mcp-server-connection-closed-p connection)

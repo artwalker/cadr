@@ -162,6 +162,7 @@
                                            (:file "program-status-reporter")
                                            (:file "controller")))
                              (:file "remote-repl")
+                             (:file "mcp-command")
                              (:module "bootstrap"
                               :serial t
                               :components ((:file "tools")
@@ -216,6 +217,7 @@
                              (:file "goal28-packages-settings-test")
                              (:file "goal28-exit-and-auth-test")
                              (:file "goal28-cli-flags-test")
+                             (:file "mcp-command-test")
                              (:file "goal28-slash-commands-test")
                              (:file "goal24-bug-report-test")
                              (:file "goal24-cache-warming-settings-test")

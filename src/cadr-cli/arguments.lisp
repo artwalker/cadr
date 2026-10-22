@@ -762,7 +762,8 @@ Commands:
   cadr list                      List installed extensions from settings
   cadr config [-l]               Open TUI to enable/disable package resources (Tab switches scope)
   cadr auth <command>            Print credentials or check provider readiness
-  cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth
+  cadr mcp <command>             Check MCP servers, sign in to or out of OAuth servers
+  cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth/mcp
 
 Options:
   --provider <name>              Provider to search for --model (requires --model)
