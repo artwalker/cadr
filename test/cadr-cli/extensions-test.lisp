@@ -102,8 +102,8 @@
       (let ((first
               (cadr-cli::reload-cli-extensions
                manager)))
-        (is (= 3 (getf first :active)))
-        (is (= 3 (getf first :loaded))))
+        (is (= 6 (getf first :active)))
+        (is (= 6 (getf first :loaded))))
       (let* ((host
                (cadr-cli::cli-extension-manager-host
                 manager))
@@ -112,7 +112,10 @@
                 (cadr-agent::extension-host-current-snapshot
                  host))))
         (is (equal
-             '("<inline:llama.cpp>"
+             '("builtin:llama.cpp"
+               "builtin:codemode"
+               "builtin:tool-search"
+               "builtin:mcp"
                "<inline:1>"
                "<inline:named>")
              (mapcar
@@ -123,10 +126,10 @@
           (first bundles)))
         (is (null
              (cadr-agent::extension-bundle-hidden-p
-              (second bundles))))
+              (fifth bundles))))
         (is
          (cadr-agent::extension-bundle-hidden-p
-          (third bundles))))
+          (sixth bundles))))
       (let ((old-apis (copy-list apis)))
         (cadr-cli::reload-cli-extensions manager)
         (is (= 4 (length runs)))
@@ -548,7 +551,7 @@
         "(define-prompt-template \"value\" :template \"old\")"))
       (write-text bad (extension-source "(error \"load boom\")"))
       (let ((report (cadr-cli::reload-cli-extensions manager)))
-        (is (= 2 (getf report :loaded)))
+        (is (= 5 (getf report :loaded)))
         (is (= 1 (length (getf report :errors)))))
       (write-text good (extension-source "(error \"reload boom\")"))
       (cadr-cli::reload-cli-extensions manager)
@@ -1009,8 +1012,8 @@
              (second (cadr-cli::reload-cli-extensions manager)))
         (is (null (getf first :errors)))
         (is (null (getf second :errors)))
-        (is (= 2 (getf first :active)))
-        (is (= 2 (getf second :active)))
+        (is (= 5 (getf first :active)))
+        (is (= 5 (getf second :active)))
         (is (asdf:find-system system-name nil))
         (is (asdf:find-system helper-system-name nil))
         (is (not (member system-name

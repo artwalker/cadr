@@ -267,9 +267,14 @@
             :output (make-broadcast-stream)
             :mode :repl
             :explicit-paths
-            (append
-             (cli-arguments-extensions command)
-             (settings-extension-paths settings-manager))
+            (cli-arguments-extensions command)
+            :global-extension-entries
+            (settings-extension-entry-list
+             settings-manager :global)
+            :project-extension-entries
+            (settings-extension-entry-list
+             settings-manager :project)
+            :project-trusted-p trusted-p
             :no-discovery-p
             (cli-arguments-no-extensions-p command)
             :disabled-builtin-extensions
@@ -425,14 +430,17 @@
             :output frontend-output
             :mode mode
             :explicit-paths
-            (append
-             (cli-arguments-extensions command)
-             (settings-extension-paths
-              (make-settings-manager
-               :global-path
-               (merge-pathnames
-                "settings.json"
-                (default-agent-directory)))))
+            (cli-arguments-extensions command)
+            :global-extension-entries
+            (settings-extension-entry-list
+             (make-settings-manager
+              :global-path
+              (merge-pathnames
+               "settings.json"
+               (default-agent-directory)))
+             :global)
+            :defer-builtin-extensions-p t
+            :project-trusted-p nil
             :no-discovery-p
             (cli-arguments-no-extensions-p command)
             :disabled-builtin-extensions
@@ -726,6 +734,21 @@
                     (cons :global path))
                   (getf package-resources
                         :global-extensions)))))
+             (setf
+              (cli-extension-manager-defer-builtin-extensions-p
+               extension-manager)
+              nil
+              (cli-extension-manager-project-trusted-p
+               extension-manager)
+              project-trusted-p
+              (cli-extension-manager-global-extension-entries
+               extension-manager)
+              (settings-extension-entry-list
+               settings-manager :global)
+              (cli-extension-manager-project-extension-entries
+               extension-manager)
+              (settings-extension-entry-list
+               settings-manager :project))
              (call-with-quiet-extension-manager
               extension-manager
               (lambda ()

@@ -223,6 +223,19 @@
          (every #'stringp value)
          (coerce value 'list))))
 
+(defun sdk-extension-entry-list (manager scope)
+  ;; An SDK "extensions" override replaces the merged settings list.
+  ;; Without one, the global and project layers stay separate.
+  (let ((backend (sdk-settings-manager-backend manager))
+        (override
+          (cadr-ai::json-get
+           (sdk-settings-manager-overrides manager)
+           "extensions" :missing)))
+    (if (and (vectorp override) (every #'stringp override))
+        (when (eq scope :global)
+          (coerce override 'list))
+        (settings-extension-entry-list backend scope))))
+
 (defun sdk-settings-extension-paths (manager)
   (let ((value
           (sdk-settings-value manager "extensions" :missing)))

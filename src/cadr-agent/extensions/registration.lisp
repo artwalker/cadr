@@ -22,6 +22,9 @@
   (entry-renderers nil :type list)
   (tool-renderers nil :type list)
   (hidden-p nil :type boolean)
+  ;; pi@4a080252f Extension.replaceable. A non-replaceable extension
+  ;; that registers the same tool, command, or flag omits this one.
+  (replaceable-p nil :type boolean)
   (snapshot-references 0 :type (integer 0 *)))
 
 (defstruct extension-tool-definition

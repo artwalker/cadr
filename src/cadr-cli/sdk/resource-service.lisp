@@ -122,10 +122,12 @@
             :global-directory
             (merge-pathnames
              "extensions/" resolved-agent)
-            :explicit-paths
-            (append
-             additional-extension-paths
-             (sdk-settings-extension-paths settings))
+            :explicit-paths additional-extension-paths
+            :global-extension-entries
+            (sdk-extension-entry-list settings :global)
+            :project-extension-entries
+            (sdk-extension-entry-list settings :project)
+            :project-trusted-p project-trusted-p
             :extension-factories extension-factories
             :no-discovery-p no-extensions-p
             :output output

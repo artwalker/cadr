@@ -297,7 +297,18 @@
             (is (not (null bundle)))
             (is (plusp
                  (goal12-extension-bundle-registration-count bundle)))
-            (is (string= "" (get-output-stream-string output)))))))))
+            ;; kimi-deferred-tools registers tool_search, so v1.4.0
+            ;; omitReplacedExtensions leaves the built-in unloaded
+            ;; and warns. Every other ported entry stays quiet.
+            (let ((text (get-output-stream-string output)))
+              (if (string= "kimi-deferred-tools"
+                           (pathname-name target))
+                  (is (string=
+                       (format nil
+                               "extension[warning]> Extension ~A registers tool `tool_search`, so built-in extension `tool-search` was not loaded. To use `tool-search`, run `cadr config` and make sure it is enabled under Built-in extensions, then disable or remove the existing extension. We recommend only having one or the other loaded at a time.~%"
+                               target-name)
+                       text))
+                  (is (string= "" text))))))))))
 
 (test goal12-ungated-example-ports-load-without-error
   "Load the 14 SP-F2 ports that EXAMPLES-LOAD-GAP used to leave ungated."

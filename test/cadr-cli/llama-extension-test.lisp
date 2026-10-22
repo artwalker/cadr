@@ -105,7 +105,7 @@
            (host
              (cadr-cli::cli-extension-manager-host
               manager)))
-      (is (= 1 (getf report :active)))
+      (is (= 4 (getf report :active)))
       (is (equal
            '(:llama.cpp)
            (mapcar

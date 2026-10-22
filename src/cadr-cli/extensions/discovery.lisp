@@ -27,6 +27,14 @@
   (no-discovery-p nil :type boolean)
   ;; pi@4a080252f resource-loader disabledBuiltinExtensions, e.g. ("mcp")
   (disabled-builtin-extensions nil :type list)
+  ;; Ordered builtin factories. pi@4a080252f extensions/index.ts.
+  (builtin-extensions nil :type list)
+  (global-extension-entries nil :type list)
+  (project-extension-entries nil :type list)
+  (project-trusted-p t :type boolean)
+  ;; True during the pre-trust reload. Built-ins wait until project
+  ;; settings can still disable them.
+  (defer-builtin-extensions-p nil :type boolean)
   output
   (secret-function (constantly nil) :type function)
   host
@@ -152,8 +160,7 @@
     (loop
       for path in
       (reverse
-       (cli-extension-manager-explicit-paths
-        manager))
+       (extension-manager-file-paths manager))
       for order from 0
       do
       (handler-case

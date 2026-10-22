@@ -154,26 +154,18 @@ Returns (values any-error-p any-extension-load-failure-p)."
        configured-package-paths
        no-discovery-p
        disabled-builtin-extensions
+       global-extension-entries
+       project-extension-entries
+       (project-trusted-p t)
+       (defer-builtin-extensions-p nil)
        (output *standard-output*)
        secret-function
        (mode :repl))
   (let* ((disabled
            (copy-list disabled-builtin-extensions))
          (factories
-           (remove-if
-            (lambda (entry)
-             (and
-              (consp entry)
-              (member
-               (getf entry :name)
-               disabled
-               :test #'string-equal)))
-            (cons
-             (list
-              :name "llama.cpp"
-              :factory #'llama-extension-factory
-              :hidden-p t)
-             (copy-list extension-factories))))
+           (remove-if #'builtin-factory-entry-p
+                      (copy-list extension-factories)))
          (manager
            (%make-cli-extension-manager
             :cwd
@@ -189,6 +181,16 @@ Returns (values any-error-p any-extension-load-failure-p)."
             :no-discovery-p
             (not (null no-discovery-p))
             :disabled-builtin-extensions disabled
+            :builtin-extensions
+            (ordered-builtin-entries extension-factories)
+            :global-extension-entries
+            (copy-list global-extension-entries)
+            :project-extension-entries
+            (copy-list project-extension-entries)
+            :project-trusted-p
+            (not (null project-trusted-p))
+            :defer-builtin-extensions-p
+            (not (null defer-builtin-extensions-p))
             :output output
             :secret-function
             (or secret-function
@@ -545,6 +547,10 @@ Returns (values any-error-p any-extension-load-failure-p)."
             (:factory (functionp value))
             (:hidden-p
              (or (null value) (eq value t)))
+            (:replaceable-p
+             (or (null value) (eq value t)))
+            (:builtin-p
+             (or (null value) (eq value t)))
             (otherwise nil)))
     (stringp (getf input :name))
     (plusp (length (getf input :name)))
@@ -556,7 +562,7 @@ Returns (values any-error-p any-extension-load-failure-p)."
     (error
      'cadr-agent:extension-registration-error
      :message
-     "Inline extension must be a function or (:NAME string :FACTORY function :HIDDEN-P boolean)"))
+     "Inline extension must be a function or (:NAME string :FACTORY function :HIDDEN-P boolean :REPLACEABLE-P boolean :BUILTIN-P boolean)"))
   (let* ((named-p (not (functionp input)))
          (name
            (if named-p
@@ -579,7 +585,10 @@ Returns (values any-error-p any-extension-load-failure-p)."
             (and named-p
                  (not
                   (null
-                   (getf input :hidden-p)))))))
+                   (getf input :hidden-p))))
+            :replaceable-p
+            (and named-p
+                 (eq t (getf input :replaceable-p))))))
     (call-with-extension-output-boundary
      manager
      (lambda ()
@@ -648,6 +657,16 @@ Returns (values any-error-p any-extension-load-failure-p)."
             (setf (gethash id next-last-good)
                   bundle)
             (push bundle bundles))))
+      (multiple-value-bind (builtin-bundles builtin-issues)
+          (load-enabled-builtin-extensions manager)
+        (dolist (bundle builtin-bundles)
+          (push bundle bundles)
+          (incf loaded))
+        (dolist (issue builtin-issues)
+          (push (getf issue :message) errors)
+          (push issue startup-issues)
+          (extension-manager-notify
+           manager (getf issue :message) :error)))
       (loop
         for input in
         (cli-extension-manager-extension-factories
@@ -680,6 +699,13 @@ Returns (values any-error-p any-extension-load-failure-p)."
       (setf bundles (nreverse bundles)
             (cli-extension-manager-last-good manager)
             next-last-good)
+      (multiple-value-bind (kept replacement-warnings)
+          (omit-replaced-extensions bundles)
+        (setf bundles kept)
+        (dolist (warning replacement-warnings)
+          (push warning startup-issues)
+          (extension-manager-notify
+           manager (getf warning :message) :warning)))
       (let ((conflicts
               (nconc
                discovery-conflicts

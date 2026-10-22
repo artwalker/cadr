@@ -95,28 +95,34 @@
     (is (cadr-cli::cli-arguments-no-mcp-p arguments))))
 
 (test goal28-no-mcp-disables-builtin-mcp-factory
-  ;; pi@4a080252f main.ts disabledBuiltinExtensions: ["mcp"]
+  ;; pi@4a080252f resource-loader disabledBuiltinExtensions skips
+  ;; builtin:mcp even when settings and -e ask for it. A non-builtin
+  ;; inline factory that happens to be named mcp still loads.
   (with-test-directory (temporary)
-    (let* ((mcp-factory
-             (list :name "mcp" :factory (lambda (&rest _) nil) :hidden-p t))
-           (manager
+    (let* ((manager
              (cadr-cli::make-cli-extension-manager
               :cwd temporary
               :output (make-broadcast-stream)
-              :extension-factories (list mcp-factory)
+              :explicit-paths '("builtin:mcp")
+              :project-extension-entries '("+builtin:mcp")
+              :project-trusted-p t
+              :extension-factories
+              (list
+               (list :name "mcp"
+                     :factory (lambda (api)
+                                (declare (ignore api)))
+                     :hidden-p t))
               :disabled-builtin-extensions '("mcp")
-              :no-discovery-p t)))
-      (is (null
-           (find "mcp"
-                 (cadr-cli::cli-extension-manager-extension-factories
-                  manager)
-                 :key (lambda (entry) (getf entry :name))
-                 :test #'string-equal)))
-      (is (find "llama.cpp"
-                (cadr-cli::cli-extension-manager-extension-factories
-                 manager)
-                :key (lambda (entry) (getf entry :name))
-                :test #'string-equal)))))
+              :no-discovery-p t))
+           (report (cadr-cli::reload-cli-extensions manager))
+           (paths
+             (mapcar
+              #'cadr-agent::extension-bundle-path
+              (cadr-agent::extension-snapshot-bundles
+               (cadr-agent::extension-host-current-snapshot
+                (cadr-cli::cli-extension-manager-host manager))))))
+      (is (null (getf report :errors)))
+      (is (equal '("<inline:mcp>") paths)))))
 
 (test provider-flag-requires-a-model
   (let* ((errors (make-string-output-stream))

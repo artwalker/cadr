@@ -4,8 +4,9 @@
   '("read" "bash" "edit" "write"))
 
 (defparameter +builtin-coding-tool-names+
-  '("read" "bash" "powershell" "edit" "write" "grep" "find" "ls"
-    "tool_search"))
+  ;; pi@4a080252f createAllTools. tool_search is the tool-search
+  ;; built-in extension, registered inactive, not a base tool.
+  '("read" "bash" "powershell" "edit" "write" "grep" "find" "ls"))
 
 (defun make-baseline-coding-tools
     (cwd &key context command-prefix shell-path)
@@ -38,8 +39,7 @@
     (make-powershell-tool cwd :context context)
     (make-grep-tool cwd)
     (make-find-tool cwd)
-    (make-ls-tool cwd)
-    (cadr-agent:make-tool-search-tool))))
+    (make-ls-tool cwd))))
 
 (defun tool-modifier-p (entry)
   ;; pi@4a080252f settings-manager.ts isToolModifier
