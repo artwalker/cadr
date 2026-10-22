@@ -46,10 +46,10 @@
     (:together . 21)
     (:vercel-ai-gateway . 237)
     (:xai . 3)
-    (:xiaomi . 4)
-    (:xiaomi-token-plan-ams . 3)
-    (:xiaomi-token-plan-cn . 3)
-    (:xiaomi-token-plan-sgp . 3)
+    (:xiaomi . 3)
+    (:xiaomi-token-plan-ams . 2)
+    (:xiaomi-token-plan-cn . 2)
+    (:xiaomi-token-plan-sgp . 2)
     (:zai . 7)
     (:zai-coding-cn . 10)))
 
@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1375 (length (cadr-ai:list-model-metadata))))
+  (is (= 1371 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))

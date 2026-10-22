@@ -834,53 +834,61 @@
     :cache-read-price 0d0
     :cache-write-price 0d0)))
 
-(defparameter +xiaomi-mimo-v26-pro-rows+
-  '((:xiaomi "https://api.xiaomimimo.com/v1"
-     0.435d0 0.87d0 0.0036d0 0d0)
-    (:xiaomi-token-plan-cn "https://token-plan-cn.xiaomimimo.com/v1"
-     0d0 0d0 0d0 0d0)
-    (:xiaomi-token-plan-ams "https://token-plan-ams.xiaomimimo.com/v1"
-     0d0 0d0 0d0 0d0)
-    (:xiaomi-token-plan-sgp "https://token-plan-sgp.xiaomimimo.com/v1"
-     0d0 0d0 0d0 0d0)))
+(defparameter +xiaomi-mimo-v26-providers+
+  '((:xiaomi "https://api.xiaomimimo.com/v1")
+    (:xiaomi-token-plan-cn "https://token-plan-cn.xiaomimimo.com/v1")
+    (:xiaomi-token-plan-ams "https://token-plan-ams.xiaomimimo.com/v1")
+    (:xiaomi-token-plan-sgp "https://token-plan-sgp.xiaomimimo.com/v1")))
 
-(defun register-xiaomi-mimo-v26-pro ()
-  ;; pi@4a080252f model-resolver.ts. mimo-v2.5-pro left the Xiaomi
-  ;; catalogs; the published replacement is mimo-v2.6-pro.
-  (dolist (row +xiaomi-mimo-v26-pro-rows+)
-    (destructuring-bind
-        (provider base-url input output cache-read cache-write)
-        row
-      (unless (gethash
-               (model-catalog-key provider "mimo-v2.6-pro")
-               *model-catalog*)
-        (register-model-metadata
-         (make-model-metadata
-          :provider provider
-          :id "mimo-v2.6-pro"
-          :name "MiMo-V2.6-Pro"
-          :api :openai-completions
-          :base-url base-url
-          :context-window 1048576
-          :max-output-tokens 131072
-          :supports-images-p t
-          :supports-tools-p t
-          :reasoning-p t
-          :thinking-level-map
-          (copy-catalog-thinking-map +xiaomi-thinking-level-map+)
-          :compat '(:requires-reasoning-content-on-assistant-messages t
-                    :supports-reasoning-effort nil
-                    :supports-strict-mode t
-                    :thinking-format :deepseek)
-          :input-price input
-          :output-price output
-          :cache-read-price cache-read
-          :cache-write-price cache-write))))))
+(defparameter +xiaomi-mimo-v26-models+
+  '(("mimo-v2.6-flash" "MiMo-V2.6-Flash"
+     0.14d0 0.28d0 0.0028d0 nil)
+    ("mimo-v2.6-pro" "MiMo-V2.6-Pro"
+     0.435d0 0.87d0 0.0036d0 nil)
+    ("mimo-v2.6-pro-ultraspeed" "MiMo-V2.6-Pro-UltraSpeed"
+     4.35d0 8.7d0 0.036d0 t)))
+
+(defparameter +xiaomi-retired-v25-model-ids+
+  '("mimo-v2.5" "mimo-v2.5-pro" "mimo-v2.5-pro-ultraspeed"))
+
+(defun register-xiaomi-mimo-v26-catalog ()
+  (dolist (provider-row +xiaomi-mimo-v26-providers+)
+    (destructuring-bind (provider base-url) provider-row
+      (dolist (id +xiaomi-retired-v25-model-ids+)
+        (remhash (model-catalog-key provider id) *model-catalog*))
+      (dolist (model-row +xiaomi-mimo-v26-models+)
+        (destructuring-bind
+            (id name input output cache-read direct-only-p)
+            model-row
+          (when (or (not direct-only-p) (eq provider :xiaomi))
+            (register-model-metadata
+             (make-model-metadata
+              :provider provider
+              :id id
+              :name name
+              :api :openai-completions
+              :base-url base-url
+              :context-window 1048576
+              :max-output-tokens 131072
+              :supports-images-p t
+              :supports-tools-p t
+              :reasoning-p t
+              :thinking-level-map
+              (copy-catalog-thinking-map +xiaomi-thinking-level-map+)
+              :compat
+              '(:requires-reasoning-content-on-assistant-messages t
+                :supports-reasoning-effort nil
+                :supports-strict-mode t
+                :thinking-format :deepseek)
+              :input-price (if (eq provider :xiaomi) input 0d0)
+              :output-price (if (eq provider :xiaomi) output 0d0)
+              :cache-read-price (if (eq provider :xiaomi) cache-read 0d0)
+              :cache-write-price 0d0))))))))
 
 (defun register-v140-default-models ()
   (register-github-copilot-gpt-6.1-sol)
   (register-nvidia-nemotron-3.5)
-  (register-xiaomi-mimo-v26-pro))
+  (register-xiaomi-mimo-v26-catalog))
 
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
