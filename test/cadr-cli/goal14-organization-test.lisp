@@ -1505,7 +1505,8 @@
               ;; coerce-provider-request-context.
               ;; +1 Goal 24: #:project-forced-system-prompt.
               ;; +1 Goal 24: #:model-prompt-cache.
-              "9cc3e876dc11cdf93f48272cec52c5a450cd1348e8db0dd735bc68dcdc893244"
+              ;; Goal 26: classifier catalog exports in package.lisp.
+              "4655af1de0fe36ba3014b585abcbca20beb68e9ba5e529ba7cef92c94ebc9fa7"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

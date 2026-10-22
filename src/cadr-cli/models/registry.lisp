@@ -9,6 +9,9 @@
   (provider-settings
     (make-hash-table :test #'eq)
     :type hash-table)
+  (classifier-models
+    (make-hash-table :test #'equal)
+    :type hash-table)
   error
   %available-models
   %available-models-key)
@@ -357,6 +360,8 @@
          (sort models #'model-registry-sort-predicate)
          (model-registry-provider-settings registry)
          settings
+         (model-registry-classifier-models registry)
+         (classifier-models-for-settings settings)
          (model-registry-error registry)
          nil)
         (when (model-registry-native-runtime registry)
@@ -451,6 +456,62 @@
   (gethash
    (provider-symbol-from-key provider)
    (model-registry-provider-settings registry)))
+
+(defun merge-classifier-compat (base override)
+  ;; Provider compat wins per field. A false sendImageOptInHeader stays
+  ;; present so it is distinct from leaving the field unset.
+  (let ((merged
+          (mapcar (lambda (cell) (cons (car cell) (cdr cell))) base)))
+    (loop for (key value) on override by #'cddr
+          for cell = (assoc key merged)
+          do (if cell
+                 (setf (cdr cell) value)
+                 (setf merged
+                       (nconc merged (list (cons key value))))))
+    merged))
+
+(defun overlay-classifier-provider-config (model config)
+  ;; pi@4a080252f provider-composer.ts applyModelsJson. Classifier models
+  ;; take baseUrl, and compat field-by-field. Headers stay on chat models.
+  (unless (hash-table-p config)
+    (return-from overlay-classifier-provider-config model))
+  (let* ((base-url (cadr-ai::json-get config "baseUrl"))
+         (oauth (cadr-ai::json-get config "oauth"))
+         (compat-object (cadr-ai::json-get config "compat"))
+         (override
+           (and (hash-table-p compat-object)
+                (parse-model-compat compat-object)))
+         (replace-base
+           (and (stringp base-url)
+                (not (equal oauth "radius"))))
+         (copy (cadr-ai::copy-classifier-model model)))
+    (when replace-base
+      (setf (cadr-ai:classifier-model-base-url copy) base-url))
+    (when override
+      (setf (cadr-ai:classifier-model-compat copy)
+            (merge-classifier-compat
+             (cadr-ai:classifier-model-compat model)
+             override)))
+    (if (or replace-base override)
+        copy
+        model)))
+
+(defun classifier-models-for-settings (settings)
+  (let ((table (make-hash-table :test #'equal)))
+    (dolist (model (cadr-ai:list-classifier-models) table)
+      (setf (gethash
+             (cons (cadr-ai:classifier-model-provider model)
+                   (cadr-ai:classifier-model-id model))
+             table)
+            (overlay-classifier-provider-config
+             model
+             (gethash (cadr-ai:classifier-model-provider model)
+                      settings))))))
+
+(defun model-registry-classifier (registry provider id)
+  (gethash
+   (cons (provider-symbol-from-key provider) id)
+   (model-registry-classifier-models registry)))
 
 (defun credential-kind-auth-type (kind)
   (cond

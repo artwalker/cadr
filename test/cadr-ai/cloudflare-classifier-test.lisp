@@ -419,12 +419,29 @@
            (cadr-ai:classifier-result-error-message result))))))
 
 (test typesafe-sends-images-as-assets-with-the-opt-in-header
+  ;; pi@4a080252f packages/ai/src/providers/data/typesafe.json jev-latest.
+  (let ((model (cadr-ai:find-classifier-model :typesafe "jev-latest")))
+    (is (eq :typesafe-system-one (cadr-ai:classifier-model-api model)))
+    (is (equal '(:text :image) (cadr-ai:classifier-model-input model)))
+    (is (= 64000 (cadr-ai:classifier-model-context-window model)))
+    (is (= 0d0 (cadr-ai:classifier-model-input-price model)))
+    (is (equal '((:image-input . :assets)
+                 (:send-image-opt-in-header . t))
+               (cadr-ai:classifier-model-compat model)))
+    (is (string= "https://api.typesafe.ai/v1/"
+                 (cadr-ai:classifier-model-base-url model)))
+    (handler-case
+        (cadr-ai:find-model-metadata :typesafe "jev-latest")
+      (cadr-ai:configuration-error ()
+        (is (eq t t)))
+      (:no-error (&rest ignored)
+        (declare (ignore ignored))
+        (is (eq t nil)))))
   (multiple-value-bind (http calls)
       (capture-classifier-http (cadr-ai::stringify-json *typesafe-answers*))
     (let* ((*http-request-function* http)
-           (model (typesafe-jev))
+           (model (cadr-ai:find-classifier-model :typesafe "jev-latest"))
            (context (classifier-sample-context)))
-      (setf (cadr-ai:classifier-model-input model) '(:text :image))
       (let ((result
               (cadr-ai:classify-model
                model
@@ -474,8 +491,7 @@
 
 (test typesafe-rejects-webp-assets-before-sending
   (let ((attempts 0)
-        (model (typesafe-jev)))
-    (setf (cadr-ai:classifier-model-input model) '(:text :image))
+        (model (cadr-ai:find-classifier-model :typesafe "jev-latest")))
     (let* ((*http-request-function*
              (lambda (url &rest arguments)
                (declare (ignore url arguments))
@@ -493,19 +509,30 @@
            (cadr-ai:classifier-result-error-message result))))))
 
 (test openrouter-sends-classifier-images-as-state-image-urls
+  ;; pi-ai@1.4.0 openrouter.json typesafe/jev-1.14.
+  (let ((model
+          (cadr-ai:find-classifier-model :openrouter "typesafe/jev-1.14")))
+    (is (string= "TypeSafe: Jev 1.14" (cadr-ai:classifier-model-name model)))
+    (is (eq :typesafe-system-one (cadr-ai:classifier-model-api model)))
+    (is (equal '(:text :image) (cadr-ai:classifier-model-input model)))
+    (is (= 0.042d0 (cadr-ai:classifier-model-input-price model)))
+    (is (= 262144 (cadr-ai:classifier-model-context-window model)))
+    (is (equal '((:image-input . :state-image-urls)
+                 (:send-image-opt-in-header . nil))
+               (cadr-ai:classifier-model-compat model)))
+    (handler-case
+        (cadr-ai:find-model-metadata :openrouter "typesafe/jev-1.14")
+      (cadr-ai:configuration-error ()
+        (is (eq t t)))
+      (:no-error (&rest ignored)
+        (declare (ignore ignored))
+        (is (eq t nil)))))
   (multiple-value-bind (http calls)
       (capture-classifier-http (cadr-ai::stringify-json *typesafe-answers*))
     (let* ((*http-request-function* http)
            (context (classifier-sample-context))
            (model
-             (cadr-ai:make-classifier-model
-              :id "typesafe/jev-1.14"
-              :name "Jev 1.14"
-              :provider :openrouter
-              :api :typesafe-system-one
-              :base-url "https://openrouter.ai/api/v1"
-              :input '(:text :image)
-              :context-window 32000))
+             (cadr-ai:find-classifier-model :openrouter "typesafe/jev-1.14"))
            (result
              (cadr-ai:classify-model
               model
@@ -716,3 +743,80 @@
         (is (string=
              "cli-agent"
              (cdr (header-present-p overridden "X-OpenRouter-Categories"))))))))
+
+(defparameter *openrouter-decision-catalog*
+  ;; pi-ai@1.4.0 dist/providers/data/openrouter.json typesafe-system-one.
+  '(("cloudflare/clef" "Cloudflare: Clef" (:text :image) 0.24d0 0d0 65536)
+    ("cloudflare/clef-flash" "Cloudflare: Clef Flash" (:text :image) 0.038d0 0d0 24576)
+    ("cloudflare/clef-omni" "Cloudflare: Clef Omni" (:text :image) 0.15d0 0d0 65536)
+    ("inception/mercury-decide" "Inception: Mercury Decide" (:text :image) 0.02d0 0d0 65536)
+    ("inception/mercury-decide:free" "Inception: Mercury Decide (free)" (:text :image) 0d0 0d0 65536)
+    ("jaredpalmer/kev-4b" "Jared Palmer: Kev 4B" (:text) 0.042d0 0d0 8192)
+    ("liquid/d1" "LiquidAI: d1" (:text :image) 0.02d0 0.02d0 65536)
+    ("liquid/d1-ultra" "LiquidAI: d1-ultra" (:text :image) 0.042d0 0.042d0 32768)
+    ("microsoft/microsoft-decision-1" "Microsoft: Microsoft-Decision-1" (:text) 0.042d0 0d0 32768)
+    ("nace-ai/drex-max" "Nace.AI: Drex Max" (:text) 0.06d0 0d0 262144)
+    ("nace-ai/drex-v1.5" "Nace.AI: Drex v1.5" (:text) 0.04d0 0d0 131072)
+    ("nace-ai/drex-v2.0" "Nace.AI: Drex v2.0" (:text) 0.06d0 0d0 131072)
+    ("openai/gpt-6-luna-decisions" "OpenAI: GPT-6 Luna Decisions" (:text :image) 0.1d0 0d0 1050000)
+    ("perplexity/pplx-decider-flash-v1.2" "Perplexity: Decider Flash V1.2" (:text :image) 0.01d0 0d0 262144)
+    ("perplexity/pplx-decider-v1.2" "Perplexity: Decider V1.2" (:text :image) 0.02d0 0d0 262144)
+    ("respan/span-01" "Respan: Span-01" (:text) 0.02d0 0d0 4096)
+    ("respan/span-01-lite" "Respan: Span-01 Lite" (:text) 0d0 0d0 4096)
+    ("respan/span-01-lite:free" "Respan: Span-01 Lite (free)" (:text) 0d0 0d0 4096)
+    ("respan/span-02" "Respan: Span-02" (:text :image) 0.01d0 0d0 131072)
+    ("scaledown/classify-1" "ScaleDown: Classify-1" (:text :image) 0.04d0 0d0 1000000)
+    ("togethercomputer/tev1-4b-experimental" "Together: Tev1 4B Experimental" (:text) 0.042d0 0d0 32768)
+    ("typesafe/jev-1.13" "TypeSafe: Jev 1.13" (:text :image) 0.042d0 0d0 262144)
+    ("typesafe/jev-1.14" "TypeSafe: Jev 1.14" (:text :image) 0.042d0 0d0 262144)
+    ("upstage/solar-decide" "Upstage: Solar Decide" (:text) 0.05d0 0.05d0 524288)
+    ("upstage/solar-decide-flash" "Upstage: Solar Decide Flash" (:text) 0.05d0 0.05d0 524288)
+    ("~perplexity/pplx-decider-flash-latest" "Perplexity: Decider Flash Latest" (:text :image) 0.01d0 0d0 262144)
+    ("~perplexity/pplx-decider-latest" "Perplexity: Decider Latest" (:text :image) 0.02d0 0d0 262144)
+    ("~typesafe/jev-latest" "TypeSafe: Jev Latest" (:text :image) 0.042d0 0d0 262144)))
+
+(test openrouter-decision-catalog-sets-state-image-urls
+  ;; pi@4a080252f packages/ai/test/classifier-models.test.ts
+  (let ((listed (cadr-ai:list-classifier-models :openrouter)))
+    (is (= (length *openrouter-decision-catalog*) (length listed)))
+    (is (equal (mapcar #'first *openrouter-decision-catalog*)
+               (mapcar #'cadr-ai:classifier-model-id listed))))
+  (dolist (row *openrouter-decision-catalog*)
+    (destructuring-bind (id name input price cache-read window) row
+      (let ((model (cadr-ai:find-classifier-model :openrouter id)))
+        (is (string= name (cadr-ai:classifier-model-name model)))
+        (is (eq :typesafe-system-one (cadr-ai:classifier-model-api model)))
+        (is (string= "https://openrouter.ai/api/v1"
+                     (cadr-ai:classifier-model-base-url model)))
+        (is (equal input (cadr-ai:classifier-model-input model)))
+        (is (= price (cadr-ai:classifier-model-input-price model)))
+        (is (= 0d0 (cadr-ai:classifier-model-output-price model)))
+        (is (= cache-read
+               (cadr-ai::classifier-model-cache-read-price model)))
+        (is (= window (cadr-ai:classifier-model-context-window model)))
+        (is (equal '((:image-input . :state-image-urls)
+                     (:send-image-opt-in-header . nil))
+                   (cadr-ai:classifier-model-compat model)))
+        (handler-case
+            (cadr-ai:find-model-metadata :openrouter id)
+          (cadr-ai:configuration-error ()
+            (is (eq t t)))
+          (:no-error (&rest ignored)
+            (declare (ignore ignored))
+            (is (eq t nil)))))))
+  (let ((attempts 0))
+    (let* ((*http-request-function*
+             (lambda (url &rest arguments)
+               (declare (ignore url arguments))
+               (incf attempts)
+               (values "{}" 200 nil)))
+           (result
+             (cadr-ai:classify-model
+              (cadr-ai:find-classifier-model :openrouter "jaredpalmer/kev-4b")
+              (classifier-sample-context
+               :images (list (classifier-image "cG5n" "image/png")))
+              :api-key "secret")))
+      (is (= 0 attempts))
+      (is (string=
+           "System One API does not support image input for jaredpalmer/kev-4b"
+           (cadr-ai:classifier-result-error-message result))))))

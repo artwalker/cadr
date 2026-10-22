@@ -120,11 +120,11 @@
     "supportsCacheControlOnTools" "supportsTemperature"
     "forceAdaptiveThinking" "allowEmptySignature"
     "supportsStrictTools" "supportsToolReferences"
-    "supportsMaxOutputTokens"))
+    "supportsMaxOutputTokens" "sendImageOptInHeader"))
 
 (defparameter +model-compat-enum-keys+
   '("sessionAffinityFormat" "deferredToolsMode" "cacheControlFormat"
-    "thinkingFormat"))
+    "thinkingFormat" "imageInput"))
 
 (defun parse-model-compat (object)
   ;; Baseline model-config.ts ProviderCompatSchema: the boolean and enum

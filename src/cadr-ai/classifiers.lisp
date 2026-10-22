@@ -537,6 +537,25 @@
    :cache-write-price 0d0
    :compat `((:image-input . ,image-input))))
 
+(defun register-openrouter-classifier (id name input price cache-read window)
+  ;; Every OpenRouter decision model uses the same image compat. OpenRouter
+  ;; answers TypeSafe assets with 200 and drops the images.
+  (register-classifier-model
+   (make-classifier-model
+    :id id
+    :name name
+    :provider :openrouter
+    :api :typesafe-system-one
+    :base-url "https://openrouter.ai/api/v1"
+    :input input
+    :context-window window
+    :input-price price
+    :output-price 0d0
+    :cache-read-price cache-read
+    :cache-write-price 0d0
+    :compat '((:image-input . :state-image-urls)
+              (:send-image-opt-in-header . nil)))))
+
 (defun register-builtin-classifier-models ()
   ;; Prices and windows are Cloudflare's published Clef and Jev pages,
   ;; as pinned by pi v1.4.0 generate-models.ts.
@@ -552,6 +571,56 @@
              "typesafe/jev" "Jev" 0.042d0 32000 :assets)
             (make-cloudflare-classifier
              "typesafe/jev-1.14.0" "Jev 1.14" 0.042d0 32000 :assets)))
-    (register-classifier-model row)))
+    (register-classifier-model row))
+  ;; pi-ai@1.4.0 dist/providers/data/typesafe.json. models.dev lists text
+  ;; only; the API accepts image assets behind the opt-in header.
+  (register-classifier-model
+   (make-classifier-model
+    :id "jev-latest"
+    :name "Jev"
+    :provider :typesafe
+    :api :typesafe-system-one
+    :base-url "https://api.typesafe.ai/v1/"
+    :input '(:text :image)
+    :context-window 64000
+    :input-price 0d0
+    :output-price 0d0
+    :cache-read-price 0d0
+    :cache-write-price 0d0
+    :compat '((:image-input . :assets)
+              (:send-image-opt-in-header . t))))
+  ;; pi-ai@1.4.0 dist/providers/data/openrouter.json, typesafe-system-one.
+  (dolist (row
+           '(("cloudflare/clef" "Cloudflare: Clef" (:text :image) 0.24d0 0d0 65536)
+             ("cloudflare/clef-flash" "Cloudflare: Clef Flash" (:text :image) 0.038d0 0d0 24576)
+             ("cloudflare/clef-omni" "Cloudflare: Clef Omni" (:text :image) 0.15d0 0d0 65536)
+             ("inception/mercury-decide" "Inception: Mercury Decide" (:text :image) 0.02d0 0d0 65536)
+             ("inception/mercury-decide:free" "Inception: Mercury Decide (free)" (:text :image) 0d0 0d0 65536)
+             ("jaredpalmer/kev-4b" "Jared Palmer: Kev 4B" (:text) 0.042d0 0d0 8192)
+             ("liquid/d1" "LiquidAI: d1" (:text :image) 0.02d0 0.02d0 65536)
+             ("liquid/d1-ultra" "LiquidAI: d1-ultra" (:text :image) 0.042d0 0.042d0 32768)
+             ("microsoft/microsoft-decision-1" "Microsoft: Microsoft-Decision-1" (:text) 0.042d0 0d0 32768)
+             ("nace-ai/drex-max" "Nace.AI: Drex Max" (:text) 0.06d0 0d0 262144)
+             ("nace-ai/drex-v1.5" "Nace.AI: Drex v1.5" (:text) 0.04d0 0d0 131072)
+             ("nace-ai/drex-v2.0" "Nace.AI: Drex v2.0" (:text) 0.06d0 0d0 131072)
+             ("openai/gpt-6-luna-decisions" "OpenAI: GPT-6 Luna Decisions" (:text :image) 0.1d0 0d0 1050000)
+             ("perplexity/pplx-decider-flash-v1.2" "Perplexity: Decider Flash V1.2" (:text :image) 0.01d0 0d0 262144)
+             ("perplexity/pplx-decider-v1.2" "Perplexity: Decider V1.2" (:text :image) 0.02d0 0d0 262144)
+             ("respan/span-01" "Respan: Span-01" (:text) 0.02d0 0d0 4096)
+             ("respan/span-01-lite" "Respan: Span-01 Lite" (:text) 0d0 0d0 4096)
+             ("respan/span-01-lite:free" "Respan: Span-01 Lite (free)" (:text) 0d0 0d0 4096)
+             ("respan/span-02" "Respan: Span-02" (:text :image) 0.01d0 0d0 131072)
+             ("scaledown/classify-1" "ScaleDown: Classify-1" (:text :image) 0.04d0 0d0 1000000)
+             ("togethercomputer/tev1-4b-experimental" "Together: Tev1 4B Experimental" (:text) 0.042d0 0d0 32768)
+             ("typesafe/jev-1.13" "TypeSafe: Jev 1.13" (:text :image) 0.042d0 0d0 262144)
+             ("typesafe/jev-1.14" "TypeSafe: Jev 1.14" (:text :image) 0.042d0 0d0 262144)
+             ("upstage/solar-decide" "Upstage: Solar Decide" (:text) 0.05d0 0.05d0 524288)
+             ("upstage/solar-decide-flash" "Upstage: Solar Decide Flash" (:text) 0.05d0 0.05d0 524288)
+             ("~perplexity/pplx-decider-flash-latest" "Perplexity: Decider Flash Latest" (:text :image) 0.01d0 0d0 262144)
+             ("~perplexity/pplx-decider-latest" "Perplexity: Decider Latest" (:text :image) 0.02d0 0d0 262144)
+             ("~typesafe/jev-latest" "TypeSafe: Jev Latest" (:text :image) 0.042d0 0d0 262144)))
+    (destructuring-bind (id name input price cache-read window) row
+      (register-openrouter-classifier
+       id name input price cache-read window))))
 
 (register-builtin-classifier-models)
