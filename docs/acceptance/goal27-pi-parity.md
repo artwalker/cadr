@@ -1,0 +1,144 @@
+# Goal 27：pi 能做的，cadr 都要能做
+
+> **状态：** Goal 27 开工。队列已开，行为尚未落地。不宣布 Goal 20、24、25 或 26 完成。G.17 的状态字由 GAP-50 处理，本文件不开口宣布。
+>
+> **目标原话（用户 2026-10-23）：** pi 能做的，cadr 都要能做，并持续对齐 pi 最新稳定版（现为 v1.4.0，4a080252）。
+>
+> **钉点：** `4a080252f06caf63a525d7873c5d94d3c23887e0` · `v1.4.0` +0
+> （pi tag `v1.4.0`，短名 `4a080252`）。`BASELINE` 已经指向这一提交。不追 `main`。
+>
+> **依据：** `docs/reviews/2026-10-23-pi-parity-gap-inventory.md`（50 个 GAP，13 个 Part）。
+> 站立约束：`docs/development-policy.md`。
+>
+> **裁决（顾问 Claude，2026-10-23；用户保留否决权）：** 清单第 3 节写 Still exclude 的各项继续排除。写 Reopen 的各项重开，照清单执行。P1–P8 和 P13 现在开工。GAP-06 作为一行放在 P6，覆盖 mcp、codemode、tool-search 三个内置扩展工厂。P9–P12（GAP-40 Chord、GAP-41 Durable、GAP-42 pi-env、GAP-43 telemetry span）是 pi CLI 不依赖的库，等用户裁决，先不做。
+>
+> **对齐：** 对齐指可观察行为，结构可以不同；测试断言对着上游 v1.4.0 锁死。
+
+## 方法
+
+1. **范围。** 清单第 2 节的全部 GAP，从 GAP-01 到 GAP-50，每个 GAP 在下面的队列里正好一行。
+2. **排除。** 只认清单第 3 节写 Still exclude 的项。那些项不进队列。新增排除需要顾问裁决。第 3 节写 Reopen 的项由对应 GAP 行承接。
+3. **开工。** P1–P8 与 P13 的行状态是 `open`。GAP-06 不拆行，只出现在 P6，覆盖 mcp、codemode、tool-search 三个内置扩展工厂。清单第 4 节把 mcp 工厂写在 P5，本裁决把它并进 P6 的这一行。
+4. **先不做。** P9–P12 的 GAP-40、GAP-41、GAP-42、GAP-43 状态是 `proposal：待用户裁决（pi CLI 不依赖的库）`。
+5. **断言。** 每行落地时，测试锁的是上游 `v1.4.0`（`4a080252`）的可观察行为。结构可以跟 pi 不同。断言不从当前 cadr 输出反推。
+
+## 队列
+
+50 行。`open` 46 行。`proposal` 4 行（GAP-40、GAP-41、GAP-42、GAP-43）。出处取清单第 2 节的 pi 文件和 cadr 文件。清单里的 `same` 和短文件名按上一行或同目录展开。
+
+### P1. Lock what already runs
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-20 `tool_call` / `tool_result` | `packages/coding-agent/src/core/extensions/types.ts` → `src/cadr-agent/extensions/registration.lisp` | open |
+| GAP-29 `SIGHUP` | `packages/coding-agent/src/modes/interactive/interactive-mode.ts` → `src/cadr-cli/bootstrap/commands.lisp`，`test/cadr-cli/goal28-exit-and-auth-test.lisp` | open |
+| GAP-44 Copilot model filter | `packages/ai/src/providers/github-copilot.ts` → `src/cadr-ai/providers/runtime-projection.lisp` | open |
+| GAP-45 Provider retry fields | `settings-schema.ts` → `src/cadr-cli/sdk/settings-service.lisp` | open |
+| GAP-46 Env and settings locks | `packages/coding-agent/docs/environment-variables.md`，`settings-schema.ts` → `src/cadr-cli/bootstrap/commands.lisp`，`src/cadr-tui/terminal.lisp`，`src/cadr-cli/arguments.lisp`，`src/cadr-tui/renderer/lifecycle-input.lisp` | open |
+| GAP-47 RPC behavioral tests | `packages/coding-agent/src/modes/rpc/rpc-types.ts` → `src/cadr-cli/modes/rpc/commands.lisp`，`test/cadr-cli/rpc-test.lisp` | open |
+| GAP-48 Tool scheduling locks | `packages/agent/README.md`，`packages/ai/src/types.ts` → `src/cadr-agent/extensions/providers.lisp`，`src/cadr-ai/provider.lisp` | open |
+| GAP-49 Small option locks | `packages/ai/src/api/openai-completions.ts`，`pi-messages.ts`，`packages/coding-agent/src/utils/clipboard.ts` → `src/cadr-ai/providers/openai-completions.lisp`，`src/cadr-ai/providers/pi-messages.lisp`，`src/cadr-cli/interactive/clipboard.lisp` | open |
+
+### P2. Image catalog
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-17 Image catalog | `packages/ai/scripts/generate-models.ts`，`packages/ai/src/image-models.ts` → `src/cadr-ai/image-models.generated.lisp` | open |
+
+### P3. Provider auth
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-07 Meta provider | `packages/ai/src/providers/meta.ts`，`packages/ai/src/auth/oauth/meta.ts` → `src/cadr-ai/providers/definitions.lisp` | open |
+| GAP-08 ChatGPT sign-in | `packages/ai/src/auth/oauth/openai-chatgpt.ts` → `src/cadr-ai/providers/definitions.lisp`，`src/cadr-ai/providers/openai.lisp` | open |
+| GAP-09 TypeSafe credentials | `packages/ai/src/providers/typesafe.ts` → `src/cadr-ai/classifiers.lisp` | open |
+| GAP-11 Anthropic federation | `packages/ai/src/providers/anthropic.ts` → `src/cadr-ai/oauth/providers/anthropic.lisp` | open |
+| GAP-12 Azure API version env | `packages/ai/src/api/azure-openai-config.ts` → `src/cadr-cli/arguments.lisp`，`src/cadr-ai/providers/azure-openai.lisp` | open |
+| GAP-15 OAuth callback host | `packages/ai/src/auth/oauth/anthropic.ts` and the ChatGPT, Codex, OpenRouter modules → `src/cadr-ai/oauth/callback.lisp` | open |
+| GAP-16 `pi-ai` binary | `packages/ai/src/cli.ts` → `src/cadr-cli/models/credential-print.lisp` | open |
+
+### P4. Provider requests and classifiers
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-10 Other classifier APIs | `packages/ai/src/api/openai-decisions.ts`，`packages/ai/src/api/llama-cpp-classify.ts` → `src/cadr-ai/classifiers.lisp` | open |
+| GAP-13 Request options | `packages/ai/src/api/openai-responses.ts`，`openai-codex-responses.ts`，`mistral-conversations.ts` → `src/cadr-ai/providers/openai.lisp`，`src/cadr-ai/websocket.lisp`，`src/cadr-ai/providers/mistral.lisp` | open |
+| GAP-14 Cache retention env | those API files under `packages/ai/src/api/` → `src/cadr-ai/providers/bedrock.lisp`，`src/cadr-ai/provider.lisp` | open |
+
+### P5. MCP
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-01 MCP client | `packages/mcp/src/client.ts`，`packages/coding-agent/src/extensions/mcp/runtime.ts` → `src/cadr-agent/extensions/mcp-config.lisp` | open |
+| GAP-02 MCP resources | `packages/mcp/src/client.ts`，`packages/coding-agent/src/extensions/mcp/resources.ts` → `src/cadr-agent/extensions/mcp-config.lisp` | open |
+| GAP-03 `pi mcp` CLI | `packages/coding-agent/src/extensions/mcp/cli.ts` → `src/cadr-cli/arguments.lisp`（清单：has `--no-mcp` only） | open |
+| GAP-04 MCP OAuth | `packages/mcp/src/oauth/`，`packages/coding-agent/src/extensions/mcp/oauth.ts` → `mcp-config.lisp`，`test/cadr-agent/mcp-config-test.lisp` | open |
+
+### P6. Codemode
+
+GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内置扩展工厂。
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-05 Codemode and its worker | `packages/codemode/`，`packages/coding-agent/src/extensions/codemode/`，`packages/coding-agent/docs/codemode.md`，`settings-schema.ts` → `src/cadr-cli/bootstrap/tools.lisp`，`mcp-config.lisp` | open |
+| GAP-06 Builtin extensions | `packages/coding-agent/src/extensions/index.ts` → `src/cadr-cli/extensions/loader.lisp` | open |
+
+### P7. Session, hooks, settings, chrome
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-18 JSONL export | `packages/coding-agent/src/core/session-export.ts`，`interactive-mode.ts` → `src/cadr-cli/interactive/autocomplete.lisp`，`src/cadr-cli/bootstrap/sessions.lisp` | open |
+| GAP-19 `cache_warming_decision` | `packages/coding-agent/src/core/extensions/types.ts` → `src/cadr-cli/cache-warmer.lisp`，`test/cadr-agent/extensions-wave3-test.lisp` | open |
+| GAP-21 Virtual model registration | `packages/coding-agent/src/core/virtual-models.ts`，`docs/virtual-models.md` → `src/cadr-agent/loop/turns.lisp`，`src/cadr-agent/virtual-models.lisp` | open |
+| GAP-22 `compaction.modelOverrides` | `packages/coding-agent/src/core/settings-schema.ts` → `src/cadr-cli/bootstrap/settings.lisp` | open |
+| GAP-23 `retry.maxAgentDelayMs` | `settings-schema.ts` → `src/cadr-cli/sdk/settings-service.lisp` | open |
+| GAP-37 `--mode text` on a TTY | `packages/coding-agent/src/main.ts` → `src/cadr-cli/arguments.lisp` | open |
+| GAP-38 `/share` copy | `packages/coding-agent/src/core/slash-commands.ts` → `src/cadr-cli/interactive/autocomplete.lisp` | open |
+| GAP-39 Startup 3D egg | `packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts` → `src/cadr-cli/interactive/components/daxnuts.lisp`，`pi-logo.lisp` | open |
+
+### P8. Terminal, keys, shell env
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-24 Windows external editor | `packages/coding-agent/src/modes/interactive/extension-editor.ts` → `settings-external-editor-command` in `src/cadr-cli/bootstrap/settings.lisp` | open |
+| GAP-25 Windows and WSL key defaults | `packages/coding-agent/src/core/keybindings.ts`，`docs/keybindings.md` → `src/cadr-tui/keybindings.lisp`，`src/cadr-cli/interactive/selectors/tree.lisp` | open |
+| GAP-26 Windows open URL | `packages/coding-agent/src/utils/open-browser.ts` → `src/cadr-cli/interactive/controller.lisp` | open |
+| GAP-27 Windows VT input | `packages/tui/src/terminal.ts` → `src/cadr-tui/renderer/virtual-terminal.lisp`，`src/cadr-tui/terminal.lisp` | open |
+| GAP-28 Windows right-click paste | `packages/tui/src/tui-alt-screen.ts` → `src/cadr-tui/renderer/lifecycle-input.lisp` | open |
+| GAP-30 tmux keyboard warning | `interactive-mode.ts` → same（上一行 GAP-29 的 cadr 文件：`src/cadr-cli/bootstrap/commands.lisp`，`test/cadr-cli/goal28-exit-and-auth-test.lisp`） | open |
+| GAP-31 Self `SIGWINCH` | `packages/tui/src/terminal.ts` → `src/cadr-tui/terminal.lisp` | open |
+| GAP-32 `#` autocomplete | `packages/tui/src/components/editor.ts` → `src/cadr-tui/autocomplete.lisp`，`src/cadr-cli/interactive/autocomplete.lisp` | open |
+| GAP-33 Shell session env | `packages/coding-agent/src/core/tools/bash.ts`，`docs/environment-variables.md` → `src/cadr-cli/bootstrap/main.lisp` | open |
+| GAP-34 Bug-report origin | `docs/environment-variables.md` → `src/cadr-cli/support/bug-report.lisp` | open |
+| GAP-35 TUI write log | `packages/tui/src/terminal.ts` → `src/cadr-tui/terminal.lisp` | open |
+| GAP-36 Two env names | `packages/coding-agent/docs/environment-variables.md`，`packages/tui/src/terminal.ts` → `src/cadr-cli/interactive/clipboard.lisp`，`src/cadr-tui/terminal.lisp` | open |
+
+### P9. Chord
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-40 Chord | `packages/chord/README.md`，`packages/chord/src/index.ts` → none | proposal：待用户裁决（pi CLI 不依赖的库） |
+
+### P10. Telemetry contracts
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-43 Telemetry spans | `packages/telemetry/src/index.ts`，`packages/ai/README.md` → none | proposal：待用户裁决（pi CLI 不依赖的库） |
+
+### P11. Durable
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-41 Durable | `packages/durable/README.md` → none | proposal：待用户裁决（pi CLI 不依赖的库） |
+
+### P12. pi-env
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-42 pi-env | `packages/env/README.md`，`packages/env/daemon/src/main.rs` → `src/cadr-agent/execution-env.lisp` | proposal：待用户裁决（pi CLI 不依赖的库） |
+
+### P13. Ledger status
+
+| 面 | 出处 | 状态 |
+|---|---|---|
+| GAP-50 G.17 status | `docs/acceptance/goal-v20-part-g.md` → those acceptance files | open |
