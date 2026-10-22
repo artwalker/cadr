@@ -194,3 +194,35 @@
                (cadr-ai:model-metadata-cache-read-price metadata)))
         (is (= 0d0
                (cadr-ai:model-metadata-cache-write-price metadata)))))))
+
+(defparameter *v140-openai-codex-model-ids*
+  '("gpt-5.6-luna" "gpt-5.6-sol" "gpt-5.6-terra"
+    "gpt-6-astra" "gpt-6-luna" "gpt-6-sol" "gpt-6.1-sol"))
+
+(test v140-openai-codex-omits-chatgpt-rejected-models
+  ;; pi@4a080252f packages/ai/scripts/generate-models.ts codexModels,
+  ;; packages/ai/CHANGELOG.md #11173, and
+  ;; packages/coding-agent/src/core/model-resolver.ts.
+  ;; ChatGPT accounts reject gpt-5.5 and gpt-5.3-codex-spark, so
+  ;; openai-codex does not list them. gpt-5.5 stays on the OpenAI API
+  ;; catalog. Unset model selection uses gpt-6.1-sol.
+  (dolist (id '("gpt-5.5" "gpt-5.3-codex-spark"))
+    (let ((condition
+            (handler-case
+                (progn
+                  (cadr-ai:find-model-metadata :openai-codex id)
+                  nil)
+              (cadr-ai:configuration-error (caught) caught))))
+      (is (typep condition 'cadr-ai:configuration-error))
+      (is (string= (format nil "Unknown model: OPENAI-CODEX/~A" id)
+                   (cadr-ai:cadr-error-message condition)))))
+  (is (cadr-ai:find-model-metadata :openai "gpt-5.5"))
+  (dolist (id *v140-openai-codex-model-ids*)
+    (is (cadr-ai:find-model-metadata :openai-codex id)))
+  (is (string= "gpt-6.1-sol"
+               (cadr-ai:provider-definition-default-model
+                (cadr-ai:find-provider-definition :openai-codex))))
+  (multiple-value-bind (adapter model)
+      (cadr-ai:instantiate-provider :openai-codex :allow-missing-auth-p t)
+    (declare (ignore adapter))
+    (is (string= "gpt-6.1-sol" (cadr-ai:model-id model)))))

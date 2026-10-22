@@ -223,7 +223,7 @@
                :provider "openai-codex"
                :config-path #P"/definitely/missing/config.json"
                :auth-path auth-path)))
-        (is (string= "gpt-5.5"
+        (is (string= "gpt-6.1-sol"
                      (cadr-ai:model-id
                       (cadr-cli:provider-config-model config))))
         (is (eq :oauth
@@ -494,7 +494,7 @@
                #P"/definitely/missing/config.json"
                :auth-path path)))
         (is (string=
-             "gpt-5.5"
+             "gpt-6.1-sol"
              (cadr-ai:model-id
               (cadr-cli:provider-config-model config))))
         (is (eq :oauth

@@ -738,7 +738,7 @@
       "authTypes": [
         "oauth"
       ],
-      "defaultModel": "gpt-5.5",
+      "defaultModel": "gpt-6.1-sol",
       "keyEnvironment": null,
       "requiredEnvironment": [],
       "dynamicModels": false,

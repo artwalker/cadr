@@ -556,7 +556,7 @@
      :protocols (:openai-codex-responses)
      :base-url "https://chatgpt.com/backend-api"
      :auth-types (:oauth)
-     :default-model "gpt-5.5"
+     :default-model "gpt-6.1-sol"
      :key-environment nil
      :required-environment nil
      :dynamic-models-p nil

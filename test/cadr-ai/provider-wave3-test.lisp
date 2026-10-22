@@ -36,7 +36,7 @@
     (:moonshotai-cn . 10)
     (:nvidia . 21)
     (:openai . 42)
-    (:openai-codex . 11)
+    (:openai-codex . 9)
     (:opencode . 68)
     (:opencode-go . 27)
     (:openrouter . 366)
@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1371 (length (cadr-ai:list-model-metadata))))
+  (is (= 1369 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
@@ -127,7 +127,7 @@
   :mistral "mistral-large-latest"
   :mistral-conversations cadr-ai:mistral-provider)
 (define-wave3-route-test codex-uses-independent-adapter
-  :openai-codex "gpt-5.3-codex-spark"
+  :openai-codex "gpt-5.6-sol"
   :openai-codex-responses cadr-ai:openai-codex-provider)
 (define-wave3-route-test radius-uses-independent-adapter
   :radius "fixture-model"

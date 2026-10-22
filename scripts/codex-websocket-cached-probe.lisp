@@ -182,7 +182,7 @@
          (reasoning (getf options :reasoning))
          (session-id (getf options :session-id))
          (credential (codex-probe-auth-credential))
-         (metadata (cadr-ai:find-model-metadata :openai-codex "gpt-5.5"))
+         (metadata (cadr-ai:find-model-metadata :openai-codex "gpt-6.1-sol"))
          (model (cadr-ai::model-from-metadata metadata))
          (provider
            (cadr-ai:make-openai-codex-provider
@@ -196,7 +196,7 @@
          (elapsed nil))
     (setf (cadr-ai:model-max-tokens model) max-tokens)
     (cadr-ai:reset-openai-codex-websocket-debug-stats session-id)
-    (format t "provider openai-codex, model gpt-5.5~%sessionId ~A~%turns ~D, transport ~A, reasoning ~A, maxTokens ~D~%~%"
+    (format t "provider openai-codex, model gpt-6.1-sol~%sessionId ~A~%turns ~D, transport ~A, reasoning ~A, maxTokens ~D~%~%"
             session-id turns (string-downcase (symbol-name transport))
             (string-downcase (symbol-name reasoning)) max-tokens)
     (unwind-protect
