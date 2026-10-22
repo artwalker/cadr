@@ -162,6 +162,106 @@
     (cadr-ai:resolve-azure-deployment-name
      "model-b" "explicit" "model-b=ignored"))))
 
+(defun call-with-azure-api-version-env (value function)
+  (let ((saved (uiop:getenv "AZURE_OPENAI_API_VERSION")))
+    (unwind-protect
+         (progn
+           (if (eq value :unset)
+               (sb-posix:unsetenv "AZURE_OPENAI_API_VERSION")
+               (setf (uiop:getenv "AZURE_OPENAI_API_VERSION") value))
+           (funcall function))
+      (if saved
+          (setf (uiop:getenv "AZURE_OPENAI_API_VERSION") saved)
+          (sb-posix:unsetenv "AZURE_OPENAI_API_VERSION")))))
+
+(defun azure-version-request (model-id &rest options)
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :azure :model-id model-id :api-key "test-key"
+       :options
+       (append '(:azure-base-url
+                 "https://my-resource.openai.azure.com")
+               options))
+    (cadr-ai:build-request
+     provider model
+     (cadr-ai:make-context
+      :messages (list (cadr-ai:make-user-message :content "hi"))))))
+
+(test azure-api-version-follows-option-then-env-then-v1
+  ;; pi@4a080252f azure-openai-config.ts resolveAzureConfig and
+  ;; openai@7.19.0 AzureOpenAI defaultQuery api-version.
+  ;; Completions stays on openAICompletionsApi and does not send it.
+  (let ((responses
+          "https://my-resource.openai.azure.com/openai/v1/responses")
+        (completions
+          "https://my-resource.openai.azure.com/openai/v1/chat/completions"))
+    (call-with-azure-api-version-env
+     :unset
+     (lambda ()
+       (is (string=
+            (concatenate 'string responses "?api-version=v1")
+            (cadr-ai:request-spec-url
+             (azure-version-request "gpt-5.5"))))
+       (is (string=
+            (concatenate 'string responses "?api-version=2025-04-01-preview")
+            (cadr-ai:request-spec-url
+             (azure-version-request
+              "gpt-5.5"
+              :azure-api-version "2025-04-01-preview"))))
+       (is (string=
+            (concatenate 'string responses "?api-version=v1")
+            (cadr-ai:request-spec-url
+             (azure-version-request
+              "gpt-5.5" :azure-api-version ""))))))
+    (call-with-azure-api-version-env
+     "2024-10-21"
+     (lambda ()
+       (is (string=
+            (concatenate 'string responses "?api-version=2024-10-21")
+            (cadr-ai:request-spec-url
+             (azure-version-request "gpt-5.5"))))
+       (is (string=
+            (concatenate 'string responses "?api-version=2025-04-01-preview")
+            (cadr-ai:request-spec-url
+             (azure-version-request
+              "gpt-5.5"
+              :azure-api-version "2025-04-01-preview"))))
+       (is (string=
+            (concatenate 'string responses "?api-version=2024-10-21")
+            (cadr-ai:request-spec-url
+             (azure-version-request
+              "gpt-5.5" :azure-api-version ""))))
+       (is (string=
+            (concatenate 'string responses "?api-version= ")
+            (cadr-ai:request-spec-url
+             (azure-version-request
+              "gpt-5.5" :azure-api-version " "))))
+       (is (string=
+            (concatenate 'string responses "?api-version=preview-scoped")
+            (cadr-ai:request-spec-url
+             (azure-version-request
+              "gpt-5.5"
+              :environment
+              '(("AZURE_OPENAI_API_VERSION" . "preview-scoped"))))))
+       (is (string=
+            (concatenate 'string responses "?api-version=2024-10-21")
+            (cadr-ai:request-spec-url
+             (azure-version-request
+              "gpt-5.5"
+              :environment
+              '(("AZURE_OPENAI_API_VERSION" . ""))))))
+       (is (string=
+            completions
+            (cadr-ai:request-spec-url
+             (azure-version-request "deepseek-v4-pro"))))))
+    (call-with-azure-api-version-env
+     ""
+     (lambda ()
+       (is (string=
+            (concatenate 'string responses "?api-version=v1")
+            (cadr-ai:request-spec-url
+             (azure-version-request "gpt-5.5"))))))))
+
 (defun azure-message-roles (payload)
   (let ((messages (cadr-ai::json-get payload "messages")))
     (loop for index below (length messages)

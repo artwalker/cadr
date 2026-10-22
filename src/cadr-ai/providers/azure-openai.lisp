@@ -218,6 +218,25 @@
       (setf *azure-completions-parser*
             (make-openai-completions-provider :api-key "azure"))))
 
+(defun present-azure-version (value)
+  (and (stringp value) (plusp (length value)) value))
+
+(defun azure-api-version (provider)
+  ;; pi@4a080252f packages/ai/src/api/azure-openai-config.ts
+  ;; resolveAzureConfig: azureApiVersion, then AZURE_OPENAI_API_VERSION,
+  ;; then "v1". Empty strings are skipped the way JavaScript || skips them.
+  (or (present-azure-version
+       (option-value provider :azure-api-version))
+      (present-azure-version
+       (let ((environment (option-value provider :environment)))
+         (when (listp environment)
+           (cdr (assoc "AZURE_OPENAI_API_VERSION"
+                       environment
+                       :test #'string=)))))
+      (present-azure-version
+       (uiop:getenv "AZURE_OPENAI_API_VERSION"))
+      "v1"))
+
 (defun azure-completions-request (provider model context args)
   (let* ((base (azure-base-url provider model))
          (deployment (azure-deployment-for provider model))
@@ -263,14 +282,13 @@
       "api-key" key)
      (request-spec-provider request)
      (model-provider model))
-    (let ((api-version
-            (option-value provider :azure-api-version "v1")))
-      (when (and (non-empty-string-p api-version)
-                 (not (string= api-version "v1")))
-        (setf (request-spec-url request)
-              (format nil "~A?api-version=~A"
-                      (request-spec-url request)
-                      api-version))))
+    (let ((api-version (azure-api-version provider))
+          (url (request-spec-url request)))
+      (setf (request-spec-url request)
+            (format nil "~A~Capi-version=~A"
+                    url
+                    (if (position #\? url) #\& #\?)
+                    api-version)))
     request))
 
 (defmethod reduce-provider-sse-event
