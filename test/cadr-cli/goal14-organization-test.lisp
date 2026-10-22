@@ -1082,7 +1082,9 @@
     ;; +1 Goal 24: session-append-usage (session/journal.lisp).
     ;; +1 Goal 24: harness-session-append-usage (storage/harness.lisp).
     ;; +1 Goal 24: finish-agent-cancelled-retry (loop/turns.lisp).
-    (is (= 388 definition-count)
+    ;; +2 Goal 26 HTML CJK emphasis: +export-html-marked-cjk-friendly-js+
+    ;; and its octets (session/export-html.lisp).
+    (is (= 390 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

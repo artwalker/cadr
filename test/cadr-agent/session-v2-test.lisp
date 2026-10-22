@@ -414,16 +414,23 @@
         (is (search "parseSkillBlock" html))))))
 
 (test session-html-export-vendors-licensed-offline-assets-and-preserves-two-argument-call
+  ;; pi@4a080252f vendor/marked.min.js, byte-for-byte (marked 18.0.11).
   (is (string=
-       "d5487edc7258b404bfa74c393d74a6393155f02517bd5e7e77cd64f8187f39a0"
+       "438eedfcf932a414d0d0bfeea32dc365c063563b8ca713b4687fc8f8b501e5e4"
        (export-test-sha256
         cadr-agent::+export-html-marked-js+)))
+  ;; pi@4a080252f vendor/marked-cjk-friendly.min.js, byte-for-byte.
+  (is (string=
+       "93d2c938754cb24eef5b9ffecc268a98ef6beeb75dad614b0e874176aeeba565"
+       (export-test-sha256
+        cadr-agent::+export-html-marked-cjk-friendly-js+)))
   (is (string=
        "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846"
        (export-test-sha256
         cadr-agent::+export-html-highlight-js+)))
+  ;; pi@4a080252f template.html, byte-for-byte.
   (is (string=
-       "916782b1184a9597527605ad751e2b3af30fcea23ba2194002969cd217a06881"
+       "47d208235b066c856dae69c60281a3b99d164b99be9b81153d880375c9327105"
        (export-test-sha256
         cadr-agent::+export-html-template+)))
   ;; pi@4a080252f template.css, byte-for-byte.
@@ -432,10 +439,9 @@
        (export-test-sha256
         cadr-agent::+export-html-template-css+)))
   ;; pi@4a080252f template.js with pi-share:v1:sidebar-width rewritten to
-  ;; cadr-share, and without the markedCjkFriendly tokenizer. That
-  ;; tokenizer is the only template.js delta from 71023aec to v1.4.0.
+  ;; cadr-share. The markedCjkFriendly emStrong hook is included.
   (is (string=
-       "afe0ab70834fa5d4504e359fa50d2e7cf43886ff3017f3181064bf721255497b"
+       "467edf44d90047c778517d7ac26fb27e23bfbbd02dd3361dcc7ab3a7a73e8ac1"
        (export-test-sha256
         cadr-agent::+export-html-template-js+)))
   (is (search
@@ -472,8 +478,14 @@
        ".header-toggle-btn[aria-pressed=\"true\"]"
        cadr-agent::+export-html-template-css+))
   (is (search
-       "marked v18.0.5 - a markdown parser"
+       "marked v18.0.11 - a markdown parser"
        cadr-agent::+export-html-marked-js+))
+  (is (search
+       "marked-cjk-friendly v0.1.2"
+       cadr-agent::+export-html-marked-cjk-friendly-js+))
+  (is (search
+       "emStrong: markedCjkFriendly().tokenizer.emStrong"
+       cadr-agent::+export-html-template-js+))
   (is (search
        "Copyright (c) 2018-2026, MarkedJS. (MIT License)"
        cadr-agent::+export-html-marked-js+))
@@ -500,8 +512,14 @@
               (uiop:read-file-string
                path :external-format :utf-8)))
         (is (search
-             "marked v18.0.5 - a markdown parser"
+             "marked v18.0.11 - a markdown parser"
              html))
+        (let ((marked (search "marked v18.0.11 - a markdown parser" html))
+              (cjk (search "marked-cjk-friendly v0.1.2" html))
+              (highlight (search "Highlight.js v11.9.0" html))
+              (hook (search "emStrong: markedCjkFriendly().tokenizer.emStrong" html)))
+          (is (and marked cjk highlight hook
+                   (< marked cjk highlight hook))))
         (is (search
              "Highlight.js v11.9.0 (git: f47103d4f1)"
              html))
@@ -512,6 +530,56 @@
         (is (search
              "--body-bg: #18181e;"
              html))))))
+
+(defun export-html-cjk-parsed-html (html)
+  (uiop:with-temporary-file (:pathname html-path)
+    (with-open-file (stream html-path
+                            :direction :output
+                            :if-exists :supersede
+                            :external-format :utf-8)
+      (write-string html stream))
+    (uiop:run-program
+     (list "node"
+           (namestring
+            (asdf:system-relative-pathname
+             "cadr-agent/tests"
+             "test/cadr-agent/export-html-cjk-parse.mjs"))
+           (namestring html-path))
+     :output :string
+     :external-format :utf-8)))
+
+;; pi@4a080252f packages/coding-agent/test/export-html-cjk.test.ts.
+;; The strings are the upstream expectations, including the trailing newline
+;; marked writes after a paragraph.
+(test session-html-export-renders-cjk-emphasis-beside-punctuation
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "cjk-emphasis"))
+           (path (merge-pathnames "cjk.html" sessions))
+           (expected
+             (vector
+              (format nil "<p><strong>这是测试。</strong>后面</p>~%")
+              (format nil "<p><strong>一句话说清：</strong>一台机器</p>~%")
+              (format nil "<p><strong>要点到此为止。</strong>20 小时</p>~%")
+              (format nil "<p>字<strong>「引用」</strong>字</p>~%")
+              (format nil "<p><em>斜体。</em>后面</p>~%")
+              (format nil "<p>**end.**Then next</p>~%"))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "cjk"))
+      (cadr-agent:export-session-html session path)
+      (let ((parsed
+              (cadr-ai::parse-json
+               (export-html-cjk-parsed-html
+                (uiop:read-file-string
+                 path :external-format :utf-8)))))
+        (is (= (length expected) (length parsed)))
+        (loop for want across expected
+              for got across parsed
+              do (is (string= want got)))))))
 
 ;; pi@4a080252f session-manager.ts ContextEditEntry and export template.js
 ;; consume replacement, display, durationMs, usage, and nestedCalls.

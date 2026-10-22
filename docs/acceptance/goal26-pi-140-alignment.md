@@ -68,5 +68,5 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | 恢复会话时，分支没记过的扩展工具默认仍激活 | v1.4.0 #11062 #11075 | done：恢复会话和 `/tree` 切到目标分支时，转录里从没加入或移除过的扩展工具仍然激活。注册时 `default-active` 为假的保持关闭。压实之前移除的工具保持关闭。内置工具只跟分支记下的装载走。`--tools` 允许列表之外的 `mcp__` 工具在切分支后仍不激活；review: pass（agent 线验收，2026-10-22） |
 | 输出上限截断的工具调用丢掉对应的工具结果 | v1.4.0 #11227 | done：会话停在输出上限截断的工具调用和它的工具结果上时，下一次提示把两者从投影上下文里一起去掉，请求里不再出现这条 `length` 助手消息和对应工具结果。输出已达到模型上限、换了模型、或自动折叠关闭时，这对消息仍留在请求里；review: pass（agent 线验收，2026-10-22） |
 | `grep` 使用 `rg --no-config` | v1.4.0 #11203 | done：工具自己的正则、字面、glob 和条数不受 `RIPGREP_CONFIG_PATH` 影响。配置里的 `--fixed-strings` 不会把 `a.` 变成字面搜索 |
-| HTML 导出里 CJK 旁的粗体和斜体 | v1.4.0 #3353 #10154 | open |
+| HTML 导出里 CJK 旁的粗体和斜体 | v1.4.0 #3353 #10154 | done：`**这是测试。**后面`、`**一句话说清：**一台机器`、`**要点到此为止。**20 小时`、`字**「引用」**字` 在 HTML 导出里画成 strong，标点留在标记里；`*斜体。*后面` 画成 em。`**end.**Then next` 仍是字面星号 |
 | Windows 外壳探测、`pi update` 的 BOM、扩展加载 `@earendil-works/pi-ai/models`、生成的 models 参考文档、遥测 span | v1.4.0 | done：PowerShell 两个安装目录、按 SystemRoot 识别旧 WSL bash.exe、空 SystemRoot 时 taskkill 用 C:\Windows、工具包解压不再用 WINDIR；N/A（已裁决）：Windows Store 别名、pi update BOM、扩展加载 pi-ai/models、models 参考文档、遥测 span |

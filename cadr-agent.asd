@@ -31,6 +31,7 @@
                                (:module "vendor"
                                 :components
                                 ((:static-file "marked.min.js")
+                                 (:static-file "marked-cjk-friendly.min.js")
                                  (:static-file "highlight.min.js")))))
                              (:file "messages")
                              (:module "storage"

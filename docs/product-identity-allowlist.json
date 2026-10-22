@@ -12165,6 +12165,11 @@
   ],
   "opaque_files": [
     {
+      "path": "src/cadr-agent/export-html/vendor/marked.min.js",
+      "sha256": "438eedfcf932a414d0d0bfeea32dc365c063563b8ca713b4687fc8f8b501e5e4",
+      "reason": "Exact vendored Marked 18.0.11 bytes. The identity scan matches Pi inside the Unicode property escape \\p{Pi} (initial punctuation), which is not a product name. The digest locks this exemption to these bytes."
+    },
+    {
       "path": "src/cadr-agent/export-html/vendor/highlight.min.js",
       "sha256": "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846",
       "reason": "Exact vendored Highlight.js 11.9.0 bytes contain pi only in Lua and R mathematical builtin lists; digest lock prevents this exemption from covering any asset change."

@@ -37,6 +37,8 @@
   (funcall *export-html-asset-reader* "template.js"))
 (defparameter +export-html-marked-js+
   (funcall *export-html-asset-reader* "vendor/marked.min.js"))
+(defparameter +export-html-marked-cjk-friendly-js+
+  (funcall *export-html-asset-reader* "vendor/marked-cjk-friendly.min.js"))
 (defparameter +export-html-highlight-js+
   (funcall *export-html-asset-reader* "vendor/highlight.min.js"))
 
@@ -66,6 +68,7 @@
    '("{{CSS}}"
      "{{SESSION_DATA}}"
      "{{MARKED_JS}}"
+     "{{MARKED_CJK_FRIENDLY_JS}}"
      "{{HIGHLIGHT_JS}}"
      "{{JS}}")))
 
@@ -78,6 +81,8 @@
   (mapcar #'export-html-utf8-octets +export-html-html-parts+))
 (defparameter +export-html-marked-js-octets+
   (export-html-utf8-octets +export-html-marked-js+))
+(defparameter +export-html-marked-cjk-friendly-js-octets+
+  (export-html-utf8-octets +export-html-marked-cjk-friendly-js+))
 (defparameter +export-html-highlight-js-octets+
   (export-html-utf8-octets +export-html-highlight-js+))
 (defparameter +export-html-template-js-octets+
@@ -762,8 +767,10 @@
         (write-sequence (third html-parts) stream)
         (write-sequence +export-html-marked-js-octets+ stream)
         (write-sequence (fourth html-parts) stream)
-        (write-sequence +export-html-highlight-js-octets+ stream)
+        (write-sequence +export-html-marked-cjk-friendly-js-octets+ stream)
         (write-sequence (fifth html-parts) stream)
+        (write-sequence +export-html-highlight-js-octets+ stream)
+        (write-sequence (sixth html-parts) stream)
         (write-sequence +export-html-template-js-octets+ stream)
-        (write-sequence (sixth html-parts) stream))
+        (write-sequence (seventh html-parts) stream))
       (pathname path))))
