@@ -106,9 +106,9 @@ Reference public surface:
 | Native JSON, SSE, HTTP, retry | implemented | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [HTTP transport](../src/cadr-ai/transport/http.lisp), [streaming JSON](../src/cadr-ai/capabilities/streaming-json.lisp), [event streams](../src/cadr-ai/capabilities/event-stream.lisp), and [retry](../src/cadr-ai/support/retry.lisp), including proxy CONNECT in [CL-GOAL12-AI](#cl-goal12-ai) |
 | Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | implemented | Complete deterministic compatibility, transport, history, retry, image and provider-matrix behavior is covered by [CL-AI-WAVE3](#cl-ai-wave3) and the retained Wave 1 evidence |
 | Remaining independent APIs | implemented | Azure Responses, Bedrock Converse Stream, Vertex, Mistral Conversations, OpenAI Codex Responses and `pi-messages` have independent request/response/auth coverage in [CL-AI-WAVE3](#cl-ai-wave3) |
-| 38 built-in text providers | implemented | The registry is baseline-exact at 38 IDs; the non-baseline `ollama` registration was removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
+| 41 built-in text providers | implemented | The registry has 41 definitions. Meta reads `META_API_KEY` or mints a 24-hour Model API key from a Muse device login. The non-baseline `ollama` registration stays removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
 | Static catalogs and cost calculation | implemented | [generated catalog](../src/cadr-ai/models.generated.lisp) plus the schema/structure/per-shard integrity gate and deterministic native generators in [CL-GOAL12-AI](#cl-goal12-ai) cover the exact pinned 37-file, 1153-model snapshot |
-| API-key and OAuth/device authentication | implemented | [auth](../src/cadr-ai/auth.lisp), [OAuth core](../src/cadr-ai/oauth/pkce.lisp), [provider OAuth flows](../src/cadr-ai/oauth/providers/), and [CL-GOAL12-AI](#cl-goal12-ai) cover all provider-owned login/refresh/store/filter contracts, including GitHub Copilot, Kimi, OpenRouter, Radius and xAI |
+| API-key and OAuth/device authentication | implemented | [auth](../src/cadr-ai/auth.lisp), [OAuth core](../src/cadr-ai/oauth/pkce.lisp), [provider OAuth flows](../src/cadr-ai/oauth/providers/), and [CL-GOAL12-AI](#cl-goal12-ai) cover all provider-owned login/refresh/store/filter contracts, including GitHub Copilot, Kimi, Meta, OpenRouter, Radius and xAI |
 | Image input | implemented | [CL-AI-IMAGE](#cl-ai-image) |
 | Image generation / OpenRouter Images | implemented | Exact 63-model v1.4.0 snapshot and request/result/error behavior in [CL-AI-WAVE3](#cl-ai-wave3) |
 | Dynamic provider/faux-provider public runtime | implemented | [models runtime](../src/cadr-ai/runtime/models.lisp) covers provider mutation, credentials, refresh/filter/dispatch; [faux provider](../src/cadr-ai/runtime/faux-provider.lisp) owns the deterministic provider contract |
@@ -162,10 +162,11 @@ credential is inferred.
 | 36 | `xiaomi-token-plan-sgp` | `openai-completions` | `XIAOMI_TOKEN_PLAN_SGP_API_KEY` | implemented; regional plan endpoint/catalog | fixture; no credential |
 | 37 | `zai` | `openai-completions` | `ZAI_API_KEY` | implemented; endpoint/catalog | fixture; no ZAI credential |
 | 38 | `zai-coding-cn` | `openai-completions` | `ZAI_CODING_CN_API_KEY` | implemented; regional coding endpoint/catalog | fixture; no ZAI credential |
+| 39 | `meta` | `openai-responses` | `META_API_KEY` or Muse subscription device OAuth | implemented; device-code login mints a 24-hour Model API key; default model `muse-spark-1.3` | fixture; [meta-oauth-test](../test/cadr-ai/meta-oauth-test.lisp) |
 
 The separate `openrouter` image provider and dynamic `faux` provider are not
-counted among the 38 text providers; both are implemented as public cadr
-runtimes with deterministic tests.
+text-provider rows; both are implemented as public cadr runtimes with
+deterministic tests.
 
 The former non-baseline `ollama` registry entry is removed. Ollama remains a
 valid custom OpenAI-compatible live target when explicitly configured, but no
@@ -571,6 +572,7 @@ forward by status alone:
 | C | `packages/ai/test/lax-message-content.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/lazy-module-load.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/max-thinking.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/meta-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/mistral-raw-stop-reason.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/mistral-reasoning-mode.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/mistral-tool-schema.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |

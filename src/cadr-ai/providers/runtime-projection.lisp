@@ -146,6 +146,7 @@ which auth strategies are structured."
     (:kimi
      (lambda (interaction)
        (login-kimi-oauth interaction environment)))
+    (:meta #'login-meta-oauth)
     (:openai-device #'login-openai-runtime-oauth)
     (:openrouter #'login-openrouter-oauth)
     (:radius
@@ -162,6 +163,7 @@ which auth strategies are structured."
     (:kimi
      (lambda (credential)
        (refresh-kimi-oauth-credential credential environment)))
+    (:meta #'refresh-meta-oauth-credential)
     (:openai-device #'refresh-openai-oauth-credential)
     (:openrouter #'refresh-openrouter-oauth-credential)
     (:radius

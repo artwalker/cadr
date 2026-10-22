@@ -30,7 +30,7 @@
 (test built-in-provider-registry-is-complete
   (let ((ids (mapcar #'cadr-ai:provider-definition-id
                      (cadr-ai:list-provider-definitions))))
-    (is (= 40 (length ids)))
+    (is (= 41 (length ids)))
     (is (member :amazon-bedrock ids))
     (is (member :google-vertex ids))
     (is (member :radius ids))
@@ -57,6 +57,9 @@
          (:kimi-coding
           "Kimi For Coding" "Kimi Code (subscription)"
           "Sign in with Kimi Code" nil nil)
+         (:meta
+          "Meta" "Meta (Muse subscription)"
+          "Sign in with Meta" nil nil)
          (:openai-codex
           "OpenAI Codex" "OpenAI (ChatGPT Plus/Pro)" nil
           "A browser window should open. Complete login to finish."

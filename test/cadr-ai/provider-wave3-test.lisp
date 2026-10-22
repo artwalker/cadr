@@ -61,7 +61,7 @@
       :azure :baseten :cerebras
       :cloudflare-ai-gateway :cloudflare-workers-ai :deepseek
       :fireworks :github-copilot :google :google-vertex :groq
-      :huggingface :kimi-coding :minimax :minimax-cn :mistral
+      :huggingface :kimi-coding :meta :minimax :minimax-cn :mistral
       :moonshotai :moonshotai-cn :nvidia :openai :openai-codex
       :opencode :opencode-go :openrouter :qwen-token-plan
       :qwen-token-plan-cn :qwen-token-plan-individual :radius
@@ -124,6 +124,9 @@
 (define-wave3-route-test vertex-uses-independent-adapter
   :google-vertex "gemini-3-flash-preview"
   :google-vertex cadr-ai:vertex-provider)
+(define-wave3-route-test meta-uses-responses-api
+  :meta "muse-spark-1.3"
+  :openai-responses cadr-ai:openai-provider)
 (define-wave3-route-test mistral-uses-independent-adapter
   :mistral "mistral-large-latest"
   :mistral-conversations cadr-ai:mistral-provider)

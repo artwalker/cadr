@@ -96,6 +96,7 @@ above are unchanged. Measured 2026-10-23: 201 listed files
 | live provider | `test/cadr-ai/live-provider-test.lisp` |
 | opencode-go live | `test/cadr-ai/opencode-go-live-test.lisp` |
 | models runtime | `test/cadr-ai/models-runtime-test.lisp` |
+| meta oauth | `test/cadr-ai/meta-oauth-test.lisp` |
 | openai completions | `test/cadr-ai/openai-completions-test.lisp` |
 | support (package) | `test/cadr-ai/package.lisp` |
 | provider compat | `test/cadr-ai/provider-compat-test.lisp` |

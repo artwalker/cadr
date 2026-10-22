@@ -68,6 +68,7 @@
                               :serial t
                               :components ((:file "xai")
                                            (:file "kimi")
+                                           (:file "meta")
                                            (:file "github-copilot")
                                            (:file "openrouter")
                                            (:file "radius")
@@ -150,6 +151,7 @@
                              (:file "goal14-provider-organization-test")
                              (:file "goal12-auth-test")
                              (:file "goal18-auth-test")
+                             (:file "meta-oauth-test")
                              (:file "goal12-model-data-test")
                              (:file "goal12-codex-websocket-test")
                              (:file "goal20-websocket-test")

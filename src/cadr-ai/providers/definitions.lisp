@@ -395,6 +395,28 @@
      :oauth-refresh-strategy :kimi
      :oauth-to-auth-strategy :kimi-bearer
      :model-filter-strategy nil)
+    (:id :meta
+     :baseline-source "packages/ai/src/providers/meta.ts:7"
+     :name "Meta"
+     :protocol :openai-responses
+     :protocols (:openai-responses)
+     :base-url "https://api.meta.ai/v1"
+     :auth-types (:api-key :oauth)
+     :default-model "muse-spark-1.3"
+     :key-environment "META_API_KEY"
+     :required-environment nil
+     :dynamic-models-p nil
+     :supports-images-p nil
+     :supports-tools-p t
+     :reasoning-p nil
+     :oauth-metadata ,+meta-oauth-metadata+
+     :api-key-name "Meta Model API key"
+     :environment-names ("META_API_KEY")
+     :api-key-auth-strategy :environment
+     :oauth-login-strategy :meta
+     :oauth-refresh-strategy :meta
+     :oauth-to-auth-strategy :access-token
+     :model-filter-strategy nil)
     (:id :minimax
      :baseline-source "packages/ai/src/providers/minimax.ts:7"
      :name "MiniMax"
