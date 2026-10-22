@@ -3090,3 +3090,113 @@
               (when warmer
                 (cache-warmer-cancel warmer))))
           :interactive-p (eq mode :tui)))))))
+
+(defun tmux-show-option-output
+    (option
+     &key
+       (program "tmux")
+       (timeout-seconds 2)
+       (clock #'get-internal-real-time)
+       (sleep #'sleep))
+  ;; v1.4.0 interactive-mode.ts runTmuxShow. stdin and stderr are
+  ;; discarded. Exit 0 returns trimmed stdout, including an empty
+  ;; string. Nonzero, a spawn error, or the 2s timeout return nil and
+  ;; do not use a partial read.
+  (let ((process nil)
+        (output nil))
+    (unwind-protect
+         (handler-case
+             (progn
+               (setf process
+                     (uiop:launch-program
+                      (list program "show" "-gv" option)
+                      :input nil
+                      :output :stream
+                      :error-output nil))
+               (setf output
+                     (uiop:process-info-output process))
+               (let ((deadline
+                       (+ (funcall clock)
+                          (round
+                           (* timeout-seconds
+                              internal-time-units-per-second)))))
+                 (loop
+                   (unless (ignore-errors
+                             (uiop:process-alive-p process))
+                     (return))
+                   (when (>= (funcall clock) deadline)
+                     (ignore-errors
+                       (uiop:terminate-process process))
+                     (ignore-errors
+                       (uiop:wait-process process))
+                     (return-from tmux-show-option-output nil))
+                   (funcall sleep 0.01d0)))
+               (let ((status
+                       (ignore-errors
+                         (uiop:wait-process process))))
+                 (if (and (integerp status) (zerop status))
+                     (string-trim
+                      '(#\Space #\Tab #\Newline #\Return
+                        #\Page #\Vt)
+                      (with-output-to-string (buffer)
+                        (loop for line =
+                                (read-line output nil nil)
+                              while line
+                              do (write-line line buffer))))
+                     nil)))
+           (condition ()
+             nil))
+      (when output
+        (ignore-errors (close output)))
+      (when (and process
+                 (ignore-errors
+                   (uiop:process-alive-p process)))
+        (ignore-errors
+          (uiop:terminate-process process))
+        (ignore-errors
+          (uiop:wait-process process))))))
+
+(defun tmux-keyboard-setup-warning
+    (&key
+       (tmux (uiop:getenv "TMUX"))
+       (show #'tmux-show-option-output))
+  ;; v1.4.0 interactive-mode.ts checkTmuxKeyboardSetup.
+  ;; An empty TMUX is the same as unset. Both options are queried.
+  ;; A missing extended-keys answer suppresses the warning. "on" and
+  ;; "always" count as enabled. The xterm sentence uses the product
+  ;; display name.
+  (unless (and (stringp tmux) (plusp (length tmux)))
+    (return-from tmux-keyboard-setup-warning nil))
+  (let* ((keys-thread
+           (sb-thread:make-thread
+            (lambda ()
+              (handler-case
+                  (funcall show "extended-keys")
+                (condition () nil)))
+            :name "cadr-tmux-extended-keys"))
+         (format-thread
+           (sb-thread:make-thread
+            (lambda ()
+              (handler-case
+                  (funcall show "extended-keys-format")
+                (condition () nil)))
+            :name "cadr-tmux-extended-keys-format"))
+         (extended-keys
+           (ignore-errors
+             (sb-thread:join-thread keys-thread)))
+         (extended-keys-format
+           (ignore-errors
+             (sb-thread:join-thread format-thread))))
+    (cond
+      ((not (stringp extended-keys))
+       nil)
+      ((not (or (string= extended-keys "on")
+                (string= extended-keys "always")))
+       "tmux extended-keys is off. Modified Enter keys may not work. Add `set -g extended-keys on` to ~/.tmux.conf and restart tmux.")
+      ((and (stringp extended-keys-format)
+            (string= extended-keys-format "xterm"))
+       (format
+        nil
+        "tmux extended-keys-format is xterm. ~A works best with csi-u. Add `set -g extended-keys-format csi-u` to ~~/.tmux.conf and restart tmux."
+        (cadr-ai::cadr-product-display-name)))
+      (t nil))))

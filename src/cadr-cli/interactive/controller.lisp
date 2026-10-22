@@ -296,6 +296,7 @@ interactive-mode.ts:5956-5960).")
        set-extension-ui-function
        version-update-check-function
        package-update-check-function
+       tmux-keyboard-check-function
        tool-ensure-function
        extension-overlay-opened-function
        footer-state-function
@@ -522,6 +523,8 @@ interactive-mode.ts:5956-5960).")
          (done-p nil)
          (last-clear-at nil)
          (worker nil)
+         (tmux-keyboard-thread nil)
+         (tmux-keyboard-open-p t)
          (extension-prompt-worker nil)
          (unwrap-tui-turn-dispatch nil)
          (session-loader-worker nil)
@@ -3409,6 +3412,27 @@ interactive-mode.ts:5956-5960).")
             (show-package-updates
              (funcall package-update-check-function))
           (condition () nil)))
+      ;; v1.4.0 interactive-mode.ts checkTmuxKeyboardSetup runs beside
+      ;; startup. The warning entry is appended when the query returns.
+      (setf tmux-keyboard-thread
+            (sb-thread:make-thread
+             (lambda ()
+               (let ((text
+                       (handler-case
+                           (funcall
+                            (or tmux-keyboard-check-function
+                                #'tmux-keyboard-setup-warning))
+                         (condition () nil))))
+                 (when (and (stringp text)
+                            (plusp (length text)))
+                   (let ((shown-p nil))
+                     (sb-thread:with-mutex (lock)
+                       (when tmux-keyboard-open-p
+                         (add-tui-warning state text)
+                         (setf shown-p t)))
+                     (when shown-p
+                       (request-render))))))
+             :name "cadr-tmux-keyboard"))
       (setf *tui-mode-switch-hook* #'switch-tui-mode
             *fullscreen-copy-on-select-hook*
             (lambda (enabled)
@@ -3705,6 +3729,10 @@ interactive-mode.ts:5956-5960).")
             (lambda ()
               (cadr-tui:renderer-after-stop
                renderer))))
+        (sb-thread:with-mutex (lock)
+          (setf tmux-keyboard-open-p nil))
+        (when tmux-keyboard-thread
+          (stop-thread-for-cleanup tmux-keyboard-thread))
         (setf *tui-mode-switch-hook* nil
               *fullscreen-copy-on-select-hook* nil
               *fullscreen-wheel-scroll-lines-hook* nil

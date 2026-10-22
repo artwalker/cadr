@@ -449,7 +449,9 @@
     ;; (bootstrap/settings.lisp).
     ;; +2 GAP-46: settings-assign-fullscreen-wheel-scroll-lines and
     ;; settings-show-hardware-cursor-p (bootstrap/settings.lisp).
-    (is (= 193 definition-count)
+    ;; +2 GAP-30: tmux-show-option-output and
+    ;; tmux-keyboard-setup-warning (bootstrap/commands.lisp).
+    (is (= 195 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
