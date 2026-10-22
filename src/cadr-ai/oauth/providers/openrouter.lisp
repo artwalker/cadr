@@ -44,46 +44,59 @@
 
 (defun login-openrouter-oauth (interaction)
   (multiple-value-bind (verifier challenge) (generate-pkce)
-    (let* ((callback
-             (format nil "http://127.0.0.1:1457/oauth/callback/~A"
-                     (oauth-state)))
-           (url
-             (format nil "~A?~A"
-                     +openrouter-authorize-url+
-                     (form-encode
-                      `(("callback_url" . ,callback)
-                        ("code_challenge" . ,challenge)
-                        ("code_challenge_method" . "S256"))))))
-      (runtime-auth-interaction-notify
-       interaction
-       (list :type :auth-url :url url
-             :instructions
-             (oauth-provider-metadata-auth-url-instructions
-              +openrouter-oauth-metadata+)))
-      (let ((code
-              (parse-openrouter-authorization-input
-               (runtime-auth-interaction-prompt
+    (let* ((host (oauth-callback-host))
+           (socket (open-oauth-callback-socket 0 host)))
+      (unwind-protect
+           (let* ((callback
+                    (format nil "http://~A:~D/oauth/callback/~A"
+                            (oauth-callback-url-host host)
+                            (oauth-callback-socket-port socket)
+                            (oauth-state)))
+                  (url
+                    (format nil "~A?~A"
+                            +openrouter-authorize-url+
+                            (form-encode
+                             `(("callback_url" . ,callback)
+                               ("code_challenge" . ,challenge)
+                               ("code_challenge_method" . "S256"))))))
+             (runtime-auth-interaction-notify
+              interaction
+              (list :type :progress
+                    :message
+                    (format nil
+                            "Listening for OpenRouter OAuth callback on ~A"
+                            callback)))
+             (runtime-auth-interaction-notify
+              interaction
+              (list :type :auth-url :url url
+                    :instructions
+                    (oauth-provider-metadata-auth-url-instructions
+                     +openrouter-oauth-metadata+)))
+             (let ((code
+                     (parse-openrouter-authorization-input
+                      (runtime-auth-interaction-prompt
+                       interaction
+                       (list
+                        :type :manual-code
+                        :title
+                        (oauth-login-title +openrouter-oauth-metadata+)
+                        :url url
+                        :instructions
+                        (oauth-provider-metadata-auth-url-instructions
+                         +openrouter-oauth-metadata+)
+                        :message
+                        (oauth-provider-metadata-manual-input-message
+                         +openrouter-oauth-metadata+)
+                        :placeholder callback)))))
+               (unless code
+                 (error 'authentication-error
+                        :message "Missing authorization code"))
+               (runtime-auth-interaction-notify
                 interaction
-                (list
-                 :type :manual-code
-                 :title
-                 (oauth-login-title +openrouter-oauth-metadata+)
-                 :url url
-                 :instructions
-                 (oauth-provider-metadata-auth-url-instructions
-                  +openrouter-oauth-metadata+)
-                 :message
-                 (oauth-provider-metadata-manual-input-message
-                  +openrouter-oauth-metadata+)
-                 :placeholder callback)))))
-        (unless code
-          (error 'authentication-error
-                 :message "Missing authorization code"))
-        (runtime-auth-interaction-notify
-         interaction
-         '(:type :progress
-           :message "Exchanging authorization code for an API key..."))
-        (openrouter-exchange-code code verifier)))))
+                '(:type :progress
+                  :message "Exchanging authorization code for an API key..."))
+               (openrouter-exchange-code code verifier)))
+        (ignore-errors (sb-bsd-sockets:socket-close socket))))))
 
 (defun refresh-openrouter-oauth-credential (credential)
   credential)

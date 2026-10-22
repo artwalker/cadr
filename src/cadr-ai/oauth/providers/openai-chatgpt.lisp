@@ -134,7 +134,8 @@
 
 (defun open-chatgpt-callback-socket ()
   (handler-case
-      (open-oauth-callback-socket +chatgpt-callback-port+)
+      (open-oauth-callback-socket
+       +chatgpt-callback-port+ (oauth-callback-host))
     (sb-bsd-sockets:address-in-use-error ()
       (chatgpt-authentication-error +chatgpt-port-in-use-message+))))
 

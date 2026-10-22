@@ -149,15 +149,44 @@
           body)
   (finish-output stream))
 
-(defun open-oauth-callback-socket (port)
+(defun oauth-callback-host ()
+  ;; v1.4.0 getProviderEnvValue("PI_OAUTH_CALLBACK_HOST") || "127.0.0.1".
+  ;; An empty string is falsy there. PI_* is not a fallback.
+  (let ((value (uiop:getenv "CADR_OAUTH_CALLBACK_HOST")))
+    (if (and (stringp value) (plusp (length value)))
+        value
+        "127.0.0.1")))
+
+(defun oauth-callback-url-host (host)
+  ;; callback-server.ts brackets a host that contains ":".
+  (if (find #\: host)
+      (format nil "[~A]" host)
+      host))
+
+(defun oauth-callback-bind-address (host)
+  (if (find #\: host)
+      (sb-bsd-sockets:make-inet6-address host)
+      (handler-case
+          (sb-bsd-sockets:make-inet-address host)
+        (error ()
+          (sb-bsd-sockets:host-ent-address
+           (sb-bsd-sockets:get-host-by-name host))))))
+
+(defun open-oauth-callback-socket (port &optional (host "127.0.0.1"))
+  ;; The default stays 127.0.0.1 because Radius hardcodes that address.
+  ;; Anthropic, ChatGPT, Codex, and OpenRouter pass oauth-callback-host.
   (let ((socket
-          (make-instance 'sb-bsd-sockets:inet-socket
-                         :type :stream
-                         :protocol :tcp)))
+          (make-instance
+           (if (find #\: host)
+               'sb-bsd-sockets:inet6-socket
+               'sb-bsd-sockets:inet-socket)
+           :type :stream
+           :protocol :tcp)))
     (handler-case
         (progn
           (setf (sb-bsd-sockets:sockopt-reuse-address socket) t)
-          (sb-bsd-sockets:socket-bind socket #(127 0 0 1) port)
+          (sb-bsd-sockets:socket-bind
+           socket (oauth-callback-bind-address host) port)
           (sb-bsd-sockets:socket-listen socket 1)
           socket)
       (error (condition)
@@ -173,10 +202,10 @@
   ;; preferred port falls back to one the OS chooses. No listener
   ;; means login continues with the pasted redirect URL.
   (handler-case
-      (open-oauth-callback-socket 53692)
+      (open-oauth-callback-socket 53692 (oauth-callback-host))
     (error ()
       (handler-case
-          (open-oauth-callback-socket 0)
+          (open-oauth-callback-socket 0 (oauth-callback-host))
         (error ()
           nil)))))
 
@@ -188,10 +217,10 @@
 
 (defun wait-for-oauth-code
     (state port path provider-name
-     &optional cancelled-p bound-socket)
-  (let ((socket
+     &optional cancelled-p bound-socket (host "127.0.0.1"))
+    (let ((socket
           (or bound-socket
-              (open-oauth-callback-socket port))))
+              (open-oauth-callback-socket port host))))
     (unwind-protect
          (progn
            (when cancelled-p
@@ -244,7 +273,8 @@
 
 (defun wait-for-openai-oauth-code (state &optional cancelled-p)
   (wait-for-oauth-code
-   state 1455 "/auth/callback" "OpenAI" cancelled-p))
+   state 1455 "/auth/callback" "OpenAI" cancelled-p nil
+   (oauth-callback-host)))
 
 (defun wait-for-oauth-authorization
     (expected-state callback-function prompt-function prompt)

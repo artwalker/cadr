@@ -156,6 +156,7 @@
                              (:file "typesafe-credentials-test")
                              (:file "anthropic-federation-test")
                              (:file "openai-chatgpt-oauth-test")
+                             (:file "oauth-callback-host-test")
                              (:file "goal12-model-data-test")
                              (:file "goal12-codex-websocket-test")
                              (:file "goal20-websocket-test")
