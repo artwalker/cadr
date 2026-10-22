@@ -303,6 +303,7 @@
                              (:file "goal18-docs-test")
                              (:file "tui-test")
                              (:file "goal26-extension-dialog-stack-test")
+                             (:file "goal26-clipboard-process-group-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")
                              (:file "goal9-b3-overlay-contract-test")

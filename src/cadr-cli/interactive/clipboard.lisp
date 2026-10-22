@@ -43,11 +43,25 @@
                text))
       (condition () nil))))
 
+(defun clipboard-process-argv (argv)
+  ;; v1.4.0 runClipboardCommand sets detached on POSIX. That is
+  ;; setsid(2): the helper becomes its own session, so Ctrl+Z
+  ;; (SIGTSTP to this process group) does not stop a daemonized
+  ;; wl-copy, xclip, or xsel (#11179). Windows stays in the parent
+  ;; group. --wait keeps the helper's exit status; without it a
+  ;; setsid that has to fork reports success for a failed command.
+  (if (or (uiop:os-windows-p)
+          (not (probe-file #P"/usr/bin/setsid")))
+      argv
+      (list* "/usr/bin/setsid" "--wait" argv)))
+
 (defun default-clipboard-copy-runner (argv input)
   (handler-case
       (let ((stream
-              (make-string-input-stream (or input ""))))
-        (if (member (first argv)
+              (make-string-input-stream (or input "")))
+            (program (first argv))
+            (argv (clipboard-process-argv argv)))
+        (if (member program
                     '("wslpath" "powershell.exe")
                     :test #'string=)
             (values
@@ -344,7 +358,7 @@
   (handler-case
       (let ((bytes
               (uiop:run-program
-               argv
+               (clipboard-process-argv argv)
                :output :byte-vector
                :error-output nil)))
         (values bytes t))
