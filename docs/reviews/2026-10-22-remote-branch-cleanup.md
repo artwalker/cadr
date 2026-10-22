@@ -4,11 +4,13 @@
 
 测量命令（2026-10-22，`git fetch --prune origin` 之后）：
 
-- `git ls-remote --heads origin` = 774
+- `git ls-remote --heads origin` = 775
 - `origin/cadr-migration` = `3bc5eb8990ed2c864820d506c3acde774ebc3316`（Merge pull request #871）
 - 已合并（tip 是该提交的祖先，不含 `cadr-migration` 自身）= 337
-- 未合并 = 436
-- 337 + 436 + 1 = 774
+- 未合并 = 437
+- 337 + 437 + 1 = 775
+
+第一次 `git fetch --prune origin` 时远端是 774 个分支，这份清单的分支还不存在。下面的 775 把随后推上去的 `docs/remote-branch-cleanup-2026-10-22` 算了进去。
 
 每个已合并分支都用 `git merge-base --is-ancestor origin/<分支> origin/cadr-migration` 核对过，失败数是 0。
 
@@ -363,8 +365,9 @@
 
 ## 未合并
 
-可能有用 166，不确定 236，已被替代 34。
+可能有用 167，不确定 236，已被替代 34。
 
+- `docs/remote-branch-cleanup-2026-10-22` | 2026-10-22T23:58:00+08:00 | 领先 2 | docs: count the inventory branch in the unmerged list | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
 - `goal24-cache-warming-settings-wire-tip` | 2026-09-22T06:31:53+08:00 | 领先 4 | feat(cli): drive cache warmer mode from settings | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
 - `goal24-copy-selection-flash-tip` | 2026-09-22T06:26:47+08:00 | 领先 2 | fix(tui): flash named clipboard backend errors on selection copy | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
 - `goal24-bug-paste-newline-tip` | 2026-09-22T06:20:31+08:00 | 领先 4 | fix(cli): tip re-land pasted /bug line breaks and hint skip | 可能有用：具名功能或修复分支，至少有一条领先提交的说明不在 cadr-migration 上，删远端前可以从 bundle 找回。
