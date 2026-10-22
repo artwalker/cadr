@@ -162,10 +162,12 @@ Returns (values any-error-p any-extension-load-failure-p)."
          (factories
            (remove-if
             (lambda (entry)
+             (and
+              (consp entry)
               (member
                (getf entry :name)
                disabled
-               :test #'string-equal))
+               :test #'string-equal)))
             (cons
              (list
               :name "llama.cpp"

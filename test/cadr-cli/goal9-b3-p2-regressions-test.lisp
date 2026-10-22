@@ -217,20 +217,22 @@
            (make-string width :initial-element #\─))
          (options
            (cadr-cli::settings-selector-state-options state)))
-    (is (= 31 (length options)))
+    (is (= 33 (length options)))
     (is
      (equal
       '("autocompact" "auto-resize-images" "block-images"
         "skill-commands" "show-hardware-cursor" "editor-padding"
         "output-padding" "autocomplete-max-visible" "clear-on-shrink"
         "terminal-progress" "steering-mode" "follow-up-mode" "transport"
-        "http-idle-timeout" "cache-warming-mode" "hide-thinking"
+        "share-destination" "http-idle-timeout"
+        "cache-warming-mode" "hide-thinking"
         "mermaid-rendering"
         "cache-miss-notices" "collapse-changelog" "quiet-startup"
         "install-telemetry" "default-project-trust" "double-escape-action"
         "tree-filter-mode" "warnings" "model-thinking"
         "tui-mode" "fullscreen-exit-output" "fullscreen-scrollbar"
-        "fullscreen-copy-on-select" "theme")
+        "fullscreen-copy-on-select" "fullscreen-wheel-scroll-lines"
+        "theme")
       (mapcar #'cadr-cli::settings-option-id options)))
     (is
      (uiop:string-prefix-p
@@ -255,7 +257,7 @@
        "  Autocomplete max items          5"
        "  Clear on shrink                 false"
        "  Terminal progress               false"
-       "  (1/31)"
+       "  (1/33)"
        ""
        "  Automatically compact context when it gets too large"
        ""
@@ -394,7 +396,7 @@
            (cadr-cli::make-cli-settings-selector-state
             manager agent (cadr-cli::make-resource-snapshot)
             :supports-images-p t)))
-    (is (= 33
+    (is (= 35
            (length
             (cadr-cli::settings-selector-state-options with-images))))
     (is

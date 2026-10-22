@@ -66,26 +66,30 @@ def settings_keys(source):
     return keys
 
 
-def extension_events(source):
+def extension_events(source, *extra_sources):
     if not source:
         return set()
     aliases = {}
     literals = {}
     extends = {}
     for match in re.finditer(
-        r"export type (\w+)\s*=\s*\n((?:\s*\|\s*\w+\s*\n?)+);", source
-    ):
-        aliases[match.group(1)] = re.findall(r"\|\s*(\w+)", match.group(2))
-    for match in re.finditer(
-        r"(?:export )?interface (\w+)(?:\s+extends\s+(\w+))?\s*\{([^}]*?)\n\}",
+        r"export type (\w+)\s*=\s*(\|?\s*\w+(?:\s*\|\s*\w+)*)\s*;",
         source,
-        re.DOTALL,
     ):
-        literal = re.search(r'\ttype:\s*"([a-z_]+)";', match.group(3))
-        if literal:
-            literals[match.group(1)] = literal.group(1)
-        elif match.group(2):
-            extends[match.group(1)] = match.group(2)
+        aliases[match.group(1)] = re.findall(r"\w+", match.group(2))
+    for interface_source in (source, *extra_sources):
+        if not interface_source:
+            continue
+        for match in re.finditer(
+            r"(?:export )?interface (\w+)(?:\s+extends\s+(\w+))?\s*\{([^}]*?)\n\}",
+            interface_source,
+            re.DOTALL,
+        ):
+            literal = re.search(r'\ttype:\s*"([a-z_]+)";', match.group(3))
+            if literal:
+                literals[match.group(1)] = literal.group(1)
+            elif match.group(2):
+                extends[match.group(1)] = match.group(2)
     leaves = set()
     pending = list(aliases.get("ExtensionEvent", []))
     while pending:
@@ -96,6 +100,10 @@ def extension_events(source):
             leaves.add(literals[name])
         elif name in extends and extends[name] in literals:
             leaves.add(literals[extends[name]])
+        else:
+            raise SystemExit(
+                f"ExtensionEvent member {name} resolves to neither alias nor event interface"
+            )
     return leaves
 
 
@@ -220,8 +228,17 @@ def main():
          slash_commands(blob(new, ca + "/src/core/slash-commands.ts")))
     diff("settingsKeys", settings_keys(blob(old, ca + "/src/core/settings-manager.ts")),
          settings_keys(blob(new, ca + "/src/core/settings-manager.ts")))
-    diff("extensionEvents", extension_events(blob(old, ca + "/src/core/extensions/types.ts")),
-         extension_events(blob(new, ca + "/src/core/extensions/types.ts")))
+    diff(
+        "extensionEvents",
+        extension_events(
+            blob(old, ca + "/src/core/extensions/types.ts"),
+            blob(old, ca + "/src/core/cache-warmer.ts"),
+        ),
+        extension_events(
+            blob(new, ca + "/src/core/extensions/types.ts"),
+            blob(new, ca + "/src/core/cache-warmer.ts"),
+        ),
+    )
     diff("exportedComponents", exported_components(blob(old, ca + "/src/index.ts")),
          exported_components(blob(new, ca + "/src/index.ts")))
     diff("keybindingActions",

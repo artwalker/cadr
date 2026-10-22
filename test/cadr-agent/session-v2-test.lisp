@@ -431,7 +431,7 @@
        (export-test-sha256
         cadr-agent::+export-html-template-css+)))
   (is (string=
-       "822c3fbcbc907edebf200f52ff06a7f15b126bab5810f989a2acf6352bfe20b8"
+       "456d2b31c701384809f26b6e501e3f6011e634a6c0dd3912c007f37623423eb3"
        (export-test-sha256
         cadr-agent::+export-html-template-js+)))
   (is (search

@@ -14,7 +14,7 @@ Commands:
   cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth
 
 Options:
-  --provider <name>              Provider name (default: google)
+  --provider <name>              Provider to search for --model (requires --model)
   --model <pattern>              Model pattern or ID (supports "provider/id" and optional ":<thinking>")
   --api-key <key>                API key (defaults to env vars)
   --system-prompt <text>         System prompt (default: coding assistant prompt)
@@ -33,7 +33,9 @@ Options:
                                  Supports globs (anthropic/*, *sonnet*) and fuzzy matching
   --no-tools, -nt                Disable all tools by default (built-in and extension)
   --no-builtin-tools, -nbt       Disable built-in tools by default but keep extension/custom tools enabled
+  --no-mcp                       Disable built-in MCP support: no servers connect and no MCP tools
   --tools, -t <tools>            Comma-separated allowlist of tool names to enable
+                                 Or only +name/-name entries to change the defaults
                                  Applies to built-in, extension, and custom tools
   --exclude-tools, -xt <tools>   Comma-separated denylist of tool names to disable
                                  Applies to built-in, extension, and custom tools
@@ -110,6 +112,9 @@ Examples:
 
   # Read-only mode (no file modifications possible)
   cadr --tools read,grep,find,ls -p "Review the code in src/"
+
+  # Add grep to the default tools
+  cadr --tools +grep
 
   # Disable one tool while keeping the rest available
   cadr --exclude-tools ask_question

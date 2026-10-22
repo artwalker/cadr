@@ -31,22 +31,22 @@ COMMON_TRACE_COUNTS = {
 }
 COMMON_ABSOLUTE_P99_US = 16_000
 FIXED_BASELINE_DIST_SHA256 = {
-    "tui": "897358300f9abff3028d7ea07ca5df6e5b343fcf7579130ce098abc933b37479",
-    "ai": "6ea7a794b02bb1ebf6f20d48be246ceaee480e94b5f9e8b2162c4ca9fb2f7975",
-    "agent": "b141f890e211eafe49ffda498cc41edd08f60cf0ab4aaca9d2b18aad0d17b5a7",
-    "coding_agent": "44c64982bb381813c263b967162121da60e55a8a154295eeb60790ea97c60864",
+    "tui": "32d1fcbc4e3c43a54a7874e37fd4d134df23a3e8aefa2c5fd400fb905e812580",
+    "ai": "4c51d97df5e96b2eee3a17b77b0a213cd8d103e5c2af87213e401b0b8e2f03d1",
+    "agent": "d5525b9d6ba8063c7bda696a7b4e850f746e54bb2b8c9ee57f940d08aff26ad5",
+    "coding_agent": "a3ab91d76077ef3851082a934ab961ed5c331efde60afcd24a8cc196701df4c5",
 }
 FIXED_BASELINE_OBJECT_IDS = {
-    "package_lock_object_id": "1f77aa69a44915990ba2e4f41573cb2b7005b0ca",
-    "tui_object_id": "5172a9a142c582f8d8ad9c8c85772f1b093cc5a7",
-    "interactive_mode_object_id": "6d5e6b884fc7729b517c17ab18acea9f9a672776",
-    "alt_screen_object_id": "783a92ab8f064ee6d5b1407d2d9f8d81c42ab892",
+    "package_lock_object_id": "898afd386b243ddf9c408abc9fbe05fc412de2c7",
+    "tui_object_id": "d888940e9a38d6a6e48b760d317c148bc3e3eb10",
+    "interactive_mode_object_id": "e24d150be9abfd74dc1fc5c1c74c70d963797b20",
+    "alt_screen_object_id": "5e6d7686454511ccb02babd40078d25ceb458bb6",
 }
 FIXED_BASELINE_DEPENDENCY_TREE_SHA256 = (
-    "b9847a32b8c1d8a83b1cd76f3b07c29cc7406c414dfb6728862dca12b24796ee"
+    "12b797c9ddb1b18556b64e80d470b7a4c5e7989acedf35d54e2b887cf9d05138"
 )
 FIXED_BASELINE_ARTIFACT_SHA256 = (
-    "e63e41ec651252840c4713a0cfb927626c507f15711d7dadd2406fd13d39f6ae"
+    "5768d2a76c3938b535911a60697301da812a62d0064fd26e0782c3ceeab2c878"
 )
 
 

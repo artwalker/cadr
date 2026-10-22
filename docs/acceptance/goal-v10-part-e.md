@@ -8,6 +8,9 @@ await explicit user confirmation.
 
 **cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**
 
+The historical release draft below remains frozen. The current Goal 26
+re-anchor is **cadr 0.2.0 · aligned with pi v1.4.0 (+0, 4a080252f)**.
+
 `version.sexp` is the single numeric production version source. All eight ASDF
 systems, both native binaries, TUI, HTTP User-Agent, and Radius derive from it.
 The CLI release-identity helper combines that value with the frozen upstream

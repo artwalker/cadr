@@ -457,7 +457,7 @@ class RenderDiffGateTest(unittest.TestCase):
             [entry["name"] for entry in registry["slashCommands"]],
             inventory["slashCommands"],
         )
-        self.assertEqual(len(inventory["constructorSites"]), 25)
+        self.assertEqual(len(inventory["constructorSites"]), 26)
         self.assertEqual(
             sorted(registry["baselineConstructorSites"]),
             inventory["constructorSites"],

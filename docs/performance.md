@@ -173,7 +173,7 @@ node --expose-gc scripts/goal11-pi-baseline-bench.mjs \
   > /tmp/cadr-goal11-pi-baseline.json
 ```
 
-The script rejects any worktree that is not `4a080252fe71…`. The archived object
+The script rejects any worktree that is not `4a080252f06c…`. The archived object
 first runs a clean build of `tui`, `ai build:offline`, `agent` and
 `coding-agent` with an empty build cache, then loads the production
 `TuiMainScreen`, `TuiAltScreen`, `Editor`, user/assistant, read tool and bash
@@ -181,7 +181,7 @@ tool components. The archive simultaneously locks the source object ID, the
 SHA-256 of the four loaded `dist/` trees, the `package-lock.json` object ID and
 the SHA-256 of the complete installed dependency tree; the whole JSON is
 separately locked by SHA-256
-`56e09adc50af1c9433111cc018b095c059f99bf7ada366f5d437f64d64b46ad9`.
+`5768d2a76c3938b535911a60697301da812a62d0064fd26e0782c3ceeab2c878`.
 Every history entry is an independent production component; 100×40, the same N
 ladder, 1 warm-up, 5 samples, and fixture construction is not timed. Complete
 data is in
@@ -189,19 +189,19 @@ data is in
 
 | metric at N=5000 | cadr before | pi `4a080252f` | ratio |
 |---|---:|---:|---:|
-| frame | 488.0ms | 16.43ms | 29.7× |
-| key→frame | 480.0ms | 16.61ms | 28.9× |
-| stream delta→frame | 466.0ms | 17.31ms | 26.9× |
-| append | 5.200µs, linear | 0.00683µs, constant | 761× at N=5000 |
+| frame | 488.0ms | 16.58ms | 29.4× |
+| key→frame | 480.0ms | 16.91ms | 28.4× |
+| stream delta→frame | 466.0ms | 23.11ms | 20.2× |
+| append | 5.200µs, linear | 0.00948µs, constant | 549× at N=5000 |
 
-pi's three frame paths are still linear (log-log exponent 1.050/0.962/0.996) and
-append is constant (-0.092). This is not an absolute-throughput
+pi's three frame paths are still linear (log-log exponent 1.042/0.990/1.057) and
+append is constant (0.199). This is not an absolute-throughput
 cross-implementation comparison of verbatim-identical runtimes: cadr also drives
 its virtual-terminal state, whereas pi writes into an I/O-free mock terminal;
 the absolute ratio therefore serves only as an objective same-machine yardstick,
 and the algorithmic verdict together with `file:line` is what constrains the
 implementation. Even read under that limitation, cadr's 466–488ms at 5000
-entries still far exceeds pi's 14–18ms; the problem is a substantial high
+entries still far exceeds pi's 16–23ms; the problem is a substantial high
 constant and O(N) append, not an excuse that "Lisp is inherently slow".
 
 ## Optimized results and gates
@@ -368,7 +368,7 @@ append exponent 0.029. The complete JSON is
 
 ### Goal 12 A0 — paired continuous-input baseline
 
-The old `14–18ms` comparison drove only `TuiMainScreen` and cannot serve as an
+The old `16–23ms` comparison drove only `TuiMainScreen` and cannot serve as an
 alt-screen mouse/wheel yardstick. A0 changes both sides to go through the
 production raw-input handler and the production render request, and to flush the
 requested frame immediately; only the common 16ms scheduler wait is excluded.
@@ -390,24 +390,24 @@ and renderer.
 
 | paired N=5000 metric | pi `4a080252f` | cadr `82db71b8c` | cadr / pi |
 |---|---:|---:|---:|
-| mouse event→frame median | 276.150ms | 32.000ms | 0.12× |
-| wheel event→frame median | 297.999ms | 36.000ms | 0.12× |
-| continuous median | 315.576ms | 32.001ms | 0.10× |
-| continuous p95 | 347.536ms | 40.001ms | 0.12× |
-| continuous p99 | 365.552ms | 48.001ms | 0.13× |
-| continuous max | 427.549ms | 68.002ms | 0.16× |
+| mouse event→frame median | 9.365ms | 32.000ms | 3.42× |
+| wheel event→frame median | 8.815ms | 36.000ms | 4.08× |
+| continuous median | 8.277ms | 32.001ms | 3.87× |
+| continuous p95 | 11.535ms | 40.001ms | 3.47× |
+| continuous p99 | 13.900ms | 48.001ms | 3.45× |
+| continuous max | 48.958ms | 68.002ms | 1.39× |
 
 Allocation is not disguised as the same kind of byte: cadr's SBCL
 `get-bytes-consed` is an exact allocation count, and the
 continuous median is 2,865,296 bytes/event; pi's V8 inspector sampled
-allocation estimate is 112,307,351 bytes/event, with a separately measured
-retained-heap delta of 47,290 bytes/event and high-water delta of 73,522
+allocation estimate is 7,697,525 bytes/event, with a separately measured
+retained-heap delta of 274,615 bytes/event and high-water delta of 472,686
 bytes/event. They only prove that both sides really sample allocation; they are
 not used for a byte-for-byte gate.
 
 Conclusion: the fixed baseline is likewise an O(N) full document render →
-viewport slice → changed-row write, and on this synthetic N=5000 trace it is
-6.3–9.9× slower than cadr. cadr's 32–48ms
+viewport slice → changed-row write, and on this synthetic N=5000 trace cadr is
+3.4–3.9× slower at the median and p95/p99 points. cadr's 32–48ms
 bulk latency is still humanly perceptible, but it is not a mechanism added
 relative to the baseline nor an order-of-magnitude regression; going on to add
 virtual scrolling/transcript memoization that the baseline does not have would

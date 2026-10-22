@@ -94,7 +94,16 @@
       (is (eq :low (cadr-ai:clamp-thinking-level model :minimal)))
       (let ((payload (minimax-m31-flash-payload provider nil)))
         (is (not (cadr-ai::json-present-p payload "thinking")))
-        (is (not (cadr-ai::json-present-p payload "output_config")))))))
+        (is (not (cadr-ai::json-present-p payload "output_config"))))
+      (dolist (requested-and-effort '((:off . "high") (:minimal . "low")))
+        (let* ((requested (car requested-and-effort))
+               (payload (minimax-m31-flash-payload provider requested))
+               (thinking (cadr-ai::json-get payload "thinking"))
+               (output (cadr-ai::json-get payload "output_config")))
+          (is (string= "adaptive"
+                       (cadr-ai::json-get thinking "type")))
+          (is (string= (cdr requested-and-effort)
+                       (cadr-ai::json-get output "effort"))))))))
 
 (test minimax-m31-flash-sends-effort-on-adaptive-thinking
   (dolist (provider '(:minimax :minimax-cn))

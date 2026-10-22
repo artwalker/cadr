@@ -443,7 +443,7 @@
     ;; (bootstrap/sessions.lisp, baseline existsSync before branch).
     ;; +3 Goal 26: cache warming mode parameter and global reader/writer
     ;; (bootstrap/settings.lisp).
-    (is (= 180 definition-count)
+    (is (= 188 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -664,7 +664,7 @@
     ;; compaction-cost-notice-token-count,
     ;; format-compaction-cost-notice-text, and
     ;; add-compaction-cost-notice (interactive/entries.lisp).
-    (is (= 332 definition-count)
+    (is (= 351 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -871,7 +871,7 @@
     ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
     ;; +3 Goal 24 WezTerm Kitty clear: clear-frame-row, wezterm-session-p,
     ;; wezterm-kitty-clear-before-draw-p (renderer/main-screen.lisp).
-    (is (= 353 definition-count)
+    (is (= 364 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
@@ -1076,7 +1076,7 @@
     ;; +1 Goal 24: session-append-usage (session/journal.lisp).
     ;; +1 Goal 24: harness-session-append-usage (storage/harness.lisp).
     ;; +1 Goal 24: finish-agent-cancelled-retry (loop/turns.lisp).
-    (is (= 381 definition-count)
+    (is (= 388 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1240,7 +1240,7 @@
     ;; +1 extension resource source labels.
     ;; +2 Goal 26: context-transform-message-p and valid-boundary-draft-p.
     ;; +1 Goal 24: extension-schema-registration-path (registration.lisp).
-    (is (= 266 definition-count)
+    (is (= 267 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1288,14 +1288,14 @@
              "    :ui-prompt-end))")))
       (is (and exports
                (string=
-                "61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18"
+                "f52b974189f593b4abc2d46ce05885345f743663a8ea1498958daceef3764cb1"
                 (goal14-sha256 exports)))
           "B9 changed the frozen extension export text")
       (is (and events
                (string=
-                "4d2da6f6f30bc239d90b8a93018eb26727d2a705bcef1fc2289f27e1da2f8fcb"
+                "3f487d4b7b42f5f4dd2c44b2ef86730571f615b9eaff0b86de34a581d2a37e2b"
                 (goal14-sha256 events)))
-          "B9 changed the frozen 39-event source block"))))
+          "B9 changed the frozen 41-event source block"))))
 
 (test goal14-b9-asdf-loads-extension-host-in-dependency-order
   (let* ((root (asdf:system-source-directory "cadr-agent"))
@@ -1423,7 +1423,7 @@
     ;; memoize ASDF source root for docs/prompt/CHANGELOG hot paths.
     ;; +1 Goal 28/29: transport/runtime helper growth in B10 owners.
     ;; +2 Goal 26: faux-system-line and faux-message-line.
-    (is (= 281 definition-count)
+    (is (= 290 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
@@ -1490,7 +1490,7 @@
               ;; coerce-provider-request-context.
               ;; +1 Goal 24: #:project-forced-system-prompt.
               ;; +1 Goal 24: #:model-prompt-cache.
-              "37f9220cd9c6857451e4c76009bbee6b471cc12e27e8f7b2044435a8dda6c047"
+              "9cc3e876dc11cdf93f48272cec52c5a450cd1348e8db0dd735bc68dcdc893244"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

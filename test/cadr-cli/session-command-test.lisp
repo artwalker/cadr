@@ -774,10 +774,10 @@
       " │ !!                    │ Run bash command (excluded from context) │"
       plain :test #'string=))))
 
-(test fork-during-active-tool-leaves-replacement-empty
+(test fork-during-active-tool-keeps-only-the-tool-baseline
   ;; Baseline #8724: fork while a tool is running settles that turn on
-  ;; the outgoing session. The replacement starts empty, and the next
-  ;; prompt sees only the new user message.
+  ;; the outgoing session. The replacement keeps the tools-only system
+  ;; ancestor but no conversation turn.
   (with-test-directory (directory)
     (let* ((started (sb-thread:make-semaphore :count 0))
            (captured nil)
@@ -900,8 +900,30 @@
                  (is (string= "first prompt" text))
                  (is (eq fork
                          (cadr-agent:agent-session agent)))
-                 (is (null
-                      (cadr-agent:session-messages fork)))
+                 (let ((messages
+                         (cadr-agent:session-messages fork)))
+                   (is (= 1 (length messages)))
+                   (is (typep (first messages)
+                              'cadr-ai:system-message))
+                   (is (string=
+                        ""
+                        (cadr-ai:system-message-content
+                         (first messages))))
+                   (is
+                    (equal
+                     '("block")
+                     (mapcar
+                      #'cadr-ai:tool-name
+                      (cadr-ai:system-message-tools-added
+                       (first messages)))))
+                   (is (notany
+                        (lambda (message)
+                          (or
+                           (typep message 'cadr-ai:user-message)
+                           (typep message 'cadr-ai:assistant-message)
+                           (typep message
+                                  'cadr-ai:tool-result-message)))
+                        messages)))
                  (is
                   (find-if
                    (lambda (message)
@@ -909,11 +931,13 @@
                       message
                       'cadr-ai:tool-result-message))
                    (cadr-agent:session-messages source)))
+                 (setf
+                  (cadr-agent::agent-tool-filter-function agent)
+                  (constantly nil))
+                 (cadr-agent::refresh-agent-extension-tools agent)
                  (cadr-agent:agent-prompt agent "next prompt")
-                 ;; Replacement session is empty of conversation turns;
-                 ;; the tools-only system head still leads the provider
-                 ;; request (mid-convo convert passthrough).
-                 (is (equal '(:system :user) (first captured))))))
+                 (is (equal '(:system :system :user)
+                            (first captured))))))
         (cadr-agent:agent-shutdown agent)))))
 
 (test unflushed-persisted-fork-waits-for-the-first-assistant

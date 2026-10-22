@@ -98,7 +98,7 @@
       renderer
       (format nil "~C[<64;1;1M" #\Escape)))
     (alt-render renderer ten)
-    (is (= 3
+    (is (= 5
            (cadr-tui:renderer-viewport-top
             renderer)))
     (is (not
@@ -108,7 +108,7 @@
      renderer
      (loop for index from 1 to 12
            collect (format nil "line ~D" index)))
-    (is (= 3
+    (is (= 5
            (cadr-tui:renderer-viewport-top
             renderer)))))
 
@@ -254,7 +254,7 @@
     (is
      (cadr-tui:renderer-handle-input
       renderer
-      (format nil "~C[F" #\Escape)))
+      (format nil "~C[8^" #\Escape)))
     (alt-render renderer lines)
     (is (= 4
            (cadr-tui:renderer-viewport-top

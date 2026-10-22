@@ -619,9 +619,10 @@ def extract_baseline_extension_events(repo: Path, commit: str) -> list[str]:
                 interface_extends[match.group(1)] = base
 
     for match in re.finditer(
-        r"export type (\w+)\s*=\s*\n((?:\s*\|\s*\w+\s*\n?)+);", source
+        r"export type (\w+)\s*=\s*(\|?\s*\w+(?:\s*\|\s*\w+)*)\s*;",
+        source,
     ):
-        aliases[match.group(1)] = re.findall(r"\|\s*(\w+)", match.group(2))
+        aliases[match.group(1)] = re.findall(r"\w+", match.group(2))
     ingest_interfaces(source)
     # v0.86.0 re-exports CacheWarmingDecisionEvent from cache-warmer.ts.
     ingest_interfaces(

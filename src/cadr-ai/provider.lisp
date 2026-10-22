@@ -212,11 +212,12 @@ completed assistant message."))
         (let ((mapped (model-thinking-level-value model reasoning)))
           (if (anthropic-effort-p mapped)
               mapped
-              (let ((down (string-downcase
-                           (if (symbolp reasoning)
-                               (symbol-name reasoning)
-                               (princ-to-string reasoning)))))
-                (when (anthropic-effort-p down) down)))))
+              (case reasoning
+                ((:minimal :low) "low")
+                (:medium "medium")
+                (:high "high")
+                (:xhigh "xhigh")
+                (:max "max")))))
       "high"))
 
 (defun anthropic-off-null-p (model)

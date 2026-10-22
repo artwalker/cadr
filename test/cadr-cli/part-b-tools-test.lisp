@@ -479,7 +479,7 @@
                          nil))))
           :no-builtin-p t
           :builtin-names
-          '("read" "write" "edit" "bash" "powershell" "find" "grep" "ls"))))))))
+          cadr-cli::+builtin-coding-tool-names+)))))))
 
 (test tool-selection-policy-applies-after-extension-reloads
   (let* ((base

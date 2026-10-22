@@ -23,7 +23,7 @@
 
 (defparameter +goal28-pin-provider-files+
   '("amazon-bedrock.ts" "ant-ling.ts" "anthropic.ts"
-    "azure-openai-responses.ts" "baseten.ts" "cerebras.ts"
+    "azure.ts" "baseten.ts" "cerebras.ts"
     "cloudflare-ai-gateway.ts" "cloudflare-workers-ai.ts"
     "deepseek.ts" "fireworks.ts" "github-copilot.ts"
     "google-vertex.ts" "google.ts" "groq.ts" "huggingface.ts"

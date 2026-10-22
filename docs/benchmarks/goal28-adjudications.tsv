@@ -338,7 +338,7 @@ themeTokens	warning	match	test/cadr-cli/goal28-registries-test.lisp	pin-named be
 providers	amazon-bedrock.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
 providers	ant-ling.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
 providers	anthropic.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
-providers	azure-openai-responses.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
+providers	azure.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
 providers	baseten.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
 providers	cerebras.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp
 providers	cloudflare-ai-gateway.ts	match	test/cadr-cli/goal28-events-providers-tools-test.lisp	pin-named behavior asserted in goal28-events-providers-tools-test.lisp

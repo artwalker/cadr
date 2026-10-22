@@ -7,7 +7,7 @@
     ("output-padding" . "outputPad")
     ("autocomplete-max-visible" . "autocompleteMaxVisible")
     ("transport" . "transport")
-    ("session-share-destination" . "sessionShareDestination")
+    ("share-destination" . "sessionShareDestination")
     ("http-idle-timeout" . "httpIdleTimeoutMs")
     ("hide-thinking" . "hideThinkingBlock")
     ("cache-miss-notices" . "showCacheMissNotices")
@@ -855,10 +855,10 @@
              '("sse" "websocket"
                "websocket-cached" "auto"))
             (make-settings-option
-             :id "session-share-destination"
-             :label "Share destination"
+             :id "share-destination"
+             :label "Session share destination"
              :description
-             "Where /share uploads: auto (Radius when authenticated, else gist), gist, or radius"
+             "Where to upload sessions with /share (auto prefers Radius when authenticated, otherwise GitHub Gist)"
              :value
              (settings-session-share-destination
               settings-manager)
@@ -1083,9 +1083,9 @@
             :values '("true" "false"))
            (make-settings-option
             :id "fullscreen-wheel-scroll-lines"
-            :label "Fullscreen wheel scroll lines"
+            :label "Fullscreen wheel scrolling"
             :description
-            "Lines per mouse-wheel event in fullscreen mode (1-100); auto accelerates fast spins outside local macOS"
+            "Lines per mouse-wheel event in fullscreen mode; 'auto' speeds up fast wheel spins where the terminal does not"
             :value
             (let ((lines
                     (settings-fullscreen-wheel-scroll-lines

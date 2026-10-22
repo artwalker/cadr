@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "denominator": {
-    "files": 304,
-    "lines": 143900
+    "files": 317,
+    "lines": 152979
   },
   "pairedMetrics": [
     "agent_conditions.error_probe",
@@ -3877,6 +3877,100 @@
       "class": "paired",
       "metrics": [
         "tui_word_navigation.step"
+      ]
+    },
+    {
+      "prefix": "src/cadr-agent/nested-calls.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "agent_tool_loop.roundtrip",
+        "agent_tool_loop.runtime"
+      ]
+    },
+    {
+      "prefix": "src/cadr-agent/tool-search.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "agent_tool_loop.roundtrip",
+        "agent_tool_loop.runtime"
+      ]
+    },
+    {
+      "prefix": "src/cadr-agent/virtual-models.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "agent_tool_loop.roundtrip",
+        "agent_tool_loop.runtime"
+      ]
+    },
+    {
+      "prefix": "src/cadr-cli/output-files.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "agent_tool_loop.tool_result_digest"
+      ]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/components/pi-logo.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "goal11.mouse_drag",
+        "goal11.wheel",
+        "goal11.continuous_alt_input"
+      ]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/components/radius-login.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "goal11.mouse_drag",
+        "goal11.wheel",
+        "goal11.continuous_alt_input"
+      ]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/program-status-reporter.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "goal11.mouse_drag",
+        "goal11.wheel",
+        "goal11.continuous_alt_input"
+      ]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/system-theme.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "goal11.mouse_drag",
+        "goal11.wheel",
+        "goal11.continuous_alt_input"
+      ]
+    },
+    {
+      "prefix": "src/cadr-tui/oklab.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "goal11.mouse_drag",
+        "goal11.wheel",
+        "goal11.continuous_alt_input"
+      ]
+    },
+    {
+      "prefix": "src/cadr-tui/program-status.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "goal11.mouse_drag",
+        "goal11.wheel",
+        "goal11.continuous_alt_input"
+      ]
+    },
+    {
+      "prefix": "src/cadr-tui/wheel-scroll.lisp",
+      "class": "covered-as-callee",
+      "metrics": [
+        "goal11.mouse_drag",
+        "goal11.wheel",
+        "goal11.continuous_alt_input"
       ]
     }
   ]

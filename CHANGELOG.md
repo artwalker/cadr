@@ -7,6 +7,10 @@ tag/Release step.
 
 ## [Unreleased]
 
+- Goal 26: retarget the fixed pi baseline from v1.3.0 (`71023aec1`) to
+  v1.4.0 (`4a080252f`). Release identity is
+  `cadr 0.2.0 · aligned with pi v1.4.0 (+0, 4a080252f)`.
+
 - Goal 26: when switching models, drop thinking blocks from earlier
   assistants produced by a different model instead of rewriting them as
   visible text (`#10995` / `#11000`). Same-model signed, redacted, and

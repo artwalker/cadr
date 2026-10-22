@@ -126,6 +126,26 @@
    {
      "path": "src/cadr-cli/interactive/tool-rendering.lisp",
      "reason": "Single tool-call/result projection owner whose event reducers, frame layout, and truncation policy share one TUI transcript contract."
+   },
+   {
+     "path": "src/cadr-ai/provider.lisp",
+     "reason": "Single provider protocol owner for common request construction, retry, history, streaming, and typed error machinery; splitting it would duplicate cross-provider lifecycle invariants."
+   },
+   {
+     "path": "src/cadr-ai/providers/bedrock.lisp",
+     "reason": "Single Bedrock Converse owner whose payload conversion, SigV4 metadata, event reduction, and completed-response assembly share the same wire-protocol state."
+   },
+   {
+     "path": "src/cadr-ai/providers/openai-completions.lisp",
+     "reason": "Single OpenAI-compatible Chat Completions owner whose request, tool, reasoning, response, and streaming paths share one indexed content-block protocol."
+   },
+   {
+     "path": "src/cadr-cli/interactive/entries.lisp",
+     "reason": "Single interactive-entry mutation owner whose append, replacement, invalidation, startup help, and status entries share TUI state and cache invariants."
+   },
+   {
+     "path": "src/cadr-tui/terminal.lisp",
+     "reason": "Single real-terminal owner whose raw-mode lifecycle, keyboard protocol, Apple normalization, terminal queries, and progress reporting share process-terminal state."
    }
  ]
 }

@@ -394,9 +394,7 @@
           (json-object "type" "adaptive"
                        "display" "summarized")
           (json-object
-           "effort"
-           (or (model-thinking-level-value model reasoning)
-               (string-downcase (symbol-name reasoning)))))
+           "effort" (anthropic-active-effort model reasoning)))
          (values
           (json-object
            "type" "enabled"
