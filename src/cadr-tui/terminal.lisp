@@ -228,6 +228,87 @@
   (request sb-alien:unsigned-long)
   (size (* (sb-alien:struct cadr-winsize))))
 
+;; pi@4a080252f packages/tui/native/win32/src/win32-platform.c
+;; enable_virtual_terminal_input. STD_INPUT_HANDLE is (DWORD)-10.
+(defparameter +std-input-handle+ #xfffffff6)
+(defparameter +enable-virtual-terminal-input+ #x0200)
+
+(defun console-mode-with-virtual-terminal-input (mode)
+  (logior mode +enable-virtual-terminal-input+))
+
+#+(and sbcl win32)
+(sb-alien:define-alien-routine
+    ("GetStdHandle" %cadr-get-std-handle :convention :stdcall)
+    sb-alien:system-area-pointer
+  (std-handle sb-alien:unsigned-int))
+
+#+(and sbcl win32)
+(sb-alien:define-alien-routine
+    ("GetConsoleMode" %cadr-get-console-mode :convention :stdcall)
+    sb-alien:int
+  (handle sb-alien:system-area-pointer)
+  (mode (* sb-alien:unsigned-int)))
+
+#+(and sbcl win32)
+(sb-alien:define-alien-routine
+    ("SetConsoleMode" %cadr-set-console-mode :convention :stdcall)
+    sb-alien:int
+  (handle sb-alien:system-area-pointer)
+  (mode sb-alien:unsigned-int))
+
+(defun windows-invalid-handle-p (handle)
+  #+(and sbcl win32)
+  (= (sb-sys:sap-int (sb-alien:alien-sap handle)) -1)
+  #-(and sbcl win32)
+  (declare (ignore handle))
+  #-(and sbcl win32)
+  t)
+
+(defun read-windows-stdin-console-mode ()
+  #+(and sbcl win32)
+  (let ((handle (%cadr-get-std-handle +std-input-handle+)))
+    (if (windows-invalid-handle-p handle)
+        (values nil nil)
+        (sb-alien:with-alien ((mode sb-alien:unsigned-int 0))
+          (if (zerop
+               (%cadr-get-console-mode
+                handle (sb-alien:addr mode)))
+              (values nil nil)
+              (values mode t)))))
+  #-(and sbcl win32)
+  (values nil nil))
+
+(defun write-windows-stdin-console-mode (mode)
+  #+(and sbcl win32)
+  (let ((handle (%cadr-get-std-handle +std-input-handle+)))
+    (unless (windows-invalid-handle-p handle)
+      (not (zerop (%cadr-set-console-mode handle mode)))))
+  #-(and sbcl win32)
+  (declare (ignore mode))
+  #-(and sbcl win32)
+  nil)
+
+(defun apply-windows-virtual-terminal-input
+    (windows-p read-mode write-mode)
+  ;; Non-Windows returns without touching the console. A missing
+  ;; helper or a failed Get/SetConsoleMode is silent: Shift+Tab then
+  ;; arrives as Tab. pi@4a080252f terminal.ts enableWindowsVTInput.
+  (when windows-p
+    (handler-case
+        (multiple-value-bind (mode ok) (funcall read-mode)
+          (when (and ok (integerp mode) (not (minusp mode)))
+            (funcall
+             write-mode
+             (console-mode-with-virtual-terminal-input mode))
+            t))
+      (condition () nil))))
+
+(defun enable-windows-virtual-terminal-input ()
+  (apply-windows-virtual-terminal-input
+   (uiop:os-windows-p)
+   #'read-windows-stdin-console-mode
+   #'write-windows-stdin-console-mode))
+
 (defclass process-terminal (terminal)
   ((input
     :initarg :input
@@ -307,6 +388,10 @@
     :initarg :native-modifier-function
     :initform #'is-native-modifier-pressed
     :reader process-terminal-native-modifier-function)
+   (windows-vt-input-function
+    :initarg :windows-vt-input-function
+    :initform #'enable-windows-virtual-terminal-input
+    :reader process-terminal-windows-vt-input-function)
    (resize-p
     :initform nil
     :accessor process-terminal-resize-p)))
@@ -347,7 +432,9 @@
        (apple-terminal-function
          #'apple-terminal-session-p)
        (native-modifier-function
-         #'is-native-modifier-pressed))
+         #'is-native-modifier-pressed)
+       (windows-vt-input-function
+         #'enable-windows-virtual-terminal-input))
   (multiple-value-bind (columns rows)
       (terminal-dimensions nil nil)
     (make-instance
@@ -357,6 +444,7 @@
      :progress-clock-function progress-clock-function
      :apple-terminal-function apple-terminal-function
      :native-modifier-function native-modifier-function
+     :windows-vt-input-function windows-vt-input-function
      :columns columns
      :rows rows)))
 
@@ -630,6 +718,10 @@
       (sb-posix:tcsetattr
        fd sb-posix:tcsanow
        (raw-termios original))
+      ;; pi@4a080252f terminal.ts start(): ENABLE_VIRTUAL_TERMINAL_INPUT
+      ;; is applied after setRawMode, which resets console mode flags.
+      (funcall
+       (process-terminal-windows-vt-input-function terminal))
       (setf (process-terminal-started-p terminal) t)
       (setf
        (process-terminal-keyboard-protocol-pushed-p

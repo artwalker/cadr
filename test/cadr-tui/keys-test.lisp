@@ -151,6 +151,40 @@
         (format nil "~C[200~~90:62:3F:A5~C[201~~"
                 #\Escape #\Escape)))))
 
+(test shift-tab-vt-sequence-is-not-tab
+  ;; pi@4a080252f keys.ts parseKey returns "shift+tab" for ESC [ Z,
+  ;; the sequence ENABLE_VIRTUAL_TERMINAL_INPUT makes Windows send.
+  ;; keys.test.ts locks modifyOtherKeys shift+tab as ESC [ 27 ; 2 ; 9 ~.
+  ;; A plain tab stays "tab". Kitty on or off does not change ESC [ Z.
+  (unwind-protect
+       (let ((shift-tab (format nil "~C[Z" #\Escape))
+             (modify-other (format nil "~C[27;2;9~~" #\Escape))
+             (kitty (format nil "~C[9;2u" #\Escape))
+             (tab (string #\Tab)))
+         (dolist (active '(nil t))
+           (cadr-tui:set-kitty-protocol-active active)
+           (is (string= "shift+tab" (cadr-tui:parse-key shift-tab)))
+           (is (cadr-tui:matches-key shift-tab "shift+tab"))
+           (is (not (cadr-tui:matches-key shift-tab "tab"))))
+         (cadr-tui:set-kitty-protocol-active nil)
+         (is (string= "shift+tab" (cadr-tui:parse-key modify-other)))
+         (is (cadr-tui:matches-key modify-other "shift+tab"))
+         (is (string= "shift+tab" (cadr-tui:parse-key kitty)))
+         (is (cadr-tui:matches-key kitty "shift+tab"))
+         (is (string= "tab" (cadr-tui:parse-key tab)))
+         (is (cadr-tui:matches-key tab "tab"))
+         (is (not (cadr-tui:matches-key tab "shift+tab")))
+         (let ((manager (cadr-tui:make-keybindings-manager)))
+           (is (cadr-tui:keybinding-matches-p
+                manager shift-tab "app.thinking.cycle"))
+           (is (not (cadr-tui:keybinding-matches-p
+                     manager tab "app.thinking.cycle")))
+           (is (cadr-tui:keybinding-matches-p
+                manager tab "tui.input.tab"))
+           (is (not (cadr-tui:keybinding-matches-p
+                     manager shift-tab "tui.input.tab")))))
+    (cadr-tui:set-kitty-protocol-active nil)))
+
 (test keys-scanners-are-compiled
   (is (not (null cadr-tui::+kitty-scanner+)))
   (is (not (null cadr-tui::+modified-arrow-scanner+)))

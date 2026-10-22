@@ -80,6 +80,9 @@
     (,(format nil "~C[7^" #\Escape) . "ctrl+home")
     (,(format nil "~C[8$" #\Escape) . "shift+end")
     (,(format nil "~C[8^" #\Escape) . "ctrl+end")
+    ;; pi@4a080252f keys.ts parseKey: Windows VT input sends Shift+Tab
+    ;; as ESC [ Z. A plain tab stays "tab".
+    (,(format nil "~C[Z" #\Escape) . "shift+tab")
     (,(format nil "~C[1;5H" #\Escape) . "ctrl+home")
     (,(format nil "~C[1;5F" #\Escape) . "ctrl+end")
     (,(format nil "~COP" #\Escape) . "f1")

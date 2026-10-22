@@ -235,6 +235,92 @@
          ""
          (cadr-tui:terminal-read-input terminal)))))
 
+(test windows-virtual-terminal-input-ors-the-console-flag
+  ;; pi@4a080252f win32-platform.c enable_virtual_terminal_input ORs
+  ;; ENABLE_VIRTUAL_TERMINAL_INPUT (0x0200) into the stdin console
+  ;; mode. Non-Windows and a failed read do not call SetConsoleMode.
+  ;; A thrown helper is swallowed.
+  (is (= #x0200 cadr-tui::+enable-virtual-terminal-input+))
+  (is (= #xfffffff6 cadr-tui::+std-input-handle+))
+  (dolist (mode '(0 1 #x1f7 #x0200 #x80000000))
+    (is (= (logior mode #x0200)
+           (cadr-tui::console-mode-with-virtual-terminal-input
+            mode))))
+  (let ((reads 0)
+        (writes nil))
+    (is (null
+         (cadr-tui::apply-windows-virtual-terminal-input
+          nil
+          (lambda ()
+            (incf reads)
+            (values 1 t))
+          (lambda (mode)
+            (push mode writes)))))
+    (is (zerop reads))
+    (is (null writes)))
+  (let ((writes nil))
+    (is (eql t
+             (cadr-tui::apply-windows-virtual-terminal-input
+              t
+              (lambda () (values #x1f7 t))
+              (lambda (mode) (push mode writes)))))
+    (is (equal '(#x03f7) writes)))
+  (let ((writes nil))
+    (is (null
+         (cadr-tui::apply-windows-virtual-terminal-input
+          t
+          (lambda () (values nil nil))
+          (lambda (mode) (push mode writes)))))
+    (is (null writes)))
+  (is (null
+       (cadr-tui::apply-windows-virtual-terminal-input
+        t
+        (lambda () (error "console helper missing"))
+        (lambda (mode) (declare (ignore mode))))))
+  (is (null
+       (cadr-tui::apply-windows-virtual-terminal-input
+        t
+        (lambda () (values 7 t))
+        (lambda (mode)
+          (declare (ignore mode))
+          (error "SetConsoleMode failed")))))
+  (unless (uiop:os-windows-p)
+    (is (null (cadr-tui::enable-windows-virtual-terminal-input)))))
+
+(test windows-vt-input-runs-after-raw-mode
+  ;; pi@4a080252f terminal.ts start() calls enableWindowsVTInput after
+  ;; setRawMode(true). ICANON and ECHO are already off when it runs.
+  (call-with-pty-input
+   (lambda (input)
+     (let ((output (make-string-output-stream))
+           (seen nil)
+           (terminal nil))
+       (setf terminal
+             (cadr-tui:make-process-terminal
+              :input input
+              :output output
+              :windows-vt-input-function
+              (lambda ()
+                (let* ((fd
+                         (cadr-tui::process-terminal-input-fd
+                          terminal))
+                       (termios (sb-posix:tcgetattr fd))
+                       (lflag
+                         (sb-posix:termios-lflag termios)))
+                  (setf seen
+                        (list
+                         (not (null fd))
+                         (zerop (logand lflag sb-posix:icanon))
+                         (zerop (logand lflag sb-posix:echo))))))))
+       (unwind-protect
+            (progn
+              (cadr-tui:terminal-start terminal)
+              (is (equal '(t t t) seen))
+              (is (cadr-tui::process-terminal-started-p terminal)))
+         (when (cadr-tui::process-terminal-started-p terminal)
+           (ignore-errors (cadr-tui:terminal-stop terminal)))
+         (cadr-tui::disarm-terminal-exit-restore terminal))))))
+
 (test terminal-dimensions-use-environment-before-defaults
   (flet ((lookup (name)
            (cdr (assoc name
