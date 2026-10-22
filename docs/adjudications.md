@@ -1959,3 +1959,18 @@ superseded for this gap. Do not re-open it because the older
 `example-tic-tac-toe` scenario still has an empty faux queue.
 The gray `Working` status rule is canonicalized in
 `scripts/render-diff.py` so a spinner frame cannot fail the gate.
+
+## 2026-10-22 — Agents may merge PRs behind three gates
+
+- **Ruling (user, 2026-10-22):** the standing "no agent merges" rule is
+  replaced. An agent may merge a PR when, right before merging, all hold:
+  `./scripts/test-cl.sh` exits 0 in a clean checkout of the PR head; an
+  independent review by a session that did not write the change recorded
+  no `fail`; `gh pr view --json mergeable` is `MERGEABLE`. Merge with
+  `gh pr merge --merge`; never squash, never enable auto-merge. If any gate
+  fails, do not merge and comment the reason on the PR.
+- **Why:** the user wants development driven end to end by cursor-agent
+  without manual steps. The gates keep the reason the old rule existed:
+  unreviewed or red code must not land.
+- **Where:** `AGENTS.md`, `.cursor/skills/cadr-mode/SKILL.md`,
+  `.cursor/rules/cadr-mode.mdc`.
