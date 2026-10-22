@@ -978,6 +978,50 @@ Be concise. Focus on what's needed to understand the kept suffix.")
       :reason reason
       :will-retry-p will-retry-p))))
 
+(defun omit-resumed-length-stop (agent)
+  ;; pi@4a080252f agent-session.ts _prepareRun. A new prompt recovers a
+  ;; length stop that ended below the model's output limit, and #11227
+  ;; drops the tool results that answered that call.
+  (let ((session (agent-session agent))
+        (message (last-agent-assistant-message agent)))
+    (unless (and (agent-auto-compact-p agent)
+                 session
+                 (typep message 'cadr-ai:assistant-message)
+                 (find message (session-messages session) :test #'eq))
+      (return-from omit-resumed-length-stop nil))
+    (let ((compaction
+            (latest-compaction-entry
+             (session-path-entries session))))
+      (when (and compaction
+                 (<= (cadr-ai:assistant-message-timestamp message)
+                     (session-entry-timestamp compaction)))
+        (return-from omit-resumed-length-stop nil)))
+    (let* ((selected (agent-model agent))
+           (limits
+             (cond
+               ((null selected) nil)
+               ((virtual-model-p selected)
+                (handler-case
+                    (cadr-ai:model-metadata-max-output-tokens
+                     (cadr-ai:find-model-metadata
+                      (cadr-ai:assistant-message-provider message)
+                      (cadr-ai:assistant-message-model message)))
+                  (cadr-ai:configuration-error () nil)))
+               ((and (eq (cadr-ai:model-provider selected)
+                         (cadr-ai:assistant-message-provider message))
+                     (string= (cadr-ai:model-id selected)
+                              (cadr-ai:assistant-message-model message)))
+                (cadr-ai:model-max-tokens selected)))))
+      (when (and limits
+                 (plusp limits)
+                 (eq :length
+                     (cadr-ai:assistant-message-stop-reason message))
+                 (< (cadr-ai:usage-output
+                     (cadr-ai:assistant-message-usage message))
+                    limits))
+        (omit-recovery-attempt agent message))))
+  nil)
+
 (defun maybe-compact-agent (agent)
   (when (agent-auto-compact-p agent)
     (%compact-agent agent :reason :threshold)))

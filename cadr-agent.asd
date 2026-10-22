@@ -100,6 +100,7 @@
                              (:file "goal24-session-usage-test")
                              (:file "goal24-harness-append-usage-test")
                              (:file "compaction-test")
+                             (:file "v140-length-recovery-test")
                              (:file "goal24-compaction-auth-abort-test")
                              (:file "goal24-compaction-cancel-races-test")
                              (:file "goal24-tree-during-compaction-test")

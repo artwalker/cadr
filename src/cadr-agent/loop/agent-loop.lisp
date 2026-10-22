@@ -581,6 +581,7 @@
    (lambda ()
      (ensure-agent-session-started agent)
      (flush-agent-pending-custom-messages agent)
+     (omit-resumed-length-stop agent)
      (maybe-compact-agent agent)
      (multiple-value-bind
            (messages system-prompt force-system-prompt)
@@ -608,6 +609,7 @@
      (lambda ()
        (ensure-agent-session-started agent)
        (flush-agent-pending-custom-messages agent)
+       (omit-resumed-length-stop agent)
        (maybe-compact-agent agent)
        (multiple-value-bind
              (messages system-prompt handled-p

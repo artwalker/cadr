@@ -714,18 +714,105 @@
          candidate)))
 
 (defun omit-recovery-attempt (agent message)
+  ;; pi@4a080252f agent-session.ts _omitRecoveryAttempt (#11227). The
+  ;; projected tail supplies the tool results, so a resumed length stop
+  ;; and an in-run retry omit the pair together.
   (let ((session (agent-session agent)))
     (when (and session (typep message 'cadr-ai:assistant-message))
-      (let ((target-id
-              (loop for entry in (session-entries session)
-                    when (and (eq (session-entry-type entry) :message)
-                              (eq (session-entry-message entry) message))
-                      return (session-entry-id entry))))
-        (when target-id
-          (let* ((edit-id
-                   (session-append-context-edit session target-id nil))
-                 (entry (gethash edit-id (session-by-id session))))
-            (emit-agent-event agent :entry-appended :entry entry))))))
+      (let* ((messages (agent-messages agent))
+             (call-ids
+               (mapcar
+                #'cadr-ai:tool-call-id
+                (assistant-tool-calls message)))
+             (index (position message messages :test #'eq))
+             (targets
+               (cons
+                message
+                (when index
+                  (loop for later in (nthcdr (1+ index) messages)
+                        until (typep later
+                                     'cadr-ai:assistant-message)
+                        when (and
+                              (typep later
+                                     'cadr-ai:tool-result-message)
+                              (member
+                               (cadr-ai:tool-result-message-tool-call-id
+                                later)
+                               call-ids
+                               :test #'string=))
+                          collect later)))))
+        (labels ((source-ids ()
+                   (let* ((entries
+                            (session-context-entries session))
+                          (edits
+                            (make-hash-table :test #'equal))
+                          (ids nil))
+                     (dolist (entry entries)
+                       (when (eq :context-edit
+                                 (session-entry-type entry))
+                         (setf
+                          (gethash
+                           (session-entry-target-id entry)
+                           edits)
+                          entry)))
+                     (dolist (entry entries)
+                       (case (session-entry-type entry)
+                         (:message
+                          (let ((edit
+                                  (gethash
+                                   (session-entry-id entry)
+                                   edits)))
+                            (unless
+                                (and edit
+                                     (eq :omit
+                                         (session-entry-data edit)))
+                              (push (session-entry-id entry)
+                                    ids))))
+                         (:compaction
+                          (when
+                              (cadr-ai:system-message-p
+                               (session-entry-system-message
+                                entry))
+                            (push nil ids))
+                          (push nil ids))
+                         (:branch-summary (push nil ids))
+                         (:custom-message (push nil ids))))
+                     (nreverse ids)))
+                 (entry-id (target)
+                   (or
+                    (loop for entry in (session-entries session)
+                          when (and
+                                (eq :message
+                                    (session-entry-type entry))
+                                (eq target
+                                    (session-entry-message entry)))
+                            return (session-entry-id entry))
+                    (let ((at
+                            (position target messages :test #'eq)))
+                      (when at
+                        (nth at (source-ids)))))))
+          (let ((ids (mapcar #'entry-id targets)))
+            (loop for target in targets
+                  for id in ids
+                  when (and (null id)
+                            (member target messages :test #'eq))
+                    do (error
+                        "Cannot persist recovery omission because a projected message has no source entry"))
+            (dolist (id ids)
+              (when id
+                (let* ((edit-id
+                         (session-append-context-edit
+                          session id nil))
+                       (entry
+                         (gethash edit-id
+                                  (session-by-id session))))
+                  (emit-agent-event
+                   agent :entry-appended :entry entry))))
+            (when (some #'identity ids)
+              (setf (agent-messages agent)
+                    (session-messages session)
+                    (agent-messages-tail agent) nil
+                    (agent-messages-tail-head agent) nil)))))))
   agent)
 
 (defun remove-retry-error-from-agent-state (agent)
