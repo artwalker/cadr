@@ -103,7 +103,7 @@
      :reasoning-p nil
      :oauth-metadata ,+anthropic-oauth-metadata+
      :api-key-name "Anthropic API key"
-     :environment-names ("ANTHROPIC_API_KEY" "ANTHROPIC_AUTH_TOKEN" "ANTHROPIC_OAUTH_TOKEN")
+     :environment-names ("ANTHROPIC_API_KEY" "ANTHROPIC_AUTH_TOKEN" "ANTHROPIC_OAUTH_TOKEN" "ANTHROPIC_FEDERATION_RULE_ID" "ANTHROPIC_ORGANIZATION_ID" "ANTHROPIC_IDENTITY_TOKEN_FILE" "ANTHROPIC_SERVICE_ACCOUNT_ID" "ANTHROPIC_WORKSPACE_ID")
      :api-key-auth-strategy :environment
      :oauth-login-strategy :anthropic
      :oauth-refresh-strategy :anthropic

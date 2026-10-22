@@ -414,13 +414,13 @@
                           model context
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
-                            disable-preferred-strict-tools
+                            disable-preferred-strict-tools headers
                             &allow-other-keys)
   (ensure-supported-content model context)
-  (let* ((oauth-token (provider-oauth-access-token provider))
-         (key (or oauth-token (require-api-key provider)))
-         (cache-control
-           (anthropic-cache-control model cache-retention))
+  (multiple-value-bind (key oauth-token federation-p header-overlay)
+      (anthropic-request-auth provider model headers)
+    (let* ((cache-control
+             (anthropic-cache-control model cache-retention))
          (immediate-tools nil)
          (deferred-tools nil)
          (preferred-strict-p nil)
@@ -509,36 +509,42 @@
                 '("mid-conversation-output-config-2026-07-01"
                   "thinking-binding-controls-2026-08-01"))))
            (headers
-             (append
-              `(("content-type" . "application/json")
-                ("accept" . ,(if stream-p
-                                 "text/event-stream"
-                                 "application/json")))
-              (if oauth-token
+             (anthropic-headers-with-overlay
+              (append
+               `(("content-type" . "application/json")
+                 ("accept" . ,(if stream-p
+                                  "text/event-stream"
+                                  "application/json")))
+               (cond
+                 (oauth-token
                   `(("authorization" . ,(format nil "Bearer ~A" key))
-                    ("x-app" . "cli"))
-                  `(("x-api-key" . ,key)))
-              '(("anthropic-version" . "2023-06-01"))
-              (when beta-features
-                (list
-                 (cons "anthropic-beta"
-                       (format nil "~{~A~^,~}" beta-features))))
-              (when (and cache-control
-                         (non-empty-string-p session-id)
-                         (model-compat-value
-                          model :send-session-affinity-headers nil))
-                `(("x-session-affinity" . ,session-id)))
-              (opencode-request-headers
-               :provider (model-provider model)
-               :base-url (model-base-url model)
-               :session-id session-id)
-              (model-headers model))))
+                    ("x-app" . "cli")))
+                 (federation-p
+                  `(("authorization" . ,(format nil "Bearer ~A" key))))
+                 (key
+                  `(("x-api-key" . ,key))))
+               '(("anthropic-version" . "2023-06-01"))
+               (when beta-features
+                 (list
+                  (cons "anthropic-beta"
+                        (format nil "~{~A~^,~}" beta-features))))
+               (when (and cache-control
+                          (non-empty-string-p session-id)
+                          (model-compat-value
+                           model :send-session-affinity-headers nil))
+                 `(("x-session-affinity" . ,session-id)))
+               (opencode-request-headers
+                :provider (model-provider model)
+                :base-url (model-base-url model)
+                :session-id session-id)
+               (model-headers model))
+              header-overlay)))
        headers)
      :payload payload
      :stream-p stream-p
      :provider :anthropic)))
       (setf *anthropic-preferred-strict-sent-p* preferred-strict-p)
-      request)))
+      request))))
 
 (defun parse-anthropic-content (content)
   (loop for block across (or content #())

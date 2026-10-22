@@ -759,7 +759,14 @@
                 (cadr-ai:runtime-auth-result-api-key
                  auth))
            :provider-id provider
-           :authentication-required-p nil)
+           :authentication-required-p nil
+           :options
+           (let ((auth-headers
+                   (and auth
+                        (cadr-ai:runtime-auth-result-headers
+                         auth))))
+             (when auth-headers
+               (list :auth-headers auth-headers))))
           :model
           (if
               (and auth

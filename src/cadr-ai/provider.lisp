@@ -54,7 +54,7 @@
 
 (defun make-anthropic-provider
     (&key api-key oauth-access-token oauth-account-id
-            provider-id options)
+            provider-id options &allow-other-keys)
   (declare (ignore oauth-account-id))
   (make-instance 'anthropic-provider
                  :api-key api-key

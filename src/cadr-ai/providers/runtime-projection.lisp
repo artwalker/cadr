@@ -102,22 +102,25 @@ which auth strategies are structured."
               :type :api-key))
          (configuration-error () nil)))
       (:environment
-       (when
-           (or (non-empty-string-p key)
-               (null key-name))
-         (make-runtime-auth-result
-          :api-key key
-          :environment effective-environment
-          :source
-          (cond
-            ((non-empty-string-p explicit-key)
-             "Explicit API key")
-            ((and (typep credential 'api-key-credential)
-                  (non-empty-string-p credential-key))
-             "Stored API key")
-            (key-name key-name)
-            (t "Keyless"))
-          :type :api-key)))
+       (if (eq (provider-definition-id definition) :anthropic)
+           (resolve-anthropic-api-key-auth
+            credential environment overrides)
+           (when
+               (or (non-empty-string-p key)
+                   (null key-name))
+             (make-runtime-auth-result
+              :api-key key
+              :environment effective-environment
+              :source
+              (cond
+                ((non-empty-string-p explicit-key)
+                 "Explicit API key")
+                ((and (typep credential 'api-key-credential)
+                      (non-empty-string-p credential-key))
+                 "Stored API key")
+                (key-name key-name)
+                (t "Keyless"))
+              :type :api-key))))
       (otherwise nil))))
 
 (defun built-in-oauth-to-auth (definition credential)
@@ -221,6 +224,9 @@ which auth strategies are structured."
   (let* ((auth-type (getf options :auth-type))
          (api-key (getf options :api-key))
          (environment (getf options :environment))
+         (auth-headers (getf options :headers))
+         (provider-options
+           (built-in-provider-options environment))
          (provider
            (make-protocol-provider
             (model-api model)
@@ -228,7 +234,10 @@ which auth strategies are structured."
             (and (not (eq auth-type :oauth)) api-key)
             (and (eq auth-type :oauth) api-key)
             nil
-            (built-in-provider-options environment))))
+            (if auth-headers
+                (append provider-options
+                        (list :auth-headers auth-headers))
+                provider-options))))
     (if stream-p
         (apply #'stream-chat
                provider model context on-event
