@@ -13,7 +13,10 @@
    (rows
     :initarg :rows
     :initform 24
-    :accessor terminal-rows)))
+    :accessor terminal-rows)
+   (exit-renderer
+    :initform nil
+    :accessor terminal-exit-renderer)))
 
 (defgeneric terminal-start (terminal))
 (defgeneric terminal-stop (terminal))

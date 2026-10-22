@@ -94,7 +94,8 @@
                     (cadr-tui:terminal-stop terminal)
                     (cadr-tui:renderer-after-stop renderer)))
                 (cadr-tui::disarm-terminal-exit-restore terminal)
-                (cadr-tui::clear-terminal-exit-renderer terminal)))))
+                (setf (cadr-tui::terminal-exit-renderer terminal)
+                      nil)))))
       (cadr-tui:set-terminal-capabilities saved-capabilities)
       (cadr-tui:set-kitty-protocol-active saved-kitty))))
 
@@ -180,7 +181,7 @@ and getExitRestoreSuffix.")
          (get-output-stream-string
           (cadr-tui::process-terminal-output terminal)))
     (cadr-tui::disarm-terminal-exit-restore terminal)
-    (cadr-tui::clear-terminal-exit-renderer terminal)))
+    (setf (cadr-tui::terminal-exit-renderer terminal) nil)))
 
 (defun make-exit-restore-terminal ()
   (cadr-tui:make-process-terminal
@@ -260,7 +261,7 @@ and getExitRestoreSuffix.")
                                (exit-restore-csi "?1049l")
                                (exit-restore-csi "?25h"))))))
       (cadr-tui:set-terminal-capabilities saved)
-      (cadr-tui::clear-terminal-exit-renderer terminal))))
+      (setf (cadr-tui::terminal-exit-renderer terminal) nil))))
 
 (test exit-restore-writes-bytes-before-the-caller-flushes
   (multiple-value-bind (read-fd write-fd)

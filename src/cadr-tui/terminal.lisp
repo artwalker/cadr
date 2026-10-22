@@ -671,7 +671,7 @@
 (defmethod terminal-stop ((terminal process-terminal))
   (when (process-terminal-started-p terminal)
     (disarm-terminal-exit-restore terminal)
-    (clear-terminal-exit-renderer terminal)
+    (setf (terminal-exit-renderer terminal) nil)
     (unwind-protect
          (ignore-errors
            (when (process-terminal-progress-active-p

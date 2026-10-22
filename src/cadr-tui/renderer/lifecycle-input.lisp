@@ -264,19 +264,6 @@ in-place repaint executes.  Production leaves this NIL; the harness
 (defun renderer-following-output-p (renderer)
   (terminal-renderer-stick-to-bottom-p renderer))
 
-(defvar *terminal-exit-renderers*
-  (make-hash-table :test #'eq)
-  "Alt-screen renderer to consult when the process exits without stop.")
-
-(defun note-terminal-exit-renderer (terminal renderer)
-  (setf (gethash terminal *terminal-exit-renderers*) renderer))
-
-(defun clear-terminal-exit-renderer (terminal)
-  (remhash terminal *terminal-exit-renderers*))
-
-(defun terminal-exit-renderer (terminal)
-  (gethash terminal *terminal-exit-renderers*))
-
 (defun renderer-start (renderer)
   (unless (terminal-renderer-alt-screen-p
            renderer)
@@ -330,7 +317,7 @@ in-place repaint executes.  Production leaves this NIL; the harness
      0
      (terminal-renderer-invalid-p renderer)
      t)
-    (note-terminal-exit-renderer terminal renderer)
+    (setf (terminal-exit-renderer terminal) renderer)
     (when
         (eq :iterm2
             (terminal-capabilities-images
