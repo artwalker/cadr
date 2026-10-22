@@ -216,7 +216,8 @@
   (output-price 0d0 :type double-float)
   (cache-read-price 0d0 :type double-float)
   (cache-write-price 0d0 :type double-float)
-  (headers nil :type list))
+  (headers nil :type list)
+  (input-limits nil :type list))
 
 (cadr-core:define-redacted-print-object (image-model value stream)
   (format stream ":provider ~A :id ~S :headers [REDACTED]"

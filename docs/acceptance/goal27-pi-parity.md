@@ -43,7 +43,7 @@
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-17 Image catalog | `packages/ai/scripts/generate-models.ts`，`packages/ai/src/image-models.ts` → `src/cadr-ai/image-models.generated.lisp` | open |
+| GAP-17 Image catalog | `packages/ai/scripts/generate-models.ts`，`packages/ai/src/image-models.ts` → `src/cadr-ai/image-models.generated.lisp` | done：`list-image-models` 返回 v1.4.0 快照里的 63 个 OpenRouter 图像模型（含 flux-3、nano-banana-2.1 等新 id）；同一 id 可同时是聊天模型和图像模型；文本输入的 recraft-v4.1-flash 没有 resize 限制。 |
 
 ### P3. Provider auth
 
