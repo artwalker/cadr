@@ -24,7 +24,7 @@
 
 ## 队列
 
-50 行。`open` 45 行。`done` 1 行。`proposal` 4 行（GAP-40、GAP-41、GAP-42、GAP-43）。出处取清单第 2 节的 pi 文件和 cadr 文件。清单里的 `same` 和短文件名按上一行或同目录展开。
+50 行。`open` 44 行。`done` 2 行。`proposal` 4 行（GAP-40、GAP-41、GAP-42、GAP-43）。出处取清单第 2 节的 pi 文件和 cadr 文件。清单里的 `same` 和短文件名按上一行或同目录展开。
 
 ### P1. Lock what already runs
 
