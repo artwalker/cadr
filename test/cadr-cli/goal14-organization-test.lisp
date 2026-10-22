@@ -668,7 +668,9 @@
     ;; compaction-cost-notice-token-count,
     ;; format-compaction-cost-notice-text, and
     ;; add-compaction-cost-notice (interactive/entries.lisp).
-    (is (= 351 definition-count)
+    ;; +2 GAP-28: apply-right-click-clipboard-paste and
+    ;; interactive-right-click-paste-target (interactive/controller.lisp).
+    (is (= 353 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -873,11 +875,12 @@
     ;; renderer-deliver-component-mouse.
     ;; +1 Goal 24 clipboard fail-naming: renderer-copy-selection-flash
     ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
+    ;; +1 GAP-28: renderer-right-click-paste (lifecycle-input.lisp).
     ;; +3 Goal 24 WezTerm Kitty clear: clear-frame-row, wezterm-session-p,
     ;; wezterm-kitty-clear-before-draw-p (renderer/main-screen.lisp).
     ;; +30 Goal 26 markdown: unclosed math tables and CJK emphasis
     ;; (components/markdown.lisp).
-    (is (= 394 definition-count)
+    (is (= 395 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

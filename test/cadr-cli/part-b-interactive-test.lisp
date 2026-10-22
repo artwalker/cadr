@@ -3767,3 +3767,120 @@ user question"
         (is (search "--body-bg: #102030;" html))
         (is (search "--container-bg: #203040;" html))
         (is (search "--info-bg: #304050;" html))))))
+
+(test right-click-paste-feeds-bracketed-clipboard-text
+  ;; pi@4a080252f interactive-tui.test.ts
+  ;; "feeds clipboard text to the focused component as a bracketed paste"
+  (let* ((editor (cadr-tui:make-multiline-editor))
+         (delivered nil)
+         (renders 0)
+         (bracketed
+           (concatenate
+            'string
+            (format nil "~C[200~~" #\Escape)
+            "clipboard text"
+            (format nil "~C[201~~" #\Escape))))
+    (is (eq t
+            (cadr-cli::apply-right-click-clipboard-paste
+             (lambda () editor)
+             (lambda () "clipboard text")
+             (lambda (target raw)
+               (push (list target raw) delivered))
+             (lambda () (incf renders)))))
+    (is (equal (list (list editor bracketed)) delivered))
+    (is (= 1 renders))
+    (setf delivered nil)
+    (cadr-cli::apply-right-click-clipboard-paste
+     (lambda () editor)
+     (lambda () "clipboard text")
+     (lambda (target raw)
+       (dolist (event
+                (cadr-tui:feed-input
+                 (cadr-tui:make-input-decoder) raw))
+         (cadr-tui:editor-handle-event target event)))
+     (lambda () nil))
+    (is (string= "clipboard text" (cadr-tui:editor-text editor))))
+  (let ((reads 0)
+        (delivered nil))
+    (is (null
+         (cadr-cli::apply-right-click-clipboard-paste
+          (lambda () nil)
+          (lambda () (incf reads) "clipboard text")
+          (lambda (target raw)
+            (declare (ignore target raw))
+            (setf delivered t))
+          (lambda () (error "render")))))
+    (is (= 0 reads))
+    (is (null delivered)))
+  (dolist (text '("" nil))
+    (is (null
+         (cadr-cli::apply-right-click-clipboard-paste
+          (lambda () :editor)
+          (lambda () text)
+          (lambda (target raw)
+            (declare (ignore target raw))
+            (error "delivered"))
+          (lambda () (error "render"))))))
+  (let ((seen nil))
+    (is (eq t
+            (cadr-cli::apply-right-click-clipboard-paste
+             (lambda () :editor)
+             (lambda () " ")
+             (lambda (target raw)
+               (declare (ignore target))
+               (setf seen raw))
+             nil)))
+    (is (string=
+         (concatenate
+          'string
+          (format nil "~C[200~~" #\Escape)
+          " "
+          (format nil "~C[201~~" #\Escape))
+         seen)))
+  (is (null
+       (cadr-cli::apply-right-click-clipboard-paste
+        (let ((calls 0))
+          (lambda ()
+            (incf calls)
+            (if (= calls 1) :first :second)))
+        (lambda () "clipboard text")
+        (lambda (target raw)
+          (declare (ignore target raw))
+          (error "delivered"))
+        (lambda () (error "render")))))
+  (is (null
+       (cadr-cli::apply-right-click-clipboard-paste
+        (lambda () :editor)
+        (lambda () (error "denied"))
+        (lambda (target raw)
+          (declare (ignore target raw))
+          (error "delivered"))
+        (lambda () (error "render")))))
+  (let ((editor (cadr-tui:make-multiline-editor))
+        (dialog (cadr-cli::make-login-dialog-state "muse")))
+    (is (eq editor
+            (cadr-cli::interactive-right-click-paste-target
+             nil editor :captures-p nil)))
+    (is (null
+         (cadr-cli::interactive-right-click-paste-target
+          dialog editor :captures-p t)))
+    (cadr-cli::login-dialog-show-manual-input dialog "code" nil)
+    (is (eq (cadr-cli::login-dialog-state-input dialog)
+            (cadr-cli::interactive-right-click-paste-target
+             dialog editor :captures-p t))))
+  (let ((argv nil))
+    (is (string=
+         "clipboard text"
+         (cadr-cli::read-windows-clipboard-text
+          :command-runner
+          (lambda (command)
+            (setf argv command)
+            "clipboard text"))))
+    (is (search "Get-Clipboard -Raw" (fourth argv)))
+    (is (search "[Console]::Out.Write" (fourth argv)))
+    (is (null
+         (cadr-cli::read-windows-clipboard-text
+          :command-runner
+          (lambda (command)
+            (declare (ignore command))
+            (error "no powershell")))))))

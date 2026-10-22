@@ -59,6 +59,8 @@
   ;; v1.4.0 tui-alt-screen.ts copyOnSelect: default true; when false
   ;; mouse release leaves the highlight and Ctrl+X copies it.
   (copy-on-select-p t :type boolean)
+  ;; pi@4a080252f tui-alt-screen.ts onRightClickPaste.
+  (right-click-paste-function nil)
   component-mouse-function
   component-mouse-press
   (component-mouse-moved-p nil :type boolean)
@@ -100,6 +102,7 @@
        (exit-output-mode :transcript)
        copy-selection-function
        (copy-on-select-p t)
+       right-click-paste-function
        open-url-function
        scroll-to-end-indicator-function)
   (let ((lines
@@ -126,6 +129,7 @@
        :transcript)
    :copy-selection-function copy-selection-function
    :copy-on-select-p (not (null copy-on-select-p))
+   :right-click-paste-function right-click-paste-function
    :open-url-function open-url-function
    :scroll-to-end-indicator-function
    scroll-to-end-indicator-function)))
@@ -1364,7 +1368,33 @@ word-navigation character classes, then join word runs across '-' and
                  (terminal-renderer-component-mouse-moved-p renderer) nil)
            (deliver (gesture :press decoded nil))))))))
 
-(defun renderer-handle-input (renderer data)
+(defun renderer-right-click-paste
+    (renderer event
+     &key (windows-p (uiop:os-windows-p))
+          (term-program (uiop:getenv "TERM_PROGRAM")))
+  ;; pi@4a080252f tui-alt-screen.ts handleRightClickPaste.
+  ;; The SGR button code is exactly 2: release, motion, and
+  ;; shift/alt/ctrl leave the code different and do not paste.
+  (let ((handler
+          (terminal-renderer-right-click-paste-function
+           renderer))
+        (button (getf event :button)))
+    (when (or (null handler)
+              (not windows-p)
+              (and (stringp term-program)
+                   (string-equal term-program "vscode"))
+              (getf event :release-p)
+              (not (eql button 2)))
+      (return-from renderer-right-click-paste nil))
+    (handler-case
+        (funcall handler)
+      (condition () nil))
+    t))
+
+(defun renderer-handle-input
+    (renderer data
+     &key (windows-p nil windows-p-p)
+          (term-program nil term-program-p))
   (unless
       (and
        (terminal-renderer-alt-screen-p
@@ -1396,6 +1426,17 @@ word-navigation character classes, then join word runs across '-' and
         (unless
             (not
              (zerop (logand button 64)))
+          (when (renderer-right-click-paste
+                 renderer mouse
+                 :windows-p
+                 (if windows-p-p
+                     windows-p
+                     (uiop:os-windows-p))
+                 :term-program
+                 (if term-program-p
+                     term-program
+                     (uiop:getenv "TERM_PROGRAM")))
+            (return-from renderer-handle-input t))
           (renderer-handle-mouse
            renderer mouse)))
       (return-from renderer-handle-input

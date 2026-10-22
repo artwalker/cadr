@@ -3509,6 +3509,37 @@ interactive-mode.ts:5956-5960).")
                        :x (getf gesture :x)
                        :wheel-delta (getf gesture :wheel-delta)))
                      (t nil)))))
+              (setf
+               (cadr-tui::terminal-renderer-right-click-paste-function
+                renderer)
+               (lambda ()
+                 (apply-right-click-clipboard-paste
+                  (lambda ()
+                    (interactive-right-click-paste-target
+                     overlay (current-editor)
+                     :captures-p (overlay-captures-input-p)))
+                  (lambda ()
+                    (read-clipboard-text
+                     :native-getter
+                     (when (uiop:os-windows-p)
+                       #'read-windows-clipboard-text)))
+                  (lambda (target raw)
+                    (dolist
+                        (event
+                         (cadr-tui:feed-input
+                          (cadr-tui:make-input-decoder)
+                          raw))
+                      (typecase target
+                        (cadr-tui:multiline-editor
+                         (handle-tui-editor-event
+                          state target event))
+                        (cadr-tui:single-line-input
+                         (cadr-tui:single-line-input-handle-event
+                          target event))
+                        (t
+                         (cadr-tui:component-handle-event
+                          target event)))))
+                  #'request-render)))
               (loop until done-p
                     do
                     (unless
@@ -3734,3 +3765,51 @@ interactive-mode.ts:5956-5960).")
           (footer-data-provider-dispose
            footer-provider))))
     state))
+
+(defun apply-right-click-clipboard-paste
+    (focused-component text-reader deliver render)
+  ;; pi@4a080252f interactive-mode.ts handleRightClickPaste.
+  ;; Empty text, a focus change during the read, and a clipboard
+  ;; error leave the focused input alone.
+  (handler-case
+      (let ((target (funcall focused-component)))
+        (unless target
+          (return-from apply-right-click-clipboard-paste nil))
+        (let ((text (funcall text-reader)))
+          (unless (and (stringp text)
+                       (plusp (length text))
+                       (eq target (funcall focused-component)))
+            (return-from apply-right-click-clipboard-paste nil))
+          (funcall
+           deliver target
+           (concatenate
+            'string
+            (format nil "~C[200~~" #\Escape)
+            text
+            (format nil "~C[201~~" #\Escape)))
+          (when render
+            (funcall render))
+          t))
+    (condition () nil)))
+
+(defun interactive-right-click-paste-target
+    (overlay editor &key captures-p)
+  ;; The fullscreen editor is the focused input. A capturing overlay
+  ;; pastes into its own field when that field has an input handler.
+  (cond
+    ((not captures-p)
+     editor)
+    ((and (login-dialog-state-p overlay)
+          (login-dialog-state-input overlay))
+     (login-dialog-state-input overlay))
+    ((api-key-input-state-p overlay)
+     (api-key-input-state-input overlay))
+    ((runtime-auth-input-state-p overlay)
+     (runtime-auth-input-state-input overlay))
+    ((and (extension-custom-ui-state-p overlay)
+          (typep
+           (extension-custom-ui-state-component overlay)
+           'extension-input-dialog))
+     (extension-input-dialog-input
+      (extension-custom-ui-state-component overlay)))
+    (t nil)))

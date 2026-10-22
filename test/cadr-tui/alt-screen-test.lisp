@@ -1078,3 +1078,100 @@
              renderer kitty-ctrl-home)))
     (is (null
          (cadr-tui:renderer-following-output-p renderer)))))
+
+(test windows-right-click-paste-matches-v140
+  ;; pi@4a080252f tui-alt-screen.test.ts
+  ;; "invokes the right-click paste handler only on Windows outside VS Code"
+  ;; plus handleRightClickPaste: button code exactly 2, press only.
+  (let* ((count 0)
+         (terminal (make-alt-recording-terminal))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t
+            :right-click-paste-function
+            (lambda () (incf count))))
+         (press (format nil "~C[<2;1;1M" #\Escape))
+         (release (format nil "~C[<2;1;1m" #\Escape)))
+    (cadr-tui:renderer-handle-input
+     renderer press :windows-p t :term-program nil)
+    (cadr-tui:renderer-handle-input
+     renderer release :windows-p t :term-program nil)
+    (is (= 1 count))
+    (cadr-tui:renderer-handle-input
+     renderer press :windows-p t :term-program "vscode")
+    (is (= 1 count))
+    (cadr-tui:renderer-handle-input
+     renderer press :windows-p t :term-program "VSCode")
+    (is (= 1 count))
+    (cadr-tui:renderer-handle-input
+     renderer press :windows-p nil :term-program nil)
+    (is (= 1 count))
+    (cadr-tui:renderer-handle-input
+     renderer press :windows-p t :term-program "vscode-insiders")
+    (is (= 2 count))
+    (dolist (code '("6" "10" "18" "34"))
+      (cadr-tui:renderer-handle-input
+       renderer
+       (format nil "~C[<~A;1;1M" #\Escape code)
+       :windows-p t :term-program nil))
+    (is (= 2 count))
+    (cadr-tui:renderer-handle-input
+     renderer press :windows-p t :term-program nil)
+    (is (= 3 count))
+    (is (null
+         (cadr-tui::terminal-renderer-selection-anchor
+          renderer))))
+  (let* ((terminal (make-alt-recording-terminal))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t
+            :right-click-paste-function
+            (lambda () (error "clipboard denied"))))
+         (press (format nil "~C[<2;1;1M" #\Escape)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer press
+             :windows-p t :term-program nil)))
+    (is (null
+         (cadr-tui::terminal-renderer-selection-anchor
+          renderer))))
+  (let* ((count 0)
+         (terminal (make-alt-recording-terminal))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t
+            :right-click-paste-function
+            (lambda () (incf count)))))
+    (setf (cadr-tui::terminal-renderer-component-mouse-function
+           renderer)
+          (lambda (gesture)
+            (and (eq (getf gesture :type) :press)
+                 (eq (getf gesture :button) :right))))
+    (cadr-tui:renderer-handle-input
+     renderer
+     (format nil "~C[<2;1;1M" #\Escape)
+     :windows-p t :term-program nil)
+    (is (= 0 count)))
+  (let* ((terminal (make-alt-recording-terminal))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p nil
+            :right-click-paste-function
+            (lambda () (error "should not run")))))
+    (is (null
+         (cadr-tui:renderer-handle-input
+          renderer
+          (format nil "~C[<2;1;1M" #\Escape)
+          :windows-p t :term-program nil))))
+  (let* ((terminal (make-alt-recording-terminal))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t))
+         (press (format nil "~C[<0;2;2M" #\Escape)))
+    (is (eq t
+            (cadr-tui:renderer-handle-input
+             renderer press
+             :windows-p t :term-program nil)))
+    (is (not (null
+              (cadr-tui::terminal-renderer-selection-anchor
+               renderer))))))

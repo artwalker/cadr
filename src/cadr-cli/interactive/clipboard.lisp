@@ -600,3 +600,22 @@
             command-runner)))))
       (read-clipboard-image-via-native
        native-image-reader)))
+
+(defun read-windows-clipboard-text (&key command-runner)
+  ;; pi@4a080252f win32-platform.c clipboard_execute reads
+  ;; CF_UNICODETEXT. cadr has no Node addon, so Windows reads the
+  ;; same text through PowerShell and writes it with no extra newline.
+  (let ((argv
+          '("powershell.exe" "-NoProfile" "-Command"
+            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $t = Get-Clipboard -Raw; if ($null -ne $t) { [Console]::Out.Write($t) }")))
+    (handler-case
+        (let ((text
+                (if command-runner
+                    (funcall command-runner argv)
+                    (uiop:run-program
+                     argv
+                     :output :string
+                     :error-output nil
+                     :ignore-error-status t))))
+          (and (stringp text) text))
+      (condition () nil))))
