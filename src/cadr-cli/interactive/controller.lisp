@@ -119,16 +119,35 @@ interactive-mode.ts:5956-5960).")
   #-sbcl
   (error "Suspend is unsupported on this Lisp runtime"))
 
-(defun open-tui-url (url)
-  (uiop:launch-program
-   #+darwin
-   (list "open" url)
-   #+win32
-   (list "cmd" "/c" "start" "" url)
-   #-(or darwin win32)
-   (list "xdg-open" url)
-   :output nil
-   :error-output nil))
+(defun open-tui-url
+    (url &key (platform nil platform-p)
+              (launch #'uiop:launch-program))
+  ;; v1.4.0 open-browser.ts openBrowser. The target is its own argv
+  ;; element. win32 is rundll32 url.dll,FileProtocolHandler, not
+  ;; cmd /c start: cmd.exe re-parses & | ^ before start runs. darwin
+  ;; is open. Every other platform is xdg-open. A missing launcher
+  ;; stays best-effort so the caller can still show the target.
+  (let ((platform
+          (if platform-p
+              platform
+              (cond
+                ((uiop:os-windows-p) :win32)
+                ((uiop:os-macosx-p) :darwin)
+                (t :linux)))))
+    (handler-case
+        (funcall
+         launch
+         (append
+          (or (cdr
+               (assoc platform
+                      '((:darwin "open")
+                        (:win32 "rundll32"
+                         "url.dll,FileProtocolHandler"))))
+              '("xdg-open"))
+          (list url))
+         :output nil
+         :error-output nil)
+      (error () nil))))
 
 (defun suspend-tui
     (platform

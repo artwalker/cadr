@@ -429,7 +429,8 @@
               (setf captured (cons command arguments))
               :process))
            (cadr-cli::open-tui-url
-            "https://example.invalid/docs")
+            "https://example.invalid/docs"
+            :platform :linux)
            (is (equal
                 '("xdg-open"
                   "https://example.invalid/docs")
@@ -440,6 +441,58 @@
       (setf
        (symbol-function 'uiop:launch-program)
        original))))
+
+(test goal27-open-url-argv-matches-v140-open-browser
+  ;; v1.4.0 packages/coding-agent/src/utils/open-browser.ts openBrowser.
+  ;; win32: rundll32 url.dll,FileProtocolHandler <target>
+  ;; darwin: open <target>
+  ;; else: xdg-open <target>
+  ;; The target stays one argv element, including & | ^ and quotes.
+  ;; cmd /c start is not used. A launcher error does not escape.
+  (let ((target
+          "https://example.invalid/a?x=1&y=2|z^q \"q\""))
+    (dolist (spec '((:win32 "rundll32" "url.dll,FileProtocolHandler")
+                    (:darwin "open")
+                    (:linux "xdg-open")
+                    (:freebsd "xdg-open")))
+      (let ((captured nil))
+        (cadr-cli::open-tui-url
+         target
+         :platform (first spec)
+         :launch (lambda (command &rest arguments)
+                   (setf captured (cons command arguments))
+                   :process))
+        (is (equal (append (rest spec) (list target))
+                   (first captured))
+            "~A argv" (first spec))
+        (is (null (getf (rest captured) :output)))
+        (is (null (getf (rest captured) :error-output)))
+        (is (not (member "cmd" (first captured) :test #'string=)))
+        (is (not (member "/c" (first captured) :test #'string=)))
+        (is (not (member "start" (first captured) :test #'string=))))))
+  (unless (or (uiop:os-windows-p) (uiop:os-macosx-p))
+    (let ((captured nil))
+      (cadr-cli::open-tui-url
+       "https://example.invalid/host"
+       :launch (lambda (command &rest arguments)
+                 (setf captured (cons command arguments))
+                 :process))
+      (is (equal '("xdg-open" "https://example.invalid/host")
+                 (first captured)))))
+  (let ((captured nil))
+    (is (eq :ok
+            (handler-case
+                (progn
+                  (cadr-cli::open-tui-url
+                   "https://example.invalid/missing"
+                   :platform :win32
+                   :launch (lambda (command &rest arguments)
+                             (declare (ignore command arguments))
+                             (setf captured t)
+                             (error "missing rundll32")))
+                  :ok)
+              (error () :signaled))))
+    (is (eq t captured))))
 
 (defun rendered-footer-text (state)
   (multiple-value-bind (lines row column)
