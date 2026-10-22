@@ -211,13 +211,15 @@
                             pairs))))
     (nreverse pairs)))
 
-(defun mcp-create-transport (name config cwd)
+(defun mcp-create-transport (name config cwd &key auth-token auth-unauthorized)
   (if (nth-value 1 (mcp-get config "url"))
       (make-mcp-http-transport
        (mcp-get config "url")
        :headers (mcp-resolve-headers
                  (mcp-get config "headers")
-                 (format nil "MCP server ~S" name)))
+                 (format nil "MCP server ~S" name))
+       :auth-token auth-token
+       :auth-unauthorized auth-unauthorized)
       (let ((command (mcp-expand-home (mcp-get config "command")))
             (args (mapcar #'mcp-expand-home
                           (or (mcp-config-string-list (mcp-get config "args"))
@@ -248,7 +250,9 @@
   client
   stderr-tail
   (closed-p nil :type boolean)
-  (shutdown (make-mcp-abort)))
+  (shutdown (make-mcp-abort))
+  oauth-credentials
+  challenge)
 
 (defun mcp-connection-timeout-ms (connection)
   (let ((seconds (mcp-get (mcp-server-connection-config connection) "timeout")))
@@ -267,9 +271,10 @@
   (mcp-server-connection-instructions connection))
 
 (defun mcp-connection-needs-sign-in-p (connection error)
-  (and (typep error 'mcp-auth-required-error)
-       (or (mcp-uses-oauth-p (mcp-server-connection-config connection))
-           (mcp-auth-provider-name (mcp-server-connection-config connection)))))
+  (or (typep error 'mcp-oauth-authorization-required-error)
+      (and (typep error 'mcp-auth-required-error)
+           (or (mcp-uses-oauth-p (mcp-server-connection-config connection))
+               (mcp-auth-provider-name (mcp-server-connection-config connection))))))
 
 (defun mcp-connection-fail (connection error)
   (when (and (mcp-connection-needs-sign-in-p connection error)
@@ -314,11 +319,14 @@
                                   (namestring
                                    (uiop:ensure-directory-pathname
                                     (mcp-server-connection-cwd connection))))))))
+         (auth (mcp-connection-oauth-auth connection))
          (transport
            (mcp-create-transport
             (mcp-server-connection-name connection)
             (mcp-server-connection-config connection)
-            (mcp-server-connection-cwd connection))))
+            (mcp-server-connection-cwd connection)
+            :auth-token (when auth (mcp-oauth-auth-token auth))
+            :auth-unauthorized (when auth (mcp-oauth-auth-unauthorized auth)))))
     (when (mcp-abort-aborted-p (mcp-server-connection-shutdown connection))
       (error "shut down while connecting"))
     (handler-case
@@ -402,16 +410,32 @@
                                  (- (length text) +mcp-stderr-tail-chars+)))))))
         (error condition)))))
 
-(defun open-mcp-server (name config cwd &key on-tools probe)
+(defun mcp-connection-oauth-auth (connection)
+  (let ((credentials (mcp-server-connection-oauth-credentials connection))
+        (config (mcp-server-connection-config connection)))
+    (when (and credentials (mcp-uses-oauth-p config))
+      (let ((name (mcp-server-connection-name connection))
+            (url (mcp-get config "url")))
+        (mcp-oauth-create-auth
+         url
+         (mcp-oauth-credential-server credentials name url)
+         (lambda () (mcp-oauth-settings-from-config config name))
+         (lambda (challenge)
+           (setf (mcp-server-connection-challenge connection) challenge)))))))
+
+(defun open-mcp-server (name config cwd &key on-tools probe credentials)
   ;; pi@4a080252f McpServerConnection.getClient. PROBE keeps the
   ;; connection after a failure so `cadr mcp list` can print its state
   ;; and error. Callers that omit PROBE still receive the condition.
+  ;; CREDENTIALS is the file store `cadr mcp login` reads and writes.
+  ;; A connection does not open a browser; a missing grant stays needs-auth.
   (let ((connection
           (make-mcp-server-connection
            :name name
            :config config
            :cwd cwd
-           :state "connecting")))
+           :state "connecting"
+           :oauth-credentials credentials)))
     (handler-case
         (let ((retries (if (nth-value 1 (mcp-get config "url"))
                            +mcp-connect-retry-delays-ms+

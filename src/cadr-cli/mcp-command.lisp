@@ -311,14 +311,18 @@ Other options:
              (setf start (1+ end)))
     (format nil "~{  ~A~^~%~}" (nreverse pieces))))
 
-(defun mcp-cli-probe (entry cwd)
+(defun mcp-cli-credentials (agent-dir)
+  (cadr-agent::make-mcp-oauth-credential-store (mcp-cli-auth-path agent-dir)))
+
+(defun mcp-cli-probe (entry cwd &optional credentials)
   (cadr-agent:open-mcp-server
    (cadr-agent:mcp-server-entry-name entry)
    (cadr-agent:mcp-server-entry-config entry)
    cwd
-   :probe t))
+   :probe t
+   :credentials credentials))
 
-(defun mcp-cli-report (entry cwd)
+(defun mcp-cli-report (entry cwd &optional credentials)
   (let* ((config (cadr-agent:mcp-server-entry-config entry))
          (enabled (mcp-cli-enabled-p config))
          (exposure (mcp-cli-exposure config))
@@ -336,7 +340,7 @@ Other options:
                  :resources nil
                  :error nil)))
     (when enabled
-      (let ((connection (mcp-cli-probe entry cwd)))
+      (let ((connection (mcp-cli-probe entry cwd credentials)))
         (unwind-protect
              (let ((tools (mcp-cli-tool-names connection))
                    (overrides nil))
@@ -428,8 +432,9 @@ Other options:
     (funcall log (mcp-cli-join-lines (getf report :error)))))
 
 (defun mcp-cli-list (loaded json-p note agent-dir cwd log)
-  (let* ((reports
-           (mapcar (lambda (entry) (mcp-cli-report entry cwd))
+  (let* ((credentials (mcp-cli-credentials agent-dir))
+         (reports
+           (mapcar (lambda (entry) (mcp-cli-report entry cwd credentials))
                    (cadr-agent:loaded-mcp-config-servers loaded)))
          (errors (cadr-agent:loaded-mcp-config-errors loaded))
          (failed
@@ -660,20 +665,62 @@ Other options:
                                     "omit --local"))))
           1)))))
 
-(defun mcp-cli-sign-in (&key server-url store settings challenge prompt timeout-ms)
-  ;; The browser grant, PKCE, and token file are the MCP OAuth client.
-  ;; Until that client is connected, a server that still needs a grant
-  ;; fails the sign-in instead of pretending it completed.
-  (declare (ignore server-url store settings challenge prompt timeout-ms))
-  (error 'mcp-sign-in-error :message "MCP OAuth sign-in is not implemented"))
+(defun mcp-cli-wait-for-redirect (signal interactive)
+  ;; pi@4a080252f waitForRedirectUrl. A non-TTY sign-in finishes only
+  ;; through the browser callback. Abort resolves to an empty result.
+  (if (not interactive)
+      (progn
+        (loop until (funcall signal) do (sleep 0.05))
+        nil)
+      (handler-case
+          (progn
+            (format *error-output*
+                    "If the browser cannot reach this machine, paste the URL it was redirected to: ")
+            (finish-output *error-output*)
+            (loop until (or (funcall signal) (listen *standard-input*))
+                  do (sleep 0.05))
+            (when (funcall signal)
+              (return-from mcp-cli-wait-for-redirect nil))
+            (read-line *standard-input* nil nil))
+        (error () nil))))
 
-(defun mcp-cli-login (entry connection url timeout-ms log error)
+(defun mcp-cli-sign-in (&key name server-url store settings challenge prompt timeout-ms
+                          open-url interactive)
+  (let* ((deadline (+ (get-internal-real-time)
+                      (round (* (/ (or timeout-ms 300000) 1000.0)
+                                internal-time-units-per-second))))
+         (signal (lambda ()
+                   (>= (get-internal-real-time) deadline)))
+         (interactive (if interactive
+                          t
+                          (and (interactive-stream-p *standard-input*)
+                               (null open-url)))))
+    (handler-case
+        (cadr-agent::mcp-oauth-sign-in
+         server-url store settings
+         :challenge challenge
+         :timeout-ms timeout-ms
+         :signal signal
+         :show-url (lambda (url)
+                     (funcall prompt
+                              (format nil "Sign in to MCP server ~S in your browser:~%~A"
+                                      name url))
+                     (funcall (or open-url #'open-tui-url) url))
+         :paste (lambda (aborted-p)
+                  (mcp-cli-wait-for-redirect
+                   (lambda () (or (funcall aborted-p) (funcall signal)))
+                   interactive)))
+      (cadr-agent::mcp-oauth-sign-in-cancelled ()
+        (error 'mcp-sign-in-cancelled)))))
+
+(defun mcp-cli-login (entry connection url timeout-ms log error &key credentials open-url)
   (let ((name (cadr-agent:mcp-server-entry-name entry)))
     (unwind-protect
          (progn
            (let ((probed (mcp-cli-probe entry
                                         (cadr-agent::mcp-server-connection-cwd
-                                         connection))))
+                                         connection)
+                                        credentials)))
              (setf connection probed))
            (cond
              ((string= (cadr-agent:mcp-server-state connection) "connected")
@@ -691,8 +738,19 @@ Other options:
               1)
              (t
               (handler-case
-                  (mcp-cli-sign-in :server-url url
-                                   :timeout-ms timeout-ms)
+                  (mcp-cli-sign-in
+                   :name name
+                   :server-url url
+                   :store (cadr-agent::mcp-oauth-credential-server
+                           credentials name url)
+                   :settings (cadr-agent::mcp-oauth-settings-from-config
+                              (cadr-agent:mcp-server-entry-config entry)
+                              name)
+                   :challenge (cadr-agent::mcp-server-connection-challenge
+                               connection)
+                   :prompt log
+                   :timeout-ms timeout-ms
+                   :open-url open-url)
                 (mcp-sign-in-cancelled ()
                   (funcall error
                            (format nil
@@ -705,6 +763,7 @@ Other options:
                            (format nil "Sign-in to MCP server ~S failed: ~A"
                                    name condition))
                   (return-from mcp-cli-login 1)))
+              (setf (cadr-agent::mcp-server-connection-challenge connection) nil)
               (handler-case
                   (progn
                     (cadr-agent::mcp-connection-connect-once connection nil)
@@ -731,7 +790,7 @@ Other options:
         :key #'cadr-agent:mcp-server-entry-name
         :test #'string=))
 
-(defun run-mcp-command (args &key cwd agent-dir log error)
+(defun run-mcp-command (args &key cwd agent-dir log error open-url)
   ;; pi@4a080252f runMcpCommand. Returns the process exit code.
   (let* ((cwd (namestring (or cwd (uiop:getcwd))))
          (agent-dir (namestring (or agent-dir (cadr-core:coding-agent-directory))))
@@ -844,7 +903,9 @@ Other options:
                                  :cwd cwd
                                  :state "connecting")))
                           (mcp-cli-login entry connection url
-                                         (* timeout 1000) log error))))))))
+                                         (* timeout 1000) log error
+                                         :credentials (mcp-cli-credentials agent-dir)
+                                         :open-url open-url))))))))
              (t
               (funcall error
                        (format nil "Unknown mcp command ~S.~%~A"

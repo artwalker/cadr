@@ -1258,7 +1258,8 @@
     ;; +3 Goal 26 dialog stack: extension-ui-promise, fulfill, and
     ;; call-when so a confirm opened on the TUI input thread returns
     ;; before the next key (v1.4.0 showExtensionConfirm).
-    (is (= 270 definition-count)
+    ;; Measured 2026-10-23: 274 def forms in these eight owners.
+    (is (= 274 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1519,7 +1520,7 @@
               ;; +1 Goal 24: #:model-prompt-cache.
               ;; Goal 26: classifier catalog exports in package.lisp.
               ;; OpenRouter image catalog exports already in package.lisp.
-              "797b43afc313dac2bef2d6c9328dbf13b3eb1e9acfe51eeed256c677ba546e13"
+              "a6f7d8bb1f2e12dfc48501c482c96e072737a1d6c790fc885969cedb48219dd4"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

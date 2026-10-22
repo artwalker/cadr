@@ -45,7 +45,7 @@ for line in sys.stdin:
     (write-string text out))
   path)
 
-(defun mcp-command-run (args servers dir)
+(defun mcp-command-run (args servers dir &key open-url)
   (when servers
     (mcp-command-write (merge-pathnames "mcp.json" dir) servers))
   (let ((output nil))
@@ -55,7 +55,8 @@ for line in sys.stdin:
              :cwd (namestring dir)
              :agent-dir (namestring dir)
              :log (lambda (line) (push line output))
-             :error (lambda (line) (push line output)))))
+             :error (lambda (line) (push line output))
+             :open-url open-url)))
       (values code (format nil "~{~A~^~%~}" (nreverse output))))))
 
 (defun mcp-command-read-json (path)
@@ -413,3 +414,150 @@ for line in sys.stdin:
            (is (not (nth-value 0
                                (cadr-cli::maybe-run-mcp-command '("auth" "check"))))))
       (uiop:delete-directory-tree dir :validate t))))
+
+(defparameter +mcp-command-oauth-fixture+
+  "import json
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlencode, urlparse
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self, fmt, *args):
+        return
+    def origin(self):
+        return 'http://127.0.0.1:%d' % self.server.server_address[1]
+    def answer(self, status, payload=None, raw=None, headers=None):
+        body = raw if raw is not None else json.dumps(payload).encode()
+        self.send_response(status)
+        for key, value in (headers or {}).items():
+            self.send_header(key, value)
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        if body:
+            self.wfile.write(body)
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        origin = self.origin()
+        if parsed.path == '/.well-known/oauth-protected-resource/mcp':
+            self.answer(200, {'resource': origin + '/mcp', 'authorization_servers': [origin],
+                              'scopes_supported': ['org:read']},
+                        headers={'Content-Type': 'application/json'})
+            return
+        if parsed.path == '/.well-known/oauth-authorization-server':
+            self.answer(200, {'issuer': origin,
+                              'authorization_endpoint': origin + '/authorize',
+                              'token_endpoint': origin + '/token',
+                              'registration_endpoint': origin + '/register',
+                              'response_types_supported': ['code'],
+                              'grant_types_supported': ['authorization_code', 'refresh_token'],
+                              'token_endpoint_auth_methods_supported': ['none'],
+                              'code_challenge_methods_supported': ['S256']},
+                        headers={'Content-Type': 'application/json'})
+            return
+        if parsed.path == '/authorize':
+            query = parse_qs(parsed.query)
+            location = query['redirect_uri'][0]
+            joiner = '&' if '?' in location else '?'
+            location += joiner + urlencode({'code': 'test-code', 'state': query.get('state', [''])[0]})
+            self.answer(302, raw=b'', headers={'Location': location})
+            return
+        self.answer(405 if parsed.path == '/mcp' else 404, raw=b'')
+    def do_POST(self):
+        length = int(self.headers.get('Content-Length') or 0)
+        raw = self.rfile.read(length)
+        path = urlparse(self.path).path
+        origin = self.origin()
+        if path == '/register':
+            metadata = json.loads(raw.decode())
+            metadata['client_id'] = 'test-client'
+            metadata['client_secret'] = ''
+            self.answer(201, metadata, headers={'Content-Type': 'application/json'})
+            return
+        if path == '/token':
+            self.answer(200, {'access_token': 'first-token', 'refresh_token': 'refresh-token',
+                              'token_type': 'Bearer', 'scope': ''},
+                        headers={'Content-Type': 'application/json'})
+            return
+        if path != '/mcp':
+            self.answer(404, raw=b'')
+            return
+        if self.headers.get('Authorization') != 'Bearer first-token':
+            self.answer(401, raw=b'Unauthorized',
+                        headers={'WWW-Authenticate':
+                                 'Bearer resource_metadata=\"%s/.well-known/oauth-protected-resource/mcp\", scope=\"\"' % origin})
+            return
+        message = json.loads(raw.decode())
+        if 'id' not in message:
+            self.answer(202, raw=b'')
+            return
+        if message.get('method') == 'initialize':
+            result = {'protocolVersion': '2025-11-25', 'capabilities': {'tools': {}},
+                      'serverInfo': {'name': 'oauth-fixture', 'version': '1.0.0'}}
+        elif message.get('method') == 'tools/list':
+            result = {'tools': [{'name': 'issues', 'inputSchema': {'type': 'object'}}]}
+        else:
+            result = {}
+        self.answer(200, {'jsonrpc': '2.0', 'id': message['id'], 'result': result},
+                    headers={'Content-Type': 'application/json'})
+    def do_DELETE(self):
+        self.answer(200, raw=b'')
+server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+print(server.server_address[1], flush=True)
+server.serve_forever()
+")
+
+(test mcp-command-login-stores-oauth-tokens
+  ;; cli.ts login + oauth.test.ts token exchange. The browser callback
+  ;; completes the grant; the credential file key is mcp__name|url.
+  (let* ((dir (mcp-command-temp-dir))
+         (script (merge-pathnames "oauth-server.py" dir))
+         (process nil))
+    (mcp-command-write script +mcp-command-oauth-fixture+)
+    (unwind-protect
+         (progn
+           (setf process
+                 (uiop:launch-program
+                  (list "python3" (namestring script))
+                  :output :stream :error-output :stream :wait nil))
+           (let* ((port (parse-integer
+                         (read-line (uiop:process-info-output process) nil nil)))
+                  (url (format nil "http://127.0.0.1:~A/mcp" port))
+                  (key (format nil "mcp__docs|~A" url)))
+             (multiple-value-bind (code output)
+                 (mcp-command-run
+                  '("login" "docs" "--timeout" "20")
+                  (format nil "{\"mcpServers\":{\"docs\":{\"url\":~A}}}"
+                          (cadr-agent::mcp-write-json url))
+                  dir
+                  :open-url
+                  (lambda (authorization)
+                    (sb-thread:make-thread
+                     (lambda ()
+                       (sleep 0.3)
+                       (multiple-value-bind (body status headers)
+                           (cadr-ai::native-http-request
+                            authorization :method :get :force-string t)
+                         (declare (ignore body))
+                         (let ((location (cadr-ai::header-value headers "location")))
+                           (when (and (eql status 302) (stringp location))
+                             (cadr-ai::native-http-request
+                              location :method :get :force-string t)))))
+                     :name "mcp oauth browser")))
+               (is (= 0 code))
+               (is (search "Signed in to MCP server \"docs\" (1 tools)." output))
+               (let ((stored (mcp-command-read-json
+                              (merge-pathnames "mcp-auth.json" dir))))
+                 (is (string= "first-token"
+                              (cadr-agent::mcp-get
+                               (cadr-agent::mcp-get
+                                (cadr-agent::mcp-get stored key)
+                                "tokens")
+                               "access_token")))
+                 (is (string= "refresh-token"
+                              (cadr-agent::mcp-get
+                               (cadr-agent::mcp-get
+                                (cadr-agent::mcp-get stored key)
+                                "tokens")
+                               "refresh_token")))))))
+      (when process
+        (ignore-errors (uiop:terminate-process process :urgent t))
+        (ignore-errors (uiop:wait-process process)))
+      (ignore-errors (uiop:delete-directory-tree dir :validate t)))))

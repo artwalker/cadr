@@ -142,14 +142,17 @@
   (close-listeners nil :type list)
   (streams nil :type list)
   (lock (sb-thread:make-mutex :name "mcp http"))
-  (abort (make-mcp-abort)))
+  (abort (make-mcp-abort))
+  auth-token
+  auth-unauthorized)
 
 (defun make-mcp-http-transport (url &key headers
                                     (open-get-stream t)
                                     (max-message-bytes +mcp-max-message-bytes+)
                                     (initial-delay-ms 1000)
                                     (max-delay-ms 30000)
-                                    (max-retries 5))
+                                    (max-retries 5)
+                                    auth-token auth-unauthorized)
   (%make-mcp-http-transport
    :url url
    :headers headers
@@ -157,7 +160,9 @@
    :max-message-bytes max-message-bytes
    :initial-delay-ms initial-delay-ms
    :max-delay-ms max-delay-ms
-   :max-retries max-retries))
+   :max-retries max-retries
+   :auth-token auth-token
+   :auth-unauthorized auth-unauthorized))
 
 (defun mcp-http-session-id (transport)
   (mcp-http-transport-session-id transport))
@@ -256,7 +261,22 @@
   (sb-thread:with-mutex ((mcp-http-transport-lock transport))
     (push stream (mcp-http-transport-streams transport))))
 
-(defun mcp-http-request (transport method extra-headers body &key allow-closed)
+(defun mcp-http-with-bearer (headers token)
+  (let ((rest (remove "authorization" headers :key #'car :test #'string-equal)))
+    (if (and (stringp token) (plusp (length token)))
+        (acons "Authorization" (format nil "Bearer ~A" token) rest)
+        rest)))
+
+(defun mcp-http-insufficient-scope-p (headers)
+  (let ((header (cadr-ai::header-value headers "www-authenticate")))
+    (and (stringp header)
+         (cl-ppcre:scan "(?i)(?:^|[\\s,])error=\"?insufficient_scope\"?" header))))
+
+(defun mcp-http-needs-authorization-p (status headers)
+  (or (eql status 401)
+      (and (eql status 403) (mcp-http-insufficient-scope-p headers))))
+
+(defun mcp-http-issue (transport method extra-headers body allow-closed)
   (unless allow-closed
     (when (or (mcp-abort-aborted-p (mcp-http-transport-abort transport))
               (mcp-http-transport-closed-p transport))
@@ -279,6 +299,33 @@
          :read-timeout 120)
       (mcp-http-remember-stream transport stream)
       (values stream status headers))))
+
+(defun mcp-http-request (transport method extra-headers body &key allow-closed)
+  ;; v1.4.0 streamable-http authorizedFetch. A stored access token
+  ;; overrides a caller Authorization header. One 401, or a 403 whose
+  ;; challenge is insufficient_scope, goes through the auth provider
+  ;; and the request is sent again.
+  (let* ((token-fn (mcp-http-transport-auth-token transport))
+         (token (when token-fn (funcall token-fn)))
+         (headers (if token-fn
+                      (mcp-http-with-bearer extra-headers token)
+                      extra-headers)))
+    (multiple-value-bind (stream status response-headers)
+        (mcp-http-issue transport method headers body allow-closed)
+      (let ((recover (mcp-http-transport-auth-unauthorized transport)))
+        (unless (and recover
+                     (mcp-http-needs-authorization-p status response-headers))
+          (return-from mcp-http-request
+            (values stream status response-headers)))
+        (ignore-errors (close stream))
+        (funcall recover
+                 (list :server-url (mcp-http-transport-url transport)
+                       :headers response-headers
+                       :token token))
+        (let ((next (when token-fn (funcall token-fn))))
+          (mcp-http-issue transport method
+                          (mcp-http-with-bearer extra-headers next)
+                          body allow-closed))))))
 
 (defun mcp-http-fail (transport stream status headers)
   (let ((body (handler-case
