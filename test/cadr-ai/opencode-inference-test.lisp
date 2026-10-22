@@ -20,10 +20,8 @@
                    (cadr-ai:model-metadata-base-url metadata))))))
   (let ((gemini
           (cadr-ai:find-model-metadata :opencode "gemini-3-flash"))
-        (minimax
-          (cadr-ai:find-model-metadata :opencode-go "minimax-m2.7"))
         (qwen
-          (cadr-ai:find-model-metadata :opencode-go "qwen3.6-plus"))
+          (cadr-ai:find-model-metadata :opencode-go "deepseek-v4-pro"))
         (m3
           (cadr-ai:find-model-metadata :opencode-go "minimax-m3"))
         (go (cadr-ai:find-provider-definition :opencode-go))
@@ -33,11 +31,6 @@
     (is (string=
          "https://opencode.ai/inference/v1"
          (cadr-ai:model-metadata-base-url gemini)))
-    (is (eq :anthropic-messages
-            (cadr-ai:model-metadata-api minimax)))
-    (is (string=
-         "https://opencode.ai/inference/go"
-         (cadr-ai:model-metadata-base-url minimax)))
     (is (eq :openai-completions
             (cadr-ai:model-metadata-api qwen)))
     (is (string=
@@ -69,7 +62,7 @@
        (request-spec-url
         (build-request
          (make-anthropic-provider :api-key "key")
-         (opencode-catalog-model :opencode-go "minimax-m2.7")
+         (opencode-catalog-model :opencode-go "minimax-m3")
          (make-context)
          :stream-p t))))
   (is (string=
@@ -77,6 +70,6 @@
        (request-spec-url
         (build-request
          (cadr-ai:make-openai-completions-provider :api-key "key")
-         (opencode-catalog-model :opencode-go "qwen3.6-plus")
+         (opencode-catalog-model :opencode-go "deepseek-v4-pro")
          (make-context)
          :stream-p t)))))

@@ -212,19 +212,17 @@
          (cadr-cli::print-cli-models nil output)
          (is (string=
               (format nil
-                      "provider  model                         context  max-out  thinking  images~%~
-                       deepseek  deepseek-v4-flash             1M       384K     yes       no    ~%~
-                       deepseek  deepseek-v4-flash-vision-exp  1M       384K     yes       yes   ~%~
-                       deepseek  deepseek-v4-pro               1M       384K     yes       no    ~%")
+                      "provider  model            context  max-out  thinking  images~%~
+                       deepseek  deepseek-flash   1M       384K     yes       yes   ~%~
+                       deepseek  deepseek-v4-pro  1M       384K     yes       no    ~%")
               (get-output-stream-string output))))
        ;; Fuzzy filter on "provider id"; no match keeps the baseline line.
        (let ((output (make-string-output-stream)))
          (cadr-cli::print-cli-models "flash" output)
          (is (string=
               (format nil
-                      "provider  model                         context  max-out  thinking  images~%~
-                       deepseek  deepseek-v4-flash             1M       384K     yes       no    ~%~
-                       deepseek  deepseek-v4-flash-vision-exp  1M       384K     yes       yes   ~%")
+                      "provider  model           context  max-out  thinking  images~%~
+                       deepseek  deepseek-flash  1M       384K     yes       yes   ~%")
               (get-output-stream-string output))))
        (let ((output (make-string-output-stream)))
          (cadr-cli::print-cli-models "nomatch" output)

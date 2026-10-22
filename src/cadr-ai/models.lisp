@@ -22,6 +22,7 @@
   (headers nil :type list)
   (compat nil :type list)
   (prompt-cache nil :type list)
+  (input-limits nil :type list)
   (input-price 0d0 :type double-float)
   (output-price 0d0 :type double-float)
   (cache-read-price 0d0 :type double-float)
@@ -189,7 +190,8 @@
    :thinking-level-map (model-metadata-thinking-level-map metadata)
    :headers (model-metadata-headers metadata)
    :compat (model-metadata-compat metadata)
-   :prompt-cache (model-metadata-prompt-cache metadata)))
+   :prompt-cache (model-metadata-prompt-cache metadata)
+   :input-limits (model-metadata-input-limits metadata)))
 
 (defparameter +extended-thinking-levels+
   '(:off :minimal :low :medium :high :xhigh :max))
@@ -340,16 +342,6 @@
     (setf (getf row :prompt-cache) '(:short 300 :long 3600)))
   row)
 
-(defun apply-fireworks-tool-references-override (row)
-  (when (and (eq (getf row :provider) :fireworks)
-             (eq (getf row :api) :anthropic-messages))
-    (let ((compat (getf row :compat)))
-      (unless (loop for (key) on compat by #'cddr
-                    thereis (eq key :supports-tool-references))
-        (setf (getf row :compat)
-              (list* :supports-tool-references t compat)))))
-  row)
-
 (defun apply-vercel-ai-gateway-empty-signature (row)
   (when (eq (getf row :provider) :vercel-ai-gateway)
     (let ((compat (getf row :compat)))
@@ -463,7 +455,10 @@
 (defun register-azure-deepseek-model ()
   ;; pi@4a080252f generate-models.ts azureDeepSeekModels. Foundry rejects
   ;; DeepSeek's thinking field and prompt-cache parameters, and it keeps
-  ;; mid-conversation system messages.
+  ;; mid-conversation system messages. pi-ai@1.4.0 already publishes the
+  ;; row, so this only fills a catalog that omitted it.
+  (when (gethash (model-catalog-key :azure "deepseek-v4-pro") *model-catalog*)
+    (return-from register-azure-deepseek-model nil))
   (let ((source (find-model-metadata :deepseek "deepseek-v4-pro")))
     (when source
       (let ((compat (copy-list (model-metadata-compat source)))
@@ -860,7 +855,9 @@
         (destructuring-bind
             (id name input output cache-read direct-only-p)
             model-row
-          (when (or (not direct-only-p) (eq provider :xiaomi))
+          (when (and (or (not direct-only-p) (eq provider :xiaomi))
+                     (not (gethash (model-catalog-key provider id)
+                                   *model-catalog*)))
             (register-model-metadata
              (make-model-metadata
               :provider provider
@@ -900,10 +897,9 @@
               (apply-azure-provider-id
               (apply-vercel-ai-gateway-empty-signature
                (apply-fireworks-effort-override
-                (apply-fireworks-tool-references-override
-                 (apply-anthropic-prompt-cache-override
+                (apply-anthropic-prompt-cache-override
                   (apply-gpt-5-6-pricing-override
-                   (copy-list row))))))))))))
+                   (copy-list row)))))))))))
       (setf
        (getf copy :cost-tiers)
        (mapcar

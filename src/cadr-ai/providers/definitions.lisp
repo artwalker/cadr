@@ -734,7 +734,7 @@
      :protocols (:openai-completions)
      :base-url "https://api.together.ai/v1"
      :auth-types (:api-key)
-     :default-model "moonshotai/Kimi-K2.6"
+     :default-model "moonshotai/Kimi-K3"
      :key-environment "TOGETHER_API_KEY"
      :required-environment nil
      :dynamic-models-p nil

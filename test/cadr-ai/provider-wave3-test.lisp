@@ -13,45 +13,46 @@
            '(("PI_CACHE_RETENTION" . "long"))))))
 
 (defparameter *baseline-provider-counts*
-  '((:amazon-bedrock . 121)
+  '((:amazon-bedrock . 193)
     (:ant-ling . 3)
-    (:anthropic . 14)
+    (:anthropic . 17)
     (:azure . 43)
-    (:baseten . 20)
+    (:baseten . 14)
     (:cerebras . 2)
-    (:cloudflare-ai-gateway . 50)
-    (:cloudflare-workers-ai . 18)
-    (:deepseek . 3)
-    (:fireworks . 20)
-    (:github-copilot . 32)
-    (:google . 22)
+    (:cloudflare-ai-gateway . 58)
+    (:cloudflare-workers-ai . 19)
+    (:deepseek . 2)
+    (:fireworks . 24)
+    (:github-copilot . 26)
+    (:google . 24)
     (:google-vertex . 14)
     (:groq . 7)
-    (:huggingface . 71)
+    (:huggingface . 80)
     (:kimi-coding . 4)
+    (:meta . 6)
     (:minimax . 4)
     (:minimax-cn . 4)
-    (:mistral . 32)
-    (:moonshotai . 10)
-    (:moonshotai-cn . 10)
+    (:mistral . 37)
+    (:moonshotai . 4)
+    (:moonshotai-cn . 4)
     (:nvidia . 21)
     (:openai . 42)
-    (:openai-codex . 9)
-    (:opencode . 68)
-    (:opencode-go . 27)
-    (:openrouter . 366)
-    (:qwen-token-plan . 18)
-    (:qwen-token-plan-cn . 18)
+    (:openai-codex . 7)
+    (:opencode . 83)
+    (:opencode-go . 29)
+    (:openrouter . 401)
+    (:qwen-token-plan . 21)
+    (:qwen-token-plan-cn . 21)
     (:qwen-token-plan-individual . 9)
-    (:together . 21)
-    (:vercel-ai-gateway . 237)
-    (:xai . 3)
+    (:together . 15)
+    (:vercel-ai-gateway . 305)
+    (:xai . 4)
     (:xiaomi . 3)
     (:xiaomi-token-plan-ams . 2)
     (:xiaomi-token-plan-cn . 2)
     (:xiaomi-token-plan-sgp . 2)
     (:zai . 7)
-    (:zai-coding-cn . 10)))
+    (:zai-coding-cn . 4)))
 
 (test wave3-provider-registry-is-baseline-exact
   (is
@@ -73,7 +74,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1369 (length (cadr-ai:list-model-metadata))))
+  (is (= 1567 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
@@ -103,7 +104,7 @@
        (is (eq ,provider (cadr-ai:model-provider model))))))
 
 (define-wave3-route-test cloudflare-routes-anthropic-models
-  :cloudflare-ai-gateway "claude-haiku-4.5"
+  :cloudflare-ai-gateway "claude-haiku-4-5"
   :anthropic-messages cadr-ai:anthropic-provider)
 (define-wave3-route-test cloudflare-routes-completions-models
   :cloudflare-ai-gateway "workers-ai/@cf/moonshotai/kimi-k2.6"
@@ -221,7 +222,7 @@
               (cadr-ai:make-context
                :messages (list (cadr-ai:make-user-message :content "hi")))
               :reasoning :max))))
-      (is (string= "high" (cadr-ai::json-get payload "reasoning_effort")))
+      (is (string= "max" (cadr-ai::json-get payload "reasoning_effort")))
       (is (string= "deepseek-v4-pro" (cadr-ai::json-get payload "model")))))
   (let* ((provider
            (cadr-ai:make-azure-openai-provider
@@ -544,7 +545,7 @@ region = eu-central-1")))
            (usage (cadr-ai:assistant-message-usage message)))
       (is (= 1000000 (cadr-ai:usage-cache-write usage)))
       (is (= 400000 (cadr-ai:usage-cache-write-1h usage)))
-      (is (< (abs (- 7.75d0
+      (is (< (abs (- 8.525d0
                      (cadr-ai:cost-cache-write
                       (cadr-ai:usage-cost usage))))
              1d-6)))))

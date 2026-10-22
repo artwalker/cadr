@@ -28,7 +28,7 @@
            (cadr-ai:models-runtime-model
             runtime :radius "balanced")))
     (is (> (length models) 0))
-    (is (= 27 (length models)))
+    (is (= 32 (length models)))
     (is (not (null balanced)))
     (is (string= "balanced" (cadr-ai:model-id balanced)))
     (is (eq :radius (cadr-ai:model-provider balanced)))

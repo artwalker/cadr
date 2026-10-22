@@ -141,7 +141,7 @@
          (models (getf parts :models-function))
          (refresh (getf parts :refresh-context-function))
          (body
-           "{\"data\":[{\"id\":\"anthropic/claude-3-haiku\",
+           "{\"data\":[{\"id\":\"deepseek/deepseek-r1-0528\",
                         \"context_length\":1000000,
                         \"top_provider\":{\"context_length\":262144,
                                           \"max_completion_tokens\":32768},
@@ -179,14 +179,14 @@
            (is (= 15 seen-read))
            (let ((listed (funcall models)))
              (is (= 1 (length listed)))
-             (is (string= "anthropic/claude-3-haiku"
+             (is (string= "deepseek/deepseek-r1-0528"
                           (cadr-ai::model-id (first listed))))
              (is (= 262144
                     (cadr-ai::model-context-window (first listed))))
              (is (= 32768 (cadr-ai::model-max-tokens (first listed)))))
-           (let ((metadata
+             (let ((metadata
                    (cadr-ai::find-model-metadata
-                    :openrouter "anthropic/claude-3-haiku")))
+                    :openrouter "deepseek/deepseek-r1-0528")))
              (is (= 3d0 (cadr-ai::model-metadata-input-price metadata)))
              (is (= 0d0
                     (cadr-ai::model-metadata-cache-read-price
@@ -219,10 +219,10 @@
              :allow-network-p t))
            (is (= (length baseline) (length (funcall models))))
            (is (null stored))
-           (is (= 0.03d0
+           (is (= 0.35d0
                   (cadr-ai::model-metadata-cache-read-price
                    (cadr-ai::find-model-metadata
-                    :openrouter "anthropic/claude-3-haiku"))))
+                    :openrouter "deepseek/deepseek-r1-0528"))))
            (let ((calls-before calls))
              (funcall
               refresh

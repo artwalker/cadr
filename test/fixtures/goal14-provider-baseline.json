@@ -973,7 +973,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "moonshotai/Kimi-K2.6",
+      "defaultModel": "moonshotai/Kimi-K3",
       "keyEnvironment": "TOGETHER_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,

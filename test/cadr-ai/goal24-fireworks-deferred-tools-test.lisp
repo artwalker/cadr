@@ -48,23 +48,31 @@
      "{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\"}},\"required\":[\"key\"]}"))))
 
 (defparameter *goal24-fireworks-deferred-ids*
-  '("accounts/fireworks/models/deepseek-v4-flash-0731"
-    "accounts/fireworks/models/qwen3p8-max"
-    "accounts/fireworks/models/kimi-k2p6"))
+  '("accounts/fireworks/models/qwen3p8-max"))
 
 (defparameter *goal24-fireworks-loader-names*
   '("ToolSearch" "tool_search" "discover_tools"))
 
-(test goal24-fireworks-catalog-stamps-tool-references
+(test goal24-fireworks-catalog-does-not-stamp-tool-references
+  ;; pi-ai@1.4.0 publishes no supportsToolReferences on Fireworks chat models.
+  (signals cadr-ai:configuration-error
+    (cadr-ai:find-model-metadata
+     :fireworks "accounts/fireworks/models/deepseek-v4-flash-0731"))
+  (signals cadr-ai:configuration-error
+    (cadr-ai:find-model-metadata
+     :fireworks "accounts/fireworks/models/kimi-k2p6"))
   (dolist (id *goal24-fireworks-deferred-ids*)
     (let ((model (goal24-fireworks-catalog-model id)))
-      (is (eq t
-              (getf (cadr-ai::model-compat model)
-                    :supports-tool-references))))))
+      (is (null
+           (getf (cadr-ai::model-compat model)
+                 :supports-tool-references))))))
 
 (test goal24-fireworks-deferred-tools-serialize-discovery
   (dolist (id *goal24-fireworks-deferred-ids*)
     (let ((model (goal24-fireworks-catalog-model id)))
+      (setf (cadr-ai::model-compat model)
+            (list* :supports-tool-references t
+                   (cadr-ai::model-compat model)))
       (dolist (loader-name *goal24-fireworks-loader-names*)
         (let* ((payload
                  (request-spec-payload

@@ -9,13 +9,13 @@
      "https://api.minimaxi.com/anthropic")))
 
 (defparameter *minimax-m31-flash-thinking-map*
-  '((:off)
-    (:minimal)
+  '((:high . "high")
     (:low . "low")
+    (:max . "max")
     (:medium . "medium")
-    (:high . "high")
-    (:xhigh . "xhigh")
-    (:max . "max")))
+    (:minimal)
+    (:off)
+    (:xhigh . "xhigh")))
 
 (defparameter *minimax-m31-flash-efforts*
   '((:low . "low")

@@ -13806,19 +13806,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **319 files / 155,897 lines**
+Denominator: **319 files / 162,944 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 244 | 120,037 | 77.0% | `no worse than baseline` is falsifiable |
-| `unpairable` | 26 | 9,297 | 6.0% | single reference vs previous cadr |
-| `covered-as-callee` | 41 | 22,983 | 14.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 8 | 3,580 | 2.3% | must get an H pair; not a file-level idle bench |
+| `paired` | 244 | 120,055 | 73.7% | `no worse than baseline` is falsifiable |
+| `unpairable` | 26 | 9,297 | 5.7% | single reference vs previous cadr |
+| `covered-as-callee` | 41 | 29,875 | 18.3% | on a named paired thunk; no own bench |
+| `needs-pair` | 8 | 3,717 | 2.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 77.0% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 83.0% of lines.
+- **Falsifiable vs baseline:** 73.7% of lines (244 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 79.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -13896,7 +13896,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
 | `src/cadr-ai/images.lisp` | 229 | `image_runtime.output_modalities`, `image_runtime.openrouter_content`, `image_runtime.parse_data_image`, `image_runtime.openrouter_usage`, `image_runtime.parse_openrouter_images`, `image_runtime.error_result` |
 | `src/cadr-ai/json.lisp` | 2,034 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
-| `src/cadr-ai/model-data.lisp` | 431 | `ai_crypto_model_data.manifest` |
+| `src/cadr-ai/model-data.lisp` | 449 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/callback.lisp` | 357 | `oauth_pkce_device.hex_value`, `oauth_pkce_device.http_status_text`, `oauth_pkce_device.parse_authorization_input`, `oauth_pkce_device.parse_callback_request`, `oauth_pkce_device.parse_query`, `oauth_pkce_device.percent_decode`, `oauth_pkce_device.present_auth_url`, `oauth_pkce_device.provider_key`, `oauth_pkce_device.write_http_response` |
 | `src/cadr-ai/oauth/openai-anthropic.lisp` | 351 | `oauth_pkce_device.base64url_value`, `oauth_pkce_device.base64url_decode`, `oauth_pkce_device.account_id`, `oauth_pkce_device.token_fields`, `oauth_pkce_device.openai_exchange`, `oauth_pkce_device.anthropic_exchange` |
 | `src/cadr-ai/oauth/pkce.lisp` | 334 | `oauth_pkce.challenge_urls` |
@@ -14108,8 +14108,8 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-agent/tool-search.lisp` | 461 | `agent_tool_loop.roundtrip`, `agent_tool_loop.runtime` |
 | `src/cadr-agent/virtual-models.lisp` | 432 | `agent_tool_loop.roundtrip`, `agent_tool_loop.runtime` |
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/models.generated.lisp` | 10,078 | `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/models.lisp` | 921 | `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/models.generated.lisp` | 16,974 | `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/models.lisp` | 917 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/package.lisp` | 567 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 826 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/attribution.lisp` | 10 | `provider_stream.stream_roundtrip` |
@@ -14155,7 +14155,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_support` | 2 | 1,200 |
 | `cli_cache_warmer` | 1 | 845 |
 | `ai_classifiers` | 1 | 626 |
-| `ai_radius_catalog` | 2 | 351 |
+| `ai_radius_catalog` | 2 | 488 |
 | `ai_transcript_replay` | 1 | 307 |
 | `ai_client_identity` | 1 | 251 |
 

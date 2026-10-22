@@ -10,7 +10,7 @@
             (uiop:read-file-string
              (merge-pathnames ".manifest.json" directory)
              :external-format :utf-8))))
-    (is (= 39 (hash-table-count structure)))
+    (is (= 42 (hash-table-count structure)))
     (is (string=
          (cadr-ai::json-get manifest "structureHash")
          (cadr-ai::model-data-structure-hash structure)))
@@ -38,6 +38,28 @@
              (cadr-ai::validate-model-data-directory structure temporary)))
       (uiop:delete-directory-tree temporary :validate t :if-does-not-exist :ignore))))
 
+(test goal26-published-catalog-drops-retired-ids-and-prices-glm-4-6v
+  ;; Locked to @earendil-works/pi-ai@1.4.0
+  ;; sha256 b40e2ba8bb6fc332908f8b96e837dc2d1fdfb45eb9cd382f5aed111462981e3c
+  ;; chat rows in dist/providers/data.
+  (dolist (entry
+           '((:baseten "moonshotai/Kimi-K2.6")
+             (:together "MiniMaxAI/MiniMax-M2.7")
+             (:github-copilot "claude-opus-4.7")
+             (:github-copilot "gpt-5.4")
+             (:github-copilot "gpt-5.5")
+             (:openrouter "deepseek/deepseek-r1")))
+    (signals cadr-ai:configuration-error
+      (cadr-ai:find-model-metadata (first entry) (second entry))))
+  (is (cadr-ai:find-model-metadata
+       :vercel-ai-gateway "deepseek/deepseek-r1"))
+  (let ((model
+          (cadr-ai:find-model-metadata :zai-coding-cn "glm-4.6v")))
+    (is (not (null model)))
+    (is (= 0.05d0 (cadr-ai:model-metadata-cache-read-price model)))
+    (is (= 0.3d0 (cadr-ai:model-metadata-input-price model)))
+    (is (= 0.9d0 (cadr-ai:model-metadata-output-price model)))))
+
 (test goal12-models-dev-effort-options-map-only-supported-thinking-levels
   (is (equal
        '((:off . "none") (:minimal) (:low . "low") (:medium)
@@ -48,7 +70,7 @@
   (is (null
        (cadr-ai::models-dev-effort-thinking-level-map
         '((:type :budget-tokens :min 128 :max 8192)))))
-  (is (string= "2026-09-05T11:58:56.761Z"
+  (is (string= "2026-10-21T22:33:24.994Z"
                (cadr-ai::get-builtin-model-data-generated-at))))
 
 (test g22-openrouter-thinking-level-map-matches-effort-and-mandatory
