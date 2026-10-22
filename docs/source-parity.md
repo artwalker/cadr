@@ -1,6 +1,6 @@
 # Source parity ledger
 
-<!-- GOAL12_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 source=686/514/169/3 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 source=686/515/168/3 examples=99/99/0 -->
 
 ## 0. Resolved defect: 108 stale cadr-side mappings (advisor, 2026-08-13; healed 2026-08-16)
 
@@ -148,7 +148,7 @@ will be routed with this rule.)
 
 | Package | Files | implemented | intentional difference | missing |
 |---|---:|---:|---:|---:|
-| `ai` | 192 | 160 | 32 | 0 |
+| `ai` | 192 | 161 | 31 | 0 |
 | `coding-agent` | 316 | 266 | 47 | 3 |
 | `agent` | 56 | 27 | 29 | 0 |
 | `tui` | 47 | 40 | 7 | 0 |
@@ -158,9 +158,9 @@ will be routed with this rule.)
 | `protocol` | 9 | 8 | 1 | 0 |
 | `client` | 12 | 0 | 12 | 0 |
 | `telemetry` | 6 | 0 | 6 | 0 |
-| **Total** | **686** | **514** | **169** | **3** |
+| **Total** | **686** | **515** | **168** | **3** |
 
-All 686 baseline source files have a disposition: 514 implemented, 169 intentional difference,
+All 686 baseline source files have a disposition: 515 implemented, 168 intentional difference,
 3 missing.
 All 99 fixed-baseline examples have functionally equivalent Lisp sources and
 behavior tests. Parts C1–C5 closed all 19 reusable TUI composition rows, both Apple
@@ -295,7 +295,7 @@ against the 670 reason rows (development-policy section 5.4).
 | `packages/ai/src/auth/types.ts` | ModelAuth; ApiKeyCredential; OAuthCredentials; OAuthCredential; Credential; CredentialInfo; CredentialStore; AuthContext; AuthResult; AuthCheck; AuthType; AuthPrompt; AuthInfoLink; AuthEvent; AuthInteraction; ApiKeyAuth; OAuthAuth; ProviderAuth | Public credential/auth/store/interaction types | src/cadr-ai/auth.lisp:6 credentials; src/cadr-ai/runtime/models.lisp:8 store, :76 interaction, :176 runtime/provider auth contract, :546 generic OAuth login | `implemented` | Baseline `packages/ai/src/auth/types.ts:1-220`. Native structures/functions cover credential metadata, store mutation, prompts/events/info links, auth checks and provider-owned API-key/OAuth login/refresh. |
 | `packages/ai/src/bedrock-provider.ts` | bedrockProviderModule | Bedrock provider module for optional runtime registration | src/cadr-ai/provider.lisp:34 bedrock-provider; src/cadr-ai/providers/definitions.lisp:31 amazon-bedrock row; src/cadr-ai/providers/registry.lisp:67 instantiate-provider | `implemented` | Baseline `packages/ai/src/bedrock-provider.ts:1-6`. Bedrock is a built-in native provider rather than an optional JS module. |
 | `packages/ai/src/bun-oauth.ts` | registerBunOAuthFlows | Bun-specific OAuth flow registration shim | cadr-ai.asd:6 ASDF serial image; src/cadr-ai/package.lisp:1 cadr-ai package | `intentional difference` | Baseline `packages/ai/src/bun-oauth.ts:1-21`. SBCL/ASDF has no Bun runtime split; OAuth flows are loaded through the native image. |
-| `packages/ai/src/cli.ts` | [module-private/CLI: prompt, loadAuth, saveAuth, answerPrompt, login, main] | Standalone pi-ai authentication CLI | src/cadr-cli/bootstrap/main.lisp:224 main; src/cadr-cli/models/auth-storage.lisp:203 auth-storage-modify | `intentional difference` | Baseline `packages/ai/src/cli.ts:1-118`. The same login/logout credential functionality is merged into cadr CLI instead of a separate npm binary. |
+| `packages/ai/src/cli.ts` | [module-private/CLI: prompt, loadAuth, saveAuth, answerPrompt, login, main] | Standalone pi-ai authentication CLI | src/cadr-cli/models/credential-print.lisp:1116 run-ai-cli; src/cadr-cli/bootstrap/main.lisp:263 maybe-run-ai-command | `implemented` | Baseline `packages/ai/src/cli.ts:1-118`. `cadr ai` (and an argv0 named cadr-ai) prints the OAuth-provider help and list, logs in, and writes ./auth.json. Locked by `test/cadr-cli/ai-cli-test.lisp`. |
 | `packages/ai/src/compat.ts` | * from ./api/anthropic-messages.lazy.ts; * from ./api/azure-openai-responses.lazy.ts; * from ./api/bedrock-converse-stream.lazy.ts; * from ./api/google-generative-ai.lazy.ts; * from ./api/google-vertex.lazy.ts; * from ./api/mistral-conversations.lazy.ts; * from ./api/openai-codex-responses.lazy.ts; * from ./api/openai-completions.lazy.ts; * from ./api/openai-responses.lazy.ts; * from ./api/pi-messages.lazy.ts; * from ./env-api-keys.ts; * from ./image-models.ts; * from ./images.ts; * from ./images-api-registry.ts; * from ./index.ts; * from ./legacy-api-aliases.ts; * from ./providers/images/register-builtins.ts; BuiltinProvider from ./providers/all.ts; getModel; getModels; getProviders; ApiStreamFunction; ApiStreamSimpleFunction; ApiProvider; registerApiProvider; getApiProvider; getApiProviders; unregisterApiProviders; registerFauxProvider; registerBuiltInApiProviders; resetApiProviders; stream; complete; streamSimple; completeSimple | Legacy aggregate SDK API/provider registry and stream/complete entrypoints | cadr-ai.asd:6 ASDF serial image; src/cadr-ai/package.lisp:1 cadr-ai package; src/cadr-ai/providers/definitions.lisp:991 register-provider-definition; src/cadr-ai/providers/registry.lisp:67 instantiate-provider; src/cadr-ai/provider.lisp:120 build-request; src/cadr-ai/provider.lisp:633 complete-chat; src/cadr-ai/provider.lisp:700 stream-chat | `intentional difference` | Baseline `packages/ai/src/compat.ts:1-298`. The CADR-AI package and generic functions replace the JavaScript compatibility barrel/registry shape. |
 | `packages/ai/src/compat/extension-oauth-types.ts` | OAuthPrompt; OAuthAuthInfo; OAuthDeviceCodeInfo; OAuthSelectOption; OAuthSelectPrompt; OAuthLoginCallbacks; OAuthCredentials | Legacy extension OAuth callback/prompt type surface | src/cadr-agent/extensions/context.lisp:72 extension-context; src/cadr-ai/runtime/models.lisp:91 runtime-auth-interaction | `intentional difference` | Baseline `packages/ai/src/compat/extension-oauth-types.ts:1-45`. Lisp extension contexts use callable UI/auth slots instead of TypeScript structural callback types. |
 | `packages/ai/src/env-api-keys.ts` | ANTHROPIC_AUTH_TOKEN_ENV; ANTHROPIC_OAUTH_TOKEN_ENV; ANTHROPIC_API_KEY_ENV; findEnvKeys; findEnvKeys; findEnvKeys; getEnvApiKey; getEnvApiKey; getEnvApiKey | Resolve provider API keys from canonical environment variables | src/cadr-ai/providers/runtime-projection.lisp:3 ambient-provider-environment, :46 built-in-api-key-auth | `implemented` | Baseline `packages/ai/src/env-api-keys.ts:1-186`. Provider definitions carry environment-key names and resolve them at runtime. |

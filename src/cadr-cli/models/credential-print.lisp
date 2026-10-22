@@ -5,6 +5,10 @@
 ;;; command surface covers print-api-key, print-bearer-token, and the
 ;;; auth check subcommand; upstream renamed CredentialPrintError to
 ;;; AuthCommandError.
+;;;
+;;; packages/ai/src/cli.ts (v1.4.0) is the separate library CLI:
+;;; help, list, and login for providers that have OAuth, writing
+;;; ./auth.json.  cadr exposes that as `cadr ai`.
 
 (define-condition auth-command-error (error)
   ((message :initarg :message
@@ -611,3 +615,554 @@
            (:ready 0)
            (:not-ready 1)
            (t 2)))))))
+
+(define-condition ai-cli-error (error)
+  ((message :initarg :message :reader ai-cli-error-message))
+  (:report (lambda (condition stream)
+             (write-string (ai-cli-error-message condition) stream))))
+
+(defparameter +ai-cli-reserved-credential-keys+
+  '("type" "access" "refresh" "expires" "accountId"))
+
+(defun ai-cli-condition-message (condition)
+  (cond
+    ((typep condition 'ai-cli-error)
+     (ai-cli-error-message condition))
+    ((typep condition 'cadr-ai:cadr-error)
+     (cadr-ai:cadr-error-message condition))
+    (t (princ-to-string condition))))
+
+(defun ai-cli-oauth-providers ()
+  ;; v1.4.0 packages/ai/src/providers/all.ts builtinProviders(),
+  ;; filtered to auth.oauth.  Row order is that construction order.
+  ;; openai-codex's provider name at that tag is the legacy label.
+  (loop for row in cadr-ai::*built-in-provider-definition-rows*
+        for id = (getf row :id)
+        when (getf row :oauth-login-strategy)
+          collect (cons (string-downcase (symbol-name id))
+                        (if (eq id :openai-codex)
+                            "OpenAI Codex (legacy)"
+                            (getf row :name)))))
+
+(defun ai-cli-provider-lines ()
+  (loop for (id . name) in (ai-cli-oauth-providers)
+        collect (format nil "~A ~A" (cli-pad-right id 20) name)))
+
+(defun ai-cli-usage-text ()
+  (with-output-to-string (stream)
+    (write-string "Usage: cadr ai <command> [provider]" stream)
+    (terpri stream)
+    (terpri stream)
+    (write-string "Commands:" stream)
+    (terpri stream)
+    (write-string
+     "  login [provider]  Login to an OAuth provider" stream)
+    (terpri stream)
+    (write-string
+     "  list              List available providers" stream)
+    (terpri stream)
+    (terpri stream)
+    (write-string "Providers:" stream)
+    (dolist (line (ai-cli-provider-lines))
+      (terpri stream)
+      (write-string line stream))))
+
+(defun ai-cli-parse-int (text)
+  ;; Number.parseInt(text, 10): leading whitespace, optional sign,
+  ;; then digits.  Junk after the digits is ignored.  No digit is NIL.
+  (let ((index 0)
+        (length (length text))
+        (sign 1)
+        (digits nil))
+    (loop while (and (< index length)
+                     (member (char text index)
+                             '(#\Space #\Tab #\Newline #\Return
+                               #\Page #\Vt)))
+          do (incf index))
+    (when (< index length)
+      (case (char text index)
+        (#\+ (incf index))
+        (#\- (setf sign -1) (incf index))))
+    (loop while (and (< index length)
+                     (digit-char-p (char text index)))
+          do (push (digit-char-p (char text index)) digits)
+             (incf index))
+    (when digits
+      (* sign
+         (reduce (lambda (accumulator digit)
+                   (+ (* accumulator 10) digit))
+                 (nreverse digits))))))
+
+(defun ai-cli-read-answer (input output question)
+  (write-string question output)
+  (finish-output output)
+  (or (read-line input nil nil) ""))
+
+(defun ai-cli-answer-prompt (input output prompt)
+  (if (eq (getf prompt :type) :select)
+      (let* ((options (getf prompt :options))
+             (count (length options)))
+        (format output "~%~A~%" (getf prompt :message))
+        (loop for option in options
+              for index from 1
+              do (format output "  ~D. ~A~%"
+                         index (getf option :label)))
+        (let ((choice
+                (ai-cli-parse-int
+                 (ai-cli-read-answer
+                  input output
+                  (format nil "Enter number (1-~D): " count)))))
+          (unless (and choice (<= 1 choice count))
+            (error 'ai-cli-error :message "Invalid selection"))
+          (getf (nth (1- choice) options) :id)))
+      (let ((placeholder (getf prompt :placeholder)))
+        (ai-cli-read-answer
+         input output
+         (format nil "~A~A: "
+                 (getf prompt :message)
+                 (if (and (stringp placeholder)
+                          (plusp (length placeholder)))
+                     (format nil " (~A)" placeholder)
+                     ""))))))
+
+(defun ai-cli-notify (output event)
+  (case (getf event :type)
+    (:auth-url
+     (format output "~%Open this URL in your browser:~%~A~%"
+             (getf event :url))
+     (let ((instructions (getf event :instructions)))
+       (when (and (stringp instructions)
+                  (plusp (length instructions)))
+         (format output "~A~%" instructions))))
+    (:device-code
+     (format output "~%Open this URL in your browser:~%~A~%"
+             (getf event :verification-uri))
+     (format output "Enter code: ~A~%" (getf event :user-code)))
+    ((:info :progress)
+     (format output "~A~%" (getf event :message))))
+  (finish-output output))
+
+(defun ai-cli-random-uuid ()
+  ;; crypto.randomUUID: version 4, variant 8/9/a/b, lowercase.
+  (let ((bytes (cadr-ai::default-random-octets 16)))
+    (setf (aref bytes 6)
+          (logior #x40 (logand (aref bytes 6) #x0f))
+          (aref bytes 8)
+          (logior #x80 (logand (aref bytes 8) #x3f)))
+    (let ((hex (cadr-ai::octets-hex bytes)))
+      (format nil "~A-~A-~A-~A-~A"
+              (subseq hex 0 8)
+              (subseq hex 8 12)
+              (subseq hex 12 16)
+              (subseq hex 16 20)
+              (subseq hex 20 32)))))
+
+(defun ai-cli-json-from-lisp (value)
+  (cond
+    ((stringp value) value)
+    ((integerp value) value)
+    ((eq value t) :true)
+    ((eq value nil) :false)
+    ((eq value 'null) :null)
+    ((and (consp value) (eq (car value) :object)) value)
+    ((vectorp value)
+     (map 'vector #'ai-cli-json-from-lisp value))
+    ((consp value)
+     (if (and (consp (car value)) (stringp (caar value)))
+         (cons :object
+               (loop for pair in value
+                     collect (cons (car pair)
+                                   (ai-cli-json-from-lisp (cdr pair)))))
+         (map 'vector #'ai-cli-json-from-lisp value)))
+    ((floatp value) value)
+    (t (error 'ai-cli-error
+              :message "Login returned an invalid credential"))))
+
+(defun ai-cli-credential-object (credential)
+  (unless (typep credential 'cadr-ai:oauth-credential)
+    (error 'ai-cli-error
+           :message "Login returned an invalid credential"))
+  (cons :object
+        (append
+         (list (cons "type" "oauth")
+               (cons "access"
+                     (cadr-ai:oauth-credential-access credential))
+               (cons "refresh"
+                     (cadr-ai:oauth-credential-refresh credential))
+               (cons "expires"
+                     (cadr-ai:oauth-credential-expires credential)))
+         (when (cadr-ai:oauth-credential-account-id credential)
+           (list (cons "accountId"
+                       (cadr-ai:oauth-credential-account-id
+                        credential))))
+         (loop for entry in (cadr-ai:oauth-credential-metadata
+                             credential)
+               for key = (car entry)
+               unless (member key +ai-cli-reserved-credential-keys+
+                              :test #'string=)
+                 collect (cons key
+                               (ai-cli-json-from-lisp (cdr entry)))))))
+
+(defun ai-cli-write-json (value stream level)
+  (cond
+    ((and (consp value) (eq (car value) :object))
+     (let ((pairs (cdr value)))
+       (if (null pairs)
+           (write-string "{}" stream)
+           (let ((pad (make-string (* 2 (1+ level))
+                                   :initial-element #\Space))
+                 (end (make-string (* 2 level)
+                                   :initial-element #\Space)))
+             (write-char #\{ stream)
+             (loop for pair in pairs
+                   for first-p = t then nil
+                   do (unless first-p
+                        (write-char #\, stream))
+                      (terpri stream)
+                      (write-string pad stream)
+                      (cadr-ai::write-json-string (car pair) stream)
+                      (write-string ": " stream)
+                      (ai-cli-write-json (cdr pair) stream (1+ level)))
+             (terpri stream)
+             (write-string end stream)
+             (write-char #\} stream)))))
+    ((stringp value)
+     (cadr-ai::write-json-string value stream))
+    ((vectorp value)
+     (if (zerop (length value))
+         (write-string "[]" stream)
+         (let ((pad (make-string (* 2 (1+ level))
+                                 :initial-element #\Space))
+               (end (make-string (* 2 level)
+                                 :initial-element #\Space)))
+           (write-char #\[ stream)
+           (loop for item across value
+                 for first-p = t then nil
+                 do (unless first-p
+                      (write-char #\, stream))
+                    (terpri stream)
+                    (write-string pad stream)
+                    (ai-cli-write-json item stream (1+ level)))
+           (terpri stream)
+           (write-string end stream)
+           (write-char #\] stream))))
+    ((integerp value) (princ value stream))
+    ((eq value :true) (write-string "true" stream))
+    ((eq value :false) (write-string "false" stream))
+    ((eq value :null) (write-string "null" stream))
+    ((floatp value) (cadr-ai::write-json-value value stream))
+    (t (error 'ai-cli-error
+              :message "Login returned an invalid credential"))))
+
+(defun ai-cli-stringify-json (value)
+  (with-output-to-string (stream)
+    (ai-cli-write-json value stream 0)))
+
+(defun ai-cli-parse-json (text)
+  (let ((index 0)
+        (length (length text)))
+    (labels
+        ((peek ()
+           (and (< index length) (char text index)))
+         (take ()
+           (prog1 (char text index) (incf index)))
+         (skip ()
+           (loop while (member (peek)
+                               '(#\Space #\Tab #\Newline #\Return
+                                 #\Page #\Vt))
+                 do (incf index)))
+         (fail ()
+           (error 'ai-cli-error :message "Invalid auth.json"))
+         (parse-string ()
+           (unless (eql (take) #\")
+             (fail))
+           (with-output-to-string (out)
+             (loop
+               (when (>= index length) (fail))
+               (let ((character (take)))
+                 (cond
+                   ((char= character #\") (return))
+                   ((char= character #\\)
+                    (when (>= index length) (fail))
+                    (let ((escaped (take)))
+                      (case escaped
+                        (#\" (write-char #\" out))
+                        (#\\ (write-char #\\ out))
+                        (#\/ (write-char #\/ out))
+                        (#\b (write-char #\Backspace out))
+                        (#\f (write-char #\Page out))
+                        (#\n (write-char #\Newline out))
+                        (#\r (write-char #\Return out))
+                        (#\t (write-char #\Tab out))
+                        (#\u
+                         (when (> (+ index 4) length) (fail))
+                         (let ((code 0))
+                           (dotimes (offset 4)
+                             (let ((digit
+                                     (digit-char-p
+                                      (char text (+ index offset))
+                                      16)))
+                               (unless digit (fail))
+                               (setf code (+ (* code 16) digit))))
+                           (incf index 4)
+                           (write-char (code-char code) out)))
+                        (t (fail)))))
+                   (t (write-char character out)))))))
+         (parse-number ()
+           (let ((start index))
+             (when (eql (peek) #\-) (incf index))
+             (unless (digit-char-p (or (peek) #\a)) (fail))
+             (if (eql (peek) #\0)
+                 (incf index)
+                 (loop while (digit-char-p (or (peek) #\a))
+                       do (incf index)))
+             (when (eql (peek) #\.)
+               (incf index)
+               (unless (digit-char-p (or (peek) #\a)) (fail))
+               (loop while (digit-char-p (or (peek) #\a))
+                     do (incf index)))
+             (when (member (peek) '(#\e #\E))
+               (incf index)
+               (when (member (peek) '(#\+ #\-)) (incf index))
+               (unless (digit-char-p (or (peek) #\a)) (fail))
+               (loop while (digit-char-p (or (peek) #\a))
+                     do (incf index)))
+             (let ((token (subseq text start index)))
+               (if (find-if (lambda (character)
+                              (member character '(#\. #\e #\E)))
+                            token)
+                   (cadr-ai::parse-json token)
+                   (parse-integer token)))))
+         (parse-literal (literal value)
+           (let ((end (+ index (length literal))))
+             (unless (and (<= end length)
+                          (string= text literal
+                                   :start1 index :end1 end))
+               (fail))
+             (setf index end)
+             value))
+         (parse-value ()
+           (skip)
+           (case (peek)
+             (#\{ (parse-object))
+             (#\[ (parse-array))
+             (#\" (parse-string))
+             (#\t (parse-literal "true" :true))
+             (#\f (parse-literal "false" :false))
+             (#\n (parse-literal "null" :null))
+             ((#\- #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
+              (parse-number))
+             (t (fail))))
+         (parse-object ()
+           (take)
+           (skip)
+           (when (eql (peek) #\})
+             (take)
+             (return-from parse-object (list :object)))
+           (let ((pairs nil))
+             (loop
+               (skip)
+               (unless (eql (peek) #\") (fail))
+               (let ((key (parse-string)))
+                 (skip)
+                 (unless (eql (take) #\:) (fail))
+                 (push (cons key (parse-value)) pairs))
+               (skip)
+               (case (peek)
+                 (#\, (take))
+                 (#\} (take) (return))
+                 (t (fail))))
+             (cons :object (nreverse pairs))))
+         (parse-array ()
+           (take)
+           (skip)
+           (when (eql (peek) #\])
+             (take)
+             (return-from parse-array #()))
+           (let ((items nil))
+             (loop
+               (push (parse-value) items)
+               (skip)
+               (case (peek)
+                 (#\, (take))
+                 (#\] (take) (return))
+                 (t (fail))))
+             (coerce (nreverse items) 'vector))))
+      (let ((value (parse-value)))
+        (skip)
+        (when (< index length) (fail))
+        value))))
+
+(defun ai-cli-load-auth (path)
+  (if (not (probe-file path))
+      (list :object)
+      (handler-case
+          (let ((value
+                  (ai-cli-parse-json
+                   (uiop:read-file-string
+                    path :external-format :utf-8))))
+            (if (and (consp value) (eq (car value) :object))
+                value
+                (list :object)))
+        (error ()
+          (list :object)))))
+
+(defun ai-cli-object-put (object key value)
+  (let* ((found nil)
+         (pairs
+           (loop for pair in (cdr object)
+                 collect (if (string= (car pair) key)
+                             (progn (setf found t) (cons key value))
+                             pair))))
+    (unless found
+      (setf pairs (append pairs (list (cons key value)))))
+    (cons :object pairs)))
+
+(defun ai-cli-auth-path (directory)
+  (merge-pathnames
+   "auth.json"
+   (uiop:ensure-directory-pathname directory)))
+
+(defun ai-cli-save-auth (path object)
+  (cadr-core:atomic-write-string
+   path (ai-cli-stringify-json object) :mode #o600)
+  path)
+
+(defun ai-cli-provider-login (provider-id)
+  (cadr-ai::built-in-oauth-login-function
+   (cadr-ai:find-provider-definition
+    (intern (string-upcase provider-id) :keyword))
+   (cadr-ai::ambient-provider-environment)
+   cadr-ai::+default-radius-gateway+))
+
+(defun ai-cli-login (provider-id input output login-function)
+  (let ((entry (find provider-id (ai-cli-oauth-providers)
+                     :key #'car :test #'string=)))
+    (unless entry
+      (error 'ai-cli-error
+             :message (format nil "Unknown provider: ~A" provider-id)))
+    (let* ((interaction
+             (cadr-ai:make-runtime-auth-interaction
+              :prompt-function
+              (lambda (prompt)
+                (ai-cli-answer-prompt input output prompt))
+              :notify-function
+              (lambda (event) (ai-cli-notify output event))
+              :abort-p (constantly nil)))
+           (login (or login-function
+                      (ai-cli-provider-login provider-id)))
+           (credential
+             (let ((cadr-ai::*oauth-login-device-id*
+                     (ai-cli-random-uuid))
+                   (cadr-ai::*oauth-login-agent-name* nil))
+               (funcall login interaction))))
+      (ai-cli-credential-object credential))))
+
+(defun ai-cli-select-provider (input output)
+  (let* ((providers (ai-cli-oauth-providers))
+         (count (length providers)))
+    (loop for (id . name) in providers
+          for index from 1
+          do (format output "  ~D. ~A~%" index name))
+    (let ((choice
+            (ai-cli-parse-int
+             (ai-cli-read-answer
+              input output
+              (format nil "Enter number (1-~D): " count)))))
+      (when (and choice (<= 1 choice count))
+        (car (nth (1- choice) providers))))))
+
+(defun ai-cli-main (arguments &key input output directory login-function)
+  (let ((command (first arguments)))
+    (cond
+      ((or (null command)
+           (string= command "help")
+           (string= command "--help")
+           (string= command "-h"))
+       (write-line (ai-cli-usage-text) output)
+       (finish-output output)
+       0)
+      ((string= command "list")
+       (dolist (line (ai-cli-provider-lines))
+         (write-line line output))
+       (finish-output output)
+       0)
+      ((string= command "login")
+       (let ((provider-id (second arguments)))
+         (when (or (null provider-id) (string= provider-id ""))
+           (setf provider-id
+                 (ai-cli-select-provider input output)))
+         (unless (find provider-id (ai-cli-oauth-providers)
+                       :key #'car :test #'string=)
+           (error 'ai-cli-error
+                  :message
+                  (format nil "Unknown provider: ~A"
+                          (or provider-id ""))))
+         (let* ((path (ai-cli-auth-path directory))
+                (auth (ai-cli-load-auth path))
+                (credential
+                  (ai-cli-login
+                   provider-id input output login-function)))
+           (ai-cli-save-auth
+            path (ai-cli-object-put auth provider-id credential))
+           (format output "~%Credentials saved to auth.json~%")
+           (finish-output output)
+           0)))
+      (t
+       (error 'ai-cli-error
+              :message
+              (format nil "Unknown command: ~A" command))))))
+
+(defun run-ai-cli
+    (arguments
+     &key
+       (input *standard-input*)
+       (output *standard-output*)
+       (error *error-output*)
+       (directory (uiop:getcwd))
+       login-function)
+  (handler-case
+      (ai-cli-main arguments
+                   :input input
+                   :output output
+                   :directory directory
+                   :login-function login-function)
+    (error (condition)
+      (format error "Error: ~A~%"
+              (ai-cli-condition-message condition))
+      (finish-output error)
+      1)))
+
+(defun ai-cli-binary-p ()
+  (let* ((argv (ignore-errors (first sb-ext:*posix-argv*)))
+         (name (and (stringp argv) (file-namestring argv))))
+    (and name
+         (or (string= name "cadr-ai")
+             (string-equal name "cadr-ai.exe")))))
+
+(defun maybe-run-ai-command
+    (arguments
+     &key
+       (directory (uiop:getcwd))
+       (input *standard-input*)
+       (output *standard-output*)
+       (error *error-output*)
+       login-function)
+  (cond
+    ((ai-cli-binary-p)
+     (values t
+             (run-ai-cli arguments
+                         :input input
+                         :output output
+                         :error error
+                         :directory directory
+                         :login-function login-function)))
+    ((and arguments (string= (first arguments) "ai"))
+     (values t
+             (run-ai-cli (rest arguments)
+                         :input input
+                         :output output
+                         :error error
+                         :directory directory
+                         :login-function login-function)))
+    (t (values nil nil))))

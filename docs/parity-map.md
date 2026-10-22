@@ -112,7 +112,7 @@ Reference public surface:
 | Image input | implemented | [CL-AI-IMAGE](#cl-ai-image) |
 | Image generation / OpenRouter Images | implemented | Exact 63-model v1.4.0 snapshot and request/result/error behavior in [CL-AI-WAVE3](#cl-ai-wave3) |
 | Dynamic provider/faux-provider public runtime | implemented | [models runtime](../src/cadr-ai/runtime/models.lisp) covers provider mutation, credentials, refresh/filter/dispatch; [faux provider](../src/cadr-ai/runtime/faux-provider.lisp) owns the deterministic provider contract |
-| `pi-ai` CLI | implemented | The equivalent provider login/logout surface is integrated into cadr's `auth`/`/login` commands; separate npm-bin packaging is an approved Lisp build-ecosystem difference |
+| `pi-ai` CLI | implemented | `cadr ai` help, list, and login write ./auth.json for the OAuth providers, in v1.4.0 builtinProviders order. Locked by `test/cadr-cli/ai-cli-test.lisp` |
 
 #### Provider ledger
 

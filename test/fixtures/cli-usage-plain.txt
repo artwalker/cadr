@@ -12,7 +12,8 @@ Commands:
   cadr config [-l]               Open TUI to enable/disable package resources (Tab switches scope)
   cadr auth <command>            Print credentials or check provider readiness
   cadr mcp <command>             Check MCP servers, sign in to or out of OAuth servers
-  cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth/mcp
+  cadr ai <command>              List OAuth providers or log in (writes ./auth.json)
+  cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth/mcp/ai
 
 Options:
   --provider <name>              Provider to search for --model (requires --model)

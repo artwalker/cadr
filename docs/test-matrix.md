@@ -60,7 +60,7 @@ interrupt a stream mid-flight.
 Maps every `test/**/*.lisp` and `test/**/*.py` file to a theme.
 Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
-above are unchanged. Measured 2026-10-23: 206 listed files
+above are unchanged. Measured 2026-10-23: 207 listed files
 (`rg -c '^\|[^|]*\| \x60test/.*\.(lisp|py)\x60 \|$' docs/test-matrix.md`).
 
 ### cadr-core
@@ -189,6 +189,7 @@ above are unchanged. Measured 2026-10-23: 206 listed files
 
 | Theme | File |
 |---|---|
+| ai CLI | `test/cadr-cli/ai-cli-test.lisp` |
 | bash | `test/cadr-cli/bash-test.lisp` |
 | build | `test/cadr-cli/build-test.lisp` |
 | config auth | `test/cadr-cli/config-auth-test.lisp` |

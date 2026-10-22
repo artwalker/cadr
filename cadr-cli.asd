@@ -219,6 +219,7 @@
                              (:file "goal28-exit-and-auth-test")
                              (:file "goal28-cli-flags-test")
                              (:file "mcp-command-test")
+                             (:file "ai-cli-test")
                              (:file "goal28-slash-commands-test")
                              (:file "goal24-bug-report-test")
                              (:file "goal24-cache-warming-settings-test")

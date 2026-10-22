@@ -259,6 +259,10 @@
             (maybe-run-mcp-command argv)
           (when handled-p
             (return-from main status)))
+        (multiple-value-bind (handled-p status)
+            (maybe-run-ai-command argv)
+          (when handled-p
+            (return-from main status)))
         (let ((arguments
                 (parse-cli-arguments argv)))
           (dolist

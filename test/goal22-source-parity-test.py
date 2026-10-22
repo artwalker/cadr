@@ -91,12 +91,12 @@ class Goal22SourceParityTest(unittest.TestCase):
         text = LEDGER.read_text(encoding="utf-8")
         self.assertIn("sorted 686-path manifest", text)
         self.assertIn(MANIFEST_SHA, text)
-        self.assertIn("| **Total** | **686** | **514** | **169** | **3** |", text)
+        self.assertIn("| **Total** | **686** | **515** | **168** | **3** |", text)
         self.assertIn(
             "| `packages/ai/scripts/openrouter-reasoning-options.ts` |",
             text,
         )
-        self.assertIn("source=686/514/169/3", text)
+        self.assertIn("source=686/515/168/3", text)
 
     def test_ledger_only_gate_passes(self) -> None:
         proc = run(
