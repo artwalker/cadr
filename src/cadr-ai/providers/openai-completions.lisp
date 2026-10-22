@@ -298,7 +298,8 @@
            (let ((text
                    (content-text
                     (tool-result-message-content message))))
-             (if (non-empty-string-p text)
+             ;; pi@4a080252f openai-completions.ts #8720.
+             (if (javascript-trim-nonempty-p text)
                  text
                  (if (content-has-images-p
                       (tool-result-message-content message))

@@ -61,6 +61,66 @@
     :content
     (list (cadr-ai:make-text-content :text text)))))
 
+(defun responses-tool-output (payload)
+  (cadr-ai::json-get
+   (object-with-key (cadr-ai::json-get payload "input") "output")
+   "output"))
+
+(defun completions-tool-content (model-id messages)
+  (let ((encoded
+          (cadr-ai::openai-chat-messages
+           (cadr-ai:make-model
+            :id model-id
+            :provider :openai
+            :api :openai-completions
+            :base-url "https://api.openai.com"
+            :max-tokens 16)
+           (make-context :messages messages))))
+    (cadr-ai::json-get
+     (find-if
+      (lambda (message)
+        (string= "tool" (cadr-ai::json-get message "role")))
+      (coerce encoded 'list))
+     "content")))
+
+(defun google-function-responses (payload)
+  (loop for content across (cadr-ai::json-get payload "contents")
+        nconc
+        (loop for part across (cadr-ai::json-get content "parts")
+              when (cadr-ai::json-present-p part "functionResponse")
+                collect
+                (cadr-ai::json-get
+                 (cadr-ai::json-get part "functionResponse")
+                 "response"))))
+
+(defun image-capable-history-request (provider-name messages)
+  (multiple-value-bind (provider model)
+      (provider-case provider-name)
+    (setf (cadr-ai:model-supports-images-p model) t)
+    (build-request
+     provider
+     model
+     (make-context :messages messages)
+     :stream-p t
+     :max-tokens 4096)))
+
+(defun javascript-trim-only-samples ()
+  ;; pi@4a080252f hasText is textResult.trim().length > 0.
+  ;; Node String.prototype.trim on these code points is empty.
+  ;; U+200B is not WhiteSpace and stays visible text.
+  (list (string (code-char #x000B))
+        (string (code-char #x000C))
+        (string (code-char #x00A0))
+        (string (code-char #xFEFF))
+        (string (code-char #x2028))
+        (string (code-char #x2029))
+        (string (code-char #x1680))
+        (string (code-char #x3000))
+        (format nil "~C~C~C"
+                (code-char #x000B)
+                (code-char #x2003)
+                (code-char #x202F))))
+
 (test whitespace-only-tool-output-uses-the-empty-placeholder
   ;; pi@4a080252f #8720. A bare CR LF is not tool output.
   (dolist (text (list ""
@@ -115,6 +175,181 @@
               "response")))
       (is (string= ""
                    (cadr-ai::json-get response "output"))))))
+
+(test javascript-trim-whitespace-is-empty-tool-output
+  ;; pi@4a080252f google-shared.ts, openai-responses-shared.ts,
+  ;; openai-completions.ts. hasText is textResult.trim().length > 0.
+  (dolist (text (javascript-trim-only-samples))
+    (let ((history
+            (blank-tool-history
+             :openai-responses :openai "gpt-test" text)))
+      (is (string= "(no tool output)"
+                   (responses-tool-output
+                    (request-spec-payload
+                     (history-request :openai history)))))
+      (is (string= "(no tool output)"
+                   (completions-tool-content "gpt-test" history))))
+    (let* ((google
+             (request-spec-payload
+              (history-request
+               :google
+               (blank-tool-history
+                :google-generative-ai :google
+                "gemini-3.6-flash" text))))
+           (response (first (google-function-responses google))))
+      (is (= 1 (hash-table-count response)))
+      (is (string= "" (cadr-ai::json-get response "output"))))
+    (let* ((vertex
+             (request-spec-payload
+              (history-request
+               :vertex
+               (blank-tool-history
+                :google-vertex :google-vertex
+                "gemini-3.6-flash" text))))
+           (response (first (google-function-responses vertex))))
+      (is (= 1 (hash-table-count response)))
+      (is (string= "" (cadr-ai::json-get response "output")))))
+  (let* ((visible
+           (format nil "~Cbeta text~C"
+                   (code-char #x00A0)
+                   (code-char #x000B)))
+         (kept (string (code-char #x200B)))
+         (history
+           (blank-tool-history
+            :openai-responses :openai "gpt-test" visible)))
+    (is (string= visible
+                 (responses-tool-output
+                  (request-spec-payload
+                   (history-request :openai history)))))
+    (is (string= visible
+                 (completions-tool-content "gpt-test" history)))
+    (is (string= kept
+                 (responses-tool-output
+                  (request-spec-payload
+                   (history-request
+                    :openai
+                    (blank-tool-history
+                     :openai-responses :openai "gpt-test" kept))))))
+    (is (string= kept
+                 (completions-tool-content
+                  "gpt-test"
+                  (blank-tool-history
+                   :openai-completions :openai "gpt-test" kept))))
+    (dolist (provider-name '(:google :vertex))
+      (let* ((api (if (eq provider-name :google)
+                      :google-generative-ai
+                      :google-vertex))
+             (provider (if (eq provider-name :google)
+                           :google
+                           :google-vertex))
+             (response
+               (first
+                (google-function-responses
+                 (request-spec-payload
+                  (history-request
+                   provider-name
+                   (blank-tool-history
+                    api provider "gemini-3.6-flash" visible)))))))
+        (is (string= visible
+                     (cadr-ai::json-get response "output")))))))
+
+(test whitespace-only-image-tool-result-uses-attached-image-placeholder
+  ;; pi@4a080252f google-shared-image-tool-result-routing.test.ts
+  ;; "treats whitespace-only tool result text as no text".
+  ;; Success is output, failure is error, and the value is the same.
+  (let* ((space-newline (format nil " ~C" #\Newline))
+         (history
+           (list
+            (cadr-ai:make-user-message :content "read the files")
+            (cadr-ai:make-assistant-message
+             :api :google-generative-ai
+             :provider :google
+             :model "gemini-3-pro-preview"
+             :stop-reason :tool-use
+             :content
+             (list
+              (cadr-ai:make-tool-call
+               :id "call_a" :name "read"
+               :arguments (cadr-ai::json-object "path" "a.txt"))
+              (cadr-ai:make-tool-call
+               :id "call_img" :name "read"
+               :arguments (cadr-ai::json-object "path" "image.png"))
+              (cadr-ai:make-tool-call
+               :id "call_b" :name "read"
+               :arguments (cadr-ai::json-object "path" "b.txt"))))
+            (cadr-ai:make-tool-result-message
+             :tool-call-id "call_a" :tool-name "read"
+             :content
+             (list (cadr-ai:make-text-content
+                    :text (format nil "~C~C" #\Return #\Newline))))
+            (cadr-ai:make-tool-result-message
+             :tool-call-id "call_img" :tool-name "read"
+             :content
+             (list (cadr-ai:make-text-content :text space-newline)
+                   (cadr-ai:make-image-content
+                    :data "abc" :mime-type "image/png")))
+            (cadr-ai:make-tool-result-message
+             :tool-call-id "call_b" :tool-name "read"
+             :content
+             (list (cadr-ai:make-text-content :text "beta text")))))
+         (responses
+           (google-function-responses
+            (request-spec-payload
+             (image-capable-history-request :google history)))))
+    (is (= 3 (length responses)))
+    (is (string= "" (cadr-ai::json-get (first responses) "output")))
+    (is (string= "(see attached image)"
+                 (cadr-ai::json-get (second responses) "output")))
+    (is (string= "beta text"
+                 (cadr-ai::json-get (third responses) "output"))))
+  (let* ((history
+           (list
+            (cadr-ai:make-user-message :content "read the files")
+            (cadr-ai:make-assistant-message
+             :api :google-vertex
+             :provider :google-vertex
+             :model "gemini-3-pro-preview"
+             :stop-reason :tool-use
+             :content
+             (list
+              (cadr-ai:make-tool-call
+               :id "call_err" :name "read"
+               :arguments (cadr-ai::json-object "path" "image.png"))))
+            (cadr-ai:make-tool-result-message
+             :tool-call-id "call_err" :tool-name "read"
+             :is-error t
+             :content
+             (list (cadr-ai:make-text-content
+                    :text (string (code-char #x00A0)))
+                   (cadr-ai:make-image-content
+                    :data "abc" :mime-type "image/png")))))
+         (google
+           (first
+            (google-function-responses
+             (request-spec-payload
+              (image-capable-history-request :google history)))))
+         (vertex
+           (first
+            (google-function-responses
+             (request-spec-payload
+              (image-capable-history-request :vertex history))))))
+    (is (= 1 (hash-table-count google)))
+    (is (string= "(see attached image)"
+                 (cadr-ai::json-get google "error")))
+    (is (= 1 (hash-table-count vertex)))
+    (is (string= "(see attached image)"
+                 (cadr-ai::json-get vertex "error"))))
+  (let* ((text (string (code-char #x000C)))
+         (history
+           (blank-tool-history
+            :openai-completions :openai "gpt-test" text)))
+    (setf (cadr-ai:tool-result-message-content
+           (third history))
+          (list (cadr-ai:make-text-content :text text)
+                (cadr-ai:make-image-content
+                 :data "abc" :mime-type "image/png")))
+    (is (string= "(see attached image)"
+                 (completions-tool-content "gpt-test" history)))))
 
 (test orphaned-tool-calls-receive-synthetic-error-results
   (let* ((anthropic

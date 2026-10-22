@@ -449,7 +449,8 @@
              (let ((text
                      (content-text
                       (tool-result-message-content message))))
-               (if (non-empty-string-p text)
+               ;; pi@4a080252f openai-responses-shared.ts #8720.
+               (if (javascript-trim-nonempty-p text)
                    text
                    "(no tool output)")))
             items)

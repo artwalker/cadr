@@ -58,12 +58,18 @@
                           part)))))
     ((typep message 'tool-result-message)
      (json-array
-      (let* ((raw
-               (content-text
-                (tool-result-message-content message)))
-             ;; pi@4a080252f google-shared.ts #8720. Whitespace-only
-             ;; tool text is the same as no text.
-             (text (if (non-empty-string-p raw) raw ""))
+      (let* ((content (tool-result-message-content message))
+             (raw (content-text content))
+             ;; pi@4a080252f google-shared.ts #8720. hasText is
+             ;; textResult.trim().length > 0. Images count only when
+             ;; the model accepts them. output and error share the value.
+             (text
+               (cond
+                 ((javascript-trim-nonempty-p raw) raw)
+                 ((and (model-supports-images-p model)
+                       (content-has-images-p content))
+                  "(see attached image)")
+                 (t "")))
              (response
               (json-object
                (if (tool-result-message-is-error message)
