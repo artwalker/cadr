@@ -31,9 +31,17 @@ pstack (`/poteto-mode`) plus a cadr overlay. Vendored tree:
 `docs/dev-process/grok-bot-handoff.md`.
 
 Copy the matched playbook into the todo list verbatim. Skip only with
-an explicit `skip:`. cadr standing policy still wins on conflict (no
-agent merges, no silent removal of intentional behavior, baseline-locked
-assertions, `CADR_*` only).
+an explicit `skip:`. cadr standing policy still wins on conflict (gated
+agent merges only, no silent removal of intentional behavior,
+baseline-locked assertions, `CADR_*` only).
+
+Agent merges (user ruling 2026-10-22, `docs/adjudications.md`): an agent
+may merge a PR only when all three hold, checked right before merging:
+`./scripts/test-cl.sh` exits 0 in a clean checkout of the PR head; an
+independent review (a session that did not write the change) recorded no
+`fail`; `gh pr view --json mergeable` is `MERGEABLE`. Use
+`gh pr merge --merge` (no squash, no auto-merge). If any check fails,
+do not merge; comment the reason on the PR.
 
 ## Required reading order
 

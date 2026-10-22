@@ -42,14 +42,15 @@ intentional.
 | Structure-preserving change | pstack `refactoring.md` |
 | Pixel/TUI geometry | pstack `visual-parity.md` plus official `render-diff.py gate --tier core` |
 | Drive open PRs to merge-ready without landing | pstack `babysit.md` |
-| User said land/merge | **stop** unless they explicitly asked to merge; this repo forbids agent merges |
+| User said land/merge | merge only through the gated agent-merge rule in `AGENTS.md` |
 
 ## Conflicts: cadr over pstack
 
 - **Ask before removing behavior that looks intentional.** pstack
   "never block on the human" does not override that.
-- **Do not merge PRs or enable auto-merge.** pstack Shipping /
-  Autopilot "land the stack" is not authorized here.
+- **Merge only through the gated agent-merge rule in `AGENTS.md`**
+  (clean-checkout `test-cl.sh` exit 0, independent review with no
+  `fail`, `MERGEABLE`). Never enable auto-merge.
 - **Pins, CHANGELOG, ledgers, `RATIO_CEILINGS` stay with the main
   executor.** Concurrent agents: read-only or disjoint-file worktrees
   only (`docs/development-policy.md` §7).
