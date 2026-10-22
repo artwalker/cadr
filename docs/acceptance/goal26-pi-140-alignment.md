@@ -69,4 +69,4 @@ v1.3.0 账本里已标 done、且 v1.4.0 没有改行为的面，不在此重开
 | 输出上限截断的工具调用丢掉对应的工具结果 | v1.4.0 #11227 | done：会话停在输出上限截断的工具调用和它的工具结果上时，下一次提示把两者从投影上下文里一起去掉，请求里不再出现这条 `length` 助手消息和对应工具结果。输出已达到模型上限、换了模型、或自动折叠关闭时，这对消息仍留在请求里 |
 | `grep` 使用 `rg --no-config` | v1.4.0 #11203 | done：工具自己的正则、字面、glob 和条数不受 `RIPGREP_CONFIG_PATH` 影响。配置里的 `--fixed-strings` 不会把 `a.` 变成字面搜索 |
 | HTML 导出里 CJK 旁的粗体和斜体 | v1.4.0 #3353 #10154 | open |
-| Windows 外壳探测、`pi update` 的 BOM、扩展加载 `@earendil-works/pi-ai/models`、生成的 models 参考文档、遥测 span | v1.4.0 | open：先裁决是否属于 cadr 的用户可见面 |
+| Windows 外壳探测、`pi update` 的 BOM、扩展加载 `@earendil-works/pi-ai/models`、生成的 models 参考文档、遥测 span | v1.4.0 | proposal：见 docs/proposals/goal26-pi140-misc-scope.md，待裁决 |
