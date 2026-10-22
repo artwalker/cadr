@@ -138,7 +138,6 @@
     (23 :delete-word-backward)
     (25 :yank)
     (29 :jump-forward)
-    (31 :undo)
     (127 :backspace)
     (otherwise nil)))
 

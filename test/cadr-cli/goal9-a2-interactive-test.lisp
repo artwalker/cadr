@@ -1,6 +1,19 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(defmacro goal9-a2-with-unix-keybindings (&body body)
+  ;; These tests send the Unix chords (alt+up, alt+enter, ctrl+-).
+  ;; On WSL the process default is the Windows set.
+  `(let ((previous (cadr-tui:get-keybindings)))
+     (cadr-tui:set-keybindings
+      (cadr-tui:make-keybindings-manager
+       :definitions
+       (cadr-tui:default-keybinding-definitions
+        :platform "linux" :environment nil)))
+     (unwind-protect
+          (progn ,@body)
+       (cadr-tui:set-keybindings previous))))
+
 (defun goal9-a2-event (kind &optional text)
   (cadr-tui:make-input-event :kind kind :text text))
 
@@ -176,6 +189,7 @@
            (cadr-tui:virtual-terminal-snapshot terminal)))))))
 
 (test goal10-busy-tui-routes-steering-follow-up-and-shows-pending-copy
+  (goal9-a2-with-unix-keybindings
   (let* ((state (cadr-cli::make-tui-state :model "faux"))
          (editor (cadr-tui:make-multiline-editor))
          (steering-message
@@ -208,9 +222,10 @@
       (let ((screen (format nil "~{~A~^~%~}" lines)))
         (is (search "Steering: change direction" screen))
         (is (search "Follow-up: after this" screen))
-        (is (search "Alt+Up to edit all queued messages" screen))))))
+        (is (search "Alt+Up to edit all queued messages" screen)))))))
 
 (test goal10-busy-tui-dequeue-restores-both-queues-to-the-editor
+  (goal9-a2-with-unix-keybindings
   (let ((started (sb-thread:make-semaphore :count 0))
         (release (sb-thread:make-semaphore :count 0))
         (worker-done (sb-thread:make-semaphore :count 0))
@@ -272,7 +287,7 @@
     (is
      (string=
       (format nil "steer~%~%follow~%~%draft")
-      (cadr-tui:editor-text editor)))))
+      (cadr-tui:editor-text editor))))))
 
 (test goal10-pending-hint-uses-the-configured-dequeue-key
   (let ((previous (cadr-tui:get-keybindings)))
@@ -300,6 +315,7 @@
       (cadr-tui:set-keybindings previous))))
 
 (test goal10-busy-tui-enter-and-alt-enter-use-distinct-queues
+  (goal9-a2-with-unix-keybindings
   (let ((previous-kitty-p
           (cadr-tui:kitty-protocol-active-p)))
     (unwind-protect
@@ -364,7 +380,7 @@
                 (equal '("follow-xterm" "follow-legacy")
                        (nreverse follow-up))))))
       (cadr-tui:set-kitty-protocol-active
-       previous-kitty-p))))
+       previous-kitty-p)))))
 
 (test goal10-busy-tui-steering-is-delivered-after-the-active-turn
   (let ((release (sb-thread:make-semaphore :count 0))
@@ -604,6 +620,7 @@
              (first results))))))))))
 
 (test goal9-a2-input-editor-pty-events-and-virtual-screen-cover-full-contract
+  (goal9-a2-with-unix-keybindings
   (let* ((decoder (cadr-tui:make-input-decoder))
          (editor
            (cadr-tui:make-multiline-editor
@@ -692,9 +709,10 @@
      (format nil "~Cy" #\Escape))
     (is (string=
          "one two three"
-         (cadr-tui:editor-text editor)))))
+         (cadr-tui:editor-text editor))))))
 
 (test goal9-a2-completion-pty-events-snapshot-selection-cancel-and-undo
+  (goal9-a2-with-unix-keybindings
   (with-test-directory (root)
     (write-text (merge-pathnames "notes.md" root) "notes")
     (write-text (merge-pathnames "notes.txt" root) "notes")
@@ -792,7 +810,7 @@
              (cadr-tui:editor-text editor)))
         (goal9-a2-feed-editor
          editor decoder (string (code-char 31)))
-        (is (string= "@main" (cadr-tui:editor-text editor))))))))
+        (is (string= "@main" (cadr-tui:editor-text editor)))))))))
 
 (test goal9-a2-overlay-selectors-focus-cjk-and-resize-snapshots
   (with-test-directory (root)

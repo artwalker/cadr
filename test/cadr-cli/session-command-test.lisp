@@ -755,7 +755,10 @@
 (test post-goal15-hotkeys-table-uses-baseline-natural-column-widths
   (let* ((lines
            (cadr-tui:render-markdown
-            (cadr-cli::hotkeys-command-markdown)
+            (cadr-cli::hotkeys-command-markdown
+             nil
+             (cadr-tui:default-keybinding-definitions
+              :platform "linux" :environment nil))
             100 :padding-x 1))
          (plain
            (mapcar

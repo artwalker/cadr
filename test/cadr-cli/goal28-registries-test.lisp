@@ -177,3 +177,33 @@
     (is (typep component 'cadr-cli:armin-component))
     (cadr-cli:armin-component-tick component)
     (is (typep component 'cadr-cli:armin-component))))
+
+(test tree-fold-defaults-follow-the-runtime-platform
+  ;; pi@4a080252f keybindings.ts app.tree.foldOrUp. Order is the
+  ;; displayed chord: darwin puts alt first.
+  (dolist (case
+           '(("darwin" "alt+left" "alt+right")
+             ("linux" "ctrl+left" "ctrl+right")
+             ("win32" "ctrl+left" "ctrl+right")))
+    (destructuring-bind (platform fold unfold) case
+      (let ((definitions
+              (cadr-cli::tree-selector-keybinding-definitions
+               :platform platform :environment nil)))
+        (is (equal
+             (if (string= platform "darwin")
+                 '("alt+left" "ctrl+left")
+                 '("ctrl+left" "alt+left"))
+             (cadr-tui:keybinding-keys
+              (cadr-tui:make-keybindings-manager
+               :definitions definitions)
+              "app.tree.foldOrUp")))
+        (is (string= fold
+                     (first
+                      (cdr
+                       (assoc "app.tree.foldOrUp" definitions
+                              :test #'string=)))))
+        (is (string= unfold
+                     (first
+                      (cdr
+                       (assoc "app.tree.unfoldOrDown" definitions
+                              :test #'string=)))))))))

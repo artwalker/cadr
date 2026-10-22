@@ -522,6 +522,23 @@
          31)
         (t nil)))))
 
+(defun legacy-alt-printable-matches-p (data key-id)
+  ;; pi@4a080252f keys.ts matchesKey: alt+letter matches ESC+letter
+  ;; even when parseKey reports a legacy alias. ESC p is alt+up and
+  ;; also alt+p, which is the Windows model-back chord.
+  (and (not *kitty-protocol-active-p*)
+       (= (length data) 2)
+       (char= (char data 0) #\Escape)
+       (let* ((character (char data 1))
+              (value (codepoint character)))
+         (and (or (between-p value 48 57)
+                  (between-p value 97 122)
+                  (find character
+                        +symbol-key-characters+
+                        :test #'char=))
+              (string= key-id
+                       (format nil "alt+~C" character))))))
+
 (defun matches-key (data key-id)
   (multiple-value-bind (key mask)
       (split-key-id key-id)
@@ -539,11 +556,12 @@
                  (= (codepoint (char data 0))
                     control))
         (return-from matches-key t))))
-  (let ((parsed (parse-key data)))
-    (and parsed
-         (string=
-          (canonical-key-id parsed)
-          (canonical-key-id key-id)))))
+  (or (legacy-alt-printable-matches-p data key-id)
+      (let ((parsed (parse-key data)))
+        (and parsed
+             (string=
+              (canonical-key-id parsed)
+              (canonical-key-id key-id))))))
 
 (defun decode-kitty-printable (data)
   (let ((kitty (parse-kitty-key-data data)))

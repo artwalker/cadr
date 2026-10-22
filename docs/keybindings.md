@@ -17,6 +17,16 @@ Each action accepts a single key string or an array of keys. Keys use the
 `ctrl+x` / `shift+tab` / `alt+enter` naming; `/hotkeys` prints the
 effective bindings grouped by area.
 
+Native Windows, and Linux when `WSL_DISTRO_NAME` or `WSL_INTEROP` is
+set, use the Windows defaults: undo is `ctrl+z` on Windows and `alt+z`
+on WSL, previous model is `alt+p`, follow-up is `ctrl+q`, dequeue is
+`alt+q`, image paste is `alt+v`, prompt jump is `ctrl+up` / `ctrl+down`,
+and transcript search is `ctrl+f`. Other platforms keep the Unix chords,
+and prompt jump there is both the shifted and unshifted ctrl chord.
+`app.suspend` has no default on native Windows. Session-tree fold puts
+alt before ctrl on darwin and ctrl before alt elsewhere. `WT_SESSION`
+alone does not select the Windows set.
+
 ## Action names
 
 Actions are namespaced: `tui.editor.*` (cursor and text editing),

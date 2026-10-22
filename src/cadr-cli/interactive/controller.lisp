@@ -3526,13 +3526,15 @@ interactive-mode.ts:5956-5960).")
                          (request-render))
                         ((and
                           (null overlay)
-                          (= 1 (length input))
-                          (= 26
-                             (char-code
-                              (char input 0))))
+                          (plusp (length input))
+                          (cadr-tui:keybinding-matches-p
+                           (cadr-tui:get-keybindings)
+                           input
+                           "app.suspend"))
                           (suspend-tui
-                           #+win32 :windows
-                           #-win32 :linux
+                           (if (uiop:os-windows-p)
+                               :windows
+                               :linux)
                            (lambda ()
                              (cadr-tui:renderer-before-stop
                               renderer)

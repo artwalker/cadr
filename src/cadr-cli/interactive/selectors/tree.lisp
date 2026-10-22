@@ -66,31 +66,34 @@
           filter)
     selection))
 
+(defun tree-selector-keybinding-definitions
+    (&key
+       (platform (cadr-tui:keybinding-host-platform))
+       (environment :process))
+  (multiple-value-bind (fold unfold)
+      (cadr-tui:tree-branch-default-keys platform)
+    (append
+     (cadr-tui:default-keybinding-definitions
+      :platform platform
+      :environment environment)
+     (list
+      (cons "app.tree.foldOrUp" fold)
+      (cons "app.tree.unfoldOrDown" unfold)
+      '("app.message.copy" . ("ctrl+x"))
+      '("app.tree.editLabel" . ("shift+l"))
+      '("app.tree.toggleLabelTimestamp"
+        . ("shift+t"))
+      '("app.tree.filter.default" . ("ctrl+d"))
+      '("app.tree.filter.noTools" . ("ctrl+t"))
+      '("app.tree.filter.userOnly" . ("ctrl+u"))
+      '("app.tree.filter.labeledOnly" . ("ctrl+l"))
+      '("app.tree.filter.all" . ("ctrl+a"))
+      '("app.tree.filter.cycleForward" . ("ctrl+o"))
+      '("app.tree.filter.cycleBackward"
+        . ("shift+ctrl+o"))))))
+
 (defparameter +tree-selector-keybinding-definitions+
-  (append
-   (copy-tree
-    cadr-tui::+tui-keybinding-definitions+)
-   (list
-    (cons
-     "app.tree.foldOrUp"
-     #+darwin '("alt+left" "ctrl+left")
-     #-darwin '("ctrl+left" "alt+left"))
-    (cons
-     "app.tree.unfoldOrDown"
-     #+darwin '("alt+right" "ctrl+right")
-     #-darwin '("ctrl+right" "alt+right"))
-    '("app.message.copy" . ("ctrl+x"))
-    '("app.tree.editLabel" . ("shift+l"))
-    '("app.tree.toggleLabelTimestamp"
-      . ("shift+t"))
-    '("app.tree.filter.default" . ("ctrl+d"))
-    '("app.tree.filter.noTools" . ("ctrl+t"))
-    '("app.tree.filter.userOnly" . ("ctrl+u"))
-    '("app.tree.filter.labeledOnly" . ("ctrl+l"))
-    '("app.tree.filter.all" . ("ctrl+a"))
-    '("app.tree.filter.cycleForward" . ("ctrl+o"))
-    '("app.tree.filter.cycleBackward"
-      . ("shift+ctrl+o")))))
+  (tree-selector-keybinding-definitions))
 
 (defun make-tree-selector-keybindings
     (&optional user-bindings)

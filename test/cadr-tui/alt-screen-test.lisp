@@ -270,7 +270,9 @@
            (cadr-tui:make-keybindings-manager
             :user-bindings
             '(("tui.altScreen.halfPageUp" . ("shift+up"))
-              ("tui.altScreen.halfPageDown" . ("shift+down")))))
+              ("tui.altScreen.halfPageDown" . ("shift+down"))
+              ("tui.altScreen.previousPrompt" . ("ctrl+shift+up"))
+              ("tui.altScreen.nextPrompt" . ("ctrl+shift+down")))))
           (let* ((terminal
                    (make-alt-recording-terminal :rows 4))
                  (renderer

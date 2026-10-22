@@ -2226,7 +2226,10 @@
     (unwind-protect
          (progn
            (cadr-tui:set-keybindings
-            (cadr-tui:make-keybindings-manager))
+            (cadr-tui:make-keybindings-manager
+             :definitions
+             (cadr-tui:default-keybinding-definitions
+              :platform "linux" :environment nil)))
            (cadr-cli::run-tui
             (constantly nil)
             :model "mock"

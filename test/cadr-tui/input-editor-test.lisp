@@ -24,7 +24,15 @@
                    (cadr-tui:input-event-text (first events)))))))
 
 (test input-decoder-emits-configurable-editor-actions
-  (let ((decoder (cadr-tui:make-input-decoder)))
+  (let ((previous (cadr-tui:get-keybindings))
+        (decoder (cadr-tui:make-input-decoder)))
+    (cadr-tui:set-keybindings
+     (cadr-tui:make-keybindings-manager
+      :definitions
+      (cadr-tui:default-keybinding-definitions
+       :platform "linux" :environment nil)))
+    (unwind-protect
+         (progn
     (is (equal
          '(:enter)
          (event-kinds
@@ -65,14 +73,18 @@
       (is (string=
            "a"
            (cadr-tui:input-event-text
-           (first events)))))))
+            (first events))))))
+      (cadr-tui:set-keybindings previous))))
 
 (test input-decoder-preserves-configurable-alt-key-actions
   (let ((previous (cadr-tui:get-keybindings)))
     (unwind-protect
          (progn
            (cadr-tui:set-keybindings
-            (cadr-tui:make-keybindings-manager))
+            (cadr-tui:make-keybindings-manager
+             :definitions
+             (cadr-tui:default-keybinding-definitions
+              :platform "linux" :environment nil)))
            (let ((events
                    (cadr-tui:feed-input
                     (cadr-tui:make-input-decoder)
@@ -85,7 +97,10 @@
     (unwind-protect
          (progn
            (cadr-tui:set-keybindings
-            (cadr-tui:make-keybindings-manager))
+            (cadr-tui:make-keybindings-manager
+             :definitions
+             (cadr-tui:default-keybinding-definitions
+              :platform "linux" :environment nil)))
            (is
             (equal
              '(:model-cycle-forward)
@@ -133,7 +148,10 @@
     (unwind-protect
          (progn
            (cadr-tui:set-keybindings
-            (cadr-tui:make-keybindings-manager))
+            (cadr-tui:make-keybindings-manager
+             :definitions
+             (cadr-tui:default-keybinding-definitions
+              :platform "linux" :environment nil)))
            (dolist
                (case
                 `((,(format nil "~C[1;3A" #\Escape)

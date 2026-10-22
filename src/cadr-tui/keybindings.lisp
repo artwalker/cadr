@@ -1,6 +1,6 @@
 (in-package #:cadr-tui)
 
-(defparameter +tui-keybinding-definitions+
+(defparameter +unix-keybinding-definitions+
   '(("app.interrupt" . ("escape"))
     ("app.clear" . ("ctrl+c"))
     ("app.exit" . ("ctrl+d"))
@@ -79,14 +79,111 @@
     ;; v1.4.0: one-line scrolling and transcript search actions.
     ("tui.altScreen.lineUp" . nil)
     ("tui.altScreen.lineDown" . nil)
-    ("tui.altScreen.previousPrompt" . ("ctrl+shift+up"))
-    ("tui.altScreen.nextPrompt" . ("ctrl+shift+down"))
+    ;; pi@4a080252f keybindings.ts — Unix keeps both chords.
+    ("tui.altScreen.previousPrompt" . ("ctrl+shift+up" "ctrl+up"))
+    ("tui.altScreen.nextPrompt" . ("ctrl+shift+down" "ctrl+down"))
     ("tui.altScreen.search" . ("ctrl+shift+f"))
     ("tui.altScreen.searchNext" . ("enter" "ctrl+g"))
     ("tui.altScreen.searchPrevious" . ("shift+enter" "ctrl+shift+g"))
     ("tui.altScreen.searchClose" . ("escape"))
     ("tui.altScreen.top" . ("ctrl+home"))
     ("tui.altScreen.bottom" . ("ctrl+end"))))
+
+;; pi@4a080252f keybindings.ts useWindowsKeybindings and the
+;; platform branches of KEYBINDINGS. :windows applies to native
+;; win32 and to WSL. Undo and suspend split win32 from WSL.
+;; A missing entry inherits the Unix row. nil is an empty default.
+(defparameter +keybinding-platform-deltas+
+  '(("app.suspend" :win32 nil)
+    ("app.model.cycleBackward" :windows ("alt+p"))
+    ("app.message.followUp" :windows ("ctrl+q"))
+    ("app.message.dequeue" :windows ("alt+q"))
+    ("app.clipboard.pasteImage" :windows ("alt+v"))
+    ("tui.editor.undo" :win32 ("ctrl+z") :wsl ("alt+z"))
+    ("tui.altScreen.previousPrompt" :windows ("ctrl+up"))
+    ("tui.altScreen.nextPrompt" :windows ("ctrl+down"))
+    ("tui.altScreen.search" :windows ("ctrl+f"))))
+
+(defun keybinding-host-platform ()
+  (cond
+    ((uiop:os-windows-p) "win32")
+    ((uiop:os-macosx-p) "darwin")
+    (t "linux")))
+
+(defun keybinding-environment-present-p (environment name)
+  (let ((value
+          (if (eq environment :process)
+              (uiop:getenv name)
+              (cdr (assoc name environment :test #'string=)))))
+    (and (stringp value) (plusp (length value)) t)))
+
+(defun use-windows-keybindings
+    (&key
+       (platform (keybinding-host-platform))
+       (environment :process))
+  (or (string= platform "win32")
+      (and (string= platform "linux")
+           (or (keybinding-environment-present-p
+                environment "WSL_DISTRO_NAME")
+               (keybinding-environment-present-p
+                environment "WSL_INTEROP"))
+           t)))
+
+(defun keybinding-platform-class (platform environment)
+  (cond
+    ((string= platform "win32") :win32)
+    ((use-windows-keybindings
+      :platform platform
+      :environment environment)
+     :wsl)
+    (t :unix)))
+
+(defun keybinding-plist-entry (plist key)
+  (loop for rest on plist by #'cddr
+        when (eq (car rest) key)
+          return (values (cadr rest) t)
+        finally (return (values nil nil))))
+
+(defun platform-delta-keys (name class)
+  (let ((entry
+          (assoc name +keybinding-platform-deltas+
+                 :test #'string=)))
+    (unless entry
+      (return-from platform-delta-keys :inherit))
+    (let ((plist (cdr entry)))
+      (multiple-value-bind (value present)
+          (keybinding-plist-entry plist class)
+        (when present
+          (return-from platform-delta-keys value)))
+      (when (member class '(:win32 :wsl))
+        (multiple-value-bind (value present)
+            (keybinding-plist-entry plist :windows)
+          (when present
+            (return-from platform-delta-keys value)))))
+    :inherit))
+
+(defun default-keybinding-definitions
+    (&key
+       (platform (keybinding-host-platform))
+       (environment :process))
+  (let ((class
+          (keybinding-platform-class platform environment)))
+    (loop for pair in +unix-keybinding-definitions+
+          for replacement = (platform-delta-keys (car pair) class)
+          collect (if (eq replacement :inherit)
+                      pair
+                      (cons (car pair) replacement)))))
+
+(defun tree-branch-default-keys (platform)
+  ;; pi@4a080252f keybindings.ts app.tree.foldOrUp / unfoldOrDown.
+  (if (string= platform "darwin")
+      (values '("alt+left" "ctrl+left")
+              '("alt+right" "ctrl+right"))
+      (values '("ctrl+left" "alt+left")
+              '("ctrl+right" "alt+right"))))
+
+(defparameter +tui-keybinding-definitions+
+  (default-keybinding-definitions))
 
 (defparameter +logical-key-events+
   '(("app.interrupt" . :interrupt)
@@ -229,9 +326,10 @@
                  (= (length data) 1)
                  (= (codepoint (char data 0)) control))
         (return-from logical-key-id-matches-data-p t))))
-  (and parsed
-       (string= (canonical-key-id parsed)
-                (canonical-key-id key-id))))
+  (or (legacy-alt-printable-matches-p data key-id)
+      (and parsed
+           (string= (canonical-key-id parsed)
+                    (canonical-key-id key-id)))))
 
 (defun make-keybindings-manager
     (&key

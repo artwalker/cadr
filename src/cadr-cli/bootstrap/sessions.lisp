@@ -1666,9 +1666,12 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      (:literal "!" "Run bash command")
      (:literal "!!" "Run bash command (excluded from context)"))))
 
-(defun hotkeys-command-markdown (&optional user-bindings)
+(defun hotkeys-command-markdown
+    (&optional user-bindings
+     (definitions cadr-tui::+tui-keybinding-definitions+))
   (let ((manager
           (cadr-tui:make-keybindings-manager
+           :definitions definitions
            :user-bindings user-bindings)))
     (labels
         ((display (name)

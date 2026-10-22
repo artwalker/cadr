@@ -610,9 +610,16 @@
 (test goal15-busy-status-and-queued-messages-use-baseline-text-padding
   ;; pi@4a080252f TruncatedText and Loader both inherit Text's paddingX=1.
   ;; The dequeue hint uses keyDisplayText, which capitalizes Alt+Up.
-  (let* ((width 40)
-         (state
-           (cadr-cli::make-tui-state :model "faux")))
+  (let ((previous (cadr-tui:get-keybindings))
+        (width 40))
+    (cadr-tui:set-keybindings
+     (cadr-tui:make-keybindings-manager
+      :definitions
+      (cadr-tui:default-keybinding-definitions
+       :platform "linux" :environment nil)))
+    (unwind-protect
+         (let ((state
+                 (cadr-cli::make-tui-state :model "faux")))
     (setf
      (cadr-cli::tui-state-steering-messages state)
      (list (cadr-ai:make-user-message :content "redirect"))
@@ -642,7 +649,8 @@
       (is (string= "" (first lines)))
       (is (= width (cadr-tui:visible-width plain)))
       (is (uiop:string-prefix-p " x Working..." plain))
-      (is (char= #\Space (char plain (1- width)))))))
+      (is (char= #\Space (char plain (1- width))))))
+      (cadr-tui:set-keybindings previous))))
 
 (test goal15-export-and-reload-share-baseline-status-replacement-channel
   ;; interactive-mode.ts:3266-3281,5471-5511 sends both commands through

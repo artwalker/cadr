@@ -1509,7 +1509,8 @@
               ;; +1 Goal 24: #:project-forced-system-prompt.
               ;; +1 Goal 24: #:model-prompt-cache.
               ;; Goal 26: classifier catalog exports in package.lisp.
-              "4655af1de0fe36ba3014b585abcbca20beb68e9ba5e529ba7cef92c94ebc9fa7"
+              ;; OpenRouter image catalog exports already in package.lisp.
+              "797b43afc313dac2bef2d6c9328dbf13b3eb1e9acfe51eeed256c677ba546e13"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

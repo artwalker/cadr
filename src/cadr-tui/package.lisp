@@ -32,6 +32,10 @@
    #:keybinding-conflicts
    #:set-keybindings
    #:get-keybindings
+   #:keybinding-host-platform
+   #:use-windows-keybindings
+   #:default-keybinding-definitions
+   #:tree-branch-default-keys
    #:kill-ring
    #:make-kill-ring
    #:kill-ring-push
