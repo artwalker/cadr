@@ -54,6 +54,7 @@
   (autocomplete-max-visible 5
                             :type (integer 3 20))
   autocomplete-prefix
+  (autocomplete-session-force-p nil :type boolean)
   (autocomplete-origin nil)
   (autocomplete-mouse-pressed nil)
   (autocomplete-clock #'editor-monotonic-seconds
@@ -143,10 +144,12 @@
    (multiline-editor-text editor)))
 
 (defun line-start-at (text cursor)
+  ;; SBCL POSITION :from-end matches #\Newline against the low byte,
+  ;; so U+300A (《) looks like a line break. SEARCH does not.
   (let ((newline
-          (position #\Newline text
-                    :end (min cursor (length text))
-                    :from-end t)))
+          (search (string #\Newline) text
+                  :end2 (min cursor (length text))
+                  :from-end t)))
     (if newline (1+ newline) 0)))
 
 (defun line-end-at (text cursor)
@@ -204,6 +207,7 @@
   (setf
    (multiline-editor-autocomplete-suggestions editor) nil
    (multiline-editor-autocomplete-prefix editor) nil
+   (multiline-editor-autocomplete-session-force-p editor) nil
    (multiline-editor-autocomplete-selected editor) 0
    (multiline-editor-autocomplete-pending-deadline editor) nil
    (multiline-editor-autocomplete-pending-force-p editor) nil
@@ -986,13 +990,15 @@
   editor)
 
 (defun editor-apply-autocomplete-suggestions
-    (editor suggestions)
+    (editor suggestions &optional force-p)
   (if suggestions
       (setf
        (multiline-editor-autocomplete-suggestions editor)
        (autocomplete-suggestions-items suggestions)
        (multiline-editor-autocomplete-prefix editor)
        (autocomplete-suggestions-prefix suggestions)
+       (multiline-editor-autocomplete-session-force-p editor)
+       (not (null force-p))
        (multiline-editor-autocomplete-selected editor)
        0)
       (editor-cancel-autocomplete editor))
@@ -1082,47 +1088,41 @@
                line column
                :force-p force-p)))
         (editor-apply-autocomplete-suggestions
-         editor suggestions))))
+         editor suggestions force-p))))
   editor)
 
 (defun editor-provider-trigger-characters (editor)
-  (let ((provider
+  ;; packages/tui/src/components/editor.ts setAutocompleteTriggerCharacters:
+  ;; @ and # are always on; provider characters are added one at a time.
+  (let ((extras nil)
+        (provider
           (multiline-editor-autocomplete-provider editor)))
-    (remove-duplicates
-     (loop for value in
-           (and provider
-                (autocomplete-provider-trigger-characters
-                 provider))
-           for character =
-           (cond
-             ((characterp value) value)
-             ((and (stringp value)
-                   (= 1 (length value)))
-              (char value 0)))
-           when (and character
-                     (not (char= character #\/))
-                     (not (member character
-                                  '(#\Space #\Tab #\Newline
-                                    #\Return))))
-             collect character)
-     :test #'char=)))
+    (dolist (value
+             (and provider
+                  (autocomplete-provider-trigger-characters
+                   provider)))
+      (let ((character
+              (cond
+                ((characterp value) value)
+                ((and (stringp value)
+                      (= 1 (length value)))
+                 (char value 0)))))
+        (when (and character
+                   (not (char= character #\/))
+                   (not (char= character #\@))
+                   (not (char= character #\#))
+                   (not (autocomplete-trigger-separator-p
+                         character))
+                   (not (member character extras
+                                :test #'char=)))
+          (push character extras))))
+    (append '(#\@ #\#) (nreverse extras))))
 
 (defun editor-symbol-autocomplete-context-p
     (editor before)
-  (or
-   (not (null (autocomplete-at-prefix before)))
-   (loop for trigger in (editor-provider-trigger-characters editor)
-         for position = (position trigger before :from-end t)
-         thereis
-         (and position
-              (or (zerop position)
-                  (member (char before (1- position))
-                          '(#\Space #\Tab)))
-              (notany
-               (lambda (character)
-                 (member character
-                         '(#\Space #\Tab #\Newline #\Return)))
-               (subseq before (1+ position)))))))
+  (autocomplete-trigger-context-p
+   (editor-provider-trigger-characters editor)
+   before))
 
 (defun editor-autocomplete-debounce-p (editor force-p)
   (and
@@ -1255,6 +1255,8 @@
                   nil
                   (multiline-editor-autocomplete-prefix editor)
                   nil
+                  (multiline-editor-autocomplete-session-force-p editor)
+                  nil
                   (multiline-editor-autocomplete-selected editor)
                   0))
                 ((or (null result)
@@ -1274,7 +1276,9 @@
                   (autocomplete-suggestions-prefix result)))
                 (t
                  (editor-apply-autocomplete-suggestions
-                  editor result)))))
+                  editor result
+                  (editor-autocomplete-request-force-p
+                   request))))))
           t)))))
 
 (defun editor-set-border-mode
@@ -1393,8 +1397,9 @@
         (text (or (input-event-text event) ""))
         (autocomplete-visible-before-p
           (editor-autocomplete-visible-p editor))
-        (autocomplete-prefix-before
-          (multiline-editor-autocomplete-prefix editor)))
+        (autocomplete-force-before-p
+          (multiline-editor-autocomplete-session-force-p
+           editor)))
     (when (multiline-editor-jump-mode editor)
       (cond
         ((member kind '(:jump-forward :jump-backward))
@@ -1564,15 +1569,8 @@
         (editor-refresh-autocomplete
          editor
          :force-p
-         (and
-          autocomplete-visible-before-p
-          autocomplete-prefix-before
-          (not
-           (or
-            (string-prefix-p
-             "/" autocomplete-prefix-before)
-            (string-prefix-p
-             "@" autocomplete-prefix-before)))))))
+         (and autocomplete-visible-before-p
+              autocomplete-force-before-p))))
     (values nil nil)))
 
 (defun editor-word-wrap-line-spans

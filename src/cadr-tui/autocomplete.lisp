@@ -79,6 +79,61 @@
       (char= character (code-char #x3000))
       (autocomplete-cjk-punctuation-p character)))
 
+(defun autocomplete-trigger-separator-p (character)
+  ;; packages/tui/src/utils.ts autocompleteSeparatorRegex:
+  ;; JavaScript \s (White_Space, not U+FEFF) or CJK punctuation.
+  (or (find character
+            '(#\Tab #\Newline #\Page #\Return #\Space)
+            :test #'char=)
+      (let ((value (codepoint character)))
+        (or (= value #x0b) (= value #xa0) (= value #x1680)
+            (between-p value #x2000 #x200a)
+            (= value #x2028) (= value #x2029)
+            (= value #x202f) (= value #x205f)
+            (= value #x3000)))
+      (autocomplete-cjk-punctuation-p character)))
+
+(defun autocomplete-trigger-wrapper-p (character)
+  (find character "([{<`" :test #'char=))
+
+(defun autocomplete-trigger-boundary-p (text index)
+  (loop while (and (plusp index)
+                   (autocomplete-trigger-wrapper-p
+                    (char text (1- index))))
+        do (decf index))
+  (or (zerop index)
+      (autocomplete-trigger-separator-p
+       (char text (1- index)))))
+
+(defun autocomplete-quoted-at-trigger-p (text)
+  (let ((start (search "@\"" text :from-end t)))
+    (and start
+         (not (position #\" text :start (+ start 2)))
+         (autocomplete-trigger-boundary-p text start))))
+
+(defun autocomplete-unquoted-trigger-p (triggers text)
+  (let ((length (length text))
+        (index (length text)))
+    (loop while (and (plusp index)
+                     (not (autocomplete-trigger-separator-p
+                           (char text (1- index)))))
+          do (decf index))
+    (let ((token-start index))
+      (loop while (and (< index length)
+                       (autocomplete-trigger-wrapper-p
+                        (char text index)))
+            do (incf index))
+      (and (< index length)
+           (member (char text index) triggers :test #'char=)
+           (or (zerop token-start)
+               (autocomplete-trigger-separator-p
+                (char text (1- token-start))))))))
+
+(defun autocomplete-trigger-context-p (triggers text)
+  (and (stringp text)
+       (or (autocomplete-quoted-at-trigger-p text)
+           (autocomplete-unquoted-trigger-p triggers text))))
+
 (defun autocomplete-delimiter-p (character)
   (or (member character '(#\" #\' #\=))
       (autocomplete-separator-p character)))

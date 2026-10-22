@@ -1030,3 +1030,257 @@
     (is (cadr-tui::editor-handle-mouse
          editor 0 :type :click :button :left :x 0))
     (is (= 2 (cadr-tui::multiline-editor-cursor editor)))))
+
+(defun editor-autocomplete-settle (editor)
+  (let ((request
+          (cadr-tui::multiline-editor-autocomplete-request editor)))
+    (when request
+      (let ((thread
+              (cadr-tui::editor-autocomplete-request-thread
+               request)))
+        (when (and thread (sb-thread:thread-alive-p thread))
+          (sb-thread:join-thread thread)))))
+  (cadr-tui:editor-poll-autocomplete editor))
+
+(defun editor-autocomplete-advance (editor now milliseconds)
+  (incf (car now) (/ milliseconds 1000))
+  (when (cadr-tui:editor-poll-autocomplete editor)
+    (editor-autocomplete-settle editor)))
+
+(defun recording-trigger-provider
+    (triggers &key (box (list nil))
+                   (accept-p (constantly t)))
+  (values
+   (cadr-tui:make-autocomplete-provider
+    :trigger-characters triggers
+    :suggestions-function
+    (lambda (lines row column options)
+      (declare (ignore row column))
+      (let ((text (cadr-tui:editor-line-at lines 0)))
+        (push (list text (getf options :force-p)) (car box))
+        (when (funcall accept-p text)
+          (cadr-tui:make-autocomplete-suggestions
+           :items
+           (list
+            (cadr-tui:make-autocomplete-item
+             :value text :label "item"))
+           :prefix text)))))
+   box))
+
+(defun editor-with-trigger-clock (provider)
+  (let ((now (list 0))
+        (editor (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-autocomplete-provider editor provider)
+    (cadr-tui:editor-set-autocomplete-clock
+     editor (lambda () (car now)))
+    (values editor now)))
+
+(test editor-hash-autocomplete-debounces-without-provider-triggers
+  ;; v1.4.0 packages/tui/test/editor.test.ts
+  ;; "debounces # autocomplete while typing" and
+  ;; "debounces @ autocomplete while typing".
+  ;; CombinedAutocompleteProvider leaves triggerCharacters unset.
+  (dolist (prefix '("#298" "@mai"))
+    (multiple-value-bind (provider box)
+        (recording-trigger-provider nil)
+      (multiple-value-bind (editor now)
+          (editor-with-trigger-clock provider)
+        (editor-type editor prefix)
+        (is (null (car box)))
+        (is (not (cadr-tui:editor-autocomplete-visible-p editor)))
+        (editor-autocomplete-advance editor now 19)
+        (is (null (car box)))
+        (editor-autocomplete-advance editor now 1)
+        (is (equal (list (list prefix nil)) (car box)))
+        (is (cadr-tui:editor-autocomplete-visible-p editor))
+        (editor-event editor :text "n")
+        (editor-autocomplete-advance editor now 19)
+        (is (equal (list (list prefix nil)) (car box)))
+        (editor-autocomplete-advance editor now 1)
+        (is (equal
+             (list (list (concatenate 'string prefix "n") nil)
+                   (list prefix nil))
+             (car box)))
+        (is (not (second (first (car box)))))))))
+
+(test editor-default-triggers-follow-v140-boundaries
+  ;; v1.4.0 editor.test.ts
+  ;; "triggers and debounces symbol completion after CJK punctuation".
+  (let ((befores
+          (append
+           (list "查看，"
+                 (string (code-char #x3000)))
+           (map 'list #'string
+                "，．：；！？（）［］｛｝“”‘’…—。、「」『』《》【】")
+           (list "(" "see (" "`" "["))))
+    (multiple-value-bind (provider box)
+        (recording-trigger-provider '(#\$ #\-))
+      (multiple-value-bind (editor now)
+          (editor-with-trigger-clock provider)
+        (dolist (before befores)
+          (dolist (trigger '(#\@ #\# #\$ #\-))
+            (let ((opened
+                    (concatenate 'string before
+                                 (string trigger))))
+              (setf (car box) nil)
+              (cadr-tui:editor-set-text editor before)
+              (editor-event editor :text (string trigger))
+              (editor-autocomplete-advance editor now 19)
+              (is (null (car box)) opened)
+              (editor-autocomplete-advance editor now 1)
+              (is (equal (list (list opened nil)) (car box)) opened)
+              (is (cadr-tui:editor-autocomplete-visible-p editor)
+                  opened)
+              (editor-event editor :text "r")
+              (editor-event editor :text "e")
+              (editor-autocomplete-advance editor now 19)
+              (is (equal (list (list opened nil)) (car box)) opened)
+              (editor-autocomplete-advance editor now 1)
+              (is (equal
+                   (list
+                    (list (concatenate 'string opened "re") nil)
+                    (list opened nil))
+                   (car box))
+                  opened))))))))
+
+(test editor-symbol-triggers-do-not-fire-mid-token
+  ;; v1.4.0 editor.test.ts
+  ;; "does not auto-trigger after CJK letters or for unprefixed paths".
+  (multiple-value-bind (provider box)
+      (recording-trigger-provider nil)
+    (multiple-value-bind (editor now)
+        (editor-with-trigger-clock provider)
+      (dolist (text
+               (list
+                "user@example.com"
+                "张三@example.com"
+                "查看@src"
+                "あ@src"
+                "カ@src"
+                "한@src"
+                "ㄅ@src"
+                (concatenate 'string "𠮷" "@src")
+                (concatenate 'string "か" (string (code-char #x3099)) "@src")
+                (concatenate 'string "禰" (string (code-char #xe0100)) "@src")
+                "々@src"
+                "Ａ@src"
+                "文档@备份"
+                "prefix#123"
+                "foo(@src"
+                "问题#123"
+                "查看，/path/"
+                "查看，./文档/"
+                "src/index.ts"
+                "./文档/说明.md"
+                "文档/说明.md"
+                "查看src/index.ts"))
+        (setf (car box) nil)
+        (cadr-tui:editor-set-text editor "")
+        (editor-type editor text)
+        (editor-autocomplete-advance editor now 20)
+        (is (null (car box)) text)
+        (is (not (cadr-tui:editor-autocomplete-visible-p editor))
+            text)))))
+
+(test editor-trigger-context-ends-at-whitespace-and-cjk-punctuation
+  ;; v1.4.0 editor.test.ts
+  ;; "ends unquoted trigger and debounce contexts at whitespace or CJK punctuation".
+  (dolist (separator
+           (list " "
+                 (string (code-char #x3000))
+                 "，"
+                 "。"))
+    (dolist (trigger '(#\@ #\# #\$))
+      (let* ((prefix
+               (concatenate 'string (string trigger) "src")))
+        (multiple-value-bind (provider box)
+            (recording-trigger-provider
+             '(#\$)
+             :accept-p (lambda (text) (string= text prefix)))
+          (multiple-value-bind (editor now)
+              (editor-with-trigger-clock provider)
+            (cadr-tui:editor-set-text
+             editor
+             (concatenate 'string (string trigger) "sr"))
+            (editor-event editor :text "c")
+            (editor-autocomplete-advance editor now 20)
+            (is (cadr-tui:editor-autocomplete-visible-p editor)
+                prefix)
+            (is (equal (list (list prefix nil)) (car box)) prefix)
+            (editor-event editor :text separator)
+            (editor-autocomplete-settle editor)
+            (is (equal
+                 (list (list (concatenate 'string prefix separator) nil)
+                       (list prefix nil))
+                 (car box))
+                prefix)
+            (is (not (cadr-tui:editor-autocomplete-visible-p editor))
+                prefix)
+            (editor-event editor :text "文")
+            (editor-autocomplete-advance editor now 20)
+            (is (equal
+                 (list (list (concatenate 'string prefix separator) nil)
+                       (list prefix nil))
+                 (car box))
+                prefix)))))))
+
+(test editor-custom-triggers-reset-when-the-provider-changes
+  ;; v1.4.0 editor.test.ts
+  ;; "resets custom triggerCharacters when provider changes".
+  (multiple-value-bind (dollar box)
+      (recording-trigger-provider '(#\$))
+    (multiple-value-bind (plain)
+        (recording-trigger-provider nil :box box)
+      (multiple-value-bind (editor now)
+          (editor-with-trigger-clock dollar)
+        (cadr-tui:editor-set-autocomplete-provider editor plain)
+        (editor-type editor "$s")
+        (editor-autocomplete-advance editor now 20)
+        (is (null (car box)))
+        (is (not (cadr-tui:editor-autocomplete-visible-p editor)))
+        (cadr-tui:editor-set-text editor "")
+        (editor-event editor :text "#")
+        (editor-autocomplete-advance editor now 20)
+        (is (equal (list (list "#" nil)) (car box)))
+        (is (equal
+             '(#\@ #\#)
+             (cadr-tui::editor-provider-trigger-characters editor)))
+        (cadr-tui:editor-set-autocomplete-provider
+         editor
+         (cadr-tui:make-autocomplete-provider
+          :trigger-characters '(#\/ #\Space "$$" #\$ #\@ #\#)))
+        (is (equal
+             '(#\@ #\# #\$)
+             (cadr-tui::editor-provider-trigger-characters
+              editor)))))))
+
+(test editor-natural-hash-completion-is-not-forced
+  (multiple-value-bind (provider box)
+      (recording-trigger-provider nil)
+    (multiple-value-bind (editor now)
+        (editor-with-trigger-clock provider)
+      (editor-event editor :text "#")
+      (editor-autocomplete-advance editor now 20)
+      (is (equal (list (list "#" nil)) (car box)))
+      (editor-event editor :text "4")
+      (editor-autocomplete-advance editor now 20)
+      (is (equal
+           (list (list "#4" nil) (list "#" nil))
+           (car box)))
+      (cadr-tui:editor-set-text editor "REA")
+      (setf (car box) nil)
+      (editor-event editor :tab)
+      (editor-autocomplete-settle editor)
+      (is (equal (list (list "REA" t)) (car box))))))
+
+(test editor-quoted-at-prefix-still-debounces
+  (multiple-value-bind (provider box)
+      (recording-trigger-provider nil)
+    (multiple-value-bind (editor now)
+        (editor-with-trigger-clock provider)
+      (editor-type editor "@\"s")
+      (editor-autocomplete-advance editor now 19)
+      (is (null (car box)))
+      (editor-autocomplete-advance editor now 1)
+      (is (equal (list (list "@\"s" nil)) (car box)))
+      (is (cadr-tui:editor-autocomplete-visible-p editor)))))

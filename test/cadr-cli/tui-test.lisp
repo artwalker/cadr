@@ -1451,6 +1451,17 @@
            "[u] Example skill"
            (cadr-tui:autocomplete-item-description item))))))
 
+(test interactive-autocomplete-provider-leaves-trigger-characters-nil
+  ;; v1.4.0 CombinedAutocompleteProvider does not set triggerCharacters.
+  ;; editor.ts still starts from ["@", "#"] inside
+  ;; setAutocompleteTriggerCharacters.
+  (let ((provider
+          (cadr-cli::make-tui-autocomplete-provider
+           :base-path (uiop:getcwd))))
+    (is (null
+         (cadr-tui:autocomplete-provider-trigger-characters
+          provider)))))
+
 (test slash-argument-completions-cover-thinking-and-extensions
   (let ((provider
           (cadr-cli::make-tui-autocomplete-provider
