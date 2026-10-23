@@ -60,7 +60,7 @@ interrupt a stream mid-flight.
 Maps every `test/**/*.lisp` and `test/**/*.py` file to a theme.
 Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
-above are unchanged. Measured 2026-10-23: 219 listed files
+above are unchanged. Measured 2026-10-23: 220 listed files
 (`rg -c '^\|[^|]*\| \x60test/.*\.(lisp|py)\x60 \|$' docs/test-matrix.md`).
 `cadr-wasm/tests` is a tenth system and is not in the `GOAL20_TEST_CHECKS`
 nine-system denominator. `cadr-env/tests` is the same kind of extra system:
@@ -308,6 +308,7 @@ the remote-execution daemon is not one of the nine.
 | Theme | File |
 |---|---|
 | remote execution | `test/cadr-env/env-test.lisp` |
+| ssh and remote env | `test/cadr-env/ssh-remote-test.lisp` |
 | support (package) | `test/cadr-env/package.lisp` |
 
 ### cadr-wasm (not one of the nine FiveAM systems)

@@ -34,7 +34,9 @@
                "cwd" (namestring (uiop:getcwd))
                "driveCwds" (json-object)
                "pid" (sb-posix:getpid)
-               "features" (json-array "listFiles")))
+               "features" (if (equal (sb-ext:posix-getenv "CADR_ENV_OMIT_LIST_FILES") "1")
+                              (json-array)
+                              (json-array "listFiles"))))
 
 (defun send-frame (server frame)
   (sb-thread:with-mutex ((server-output-lock server))
@@ -214,3 +216,39 @@
     (t
      (write-text-line stderr (wire-literal :usage))
      2)))
+
+(defun stream-fd (stream fallback)
+  (if (sb-sys:fd-stream-p stream)
+      (sb-sys:fd-stream-fd stream)
+      fallback))
+
+(defun daemon-stdio (argv)
+  "Speak the daemon protocol on this process's standard streams.
+The streams SBCL opened are character streams; the protocol is bytes, so the
+descriptors are duplicated and reopened before the banner."
+  (let ((in-fd (sb-posix:dup (stream-fd *standard-input* 0)))
+        (out-fd (sb-posix:dup (stream-fd *standard-output* 1)))
+        (err-fd (sb-posix:dup (stream-fd *error-output* 2))))
+    (close *standard-input*)
+    (close *standard-output*)
+    (close *error-output*)
+    (let ((stdin (sb-sys:make-fd-stream in-fd :input t
+                                        :element-type '(unsigned-byte 8)
+                                        :buffering :none :auto-close t))
+          (stdout (sb-sys:make-fd-stream out-fd :output t
+                                         :element-type '(unsigned-byte 8)
+                                         :buffering :none :auto-close t))
+          (stderr (sb-sys:make-fd-stream err-fd :output t
+                                         :element-type '(unsigned-byte 8)
+                                         :buffering :none :auto-close t)))
+      (let ((status (handler-case
+                        (daemon-command argv :stdin stdin :stdout stdout :stderr stderr)
+                      (error (condition)
+                        (ignore-errors
+                          (write-sequence (utf8-bytes (princ-to-string condition)) stderr)
+                          (write-byte 10 stderr)
+                          (finish-output stderr))
+                        1))))
+        (ignore-errors (finish-output stdout))
+        (ignore-errors (finish-output stderr))
+        (sb-ext:exit :code status)))))

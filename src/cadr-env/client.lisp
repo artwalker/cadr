@@ -187,9 +187,19 @@
     (error "Invalid ~A: ~A" name (write-json value))))
 
 (defun config-path (name path)
-  (when (or (equal path "") (find #\" path))
+  (when (or (equal path "")
+            (find #\" path)
+            (find-if (lambda (character)
+                       (let ((code (char-code character)))
+                         (or (< code 32) (= code 127))))
+                     path))
     (error "Invalid ~A: ~A" name (write-json path)))
-  (format nil "\"~A\"" (substitute #\% #\% path)))
+  (with-output-to-string (out)
+    (write-char #\" out)
+    (loop for character across path
+          do (when (char= character #\%) (write-char #\% out))
+             (write-char character out))
+    (write-char #\" out)))
 
 (defun ssh-option (setting)
   (list "-o" setting))
@@ -302,7 +312,9 @@
         (cond
           ((equal known (second item)))
           (known
-           (error "The ~A host key of ~A changed; forget the old key first" (first item) host))
+           (error 'host-key-changed-error
+                  :message (format nil "The ~A host key of ~A changed; forget the old key first"
+                                   (first item) host)))
           (t
            (setf (gethash (first item) trusted) (second item))
            (push (third item) added)))))
@@ -348,3 +360,13 @@
 (define-condition host-key-error (error)
   ((message :initarg :message :reader host-key-error-message))
   (:report (lambda (condition stream) (write-string (host-key-error-message condition) stream))))
+
+(define-condition host-key-unknown-error (host-key-error) ())
+
+(define-condition host-key-changed-error (host-key-error) ())
+
+(define-condition ssh-error (error)
+  ((exit-code :initarg :exit-code :initform nil :reader ssh-error-exit-code)
+   (stderr :initarg :stderr :initform "" :reader ssh-error-stderr)
+   (message :initarg :message :reader ssh-error-message))
+  (:report (lambda (condition stream) (write-string (ssh-error-message condition) stream))))

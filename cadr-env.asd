@@ -16,7 +16,10 @@
                              (:file "pty")
                              (:file "watch")
                              (:file "daemon")
-                             (:file "client"))))
+                             (:file "client")
+                             (:file "spawn")
+                             (:file "ssh")
+                             (:file "remote"))))
   :in-order-to ((test-op (test-op "cadr-env/tests"))))
 
 (asdf:defsystem "cadr-env/tests"
@@ -26,7 +29,8 @@
   :components ((:module "test/cadr-env"
                 :serial t
                 :components ((:file "package")
-                             (:file "env-test"))))
+                             (:file "env-test")
+                             (:file "ssh-remote-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-env/tests :run-tests)

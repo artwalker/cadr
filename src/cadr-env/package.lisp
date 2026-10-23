@@ -9,6 +9,7 @@
    #:env-failure-message
    #:env-failure-path
    #:daemon-command
+   #:daemon-stdio
    #:serve-streams
    #:make-pipe-connection
    #:connection-close
@@ -29,6 +30,39 @@
    #:deploy-daemon-path
    #:posix-hash-program
    #:probe-banner
+   #:ssh-error
+   #:ssh-error-exit-code
+   #:host-key-unknown-error
+   #:host-key-changed-error
+   #:scan-host-key
+   #:detect-platform
+   #:deploy-daemon
+   #:connect-ssh
+   #:ssh-connection
+   #:make-spawn-connection
+   #:spawn-close
+   #:spawn-info
+   #:spawn-request
+   #:remote-error
+   #:remote-error-code
+   #:remote-error-message
+   #:make-remote-env
+   #:remote-write-file
+   #:remote-append-file
+   #:remote-read-text-file
+   #:remote-read-binary-file
+   #:remote-exec
+   #:remote-list-files
+   #:remote-open-binary-reader
+   #:remote-reader-read
+   #:remote-reader-close
+   #:env-ok
+   #:env-ok-p
+   #:env-ok-value
+   #:env-err
+   #:env-err-p
+   #:env-err-code
+   #:env-err-message
    #:open-terminal
    #:terminal-write
    #:terminal-resize
