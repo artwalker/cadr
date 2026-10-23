@@ -291,6 +291,47 @@
   (unless (uiop:os-windows-p)
     (is (null (cadr-tui::enable-windows-virtual-terminal-input)))))
 
+(test windows-stdin-handle-accepts-a-system-area-pointer
+  ;; pi@4a080252f win32-platform.c enable_virtual_terminal_input:
+  ;; GetStdHandle(STD_INPUT_HANDLE) != INVALID_HANDLE_VALUE, then
+  ;; GetConsoleMode, then SetConsoleMode(mode | ENABLE_VIRTUAL_TERMINAL_INPUT).
+  ;; INVALID_HANDLE_VALUE is (HANDLE)-1. The alien routine returns a
+  ;; system-area-pointer. alien-sap on that type is SIMPLE-TYPE-ERROR
+  ;; and must not be the validity test: apply-windows-virtual-terminal-input
+  ;; swallows it, so SetConsoleMode never ORs 0x0200. sap-int of that
+  ;; pointer is not -1.
+  (let* ((bits
+           (sb-alien:alien-size sb-alien:system-area-pointer :bits))
+         (invalid-bits (ldb (byte bits 0) -1))
+         (valid (sb-sys:int-sap 42))
+         (invalid (sb-sys:int-sap invalid-bits))
+         (null-handle (sb-sys:int-sap 0)))
+    (is (typep valid 'sb-sys:system-area-pointer))
+    (is (not (= (sb-sys:sap-int invalid) -1)))
+    (is (cadr-tui::windows-invalid-handle-p invalid))
+    (is (not (cadr-tui::windows-invalid-handle-p valid)))
+    (is (not (cadr-tui::windows-invalid-handle-p null-handle)))
+    (let ((writes nil))
+      (is (eql t
+               (cadr-tui::apply-windows-virtual-terminal-input
+                t
+                (lambda ()
+                  (if (cadr-tui::windows-invalid-handle-p valid)
+                      (values nil nil)
+                      (values #x1f7 t)))
+                (lambda (mode) (push mode writes)))))
+      (is (equal '(#x03f7) writes)))
+    (let ((writes nil))
+      (is (null
+           (cadr-tui::apply-windows-virtual-terminal-input
+            t
+            (lambda ()
+              (if (cadr-tui::windows-invalid-handle-p invalid)
+                  (values nil nil)
+                  (values #x1f7 t)))
+            (lambda (mode) (push mode writes)))))
+      (is (null writes)))))
+
 (test windows-vt-input-runs-after-raw-mode
   ;; pi@4a080252f terminal.ts start() calls enableWindowsVTInput after
   ;; setRawMode(true). ICANON and ECHO are already off when it runs.

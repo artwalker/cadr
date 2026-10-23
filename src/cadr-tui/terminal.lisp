@@ -265,11 +265,17 @@
   (mode sb-alien:unsigned-int))
 
 (defun windows-invalid-handle-p (handle)
-  #+(and sbcl win32)
-  (= (sb-sys:sap-int (sb-alien:alien-sap handle)) -1)
-  #-(and sbcl win32)
+  ;; GetStdHandle returns a system-area-pointer. INVALID_HANDLE_VALUE
+  ;; is (HANDLE)-1, every pointer bit set. alien-sap accepts only an
+  ;; alien-value and signals SIMPLE-TYPE-ERROR on a SAP; the caller
+  ;; swallows that and never ORs ENABLE_VIRTUAL_TERMINAL_INPUT.
+  #+sbcl
+  (= (sb-sys:sap-int handle)
+     (ldb (byte (sb-alien:alien-size sb-alien:system-area-pointer :bits) 0)
+          -1))
+  #-sbcl
   (declare (ignore handle))
-  #-(and sbcl win32)
+  #-sbcl
   t)
 
 (defun read-windows-stdin-console-mode ()
