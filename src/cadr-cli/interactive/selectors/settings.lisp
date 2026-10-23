@@ -981,7 +981,7 @@
    options selected maximum))
 
 (defun settings-selector-max-label-width (options)
-  (min 30
+  (min 36
        (loop for option in options
              maximize
              (cadr-tui:visible-width

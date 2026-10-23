@@ -359,16 +359,16 @@
        border
        (goal9-b3-full-width-input-line "" width)
        ""
-       "→ Auto-compact                    true"
-       "  Auto-resize images              true"
-       "  Block images                    false"
-       "  Skill commands                  true"
-       "  Show hardware cursor            false"
-       "  Editor padding                  0"
-       "  Output padding                  1"
-       "  Autocomplete max items          5"
-       "  Clear on shrink                 false"
-       "  Terminal progress               false"
+       "→ Auto-compact                      true"
+       "  Auto-resize images                true"
+       "  Block images                      false"
+       "  Skill commands                    true"
+       "  Show hardware cursor              false"
+       "  Editor padding                    0"
+       "  Output padding                    1"
+       "  Autocomplete max items            5"
+       "  Clear on shrink                   false"
+       "  Terminal progress                 false"
        "  (1/33)"
        ""
        "  Automatically compact context when it gets too large"
@@ -377,6 +377,65 @@
        border)
       (goal9-b3-plain-lines
        (cadr-cli::render-settings-selector state width))))))
+
+(test goal27-settings-value-column-follows-v140-settings-list
+  ;; v1.4.0 packages/tui/src/components/settings-list.ts renderMainList
+  ;; (the Math.min(36, longest label) line). Pads with that width, then
+  ;; two spaces, then the value. A label past 36 does not widen the
+  ;; column. A shorter menu stays at its own longest label. The width
+  ;; comes from every item, including rows outside the visible slice.
+  (let* ((plain
+           (lambda (lines)
+             (mapcar #'cadr-tui:strip-terminal-sequences lines)))
+         (rows
+           (lambda (options &optional (all options))
+             (funcall
+              plain
+              (cadr-cli::render-settings-option-list
+               options all 0 90 10)))))
+    (is
+     (equal
+      '("→ A                                     yes"
+        "  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  no")
+      (subseq
+       (funcall
+        rows
+        (list
+         (cadr-cli::make-settings-option
+          :id "short" :label "A" :value "yes")
+         (cadr-cli::make-settings-option
+          :id "long" :label (make-string 40 :initial-element #\X)
+          :value "no")))
+       0 2)))
+    (is
+     (equal
+      '("→ Hi     yes"
+        "  Short  no")
+      (subseq
+       (funcall
+        rows
+        (list
+         (cadr-cli::make-settings-option
+          :id "hi" :label "Hi" :value "yes")
+         (cadr-cli::make-settings-option
+          :id "short" :label "Short" :value "no")))
+       0 2)))
+    (is
+     (string=
+      "→ Hi                                yes"
+      (first
+       (funcall
+        rows
+        (list
+         (cadr-cli::make-settings-option
+          :id "hi" :label "Hi" :value "yes"))
+        (list
+         (cadr-cli::make-settings-option
+          :id "hi" :label "Hi" :value "yes")
+         (cadr-cli::make-settings-option
+          :id "model"
+          :label "Default thinking level per model"
+          :value "low"))))))))
 
 (test goal9-b3-settings-overlay-retains-the-complete-ansi-screen-contract
   (let ((capabilities

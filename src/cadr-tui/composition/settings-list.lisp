@@ -204,7 +204,7 @@
              (end (min count (+ start maximum-visible)))
              (maximum-label-width
                (min
-                30
+                36
                 (loop for item in all-items
                       maximize
                       (visible-width

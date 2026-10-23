@@ -389,6 +389,38 @@
         (is (equal (list (list (format nil "item-~D" (+ 4 row)) "on"))
                    changes))))))
 
+(test goal27-settings-list-value-column-follows-v140
+  ;; v1.4.0 packages/tui/src/components/settings-list.ts renderMainList
+  ;; uses Math.min(36, longest label), then two spaces before the value.
+  (labels ((plain (component)
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              (cadr-tui:component-render component 90)))
+           (item (id label value)
+             (cadr-tui:make-setting-item
+              :id id :label label :current-value value)))
+    (is
+     (equal
+      '("→ A                                     yes"
+        "  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  no")
+      (subseq
+       (plain
+        (cadr-tui:make-settings-list-component
+         (list
+          (item "short" "A" "yes")
+          (item "long" (make-string 40 :initial-element #\X) "no"))
+         5))
+       0 2)))
+    (is
+     (equal
+      '("→ Hi     yes" "  Short  no")
+      (subseq
+       (plain
+        (cadr-tui:make-settings-list-component
+         (list (item "hi" "Hi" "yes") (item "short" "Short" "no"))
+         5))
+       0 2)))))
+
 (test settings-search-press-positions-the-input-cursor
   (let* ((list
            (cadr-tui:make-settings-list-component
