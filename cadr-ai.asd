@@ -145,6 +145,7 @@
                              (:file "image-model-test")
                              (:file "image-generation-test")
                              (:file "cloudflare-classifier-test")
+                             (:file "classifier-apis-test")
                              (:file "auth-test")
                              (:file "openrouter-user-models-test")
                              (:file "goal12-capabilities-test")

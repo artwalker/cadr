@@ -61,7 +61,7 @@
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-10 Other classifier APIs | `packages/ai/src/api/openai-decisions.ts`，`packages/ai/src/api/llama-cpp-classify.ts` → `src/cadr-ai/classifiers.lisp` | open |
+| GAP-10 Other classifier APIs | `packages/ai/src/api/openai-decisions.ts`，`packages/ai/src/api/llama-cpp-classify.ts` → `src/cadr-ai/classifiers.lisp` | done：`gpt-6-luna` 把 choice、score、bool 问成 Decisions 的 choice、score、predicate；无图时 input 是 state 的 JSON 文本，有图时是一条 user 消息里的 input_text 加最多 128 张 data URL；答案按 name 对回，拒绝或答错仍保留已计费的 usage；504 不重试并说明网关超时，其它 5xx 仍重试；超过 272000 input token 按 0.2 计价。`llama-cpp-classify` 不生成答案文本，把每题渲染成单 token 标签，向去掉尾部 `/v1` 的 llama-server 依次要 `/tokenize`、`/apply-template` 和 `n_predict: 1` 的 `/completion`，用温度缩放后的标签 logprob softmax 得到 choice、bool、score；缺标签把 `n_probs` 加深到 4096 再 32768；图像、非正温度和非法选项个数在发请求前拒绝。 |
 | GAP-13 Request options | `packages/ai/src/api/openai-responses.ts`，`openai-codex-responses.ts`，`mistral-conversations.ts` → `src/cadr-ai/providers/openai.lisp`，`src/cadr-ai/websocket.lisp`，`src/cadr-ai/providers/mistral.lisp` | open |
 | GAP-14 Cache retention env | those API files under `packages/ai/src/api/` → `src/cadr-ai/providers/bedrock.lisp`，`src/cadr-ai/provider.lisp` | open |
 
