@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1799,
+  "expected_findings": 1815,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -13297,6 +13297,134 @@
       "line": ";;; Mouse-wheel line acceleration (pi@71023aec wheel-scroll.ts, #9758).",
       "occurrences": 1,
       "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "    (:banner \"PI-ENV \")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "    (:probe \"PI-ENV-PROBE\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "    (:upload-end \"PI-ENV-END\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:daemon-prefix \"pi-env-\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:hostkey-temp \"pi-env-hostkey-\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:list-unsupported \"The pi-env daemon does not list files; update it\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:no-daemon \"No pi-env daemon for \")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:no-hash \"has no sha256sum, shasum or openssl to verify pi-env\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:posix-tools \"/.pi/mobile/tools/\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:spill-prefix \"pi-output-\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:tool-dir \".pi/mobile/tools\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:upload-corrupt \"pi-env upload is corrupt\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:upload-temp \".pi-env-\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:usage \"usage: pi-env serve --token <hex>\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:version-name \"pi-env \")",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
+    },
+    {
+      "path": "src/cadr-env/wire.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:windows-tools \"\\\\.pi\\\\mobile\\\\tools\\\\\")))",
+      "occurrences": 1,
+      "reason": "v1.4.0 remote-execution wire literal. The daemon banner, usage, deploy path, and host-key names must match the upstream bytes."
     }
   ],
   "opaque_files": [

@@ -1,0 +1,136 @@
+(in-package #:cadr-env)
+
+(defconstant +debounce-ms+ 50)
+(defconstant +default-poll-ms+ 2000)
+(defconstant +default-max-directories+ 10000)
+(defconstant +in-nonblock+ #x800)
+(defconstant +in-cloexec+ #x80000)
+
+(sb-alien:define-alien-routine ("inotify_init1" %inotify-init1) sb-alien:int
+  (flags sb-alien:int))
+
+(sb-alien:define-alien-routine ("inotify_add_watch" %inotify-add-watch) sb-alien:int
+  (fd sb-alien:int)
+  (path sb-alien:c-string)
+  (mask sb-alien:unsigned-int))
+
+(sb-alien:define-alien-routine ("statfs" %statfs) sb-alien:int
+  (path sb-alien:c-string)
+  (buffer (* (sb-alien:unsigned 8))))
+
+(defun filesystem-magic (path)
+  (let ((buffer (make-array 128 :element-type '(unsigned-byte 8) :initial-element 0)))
+    (if (zerop (%statfs path (sb-sys:vector-sap buffer)))
+        (logior (aref buffer 0)
+                (ash (aref buffer 1) 8)
+                (ash (aref buffer 2) 16)
+                (ash (aref buffer 3) 24))
+        0)))
+
+(defun unreliable-filesystem-p (path)
+  (member (filesystem-magic path)
+          '(#x6969 #x517b #xff534d42 #xfe534d42 #x65735546)))
+
+(defun watch-targets (request)
+  (let ((targets (json-get request "targets")))
+    (unless (json-array-p targets)
+      (env-failure "EINVAL" "watch needs targets"))
+    (loop for target across targets
+          collect (list (require-string target "path")
+                        (json-flag target "recursive")))))
+
+(defun choose-watch-mode (request targets)
+  (let ((explicit (json-string request "mode")))
+    (cond
+      ((equal explicit "native") "native")
+      ((equal explicit "polling") "polling")
+      ((or (equal (host-os) "windows")
+           (some (lambda (target) (unreliable-filesystem-p (first target))) targets))
+       "polling")
+      (t "native"))))
+
+(defun snapshot-tree (targets)
+  (let ((table (make-hash-table :test #'equal)))
+    (dolist (target targets)
+      (labels ((visit (path)
+                 (handler-case
+                     (let ((stat (sb-posix:lstat path)))
+                       (setf (gethash path table)
+                             (list (sb-posix:stat-mtime stat) (sb-posix:stat-size stat)))
+                       (when (and (second target)
+                                  (= (logand (sb-posix:stat-mode stat) #o170000) #o040000))
+                         (dolist (name (directory-entries path))
+                           (visit (concatenate 'string (strip-slash path) "/" name)))))
+                   (sb-posix:syscall-error ()))))
+        (visit (first target))))
+    table))
+
+(defun changed-paths (before after)
+  (let ((paths nil))
+    (maphash (lambda (path stamp)
+               (unless (equal stamp (gethash path before))
+                 (push path paths)))
+             after)
+    (maphash (lambda (path stamp)
+               (declare (ignore stamp))
+               (unless (gethash path after)
+                 (pushnew path paths :test #'equal)))
+             before)
+    paths))
+
+(defun install-native (targets)
+  (let ((fd (%inotify-init1 (logior +in-nonblock+ +in-cloexec+))))
+    (when (< fd 0)
+      (return-from install-native nil))
+    (dolist (target targets)
+      (labels ((add (path)
+                 (when (>= (%inotify-add-watch fd path #x3ce) 0)
+                   (when (second target)
+                     (dolist (name (handler-case (directory-entries path) (error () nil)))
+                       (let ((full (concatenate 'string (strip-slash path) "/" name)))
+                         (when (directory-path-p full)
+                           (add full))))))))
+        (add (first target))))
+    fd))
+
+(defun read-inotify (fd)
+  (let ((buffer (make-array 4096 :element-type '(unsigned-byte 8))))
+    (let ((count (ignore-errors
+                   (sb-sys:with-pinned-objects (buffer)
+                     (sb-posix:read fd (sb-sys:vector-sap buffer) (length buffer))))))
+      (and count (plusp count)))))
+
+(defun run-watch (request emit control)
+  (let* ((targets (watch-targets request))
+         (mode (choose-watch-mode request targets))
+         (native (when (equal mode "native") (install-native targets))))
+    (when (and (equal mode "native") (null native))
+      (setf mode "polling")
+      (funcall emit (json-object "kind" "change" "overflow" t "mode" "polling") #()))
+    (let ((before (snapshot-tree targets))
+          (interval (or (json-u64 request "pollIntervalMs") +default-poll-ms+)))
+      (funcall emit (json-object "kind" "ready" "mode" mode) #())
+      (loop
+        (when (and control (or (control-aborted control) (control-killed control)))
+          (when native (ignore-errors (%c-close native)))
+          (return (empty-json)))
+        (cond
+          ((and native (read-inotify native))
+           (sleep (/ +debounce-ms+ 1000))
+           (let* ((after (snapshot-tree targets))
+                  (paths (changed-paths before after)))
+             (setf before after)
+             (when paths
+               (funcall emit (json-object "kind" "change"
+                                          "paths" (apply #'json-array paths))
+                        #()))))
+          ((equal mode "polling")
+           (sleep (/ interval 1000))
+           (let* ((after (snapshot-tree targets))
+                  (paths (changed-paths before after)))
+             (setf before after)
+             (when paths
+               (funcall emit (json-object "kind" "change"
+                                          "paths" (apply #'json-array paths))
+                        #()))))
+          (t (sleep 0.05)))))))

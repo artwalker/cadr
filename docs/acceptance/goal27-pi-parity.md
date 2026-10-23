@@ -137,7 +137,7 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-42 pi-env | `packages/env/README.md`，`packages/env/daemon/src/main.rs` → `src/cadr-agent/execution-env.lisp` | open。守护进程在上游是 Rust。cadr 用 Lisp 实现守护进程，线协议和可观察行为对齐上游。 |
+| GAP-42 pi-env | `packages/env/README.md`，`packages/env/daemon/src/main.rs` → `src/cadr-agent/execution-env.lisp` | done：Lisp 守护进程在标准输入输出上按 v1.4.0 帧协议提供 hello、文件、exec、pty、watch 和 listFiles。首行同步带上令牌，取消后的 kill 以 137 结束，Windows 上 pty 返回终端尚不支持，列目录的顺序、gitignore 和截断与上游测试一致。SSH 参数、主机密钥文件和按内容哈希命名的部署路径与上游一致。 |
 
 ### P13. Ledger status
 
