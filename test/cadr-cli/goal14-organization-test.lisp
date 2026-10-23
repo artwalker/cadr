@@ -454,7 +454,8 @@
     ;; +3 GAP-47: rpc-cycle-model (modes/rpc/models.lisp),
     ;; rpc-resource-source-info (modes/rpc/commands.lisp),
     ;; rpc-context-usage (modes/rpc/sessions.lisp).
-    (is (= 198 definition-count)
+    ;; +1 GAP-18: export-session-jsonl (bootstrap/sessions.lisp).
+    (is (= 199 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

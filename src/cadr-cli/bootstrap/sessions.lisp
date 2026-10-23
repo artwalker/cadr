@@ -1889,6 +1889,78 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
    (or argument (session-export-basename session))
    cwd))
 
+(defun export-session-jsonl
+    (session output-path cwd &key trailing-entries)
+  ;; pi@4a080252f session-export.ts exportSessionToJsonl.
+  ;; The header timestamp is a new clock read. A missing output path
+  ;; takes a second clock read for the default filename. parentId is
+  ;; rewritten along getBranch without mutating the live entries.
+  (let* ((header-timestamp
+           (cadr-agent::session-timestamp-json
+            (cadr-core:unix-milliseconds)))
+         (path
+           (resolve-general-path
+            (or output-path
+                (format
+                 nil "session-~A.jsonl"
+                 (cl-ppcre:regex-replace-all
+                  "[:.]"
+                  (cadr-agent::session-timestamp-json
+                   (cadr-core:unix-milliseconds))
+                  "-")))
+            cwd)))
+    (ensure-directories-exist path)
+    (with-open-file
+        (stream path
+                :direction :output
+                :if-exists :supersede
+                :if-does-not-exist :create
+                :external-format :utf-8)
+      (cadr-agent::write-jsonl-object
+       stream
+       (cadr-ai::json-object
+        "type" "session"
+        "version" 3
+        "id" (cadr-agent:session-id session)
+        "timestamp" header-timestamp
+        "cwd" (cadr-agent:session-cwd session)))
+      (let ((branch nil)
+            (seen (make-hash-table :test #'equal))
+            (current-id (cadr-agent:session-leaf-id session)))
+        (loop while current-id
+              do
+              (when (gethash current-id seen)
+                (cadr-agent::session-failure
+                 (cadr-agent:session-path session) nil
+                 "Cycle in session tree at ~A" current-id))
+              (setf (gethash current-id seen) t)
+              (let ((entry
+                      (gethash
+                       current-id
+                       (cadr-agent::session-by-id session))))
+                (unless entry
+                  (return))
+                (push entry branch)
+                (setf current-id
+                      (cadr-agent:session-entry-parent-id
+                       entry))))
+        (let ((parent-id nil))
+          (dolist (entry branch)
+            (let ((object
+                    (cadr-agent::session-entry-to-json
+                     entry)))
+              (cadr-ai::json-put
+               object "parentId" (or parent-id 'null))
+              (cadr-agent::write-jsonl-object stream object))
+            (setf parent-id
+                  (cadr-agent:session-entry-id entry)))
+          (when trailing-entries
+            (dolist (object
+                     (funcall trailing-entries
+                              parent-id header-timestamp))
+              (cadr-agent::write-jsonl-object stream object))))))
+    path))
+
 (defun handle-session-command
     (line agent
      &key
@@ -2178,25 +2250,56 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
          (error
           'cadr-ai:configuration-error
           :message "The agent has no persistent session"))
-       (let ((path
-               (session-export-path
+       ;; pi@4a080252f interactive-mode.ts handleExportCommand.
+       ;; Only a path that ends with .jsonl is JSONL. Every other
+       ;; path, including a missing path, stays HTML.
+       (let ((jsonl-path
+               (path-command-argument line "/export")))
+         (if (and jsonl-path
+                  (uiop:string-suffix-p jsonl-path ".jsonl"))
+             (handler-case
+                 (let* ((path
+                          (export-session-jsonl
+                           (cadr-agent:agent-session agent)
+                           jsonl-path cwd))
+                        (message
+                          (format nil "Session exported to: ~A"
+                                  (namestring path))))
+                   (if status-function
+                       (funcall status-function message)
+                       (progn
+                         (format output "~A~%" message)
+                         (finish-output output)))
+                   t)
+               (error (condition)
+                 (let ((message
+                         (format nil
+                                 "Failed to export session: ~A"
+                                 condition)))
+                   (if status-function
+                       (funcall status-function message :error)
+                       (format output "Error: ~A~%" message))
+                   (finish-output output)
+                   t)))
+             (let ((path
+                     (session-export-path
+                      (cadr-agent:agent-session agent)
+                      argument cwd)))
+               (apply
+                #'cadr-agent:export-session-html
                 (cadr-agent:agent-session agent)
-                argument cwd)))
-         (apply
-          #'cadr-agent:export-session-html
-          (cadr-agent:agent-session agent)
-          path
-          (if export-options-function
-              (or (funcall export-options-function)
-                  nil)
-              nil))
-         (let ((message
-                 (format nil "Session exported to: ~A"
-                         (file-namestring path))))
-           (if status-function
-               (funcall status-function message)
-               (progn
-                 (format output "~A~%" message)
-                 (finish-output output))))
-         t))
+                path
+                (if export-options-function
+                    (or (funcall export-options-function)
+                        nil)
+                    nil))
+               (let ((message
+                       (format nil "Session exported to: ~A"
+                               (file-namestring path))))
+                 (if status-function
+                     (funcall status-function message)
+                     (progn
+                       (format output "~A~%" message)
+                       (finish-output output))))
+               t))))
       (t nil))))

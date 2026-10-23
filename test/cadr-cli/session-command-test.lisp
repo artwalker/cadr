@@ -1036,3 +1036,287 @@
         (if previous
             (setf (uiop:getenv "CADR_OFFLINE") previous)
             (sb-posix:unsetenv "CADR_OFFLINE"))))))
+
+(defun read-export-jsonl (path)
+  (with-open-file (stream path :external-format :utf-8)
+    (loop for line = (read-line stream nil nil)
+          while line
+          collect (cadr-ai::parse-json line))))
+
+(defun export-jsonl-text (path)
+  (let ((text (uiop:read-file-string path)))
+    (is (plusp (length text)))
+    (is (char= #\Newline (char text (1- (length text)))))
+    (is (or (< (length text) 2)
+            (not (char= #\Newline
+                        (char text (- (length text) 2))))))
+    text))
+
+(test jsonl-export-rewrites-the-current-branch-and-leaves-the-tree
+  ;; v1.4.0 session-export.ts serializeSessionBranch and
+  ;; export-jsonl-share.test.ts: header is a fresh session record,
+  ;; parentId follows the branch, and a normal export has no pi.share.
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_ (ensure-directories-exist
+               (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :timestamp 0
+              :parent-session "/tmp/parent.jsonl"))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (model-id
+             (cadr-agent:session-append-model-change
+              session "openai" "mock"))
+           (user-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "hello")))
+           (abandoned-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-assistant-message
+               :content
+               (list (cadr-ai:make-text-content
+                      :text "abandoned-answer"))
+               :api :openai-responses
+               :provider :openai
+               :model "mock"
+               :stop-reason :stop)))
+           (kept-id
+             (progn
+               (cadr-agent:session-branch session user-id)
+               (cadr-agent:session-append-message
+                session
+                (cadr-ai:make-assistant-message
+                 :content
+                 (list (cadr-ai:make-text-content
+                        :text "kept-answer"))
+                 :api :openai-responses
+                 :provider :openai
+                 :model "mock"
+                 :stop-reason :stop))))
+           (output (make-string-output-stream))
+           (status nil)
+           (export-path (merge-pathnames "nested/out.jsonl" cwd)))
+      (declare (ignore _ abandoned-id))
+      (is (cadr-cli::handle-session-command
+           "/export \"nested/out.jsonl\" extra"
+           agent
+           :directory sessions :cwd cwd :output output
+           :status-function
+           (lambda (message &optional level)
+             (setf status (list message level)))))
+      (is (probe-file export-path))
+      (is (equal (list (format nil "Session exported to: ~A"
+                               (namestring export-path))
+                       nil)
+                 status))
+      (let* ((text (export-jsonl-text export-path))
+             (records (read-export-jsonl export-path))
+             (header (first records))
+             (entries (rest records)))
+        (is (null (search "abandoned-answer" text)))
+        (is (null (search "pi.share" text)))
+        (is (string= "session" (cadr-ai::json-get header "type")))
+        (is (= 3 (cadr-ai::json-get header "version")))
+        (is (string= (cadr-agent:session-id session)
+                     (cadr-ai::json-get header "id")))
+        (is (string= (cadr-agent:session-cwd session)
+                     (cadr-ai::json-get header "cwd")))
+        (is (not (cadr-ai::json-present-p header "parentSession")))
+        (is (cl-ppcre:scan
+             "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+             (cadr-ai::json-get header "timestamp")))
+        (is (string/= "1970-01-01T00:00:00.000Z"
+                      (cadr-ai::json-get header "timestamp")))
+        (is (= 3 (length entries)))
+        (is (equal (list model-id user-id kept-id)
+                   (mapcar (lambda (record)
+                             (cadr-ai::json-get record "id"))
+                           entries)))
+        (is (cadr-ai::json-null-p
+             (cadr-ai::json-get (first entries) "parentId")))
+        (is (equal (list model-id user-id)
+                   (mapcar (lambda (record)
+                             (cadr-ai::json-get record "parentId"))
+                           (rest entries))))
+        (is (string= "model_change"
+                     (cadr-ai::json-get (first entries) "type")))
+        (is (string= "openai"
+                     (cadr-ai::json-get (first entries) "provider")))
+        (is (string= "mock"
+                     (cadr-ai::json-get (first entries) "modelId")))
+        (is (string= "user"
+                     (cadr-ai::json-get
+                      (cadr-ai::json-get (second entries) "message")
+                      "role")))
+        (is (string= "hello"
+                     (cadr-ai::json-get
+                      (cadr-ai::json-get (second entries) "message")
+                      "content")))
+        (is (search "kept-answer" text))
+        (is (string= user-id
+                     (cadr-agent:session-entry-parent-id
+                      (gethash kept-id
+                               (cadr-agent::session-by-id
+                                session)))))))))
+
+(test jsonl-export-stops-when-a-parent-is-missing
+  ;; v1.4.0 SessionManager.getBranch includes the entry whose parent
+  ;; is absent and then stops. It does not signal.
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_ (ensure-directories-exist
+               (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :timestamp 0))
+           (user-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "root-text")))
+           (kept-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-assistant-message
+               :content
+               (list (cadr-ai:make-text-content :text "kept"))
+               :api :openai-responses
+               :provider :openai
+               :model "mock"
+               :stop-reason :stop)))
+           (path (merge-pathnames "branch.jsonl" cwd)))
+      (declare (ignore _))
+      (setf (cadr-agent:session-entry-parent-id
+             (gethash user-id (cadr-agent::session-by-id session)))
+            "missing")
+      (cadr-cli::export-session-jsonl session "branch.jsonl" cwd)
+      (let ((records (read-export-jsonl path)))
+        (is (= 3 (length records)))
+        (is (equal (list user-id kept-id)
+                   (mapcar (lambda (record)
+                             (cadr-ai::json-get record "id"))
+                           (rest records))))
+        (is (cadr-ai::json-null-p
+             (cadr-ai::json-get (second records) "parentId")))
+        (is (string= user-id
+                     (cadr-ai::json-get (third records) "parentId")))))))
+
+(test jsonl-export-other-paths-stay-html
+  ;; v1.4.0 handleExportCommand: endsWith(".jsonl") is case sensitive.
+  ;; A missing path, .JSONL, and any other suffix stay HTML.
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_ (ensure-directories-exist
+               (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :timestamp 0))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (output (make-string-output-stream)))
+      (declare (ignore _))
+      (cadr-agent:session-append-message
+       session (cadr-ai:make-user-message :content "export me"))
+      (dolist (line '("/export report.JSONL"
+                      "/export report.jsonl.bak"
+                      "/export"))
+        (is (cadr-cli::handle-session-command
+             line agent
+             :directory sessions :cwd cwd :output output)))
+      (dolist (name '("report.JSONL" "report.jsonl.bak"))
+        (let ((path (merge-pathnames name cwd)))
+          (is (probe-file path))
+          (with-open-file (stream path :external-format :utf-8)
+            (is (char= #\< (peek-char t stream))))))
+      (is (probe-file
+           (merge-pathnames
+            (cadr-cli::session-export-basename session) cwd)))
+      (is (search "Session exported to: report.JSONL"
+                  (get-output-stream-string output))))))
+
+(test jsonl-export-default-name-uses-a-fresh-stamp
+  ;; v1.4.0 exportSessionToJsonl omits the path and writes
+  ;; session-<ISO with : and . replaced>.jsonl in cwd. The header
+  ;; timestamp is its own clock read.
+  (with-test-directory (root)
+    (let* ((cwd (merge-pathnames "project/" root))
+           (_ (ensure-directories-exist
+               (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory (merge-pathnames "sessions/" root)
+              :cwd cwd :timestamp 0 :persist-p nil))
+           (written
+             (cadr-cli::export-session-jsonl session nil cwd))
+           (records (read-export-jsonl written)))
+      (declare (ignore _))
+      (is (cl-ppcre:scan
+           "^session-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3}Z\\.jsonl$"
+           (file-namestring written)))
+      (is (= 1 (length records)))
+      (is (string= "session"
+                   (cadr-ai::json-get (first records) "type")))
+      (cadr-cli::export-session-jsonl
+       session "trail.jsonl" cwd
+       :trailing-entries
+       (lambda (parent-id timestamp)
+         (list
+          (cadr-ai::json-object
+           "type" "custom"
+           "customType" "pi.share"
+           "id" "deadbeef"
+           "parentId" (or parent-id 'null)
+           "timestamp" timestamp))))
+      (let ((records
+              (read-export-jsonl
+               (merge-pathnames "trail.jsonl" cwd))))
+        (is (= 2 (length records)))
+        (is (string= "pi.share"
+                     (cadr-ai::json-get (second records) "customType")))
+        (is (cadr-ai::json-null-p
+             (cadr-ai::json-get (second records) "parentId")))
+        (is (string= (cadr-ai::json-get (first records) "timestamp")
+                     (cadr-ai::json-get (second records) "timestamp")))))))
+
+(test jsonl-export-reports-a-write-failure
+  ;; v1.4.0 handleExportCommand: Failed to export session: <message>
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_ (ensure-directories-exist
+               (merge-pathnames "blocked.jsonl/anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :timestamp 0))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (output (make-string-output-stream))
+           (status nil))
+      (declare (ignore _))
+      (is (cadr-cli::handle-session-command
+           "/export blocked.jsonl" agent
+           :directory sessions :cwd cwd :output output
+           :status-function
+           (lambda (message &optional level)
+             (setf status (list message level)))))
+      (is (eq :error (second status)))
+      (is (uiop:string-prefix-p
+           "Failed to export session: "
+           (first status)))
+      (is (zerop (length (get-output-stream-string output)))))))

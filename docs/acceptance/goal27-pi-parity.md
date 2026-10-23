@@ -87,7 +87,7 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-18 JSONL export | `packages/coding-agent/src/core/session-export.ts`，`interactive-mode.ts` → `src/cadr-cli/interactive/autocomplete.lisp`，`src/cadr-cli/bootstrap/sessions.lisp` | open |
+| GAP-18 JSONL export | `packages/coding-agent/src/core/session-export.ts`，`interactive-mode.ts` → `src/cadr-cli/interactive/autocomplete.lisp`，`src/cadr-cli/bootstrap/sessions.lisp` | done：`/export` 的路径以 `.jsonl` 结尾时，把当前分支写成 JSONL：新的会话头、parentId 沿分支重写、缺父节点就停、不含 `pi.share`；没给路径、`.JSONL` 和其它后缀仍是 HTML。补全说明本来就写了 `.jsonl`。 |
 | GAP-19 `cache_warming_decision` | `packages/coding-agent/src/core/extensions/types.ts` → `src/cadr-cli/cache-warmer.lisp`，`test/cadr-agent/extensions-wave3-test.lisp` | open |
 | GAP-21 Virtual model registration | `packages/coding-agent/src/core/virtual-models.ts`，`docs/virtual-models.md` → `src/cadr-agent/loop/turns.lisp`，`src/cadr-agent/virtual-models.lisp` | open |
 | GAP-22 `compaction.modelOverrides` | `packages/coding-agent/src/core/settings-schema.ts` → `src/cadr-cli/bootstrap/settings.lisp` | open |
