@@ -1628,9 +1628,12 @@
       (declare (special *responses* *contexts*))
       (agent-prompt agent "run")
       (is (= 1 executions))
+      ;; pi@4a080252f prepareToolCall validates before tool_call, so
+      ;; the invalid attempts never enter :before. The error restart
+      ;; still supplies the next arguments, and those are validated.
       (is
        (equal
-        '(:before (:error 1) :before (:error 2) :before :after)
+        '((:error 1) (:error 2) :before :after)
         (nreverse sequence)))
       (is (= 1 (count :tool-execution-start events)))
       (is (= 1 (count :tool-execution-end events)))

@@ -497,87 +497,154 @@
 (defun prepare-tool-execution
     (agent call &key turn-index on-effective-call
                   (tools nil tools-supplied-p))
-  (let ((effective-call call)
-        (appended-messages nil))
-    (when (agent-extension-host agent)
-      (multiple-value-bind
-            (replacement appended blocked-p reason
-             terminate-p terminate-supplied-p)
-          (run-extension-hooks
-           (agent-extension-host agent)
-           :tool-call-before
-           :turn-index turn-index
-           :tool-call (hook-tool-call-copy call))
-        (setf effective-call replacement
-              appended-messages appended)
-        (when blocked-p
-          (return-from prepare-tool-execution
-            (let ((blocked
-                    (make-error-tool-result
-                     effective-call
-                     (or reason "Tool execution was blocked")
-                     appended-messages)))
-              (setf (tool-outcome-blocked-p blocked) t)
-              ;; pi@4a080252f agent-loop.ts:637-640 — a before-hook
-              ;; terminate on a blocked call marks the result so the
-              ;; batch termination rule can stop the agent.
-              (when (and terminate-supplied-p
-                         (eq terminate-p t))
-                (setf (tool-outcome-terminate-p blocked) t))
-              blocked)))))
-    (when on-effective-call
-      (funcall
-       on-effective-call
-       effective-call appended-messages))
+  ;; pi@4a080252f agent-loop.ts prepareToolCall: unknown tools and
+  ;; argument validation finish before tool_call. The hook receives
+  ;; the validated object and execution uses that same object, so an
+  ;; in-place mutation is not validated again. A tool_call failure is
+  ;; an isError result and does not run tool_result.
+  (labels ((find-named (name)
+             (if tools-supplied-p
+                 (find name tools
+                       :key #'cadr-ai:tool-name
+                       :test #'string=)
+                 (find-tool
+                  (agent-tool-registry agent) name)))
+           (failure-text (condition)
+             (if (typep condition 'cadr-ai:cadr-error)
+                 (cadr-ai:cadr-error-message condition)
+                 (princ-to-string condition)))
+           (immediate (call text &optional appended)
+             (let ((outcome
+                     (make-error-tool-result
+                      call text appended)))
+               (setf (tool-outcome-blocked-p outcome) t)
+               outcome)))
     (let ((tool
-            (if tools-supplied-p
-                (find (cadr-ai:tool-call-name effective-call)
-                      tools
-                      :key #'cadr-ai:tool-name
-                      :test #'string=)
-                (find-tool
-                 (agent-tool-registry agent)
-                 (cadr-ai:tool-call-name effective-call)))))
-    (unless tool
-      (return-from prepare-tool-execution
-        (make-error-tool-result
-         effective-call
-         (format nil "Tool ~A not found"
-                 (cadr-ai:tool-call-name effective-call))
-         appended-messages)))
-    (let ((arguments
-            (handler-bind
-                ((error
-                   (lambda (condition)
-                     (unless
-                         (typep condition
-                                'tool-execution-error)
-                       (signal-tool-execution-error
-                        (if
-                            (typep condition
-                                   'cadr-ai:cadr-error)
-                            (cadr-ai:cadr-error-message
-                             condition)
-                            (princ-to-string condition))
-                        condition tool effective-call)))))
-              (let ((arguments-error
-                      (cadr-ai:tool-call-arguments-error
-                       effective-call)))
-                (when (and (stringp arguments-error)
-                           (plusp (length arguments-error)))
-                  (error
-                   "Invalid arguments for tool \"~A\": ~A"
-                   (cadr-ai:tool-call-name effective-call)
-                   arguments-error)))
-              (validate-tool-arguments
-               tool
-               (cadr-ai:tool-call-arguments
-                effective-call)))))
-      (make-prepared-tool-call
-       :call effective-call
-       :tool tool
-       :arguments arguments
-       :appended-messages appended-messages)))))
+            (find-named (cadr-ai:tool-call-name call))))
+      (unless tool
+        (return-from prepare-tool-execution
+          (immediate
+           call
+           (format nil "Tool ~A not found"
+                   (cadr-ai:tool-call-name call)))))
+      (let ((hook-call (hook-tool-call-copy call)))
+        (handler-bind
+            ((error
+               (lambda (condition)
+                 (unless (typep condition 'tool-execution-error)
+                   (let ((text (failure-text condition)))
+                     ;; The agent loop's restart is the only
+                     ;; tool_call_error path. It runs after this
+                     ;; failure and before tool_call. Nested and
+                     ;; direct prepares have no restart, so the
+                     ;; failure is already final.
+                     (if *tool-execution-error-fallback*
+                         (signal-tool-execution-error
+                          text condition tool hook-call)
+                         (return-from prepare-tool-execution
+                           (immediate call text))))))))
+          (let ((arguments-error
+                  (cadr-ai:tool-call-arguments-error
+                   hook-call)))
+            (when (and (stringp arguments-error)
+                       (plusp (length arguments-error)))
+              (error
+               "Invalid arguments for tool \"~A\": ~A"
+               (cadr-ai:tool-call-name hook-call)
+               arguments-error))
+            (setf (cadr-ai:tool-call-arguments hook-call)
+                  (validate-tool-arguments
+                   tool
+                   (cadr-ai:tool-call-arguments
+                    hook-call)))))
+        (let ((effective-call hook-call)
+              (appended-messages nil)
+              (validated
+                (cadr-ai:tool-call-arguments hook-call)))
+          (when (agent-extension-host agent)
+            (multiple-value-bind
+                  (replacement appended blocked-p reason
+                   terminate-p terminate-supplied-p)
+                (run-extension-hooks
+                 (agent-extension-host agent)
+                 :tool-call-before
+                 :turn-index turn-index
+                 :tool-call hook-call)
+              (setf effective-call replacement
+                    appended-messages appended)
+              (when blocked-p
+                (return-from prepare-tool-execution
+                  (let ((blocked
+                          (immediate
+                           effective-call
+                           (or reason
+                               "Tool execution was blocked")
+                           appended-messages)))
+                    ;; pi@4a080252f agent-loop.ts:637-640 — a before-hook
+                    ;; terminate on a blocked call marks the result so the
+                    ;; batch termination rule can stop the agent.
+                    (when (and terminate-supplied-p
+                               (eq terminate-p t))
+                      (setf (tool-outcome-terminate-p blocked) t))
+                    blocked)))))
+          (when on-effective-call
+            (funcall
+             on-effective-call
+             effective-call appended-messages))
+          (let* ((execution-tool
+                   (if (string=
+                        (cadr-ai:tool-call-name effective-call)
+                        (cadr-ai:tool-call-name call))
+                       tool
+                       (let ((found
+                               (find-named
+                                (cadr-ai:tool-call-name
+                                 effective-call))))
+                         (unless found
+                           (return-from prepare-tool-execution
+                             (make-error-tool-result
+                              effective-call
+                              (format nil "Tool ~A not found"
+                                      (cadr-ai:tool-call-name
+                                       effective-call))
+                              appended-messages)))
+                         found)))
+                 (arguments
+                   (if (eq (cadr-ai:tool-call-arguments
+                            effective-call)
+                           validated)
+                       validated
+                       (handler-bind
+                           ((error
+                              (lambda (condition)
+                                (unless
+                                    (typep condition
+                                           'tool-execution-error)
+                                  (signal-tool-execution-error
+                                   (failure-text condition)
+                                   condition
+                                   execution-tool
+                                   effective-call)))))
+                         (let ((arguments-error
+                                 (cadr-ai:tool-call-arguments-error
+                                  effective-call)))
+                           (when (and (stringp arguments-error)
+                                      (plusp
+                                       (length arguments-error)))
+                             (error
+                              "Invalid arguments for tool \"~A\": ~A"
+                              (cadr-ai:tool-call-name
+                               effective-call)
+                              arguments-error)))
+                         (validate-tool-arguments
+                          execution-tool
+                          (cadr-ai:tool-call-arguments
+                           effective-call))))))
+            (make-prepared-tool-call
+             :call effective-call
+             :tool execution-tool
+             :arguments arguments
+             :appended-messages appended-messages)))))))
 
 (defvar *tool-call-cwd* nil
   "Directory for the tool call in progress. Nil keeps the directory captured when the tool was built.")

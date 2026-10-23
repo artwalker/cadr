@@ -314,6 +314,16 @@
       (let* ((agent
                (cadr-agent:make-agent
                 :provider :mock :model nil
+                :tools
+                (list
+                 (make-tool
+                  :name "tool"
+                  :description "Tool"
+                  :parameters (object-schema)
+                  :executor
+                  (lambda (call-id arguments)
+                    (declare (ignore call-id arguments))
+                    (list (make-text-content :text "ran")))))
                 :extension-host host))
              (outcome
                (cadr-agent::prepare-tool-execution

@@ -288,7 +288,17 @@
                            (return)))))
                  (condition (condition)
                    (notify-extension-failure
-                    host definition "Hook" condition)))))
+                    host definition "Hook" condition)
+                   ;; pi@4a080252f agent-session.ts _beforeToolCall
+                   ;; rethrows. prepareToolCall turns that into an
+                   ;; isError result and does not run later handlers.
+                   (when (eq event-type :tool-call-before)
+                     (setf blocked-p t
+                           reason
+                           (if (typep condition 'cadr-ai:cadr-error)
+                               (cadr-ai:cadr-error-message condition)
+                               (princ-to-string condition)))
+                     (return))))))
         (release-acquired-extension-snapshot
          host held)))
     (values primary appended blocked-p reason

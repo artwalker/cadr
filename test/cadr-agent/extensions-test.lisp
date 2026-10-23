@@ -162,14 +162,15 @@
           (cadr-agent::run-extension-hooks
            host :tool-call-before
            :tool-call call :turn-index 7)
-        (declare (ignore appended reason))
+        (declare (ignore appended))
         (is
          (string=
           "legacy-rewritten"
           (cadr-ai::json-get
            (cadr-ai:tool-call-arguments rewritten)
            "value")))
-        (is (not blocked-p)))
+        (is (not (null blocked-p)))
+        (is (search "legacy-contained-error" reason)))
       (multiple-value-bind
             (rewritten appended blocked-p reason)
           (cadr-agent::run-extension-hooks
@@ -423,13 +424,21 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore context))
-                   (push
-                    (cadr-ai::json-get
-                     (cadr-ai:tool-call-arguments
-                      (cadr-agent:extension-event-tool-call event))
-                     "value")
-                    seen)
-                   (error "broken hook")))
+                   (let ((call
+                           (cadr-agent:extension-event-tool-call
+                            event)))
+                     (push
+                      (cadr-ai::json-get
+                       (cadr-ai:tool-call-arguments call)
+                       "value")
+                      seen)
+                     ;; pi@4a080252f emitToolCall does not catch. A throw
+                     ;; blocks this call and skips later handlers. The
+                     ;; "block" call below has no throw, so its block
+                     ;; result still applies.
+                     (when (string= "echo"
+                                    (cadr-ai:tool-call-name call))
+                       (error "broken hook")))))
                 (cadr-agent:define-event-hook
                  :tool-call-before
                  :priority 10
@@ -466,8 +475,8 @@
               (cadr-ai:tool-call-arguments replacement)
               "value")))
         (is (= 1 (length appended)))
-        (is (not blocked-p))
-        (is (null reason)))
+        (is (not (null blocked-p)))
+        (is (search "broken hook" reason)))
       (is (equal '("rewritten") seen))
       (is (search "broken hook"
                   (second (first *notifications*))))
@@ -709,7 +718,8 @@
              (make-tool-call
               :id "hooked-1"
               :name "hooked"
-              :arguments (cadr-ai::json-object)))
+              :arguments
+              (cadr-ai::json-object "value" "original")))
             :tool-use)
            (assistant
             (list (make-text-content :text "done")))))

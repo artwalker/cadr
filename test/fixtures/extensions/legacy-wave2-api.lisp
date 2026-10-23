@@ -102,8 +102,12 @@
  :priority 0
  :handler
  (lambda (event context)
-   (declare (ignore event context))
-   (error "legacy-contained-error")))
+   (declare (ignore context))
+   (when (string=
+          "legacy-echo"
+          (cadr-ai:tool-call-name
+           (cadr-agent:extension-event-tool-call event)))
+     (error "legacy-contained-error"))))
 
 (cadr-agent:define-event-hook
  :tool-call-before

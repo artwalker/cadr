@@ -281,19 +281,27 @@ pipeline lives.")
                       (funcall function))))))
           (if (and (consp value)
                    (eq failure-marker (car value)))
-              (let ((condition (cdr value)))
+              (let* ((condition (cdr value))
+                     (duration
+                       (and
+                        (typep condition 'tool-execution-error)
+                        (tool-execution-error-duration-ms
+                         condition)))
+                     (outcome
+                       (make-error-tool-result
+                        (tool-restart-state-current-call state)
+                        (cadr-ai:cadr-error-message condition)
+                        (tool-restart-state-current-appended-messages
+                         state)
+                        duration)))
                 (setf failure condition)
-                (values
-                (make-error-tool-result
-                 (tool-restart-state-current-call state)
-                 (cadr-ai:cadr-error-message condition)
-                 (tool-restart-state-current-appended-messages
-                  state)
-                 (and
-                  (typep condition 'tool-execution-error)
-                  (tool-execution-error-duration-ms
-                   condition)))
-                 nil))
+                ;; A prepare failure has no duration. pi@4a080252f
+                ;; prepareToolCall returns that as immediate, so
+                ;; tool_result does not run. An execution failure
+                ;; carries duration and still reaches tool_result.
+                (when (null duration)
+                  (setf (tool-outcome-blocked-p outcome) t))
+                (values outcome nil))
               (values value nil)))
       (retry-tool-call (replacement-arguments)
         (unless (hash-table-p replacement-arguments)
@@ -315,27 +323,35 @@ pipeline lives.")
            replacement-arguments))
         (values nil :retry))
       (skip-tool-call (&optional reason)
-        (values
-         (make-error-tool-result
-          (tool-restart-state-current-call state)
-          (or reason
-              (and failure
-                   (cadr-ai:cadr-error-message failure)))
-          (tool-restart-state-current-appended-messages
-           state))
-         nil))
+        (let ((outcome
+                (make-error-tool-result
+                 (tool-restart-state-current-call state)
+                 (or reason
+                     (and failure
+                          (cadr-ai:cadr-error-message failure)))
+                 (tool-restart-state-current-appended-messages
+                  state))))
+          (when (and (typep failure 'tool-execution-error)
+                     (null
+                      (tool-execution-error-duration-ms failure)))
+            (setf (tool-outcome-blocked-p outcome) t))
+          (values outcome nil)))
       (abort-agent-run (&optional reason)
         (setf (tool-restart-state-abort-p state) t)
         (agent-abort (tool-restart-state-agent state))
-        (values
-         (make-error-tool-result
-          (tool-restart-state-current-call state)
-          (or reason
-              (and failure
-                   (cadr-ai:cadr-error-message failure)))
-          (tool-restart-state-current-appended-messages
-           state))
-         nil)))))
+        (let ((outcome
+                (make-error-tool-result
+                 (tool-restart-state-current-call state)
+                 (or reason
+                     (and failure
+                          (cadr-ai:cadr-error-message failure)))
+                 (tool-restart-state-current-appended-messages
+                  state))))
+          (when (and (typep failure 'tool-execution-error)
+                     (null
+                      (tool-execution-error-duration-ms failure)))
+            (setf (tool-outcome-blocked-p outcome) t))
+          (values outcome nil))))))
 
 (defun prepare-tool-restart-state
     (state turn-index)

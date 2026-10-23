@@ -374,3 +374,211 @@
        :arguments (cadr-ai::json-object)))
      :turn-index 0)
     (is (equal '("redacted") seen))))
+
+(test goal27-tool-call-handler-error-blocks-execution
+  ;; pi@4a080252f extensions.md: a tool_call handler failure blocks the
+  ;; tool. agent-session.ts _beforeToolCall rethrows; prepareToolCall
+  ;; returns isError; runToolCall does not run afterToolCall.
+  (let ((executions 0)
+        (results 0))
+    (let* ((tool
+             (make-tool
+              :name "echo"
+              :description "Echo"
+              :parameters (object-schema "text")
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (incf executions)
+                (list (make-text-content :text "ran")))))
+           (bundle
+             (make-test-extension-bundle
+              "goal27-throw"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 "tool_call"
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (error "gate failed")))
+                (cadr-agent:define-event-hook
+                 "tool_result"
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (incf results)
+                   nil))))))
+      (let ((agent
+              (goal27-prompt-with-tool
+               tool bundle
+               (cadr-ai::json-object "text" "hello")
+               :follow-up "gate failed")))
+        (is (= 0 executions))
+        (is (= 0 results))
+        (let ((result (goal27-tool-result agent)))
+          (is (cadr-ai:tool-result-message-is-error result))
+          (is (string= "gate failed" (text-result result))))))))
+
+(test goal27-tool-call-mutation-skips-revalidation
+  ;; pi@4a080252f types.ts ToolCallEvent: no re-validation after
+  ;; mutation. prepareToolCall validates, hands that object to
+  ;; tool_call, and executes the same object. A required string
+  ;; replaced with a number still runs.
+  (let ((executed nil))
+    (let* ((tool
+             (make-tool
+              :name "echo"
+              :description "Echo"
+              :parameters (object-schema "text")
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id))
+                (push (cadr-ai::json-get arguments "text") executed)
+                (list
+                 (make-text-content
+                  :text "ran")))))
+           (bundle
+             (make-test-extension-bundle
+              "goal27-number"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 "tool_call"
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (cadr-ai::json-put
+                    (cadr-ai:tool-call-arguments
+                     (cadr-agent:extension-event-tool-call event))
+                    "text"
+                    7)
+                   nil))))))
+      (let ((agent
+              (goal27-prompt-with-tool
+               tool bundle
+               (cadr-ai::json-object "text" "hello"))))
+        (is (equal '(7) executed))
+        (is (string=
+             "hello"
+             (cadr-ai::json-get
+              (cadr-ai:tool-call-arguments
+               (goal27-assistant-tool-call agent))
+              "text")))
+        (let ((result (goal27-tool-result agent)))
+          (is (not (cadr-ai:tool-result-message-is-error result)))
+          (is (string= "ran" (text-result result))))))))
+
+(test goal27-invalid-and-unknown-tools-skip-both-hooks
+  ;; pi@4a080252f agent-loop.test.ts runToolCall: hookCalls is
+  ;; before a, after a, before c, before e, after e. Invalid
+  ;; arguments (b) and an unknown tool (d) enter neither hook.
+  ;; A block (c) runs before and skips after.
+  (let ((hook-calls nil)
+        (executions nil))
+    (let* ((echo
+             (make-tool
+              :name "echo"
+              :description "Echo"
+              :parameters (object-schema "value")
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore arguments))
+                (push call-id executions)
+                (values
+                 (list (make-text-content :text call-id))
+                 (cadr-ai::json-object)
+                 nil
+                 (cadr-ai::json-object "value" call-id)))))
+           (failing
+             (make-tool
+              :name "failing"
+              :description "Failing"
+              :parameters (object-schema)
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (values
+                 (list (make-text-content :text "bad"))
+                 (cadr-ai::json-object "partial" t)
+                 nil
+                 nil
+                 nil
+                 t))))
+           (bundle
+             (make-test-extension-bundle
+              "goal27-hooks"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 "tool_call"
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (let* ((call
+                            (cadr-agent:extension-event-tool-call
+                             event))
+                          (id (cadr-ai:tool-call-id call)))
+                     (push (format nil "before ~A" id) hook-calls)
+                     (when (string=
+                            "blocked"
+                            (cadr-ai::json-get
+                             (cadr-ai:tool-call-arguments call)
+                             "value"))
+                       (cadr-agent:make-extension-hook-result
+                        :block-p t
+                        :reason "nope")))))
+                (cadr-agent:define-event-hook
+                 "tool_result"
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (push
+                    (format nil "after ~A"
+                            (cadr-ai:tool-result-message-tool-call-id
+                             (cadr-agent:extension-event-tool-result
+                              event)))
+                    hook-calls)
+                   nil)))))
+           (host (make-test-extension-host (list bundle)))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :tools (list echo failing)
+              :extension-host host))
+           (calls
+             (list
+              (make-tool-call
+               :id "a" :name "echo"
+               :arguments (cadr-ai::json-object "value" "a"))
+              (make-tool-call
+               :id "b" :name "echo"
+               :arguments
+               (cadr-ai::json-object
+                "value" (cadr-ai::json-object "nested" t)))
+              (make-tool-call
+               :id "c" :name "echo"
+               :arguments
+               (cadr-ai::json-object "value" "blocked"))
+              (make-tool-call
+               :id "d" :name "missing"
+               :arguments (cadr-ai::json-object))
+              (make-tool-call
+               :id "e" :name "failing"
+               :arguments (cadr-ai::json-object))))
+           (outcomes nil))
+      (dolist (call calls)
+        (multiple-value-bind (results)
+            (cadr-agent::execute-tool-batch
+             agent (list call) :turn-index 0)
+          (push (first results) outcomes)))
+      (setf outcomes (nreverse outcomes))
+      (is (equal '("a") (nreverse executions)))
+      (is (equal '("before a" "after a" "before c" "before e" "after e")
+                 (nreverse hook-calls)))
+      (is (cadr-ai:tool-result-message-is-error (second outcomes)))
+      (is (cadr-ai:tool-result-message-is-error (third outcomes)))
+      (is (string= "nope" (text-result (third outcomes))))
+      (is (cadr-ai:tool-result-message-is-error (fourth outcomes)))
+      (is (string= "Tool missing not found"
+                   (text-result (fourth outcomes))))
+      (is (cadr-ai:tool-result-message-is-error (fifth outcomes)))
+      (is (not (cadr-ai:tool-result-message-is-error (first outcomes)))))))
