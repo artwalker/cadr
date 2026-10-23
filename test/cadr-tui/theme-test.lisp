@@ -344,10 +344,18 @@
                       :overrides
                       '((:text . "")
                         (:user-message-bg . "")
+                        (:scrollbar-track . "")
+                        (:scrollbar-thumb . "")
                         (:accent . "#010203")))))
                (is (string= (second entry)
                             (cadr-tui:theme-color-value
                              :text :theme theme)))
+               (is (string= (second entry)
+                            (cadr-tui:theme-color-value
+                             :scrollbar-track :theme theme)))
+               (is (string= (second entry)
+                            (cadr-tui:theme-color-value
+                             :scrollbar-thumb :theme theme)))
                (is (string= (third entry)
                             (cadr-tui:theme-color-value
                              :user-message-bg :theme theme)))
@@ -357,6 +365,18 @@
                (is (string= (csi "39m")
                             (cadr-tui:theme-foreground-ansi
                              :text :theme theme)))
+               (is (string= (csi "39m")
+                            (cadr-tui:theme-foreground-ansi
+                             :scrollbar-thumb :theme theme)))
+               (is (string= (csi "39m")
+                            (cadr-tui:theme-foreground-ansi
+                             :scrollbar-track :theme theme)))
+               (signals error
+                 (cadr-tui:theme-background-ansi
+                  :scrollbar-thumb :theme theme))
+               (signals error
+                 (cadr-tui:theme-background-ansi
+                  :scrollbar-track :theme theme))
                (is (string= (csi "49m")
                             (cadr-tui:theme-background-ansi
                              :user-message-bg :theme theme)))
@@ -380,10 +400,14 @@
                       :capabilities capabilities
                       :overrides
                       '((:text . "")
-                        (:user-message-bg . "")))))
+                        (:user-message-bg . "")
+                        (:scrollbar-thumb . "")))))
                (is (string= "#c8d2dc"
                             (cadr-tui:theme-color-value
                              :text :theme theme)))
+               (is (string= "#c8d2dc"
+                            (cadr-tui:theme-color-value
+                             :scrollbar-thumb :theme theme)))
                (is (string= "#0a141e"
                             (cadr-tui:theme-color-value
                              :user-message-bg :theme theme)))
@@ -398,10 +422,14 @@
                     :capabilities capabilities
                     :overrides
                     '((:text . "")
-                      (:user-message-bg . "")))))
+                      (:user-message-bg . "")
+                      (:scrollbar-thumb . "")))))
              (is (string= "#e5e5e7"
                           (cadr-tui:theme-color-value
                            :text :theme theme)))
+             (is (string= "#e5e5e7"
+                          (cadr-tui:theme-color-value
+                           :scrollbar-thumb :theme theme)))
              (is (string= "#fafafa"
                           (cadr-tui:theme-color-value
                            :user-message-bg :theme theme))))
@@ -413,10 +441,14 @@
                     :capabilities capabilities
                     :overrides
                     '((:text . "")
-                      (:page-bg . "")))))
+                      (:page-bg . "")
+                      (:scrollbar-thumb . "")))))
              (is (string= "#c8d2dc"
                           (cadr-tui:theme-color-value
                            :text :theme theme)))
+             (is (string= "#c8d2dc"
+                          (cadr-tui:theme-color-value
+                           :scrollbar-thumb :theme theme)))
              (is (string= "#ffffff"
                           (cadr-tui:theme-color-value
                            :page-bg :theme theme)))))

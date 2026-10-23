@@ -287,8 +287,8 @@
 
 (defparameter +background-theme-color-keys+
   '(:selected-bg
-    :scrollbar-track
-    :scrollbar-thumb
+    ;; scrollbarTrack and scrollbarThumb are foreground slots
+    ;; (v1.4.0 theme-tokens.ts:36-44).
     :search-match-bg
     :user-message-bg
     :custom-message-bg

@@ -334,7 +334,7 @@
            (cadr-tui:make-terminal-renderer
             terminal :alt-p t))
          (thumb-bg
-           (cadr-tui:theme-background-ansi
+           (cadr-tui:theme-foreground-ansi
             :scrollbar-thumb :enabled-p t))
          (lines
            (loop for index from 1 to 8

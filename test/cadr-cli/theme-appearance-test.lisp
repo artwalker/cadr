@@ -90,7 +90,7 @@
   ;; (457ae8c79). scrollbarTrack names vars.darkGray "#505050".
   ;; scrollbarThumb "" stays a terminal-default token. Omitting it
   ;; would fall back to selectedBg "#3a3a4a". With no reported
-  ;; terminal color, the concrete dark background is "#000000".
+  ;; terminal color, the empty thumb is the dark foreground guess.
   (let* ((path
            (merge-pathnames
             "examples/extensions/dynamic-resources/dynamic.json"
@@ -132,15 +132,46 @@
                     (cadr-tui:current-theme))))
            (is (string= "#505050"
                         (cadr-tui:theme-color-value :scrollbar-track)))
-           (is (string= "#000000"
+           (is (string= "#e5e5e7"
                         (cadr-tui:theme-color-value :scrollbar-thumb)))
            (is (string=
-                (format nil "~C[49m" #\Escape)
-                (cadr-tui:theme-background-ansi
+                (format nil "~C[39m" #\Escape)
+                (cadr-tui:theme-foreground-ansi
                  :scrollbar-thumb :enabled-p t)))
            (is (string=
-                (format nil "~C[48;2;80;80;80m" #\Escape)
-                (cadr-tui:theme-background-ansi
-                 :scrollbar-track :enabled-p t))))
+                (concatenate
+                 'string
+                 (format nil "~C[39m" #\Escape)
+                 "x"
+                 (format nil "~C[39m" #\Escape))
+                (cadr-tui:theme-foreground
+                 :scrollbar-thumb "x" :enabled-p t)))
+           (signals error
+             (cadr-tui:theme-background-ansi
+              :scrollbar-thumb :enabled-p t))
+           (is (string=
+                (format nil "~C[38;2;80;80;80m" #\Escape)
+                (cadr-tui:theme-foreground-ansi
+                 :scrollbar-track :enabled-p t)))
+           (signals error
+             (cadr-tui:theme-background-ansi
+              :scrollbar-track :enabled-p t))
+           (cadr-tui:set-terminal-default-colors
+            :background '(250 250 250))
+           (is (string= "#e5e5e7"
+                        (cadr-tui:theme-color-value :scrollbar-thumb)))
+           (cadr-tui:set-terminal-default-colors
+            :foreground '(200 210 220))
+           (let ((light
+                   (cadr-tui:make-terminal-theme
+                    :light
+                    :capabilities
+                    (cadr-tui:make-terminal-capabilities
+                     :images nil :true-color-p t)
+                    :overrides
+                    '((:scrollbar-thumb . "")))))
+             (is (string= "#c8d2dc"
+                          (cadr-tui:theme-color-value
+                           :scrollbar-thumb :theme light)))))
       (cadr-tui:set-terminal-default-colors)
       (cadr-tui:set-current-theme previous))))

@@ -106,9 +106,9 @@
 
 (defun style-alt-scrollbar-cell
     (line column width &optional (theme-key :scrollbar-thumb))
-  ;; pi@4a080252f layout.ts:249-327 — the last-column cell keeps its
-  ;; text and leading SGR; track/thumb background wraps only that cell
-  ;; (cadr paints theme bg instead of replacing the glyph with │/┃).
+  ;; pi@4a080252f layout.ts:309-319 paints with theme.fg. The last
+  ;; column keeps its text and leading SGR; the scrollbar foreground
+  ;; wraps only that cell (the glyph stays, unlike │/┃).
   (if (image-line-p line)
       line
       (let* ((before
@@ -138,9 +138,9 @@
                 (max 0 (- width (1+ column))) t)))
         (concatenate
          'string before before-padding target-prefix
-         (theme-background-ansi theme-key :enabled-p t)
+         (theme-foreground-ansi theme-key :enabled-p t)
          target-text
-         (format nil "~C[49m" #\Escape)
+         (format nil "~C[39m" #\Escape)
          after))))
 
 (defun apply-alt-scrollbar (renderer lines width height)
