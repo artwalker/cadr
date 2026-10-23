@@ -13,7 +13,7 @@
 (defparameter +openai-codex-oauth-metadata+
   (make-oauth-provider-metadata
    :is-subscription-p t
-   :provider-name "OpenAI Codex"
+   :provider-name "OpenAI Codex (legacy)"
    :method-name "OpenAI (ChatGPT Plus/Pro)"
    :auth-url-instructions
    "A browser window should open. Complete login to finish."

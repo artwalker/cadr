@@ -165,7 +165,7 @@
        '((:anthropic "Anthropic" "Anthropic (Claude Pro/Max)")
          (:github-copilot "GitHub Copilot" "GitHub Copilot")
          (:kimi-coding "Kimi For Coding" "Kimi Code (subscription)")
-         (:openai-codex "OpenAI Codex" "OpenAI (ChatGPT Plus/Pro)")
+         (:openai-codex "OpenAI Codex (legacy)" "OpenAI (ChatGPT Plus/Pro)")
          (:openrouter "OpenRouter" "OpenRouter OAuth")
          (:radius "Radius" "Radius")
          (:xai "xAI" "xAI (Grok/X subscription)")))

@@ -62,7 +62,7 @@
           "Meta" "Meta (Muse subscription)"
           "Sign in with Meta" nil nil)
          (:openai-codex
-          "OpenAI Codex" "OpenAI (ChatGPT Plus/Pro)" nil
+          "OpenAI Codex (legacy)" "OpenAI (ChatGPT Plus/Pro)" nil
           "A browser window should open. Complete login to finish."
           "Complete login in your browser, or paste the authorization code / redirect URL here:")
          (:openrouter
@@ -100,6 +100,23 @@
         (is (equal manual-input-message
                    (cadr-ai::oauth-provider-metadata-manual-input-message
                     metadata)))))))
+
+(test openai-codex-display-name-matches-v140
+  ;; v1.4.0 packages/ai/src/providers/openai-codex.ts name and baseUrl.
+  ;; packages/ai/CHANGELOG.md renames the provider to this label.
+  ;; Login title is `Login to ${provider.name}`.
+  (let* ((definition (cadr-ai:find-provider-definition :openai-codex))
+         (metadata (cadr-ai:provider-definition-oauth-metadata definition)))
+    (is (string= "OpenAI Codex (legacy)"
+                 (cadr-ai:provider-definition-name definition)))
+    (is (string= "https://chatgpt.com/backend-api"
+                 (cadr-ai:provider-definition-base-url definition)))
+    (is (string= "OpenAI Codex (legacy)"
+                 (cadr-ai::oauth-provider-metadata-provider-name metadata)))
+    (is (string= "OpenAI (ChatGPT Plus/Pro)"
+                 (cadr-ai::oauth-provider-metadata-method-name metadata)))
+    (is (string= "Login to OpenAI Codex (legacy)"
+                 (cadr-ai::oauth-login-title metadata)))))
 
 (test provider-registry-constructs-protocol-adapter-and-model
   (multiple-value-bind (provider model)

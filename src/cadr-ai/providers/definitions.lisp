@@ -573,7 +573,7 @@
      :model-filter-strategy :hide-classifiers-for-oauth)
     (:id :openai-codex
      :baseline-source "packages/ai/src/providers/openai-codex.ts:8"
-     :name "OpenAI Codex"
+     :name "OpenAI Codex (legacy)"
      :protocol :openai-codex-responses
      :protocols (:openai-codex-responses)
      :base-url "https://chatgpt.com/backend-api"

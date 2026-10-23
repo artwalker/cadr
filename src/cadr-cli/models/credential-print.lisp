@@ -635,14 +635,13 @@
 (defun ai-cli-oauth-providers ()
   ;; v1.4.0 packages/ai/src/providers/all.ts builtinProviders(),
   ;; filtered to auth.oauth.  Row order is that construction order.
-  ;; openai-codex's provider name at that tag is the legacy label.
+  ;; The printed name is the definition :name.  openai-codex is
+  ;; "OpenAI Codex (legacy)" (packages/ai/src/providers/openai-codex.ts).
   (loop for row in cadr-ai::*built-in-provider-definition-rows*
         for id = (getf row :id)
         when (getf row :oauth-login-strategy)
           collect (cons (string-downcase (symbol-name id))
-                        (if (eq id :openai-codex)
-                            "OpenAI Codex (legacy)"
-                            (getf row :name)))))
+                        (getf row :name))))
 
 (defun ai-cli-provider-lines (&optional (prefix ""))
   ;; v1.4.0 cli.ts help is `  ${id.padEnd(20)} ${name}`; list omits

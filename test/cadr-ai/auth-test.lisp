@@ -510,7 +510,7 @@
           (anthropic
             (capture-cancelled-prompt
              #'cadr-ai:login-anthropic-oauth)))
-      (is (string= "Login to OpenAI Codex"
+      (is (string= "Login to OpenAI Codex (legacy)"
                    (getf openai :title)))
       (is (string=
            "A browser window should open. Complete login to finish."
