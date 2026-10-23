@@ -2488,3 +2488,17 @@ The gray `Working` status rule is canonicalized in
   cell starts with `open：顾问裁决 2026-10-23 第四次返修，修法限定：` and the
   fixed approach in Scope, then `原 blocked 记录：`, and keeps the
   previous blocked text.
+
+## 2026-10-23 — GAP-05b gets a narrow fourth repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-05b's third acceptance left one defect. The issue count is
+  converging. The row is open for a fourth repair limited to that one
+  defect. The previous blocked text stays after the new prefix.
+- **Scope:** 第四次返修，范围只限第三次验收的一条（同一脚本内并发
+  models.classify 按上游每脚本 4 个封顶，各次 usage 累加进脚本结果），
+  测试对着 v1.4.0 packages/codemode 对应测试锁死。
+- **Why:** the third acceptance named one remaining defect. The count
+  is converging, so this pass stays inside that scope.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05b. The status
+  cell starts with `open：顾问裁决 2026-10-23 第四次返修，范围只限第三次验收的一条（同一脚本内并发 models.classify 按上游每脚本 4 个封顶，各次 usage 累加进脚本结果），测试对着 v1.4.0 packages/codemode 对应测试锁死；原 blocked 记录：` and keeps the previous blocked text.
