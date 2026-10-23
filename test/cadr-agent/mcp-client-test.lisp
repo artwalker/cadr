@@ -915,8 +915,9 @@ server.serve_forever()
        (cadr-agent::mcp-obj "command" "cadr-mcp-missing-command")
        (namestring (uiop:getcwd)))
     (error (condition)
-      (is (search "MCP server \"missing\" failed to connect:"
-                  (princ-to-string condition))))))
+      (let ((text (princ-to-string condition)))
+        (is (search "MCP server \"missing\" failed to connect:" text))
+        (is (search "spawn cadr-mcp-missing-command ENOENT" text))))))
 
 (test mcp-runtime-http-retries-transient-failure-and-sign-in-message
   (let ((server (mcp-start-http "retry")))

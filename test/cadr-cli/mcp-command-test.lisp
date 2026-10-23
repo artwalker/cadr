@@ -83,7 +83,7 @@ for line in sys.stdin:
              (is (search (format nil "fixture: connected, 1 tool (codemode, global)~%")
                          (format nil "~A~%" output)))
              (is (search "  tools: echo" output))
-             (is (search (format nil "broken: failed (codemode, global)~%  pi-test-missing-mcp-server~%")
+             (is (search (format nil "broken: failed (codemode, global)~%  pi-test-missing-mcp-server~%  spawn pi-test-missing-mcp-server ENOENT")
                          (format nil "~A~%" output)))
              (is (search "parked: disabled (codemode, global)" output))
              (is (search "config error: " output))

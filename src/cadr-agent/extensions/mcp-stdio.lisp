@@ -241,6 +241,68 @@
       (unless (mcp-stdio-transport-closed-p transport)
         (mcp-stdio-emit-error transport condition)))))
 
+;;; Node child_process (v22 lib/internal/child_process.js) turns uv_spawn
+;;; failures into error.message. ENOENT, EACCES, EAGAIN, EMFILE, and
+;;; ENFILE include the file (`spawn <file> ENOENT`). Every other errno
+;;; is `spawn <CODE>` with no file. `cadr mcp list` prints that string
+;;; as the connection error. SBCL's launch-program text is not that
+;;; message; the errno is still set when the condition is signaled.
+(defun mcp-stdio-spawn-failure-p (condition)
+  (and (typep condition 'simple-condition)
+       (member (simple-condition-format-control condition)
+               '("Couldn't execute ~S: ~A"
+                 "Couldn't change directory to ~S: ~A")
+               :test #'string=)))
+
+(defun mcp-stdio-errno-name (errno)
+  (cond ((= errno sb-posix:enoent) "ENOENT")
+        ((= errno sb-posix:eacces) "EACCES")
+        ((= errno sb-posix:eagain) "EAGAIN")
+        ((= errno sb-posix:emfile) "EMFILE")
+        ((= errno sb-posix:enfile) "ENFILE")
+        ((= errno sb-posix:enotdir) "ENOTDIR")
+        ((= errno sb-posix:eperm) "EPERM")
+        ((= errno sb-posix:einval) "EINVAL")
+        ((= errno sb-posix:eloop) "ELOOP")
+        ((= errno sb-posix:enametoolong) "ENAMETOOLONG")
+        ((= errno sb-posix:enomem) "ENOMEM")
+        ((= errno sb-posix:etxtbsy) "ETXTBSY")
+        ((= errno sb-posix:eio) "EIO")
+        ((= errno sb-posix:e2big) "E2BIG")))
+
+(defun mcp-stdio-node-spawn-message (command errno)
+  (let ((name (mcp-stdio-errno-name errno)))
+    (when name
+      (if (member name '("ENOENT" "EACCES" "EAGAIN" "EMFILE" "ENFILE")
+                  :test #'string=)
+          (format nil "spawn ~A ~A" command name)
+          (format nil "spawn ~A" name)))))
+
+(defun mcp-stdio-launch (transport command environment)
+  (handler-case
+      (uiop:launch-program
+       command
+       :input :stream
+       :output :stream
+       :error-output (if (string= (mcp-stdio-transport-stderr-mode transport)
+                                  "inherit")
+                         :interactive
+                         :stream)
+       :directory (mcp-stdio-transport-cwd transport)
+       :environment environment
+       :wait nil)
+    (error (condition)
+      (let* ((errno (sb-alien:get-errno))
+             (message (and (mcp-stdio-spawn-failure-p condition)
+                           (mcp-stdio-node-spawn-message
+                            (mcp-stdio-transport-command transport)
+                            errno))))
+        (if message
+            (error 'simple-error
+                   :format-control "~A"
+                   :format-arguments (list message))
+            (error condition))))))
+
 (defun mcp-merge-environment (extra inherit-p)
   (let ((table (make-hash-table :test #'equal)))
     (when inherit-p
@@ -264,19 +326,12 @@
            (cons (mcp-stdio-transport-command transport)
                  (or (mcp-stdio-transport-args transport) nil)))
          (process
-           (uiop:launch-program
+           (mcp-stdio-launch
+            transport
             command
-            :input :stream
-            :output :stream
-            :error-output (if (string= (mcp-stdio-transport-stderr-mode transport)
-                                       "inherit")
-                              :interactive
-                              :stream)
-            :directory (mcp-stdio-transport-cwd transport)
-            :environment (mcp-merge-environment
-                          (mcp-stdio-transport-env transport)
-                          (mcp-stdio-transport-inherit-env-p transport))
-            :wait nil))
+            (mcp-merge-environment
+             (mcp-stdio-transport-env transport)
+             (mcp-stdio-transport-inherit-env-p transport))))
          (pid (uiop:process-info-pid process)))
     (setf (mcp-stdio-transport-process transport) process
           (mcp-stdio-transport-pid transport) pid)
