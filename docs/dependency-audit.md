@@ -148,6 +148,28 @@ binary, and not executed in the cadr process.
 | Retained artifact | `test/fixtures/mermaid-golden/marked-18.0.5.tgz` |
 | Nature | Offline golden generator input. Distinct from the already-audited `marked.min.js` 18.0.5 browser embed used by `/export`. |
 
+## Ported source: Model Context Protocol TypeScript SDK v1.29.0
+
+The MCP OAuth flow in `src/cadr-agent/extensions/mcp-oauth.lisp` is a
+Common Lisp adaptation of the client auth flow that v1.4.0
+`packages/mcp/src/oauth/` adapts from modelcontextprotocol/typescript-sdk
+v1.29.0.  This is a source port, not a dependency.  The Node package is
+not vendored, not an ASDF system, and not loaded at runtime.
+
+| Field | Value |
+|---|---|
+| Artifact | Model Context Protocol TypeScript SDK v1.29.0 (license text only) |
+| Upstream copy | `packages/mcp/LICENSES/modelcontextprotocol-typescript-sdk.txt` at v1.4.0 (`4a080252`) |
+| SHA-256 | `5e13dbbc1d120fc2a03cecde7c91424ae2d7de11b63d58ded2f4431e261ee50d` |
+| Bytes | 1071 |
+| License | MIT |
+| License copy in repo | `docs/third-party/modelcontextprotocol-typescript-sdk-LICENSE.txt` |
+| Copyright | Copyright (c) 2024 Anthropic, PBC |
+
+The license file is byte-identical to that upstream blob.  The module
+header points at the copy.  Release notes in `THIRD-PARTY-NOTICES` name
+the same path.  No new production dependency is added.
+
 ## Test and exception-transitive systems
 
 - `fiveam`: assertions and ASDF `test-op`.

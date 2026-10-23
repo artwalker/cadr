@@ -582,3 +582,47 @@
     (error (condition)
       (is (string= "The authorization server does not support Client ID Metadata Documents for public clients; remove oauth.clientRegistration \"cimd\""
                    (princ-to-string condition))))))
+
+;;; v1.4.0 packages/mcp/LICENSES/modelcontextprotocol-typescript-sdk.txt
+;;; git cat-file blob at 4a080252. discovery.ts, flow.ts, and types.ts
+;;; carry the same copyright and point at LICENSES/.
+
+(defparameter +mcp-sdk-license-sha256+
+  "5e13dbbc1d120fc2a03cecde7c91424ae2d7de11b63d58ded2f4431e261ee50d")
+
+(defparameter +mcp-sdk-license-relative+
+  "docs/third-party/modelcontextprotocol-typescript-sdk-LICENSE.txt")
+
+(defun mcp-sdk-license-root ()
+  (asdf:system-source-directory "cadr-agent"))
+
+(defun mcp-sdk-license-sha256 (path)
+  (subseq
+   (string-trim
+    '(#\Newline #\Space)
+    (uiop:run-program
+     (list "sha256sum" (namestring path))
+     :output :string))
+   0 64))
+
+(test mcp-oauth-ships-the-typescript-sdk-license
+  (let* ((root (mcp-sdk-license-root))
+         (license (merge-pathnames +mcp-sdk-license-relative+ root))
+         (source (uiop:read-file-string
+                  (merge-pathnames
+                   "src/cadr-agent/extensions/mcp-oauth.lisp" root)))
+         (notices (uiop:read-file-string
+                   (merge-pathnames "THIRD-PARTY-NOTICES" root)))
+         (audit (uiop:read-file-string
+                 (merge-pathnames "docs/dependency-audit.md" root))))
+    (is (= 1071 (with-open-file (in license
+                                    :element-type '(unsigned-byte 8))
+                  (file-length in))))
+    (is (string= +mcp-sdk-license-sha256+
+                 (mcp-sdk-license-sha256 license)))
+    (is (search "Copyright (c) 2024 Anthropic, PBC. Licensed under MIT; see docs/third-party/modelcontextprotocol-typescript-sdk-LICENSE.txt."
+                source))
+    (is (search "Model Context Protocol TypeScript SDK v1.29.0" notices))
+    (is (search +mcp-sdk-license-relative+ notices))
+    (is (search +mcp-sdk-license-sha256+ audit))
+    (is (search +mcp-sdk-license-relative+ audit))))

@@ -4,7 +4,7 @@
   (require :sb-bsd-sockets)
   (require :sb-posix))
 
-;;; v1.4.0 packages/mcp/src/oauth and coding-agent extensions/mcp/oauth.ts.
+;;; Adapted from modelcontextprotocol/typescript-sdk v1.29.0. Copyright (c) 2024 Anthropic, PBC. Licensed under MIT; see docs/third-party/modelcontextprotocol-typescript-sdk-LICENSE.txt.
 ;;; One JSON state record per server URL. HTTP is a boundary the caller
 ;;; can replace; the flow itself does not keep a second copy of the grant.
 

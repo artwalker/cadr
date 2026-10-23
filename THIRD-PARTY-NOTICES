@@ -30,3 +30,17 @@ Apache License, Version 2.0.
 
 This product includes software developed by SpaceXAI and Alexey Zaytsev,
 ported to Common Lisp for cadr.
+
+Model Context Protocol TypeScript SDK v1.29.0
+----------------------------------------------
+
+Source: modelcontextprotocol/typescript-sdk v1.29.0
+License: MIT
+Full license text: docs/third-party/modelcontextprotocol-typescript-sdk-LICENSE.txt
+
+Copyright (c) 2024 Anthropic, PBC
+
+The OAuth implementation in src/cadr-agent/extensions/mcp-oauth.lisp is
+adapted from that SDK's client auth flow.  cadr does not vendor the Node
+package.  The license text is the notice upstream publishes at
+packages/mcp/LICENSES/modelcontextprotocol-typescript-sdk.txt.
