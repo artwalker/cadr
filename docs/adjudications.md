@@ -2411,3 +2411,26 @@ The gray `Working` status rule is canonicalized in
   SHA256 必须对着用上游 dark 主题颜色渲染的结果锁死，不得锁 cadr 写死的颜色。
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-39. The status
   cell starts with `open：顾问裁决 2026-10-23 第三次返修，范围只限第二次验收的一条（"escape to return" 与 3D Armin 的颜色必须取自当前主题，按 v1.4.0 dark 主题的颜色值），帧 SHA256 必须对着用上游 dark 主题颜色渲染的结果锁死，不得锁 cadr 写死的颜色；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-23 — GAP-05b gets a third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-05b (codemode) is open for a third repair under the already
+  recorded 条件 S. Two acceptances failed. Keep the row whole. If the
+  third acceptance fails, write the status `blocked` and hand the row
+  to the advisor.
+- **Why:** each acceptance found new defects. The implementation was
+  following review comments instead of starting from the upstream test
+  surface.
+- **Second failure:** failure-text prefix, catalog-item fields,
+  `searchTools` declaration types, classify usage, and the other
+  defects already recorded on the row.
+- **Repair:** the third repair follows the already recorded 条件 S
+  (the 2026-10-23 entry that quotes it in full). The mapping table must
+  cover every test file and every test/it case in v1.4.0
+  `packages/codemode`. Do not change the `src/cadr-wasm` translator or
+  the AOT build that GAP-05a owns; the g27h line handles those under
+  the GAP-05a performance ruling. If a change there is truly required,
+  say so in the status cell.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05b. The status
+  cell starts with `open：顾问裁决 2026-10-23 第三次返修，条件 S 见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
