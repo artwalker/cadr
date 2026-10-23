@@ -37,7 +37,7 @@
     (is (equal
          '("Sign in with an account"
            "Sign in with an API key"
-           "Sign in with Radius • unconfigured")
+           "Sign in with Radius • not configured")
          labels))
     (setf (cadr-tui::select-list-selected
            (cadr-cli::login-method-selector-state-select-list state))

@@ -6017,12 +6017,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9ffffe72d21545ec6f8c14f2d318300bad81d68327701b5d65726b62956d71b6",
-          "cadr": "0a89ecc446c89e4485901327d4c3d769f619fba3c33efef627d9bd0eb54602db"
+          "pi": "a8c6749acb180fe8b5c1dc15bde732bef6417bf76c15b64576944e47974caf2a",
+          "cadr": "d0197b1abfeca93f94a63206300e03f0de69db08c97585372f6259a9e2031038"
         },
         "narrow": {
-          "pi": "ad8f57d0fa756bae8187d29ea00af65a1f415efd53cfe9571520d0f2395bbc33",
-          "cadr": "ac77c0f0fd42a341c22d7f2dab03376fedb5d16ddf2018416251193762162620"
+          "pi": "3ca8f27029c604d9c741e78e52e24830baf6224b0ba8dc15f03f32b486176ce3",
+          "cadr": "042deefa5e0e426fd3b4624153c59c84da7328d13500e50ecd1b5585f88022ee"
         }
       },
       "note": "At overlays-auth/auth-method-generic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
@@ -6039,8 +6039,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6040c0e0990c904770a95adc8393e852da07b8429dedd21bba6cafbb7a4c0d1e",
-          "cadr": "11a934ea4a5e2d15fc219e7f23de1d3022b519d7ed14383c3bd8d4a329e0119b"
+          "pi": "d50d5244b35697f3939607f9ecfabe28df228d46913aa7e0e2e721562f957e33",
+          "cadr": "793d7e35ed5042b6837e3e454aa5615b0f996d27f34bdd36787de9c73ed5fe4d"
         }
       },
       "note": "At overlays-auth/login-provider [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
@@ -8436,16 +8436,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "beae0003d75afb88b02447d092b2d2451f2b31202a7052b3e1754769f9de97ed",
-          "cadr": "001948cbd788c428ba2240b45128226a5ef7ebb509aaa7854ba2246bfe6a0343"
+          "pi": "cfb22bf4c03b2d916dd31dd22d6e3393a4e33b72af0e00df356a97bf3be8dbf2",
+          "cadr": "cfb22bf4c03b2d916dd31dd22d6e3393a4e33b72af0e00df356a97bf3be8dbf2"
         }
       },
-      "note": "At overlays-auth/login-provider [narrow] both sides paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
+      "note": "At overlays-auth/login-provider [narrow] semantic screens match, including every provider row ending in • not configured. Raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-auth",

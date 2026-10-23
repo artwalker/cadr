@@ -3914,7 +3914,7 @@ user question"
             :id :google
             :name "Google"
             :auth-type :api-key)
-           "unconfigured")
+           "not configured")
           (list
            (cadr-cli::make-oauth-selector-option
             :id :anthropic
@@ -3960,6 +3960,46 @@ user question"
                    :options (list option))
                   120))))
           (is (search expected rendered)))))))
+
+(test goal27-login-list-without-credentials-reads-not-configured
+  ;; v1.4.0 oauth-selector.test.ts: the missing-status row contains
+  ;; "not configured" and not "✓ configured". oauth-selector.ts:37 paints
+  ;; theme.fg("muted", " • not configured") for /login and /logout.
+  ;; interactive-mode.ts:5864 appends that same suffix to the Radius row.
+  (labels ((plain (mode option)
+             (cadr-tui:strip-terminal-sequences
+              (format nil "~{~A~^~%~}"
+                      (cadr-cli::render-oauth-selector
+                       (cadr-cli::make-oauth-selector-state
+                        :mode mode
+                        :options (list option))
+                       120)))))
+    (let ((missing
+            (cadr-cli::make-oauth-selector-option
+             :id :google :name "Google" :auth-type :api-key)))
+      (dolist (mode '(:login :logout))
+        (let ((output (plain mode missing)))
+          (is (search " • not configured" output))
+          (is (not (search "unconfigured" output)))
+          (is (not (search "✓ configured" output))))))
+    (let ((env
+            (plain
+             :login
+             (cadr-cli::make-oauth-selector-option
+              :id :openai :name "OpenAI" :auth-type :api-key
+              :status '(:type :api-key :source "OPENAI_API_KEY")))))
+      (is (search "✓ env: OPENAI_API_KEY" env))
+      (is (not (search "not configured" env)))))
+  (let* ((radius
+           (first
+            (cadr-cli::login-provider-options
+             (list (cadr-ai:find-provider-definition :radius))
+             :auth-type :oauth)))
+         (label
+           (cadr-tui:strip-terminal-sequences
+            (cadr-tui:select-item-label
+             (cadr-cli::radius-login-menu-item radius)))))
+    (is (string= "Sign in with Radius • not configured" label))))
 
 (test tool-result-images-normalize-once-entering-history
   ;; pi@4a080252f utils/tool-result-images.ts — a BMP tool-result

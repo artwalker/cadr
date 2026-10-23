@@ -567,7 +567,7 @@
          (type (getf status :type))
          (source (getf status :source)))
     (cond
-      ((null status) "• unconfigured")
+      ((null status) "• not configured")
       ((and
         type
         (not (eq type

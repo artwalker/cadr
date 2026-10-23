@@ -312,12 +312,12 @@
      "components/oauth-selector.ts:51-160"
      ("Select provider to configure:" ">"
       "→ OpenAI Codex [subscription] ✓ configured"
-      "Anthropic [API key] • unconfigured"))
+      "Anthropic [API key] • not configured"))
     ("logout-provider"
      "components/oauth-selector.ts:51-160"
      ("Select provider to logout:" ">"
       "→ OpenAI Codex [subscription] ✓ configured"
-      "Anthropic [API key] • unconfigured"))
+      "Anthropic [API key] • not configured"))
     ("api-key"
      "components/login-dialog.ts:30-71,154-167"
      ("Login to Anthropic" "Enter API key" ">"
@@ -407,8 +407,8 @@
             ("scoped-models" . "F830824ABF0324FF9838CAB746C3ED6F8A3BA51470EE0CE2F1A465072DDFA6E8")
             ("trust" . "583EB92A3BE3FA6C778141866D54FF7299822442F68A2B519565C428FB4D0842")
             ("login-method" . "305B0BB2D1C67D71D7851B1EF450E992212C08F8A680CC6DF00AA23CE3B033C0")
-            ("login-provider" . "5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20")
-            ("logout-provider" . "5B88F48EC8368B4395CC5CDCBEE9CBF86B564CD0924F48282ED8E9DE81308212")
+            ("login-provider" . "D3D2FC9155E93E56C9CC3E3F82F7998C9444A45411B5108A5377CD43209B8D42")
+            ("logout-provider" . "7E208D5477F4EA419CB548672870D275D886A3B923B248793816C8E22DDBEB9C")
             ("api-key" . "E465C3E57FB209D3B040B3D8ABC217D916DD147642AEC3B538BABF5135254185")
             ("import" . "849571FA52813EF3B4697FD0F147FC48BC2766470A38A4FC6EA72BC7E86C8FB3")
             ("extension-select" . "E61E0DD33F62647FE9DC33DD667500EC1FAEF81FC40E393707D552721082DCE2")
@@ -749,7 +749,7 @@
              ,(goal9-b3-overlay-text-line
                " → OpenAI Codex [subscription] ✓ configured" width)
              ,(goal9-b3-overlay-text-line
-               "   Anthropic [API key] • unconfigured" width) "" ,border))
+               "   Anthropic [API key] • not configured" width) "" ,border))
            (:logout
             (,border ""
              ,(goal9-b3-overlay-text-line
@@ -759,7 +759,7 @@
              ,(goal9-b3-overlay-text-line
                " → OpenAI Codex [subscription] ✓ configured" width)
              ,(goal9-b3-overlay-text-line
-               "   Anthropic [API key] • unconfigured" width) "" ,border))))
+               "   Anthropic [API key] • not configured" width) "" ,border))))
       (destructuring-bind (mode expected) case
         (is
          (equal
@@ -877,7 +877,7 @@
        (loop for index from 1 to 8
              collect
              (goal9-b3-overlay-text-line
-              (format nil " ~AProvider ~2,'0D [~A] • unconfigured"
+              (format nil " ~AProvider ~2,'0D [~A] • not configured"
                       (if (= index 1) "→ " "  ")
                       index
                       (if (oddp index) "subscription" "API key"))
@@ -898,7 +898,7 @@
             (concatenate 'string "> zzyzx"
                          (make-string 73 :initial-element #\Space)) ""
             (goal9-b3-overlay-text-line
-             " → Zzyzx Provider [API key] • unconfigured" width)
+             " → Zzyzx Provider [API key] • not configured" width)
             "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-oauth-selector state width))))

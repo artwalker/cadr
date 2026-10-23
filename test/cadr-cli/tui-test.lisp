@@ -3085,9 +3085,9 @@
         (is (= width (cadr-tui:visible-width content)))))))
 
 (test goal17-oauth-provider-status-span-owns-its-leading-space
-  ;; Fixed pi@4a080252f oauth-selector.ts:98-151 includes the separator space
-  ;; inside every status span.  It never inserts an unstyled gap between the
-  ;; provider label and status.
+  ;; v1.4.0 oauth-selector.ts:37 includes the separator space inside the
+  ;; muted span (" • not configured").  It never inserts an unstyled gap
+  ;; between the provider label and status.
   (let ((caps
           (cadr-tui:make-terminal-capabilities
            :images nil :true-color-p t :hyperlinks-p nil)))
@@ -3117,7 +3117,7 @@
               (cadr-tui:theme-foreground
                :accent "Anthropic" :enabled-p t)
               (cadr-tui:theme-foreground
-               :muted " • unconfigured" :enabled-p t))
+               :muted " • not configured" :enabled-p t))
              anthropic))
            (is
             (search
