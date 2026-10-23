@@ -318,25 +318,28 @@
             :overlay-options
             '(:width 20 :anchor :top-right :margin 1)
             :handle handle)))
-    (multiple-value-bind (lines row column)
+    (multiple-value-bind (lines row column origin dock placements)
         (cadr-cli::render-tui-state
          state editor 50 12 :overlay overlay)
-      (declare (ignore row column))
-      (is (find "overlay-body" lines :test #'search)))
+      (declare (ignore row column origin dock))
+      (is (find "overlay-body"
+                (cadr-tui:composite-overlay-frame
+                 lines (or placements nil) 50 12)
+                :test #'search)))
     (cadr-tui:overlay-handle-set-hidden handle t)
-    (multiple-value-bind (lines row column)
+    (multiple-value-bind (lines row column origin dock placements)
         (cadr-cli::render-tui-state
          state editor 50 12 :overlay overlay)
-      (declare (ignore row column))
+      (declare (ignore row column origin dock placements))
       (is (not (find "overlay-body" lines :test #'search))))
     (cadr-tui:overlay-handle-set-hidden handle nil)
     (setf
      (cadr-cli::extension-custom-ui-state-overlay-options overlay)
      '(:width 20 :visible nil))
-    (multiple-value-bind (lines row column)
+    (multiple-value-bind (lines row column origin dock placements)
         (cadr-cli::render-tui-state
          state editor 50 12 :overlay overlay)
-      (declare (ignore row column))
+      (declare (ignore row column origin dock placements))
       (is (not (find "overlay-body" lines :test #'search))))))
 
 (test goal12-header-footer-working-and-hidden-thinking-components-compose-with-default-state

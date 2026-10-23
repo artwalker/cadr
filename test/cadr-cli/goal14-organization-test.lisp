@@ -699,7 +699,10 @@
     ;; (interactive/components/announcement.lisp).
     ;; +1 GAP-63: theme-file-summary (interactive/themes.lisp).
     ;; +1 GAP-74: window-tic-tac-toe-editor-slot (interactive/frame.lisp).
-    (is (= 454 definition-count)
+    ;; +1 GAP-65: extension-custom-ui-overlay-placement
+    ;; (interactive/extension-ui.lisp) builds the overlay layer after
+    ;; the dock suffix, so a visible layer does not zero the pin.
+    (is (= 455 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -913,7 +916,10 @@
     ;; wezterm-kitty-clear-before-draw-p (renderer/main-screen.lisp).
     ;; +30 Goal 26 markdown: unclosed math tables and CJK emphasis
     ;; (components/markdown.lisp).
-    (is (= 396 definition-count)
+    ;; +1 GAP-65: composite-chat-overlay-placements
+    ;; (renderer/lifecycle-input.lisp) paints overlay placements after
+    ;; the fullscreen dock is pinned.
+    (is (= 397 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

@@ -93,7 +93,26 @@
   (previous-viewport-top 0
                          :type (integer 0 *))
   (invalid-p t :type boolean)
-  (canonical-repaint-p nil :type boolean))
+  (canonical-repaint-p nil :type boolean)
+  ;; pi@4a080252f tui.ts compositeOverlays runs after renderLayoutFrame.
+  ;; These stay off the document so the dock suffix can still pin.
+  (overlay-placements nil :type list))
+
+(defun composite-chat-overlay-placements
+    (renderer lines width height &key clip-to-screen-p)
+  ;; pi@4a080252f tui-alt-screen.ts doRender slices a too-tall composite
+  ;; to the bottom terminal height after compositeOverlays.
+  (let ((placements
+          (terminal-renderer-overlay-placements renderer)))
+    (if (null placements)
+        lines
+        (let ((composited
+                (composite-overlay-frame
+                 lines placements width height)))
+          (if (and clip-to-screen-p
+                   (> (length composited) height))
+              (last composited height)
+              composited)))))
 
 (defun normalize-wheel-scroll-lines (lines)
   (if (eq lines :auto)

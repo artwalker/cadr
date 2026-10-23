@@ -647,7 +647,8 @@ interactive-mode.ts:5956-5960).")
                                remembered-overlay-custom)))
                     (multiple-value-bind
                           (lines cursor-row cursor-column
-                           editor-origin dock-line-count)
+                           editor-origin dock-line-count
+                           placements)
                         (render-tui-state
                          state (current-editor)
                          (cadr-tui:terminal-columns terminal)
@@ -673,7 +674,10 @@ interactive-mode.ts:5956-5960).")
                        (if alt-p (or dock-line-count 0) 0)
                        (cadr-tui::terminal-renderer-chat-editor-origin
                         renderer)
-                       editor-origin)
+                       editor-origin
+                       (cadr-tui::terminal-renderer-overlay-placements
+                        renderer)
+                       placements)
                       (cadr-tui:render-frame
                        renderer lines
                        :cursor-row cursor-row
@@ -2562,15 +2566,24 @@ interactive-mode.ts:5956-5960).")
            (let* ((width (cadr-tui:terminal-columns terminal))
                   (height (cadr-tui:terminal-rows terminal))
                   (lines
-                    (render-tui-state
-                     state (current-editor) width height
-                     :overlay overlay
-                     :busy-p (tui-state-agent-working-p state)
-                     :extension-host extension-host
-                     :full-document-p t
-                     :now (funcall clock-function)
-                     :spinner-frame
-                     (tui-status-animation-frame status-animation)))
+                    (multiple-value-bind
+                          (lines cursor-row cursor-column
+                           editor-origin dock-line-count placements)
+                        (render-tui-state
+                         state (current-editor) width height
+                         :overlay overlay
+                         :busy-p (tui-state-agent-working-p state)
+                         :extension-host extension-host
+                         :full-document-p t
+                         :now (funcall clock-function)
+                         :spinner-frame
+                         (tui-status-animation-frame status-animation))
+                      (declare (ignore cursor-row cursor-column
+                                       editor-origin dock-line-count))
+                      (if placements
+                          (cadr-tui:composite-overlay-frame
+                           lines placements width height)
+                          lines)))
                   (debug-path
                     (cadr-core:agent-debug-log-path))
                   (messages-jsonl

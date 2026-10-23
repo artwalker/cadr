@@ -478,45 +478,6 @@
                           active-editor-lines
                           widget-below-lines
                           footer-lines))))
-        (when (and floating-overlay
-                   (extension-custom-ui-visible-p floating-overlay))
-          (let ((options
-                  (or (extension-overlay-options floating-overlay)
-                      nil)))
-            (multiple-value-bind (overlay-width ignored-row
-                                  ignored-column ignored-max-height)
-                (cadr-tui:resolve-overlay-layout
-                 width rows 0
-                 :width (getf options :width)
-                 :min-width (getf options :min-width)
-                 :max-height (getf options :max-height)
-                 :anchor (or (getf options :anchor) :center)
-                 :offset-x (or (getf options :offset-x) 0)
-                 :offset-y (or (getf options :offset-y) 0)
-                 :row (getf options :row)
-                 :col (getf options :col)
-                 :margin (getf options :margin))
-              (declare (ignore ignored-row ignored-column
-                               ignored-max-height))
-              (setf frame
-                    (cadr-tui:composite-overlay-frame
-                     frame
-                     (list
-                      (cadr-tui:make-overlay-placement
-                       :lines
-                       (render-extension-custom-ui
-                        floating-overlay overlay-width)
-                       :width (getf options :width)
-                       :min-width (getf options :min-width)
-                       :max-height (getf options :max-height)
-                       :anchor (or (getf options :anchor) :center)
-                       :offset-x (or (getf options :offset-x) 0)
-                       :offset-y (or (getf options :offset-y) 0)
-                       :row (getf options :row)
-                       :col (getf options :col)
-                       :margin (getf options :margin)
-                       :visible-p t))
-                     width rows)))))
         (values
          frame
          cursor-row
@@ -524,10 +485,9 @@
              overlay-column
              editor-column)
          editor-origin
-         ;; Floating composite pads the buffer, so the suffix is no
-         ;; longer the dock. Fullscreen pinning uses this count only
-         ;; when the returned lines are still transcript + dock.
-         (if (and floating-overlay
-                  (extension-custom-ui-visible-p floating-overlay))
-             0
-             dock-line-count)))))))
+         dock-line-count
+         (when (and floating-overlay
+                    (extension-custom-ui-visible-p floating-overlay))
+           (list
+            (extension-custom-ui-overlay-placement
+             floating-overlay width rows)))))))))

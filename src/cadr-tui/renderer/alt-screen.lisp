@@ -592,6 +592,10 @@
            (current
              (apply-alt-scrollbar
               renderer current width viewport-height))
+           (current
+             (composite-chat-overlay-placements
+              renderer current width height
+              :clip-to-screen-p t))
            (previous
              (terminal-renderer-previous-lines
               renderer))

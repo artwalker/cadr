@@ -808,10 +808,40 @@ injects the TUI render request when the component is shown."))
               (extension-editor-dialog-editor component))))
       (t nil))))
 
+(defun extension-custom-ui-overlay-placement
+    (overlay width rows)
+  (let ((options (or (extension-overlay-options overlay) nil)))
+    (multiple-value-bind (overlay-width ignored-row
+                          ignored-column ignored-max-height)
+        (cadr-tui:resolve-overlay-layout
+         width rows 0
+         :width (getf options :width)
+         :min-width (getf options :min-width)
+         :max-height (getf options :max-height)
+         :anchor (or (getf options :anchor) :center)
+         :offset-x (or (getf options :offset-x) 0)
+         :offset-y (or (getf options :offset-y) 0)
+         :row (getf options :row)
+         :col (getf options :col)
+         :margin (getf options :margin))
+      (declare (ignore ignored-row ignored-column
+                       ignored-max-height))
+      (cadr-tui:make-overlay-placement
+       :lines (render-extension-custom-ui overlay overlay-width)
+       :width (getf options :width)
+       :min-width (getf options :min-width)
+       :max-height (getf options :max-height)
+       :anchor (or (getf options :anchor) :center)
+       :offset-x (or (getf options :offset-x) 0)
+       :offset-y (or (getf options :offset-y) 0)
+       :row (getf options :row)
+       :col (getf options :col)
+       :margin (getf options :margin)
+       :visible-p t))))
+
 (defun render-tui-extension-overlay
     (state editor width rows overlay
      &key busy-p extension-host full-document-p now spinner-frame)
-  (declare (ignore now))
   (let* ((fingerprint
            (extension-custom-ui-paint-fingerprint overlay))
          (key
@@ -838,58 +868,23 @@ injects the TUI render request when the component is shown."))
                 (gethash key *tui-extension-overlay-by-key*))))
     (if cached
         (values-list cached)
-        (multiple-value-bind (base cursor-row cursor-column)
+        (multiple-value-bind
+              (base cursor-row cursor-column origin dock)
             (render-tui-state
              state editor width rows
              :busy-p busy-p :extension-host extension-host
              :full-document-p full-document-p :now now
              :spinner-frame spinner-frame)
-          (unless (extension-custom-ui-visible-p overlay)
-            (let ((result (list base cursor-row cursor-column)))
-              (when key
-                (setf (gethash key *tui-extension-overlay-by-key*)
-                      result))
-              (return-from render-tui-extension-overlay
-                (values-list result))))
-          (let ((options (or (extension-overlay-options overlay) nil)))
-            (multiple-value-bind (overlay-width ignored-row ignored-column
-                                  ignored-max-height)
-                (cadr-tui:resolve-overlay-layout
-                 width rows 0
-                 :width (getf options :width)
-                 :min-width (getf options :min-width)
-                 :max-height (getf options :max-height)
-                 :anchor (or (getf options :anchor) :center)
-                 :offset-x (or (getf options :offset-x) 0)
-                 :offset-y (or (getf options :offset-y) 0)
-                 :row (getf options :row)
-                 :col (getf options :col)
-                 :margin (getf options :margin))
-              (declare (ignore ignored-row ignored-column ignored-max-height))
-              (let ((result
-                      (list
-                       (cadr-tui:composite-overlay-frame
-                        base
-                        (list
-                         (cadr-tui:make-overlay-placement
-                          :lines
-                          (render-extension-custom-ui overlay overlay-width)
-                          :width (getf options :width)
-                          :min-width (getf options :min-width)
-                          :max-height (getf options :max-height)
-                          :anchor (or (getf options :anchor) :center)
-                          :offset-x (or (getf options :offset-x) 0)
-                          :offset-y (or (getf options :offset-y) 0)
-                          :row (getf options :row)
-                          :col (getf options :col)
-                          :margin (getf options :margin)
-                          :visible-p t))
-                        width rows)
-                       cursor-row cursor-column)))
-                (when key
-                  (setf (gethash key *tui-extension-overlay-by-key*)
-                        result))
-                (values-list result))))))))
+          (let ((result
+                  (list base cursor-row cursor-column origin dock
+                        (when (extension-custom-ui-visible-p overlay)
+                          (list
+                           (extension-custom-ui-overlay-placement
+                            overlay width rows))))))
+            (when key
+              (setf (gethash key *tui-extension-overlay-by-key*)
+                    result))
+            (values-list result))))))
 
 (defvar *tui-input-thread* nil
   "The thread that owns `run-tui`'s input/render loop. send-message

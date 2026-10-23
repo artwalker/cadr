@@ -6517,3 +6517,137 @@
                (position-if
                 (lambda (line) (search "startup-01" line))
                 screen))))))))
+
+(defun fullscreen-overlay-marker ()
+  (cadr-cli::make-extension-custom-ui-state
+   :component "OVERLAY-MARKER"
+   :overlay-p t
+   :overlay-options '(:width 20 :anchor :center)))
+
+(defun fullscreen-overlay-screen
+    (state &key (width 80) (rows 24) overlay floating-overlay
+           scroll-to-top-p)
+  ;; Same handoff as run-tui's render-now: the document keeps its dock
+  ;; suffix, and the alt renderer composites placements after the pin.
+  (let* ((editor (cadr-tui:make-multiline-editor))
+         (terminal
+           (cadr-tui:make-virtual-terminal
+            :columns width :rows rows))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p t)))
+    (multiple-value-bind
+          (lines row column origin dock placements)
+        (cadr-cli::render-tui-state
+         state editor width rows
+         :overlay overlay
+         :floating-overlay floating-overlay
+         :full-document-p t)
+      (setf
+       (cadr-tui::terminal-renderer-chat-dock-lines renderer)
+       (or dock 0)
+       (cadr-tui::terminal-renderer-chat-editor-origin renderer)
+       origin
+       (cadr-tui::terminal-renderer-overlay-placements renderer)
+       placements)
+      (cadr-tui:render-frame
+       renderer lines :cursor-row row :cursor-column column)
+      (when scroll-to-top-p
+        (cadr-tui:renderer-scroll-to-top renderer)
+        (cadr-tui:render-frame
+         renderer lines :cursor-row row :cursor-column column))
+      (values
+       (mapcar
+        (lambda (line)
+          (string-right-trim
+           " "
+           (cadr-tui:strip-terminal-sequences line)))
+        (cadr-tui:virtual-terminal-snapshot terminal))
+       dock))))
+
+(test fullscreen-overlay-keeps-the-footer-on-the-last-rows
+  ;; pi@4a080252f tui-alt-screen.ts doRender (renderLayoutFrame, then
+  ;; compositeOverlays) and layout.ts renderLayoutFrame. On an 80x24
+  ;; frame the cwd and model lines are rows 22 and 23. A centered
+  ;; overlay paints on that frame and does not move the dock.
+  ;; example-overlay-test/wide overlay-open and overlay-search are the
+  ;; active custom overlay; a remembered custom layer is the floating
+  ;; path. Both keep the footer on the last two rows.
+  (let ((marker (fullscreen-overlay-marker)))
+    (dolist (rows '(24 32))
+      (let ((state
+              (cadr-cli::make-tui-state
+               :model "pin-model"
+               :cwd "/tmp/pin-dock")))
+        (cadr-cli::append-tui-entry
+         state
+         (cadr-cli::make-tui-entry :type :notice :text "only-notice"))
+        (dolist (case (list (list nil marker) (list marker nil)))
+          (destructuring-bind (overlay floating) case
+            (multiple-value-bind (screen dock)
+                (fullscreen-overlay-screen
+                 state :width (if (= rows 24) 80 100) :rows rows
+                 :overlay overlay :floating-overlay floating)
+              (let ((notice
+                      (position-if
+                       (lambda (line) (search "only-notice" line))
+                       screen))
+                    (model
+                      (position-if
+                       (lambda (line) (search "pin-model" line))
+                       screen))
+                    (cwd
+                      (position-if
+                       (lambda (line) (search "/tmp/pin-dock" line))
+                       screen))
+                    (painted
+                      (position-if
+                       (lambda (line) (search "OVERLAY-MARKER" line))
+                       screen)))
+                (is (plusp dock))
+                (is (= rows (length screen)))
+                (is (= (1- rows) model))
+                (is (= (- rows 2) cwd))
+                (is (and notice cwd (< notice cwd)))
+                (is (> (- cwd notice) 2))
+                (is (and painted (< painted cwd)))))))))
+    (let ((state
+            (cadr-cli::make-tui-state
+             :model "pin-model"
+             :cwd "/tmp/pin-dock")))
+      (loop for index from 1 to 30
+            do (cadr-cli::append-tui-entry
+                state
+                (cadr-cli::make-tui-entry
+                 :type :notice
+                 :text (format nil "notice-~2,'0D" index))))
+      (dolist (scroll '(nil t))
+        (multiple-value-bind (screen dock)
+            (fullscreen-overlay-screen
+             state :width 80 :rows 24
+             :floating-overlay marker
+             :scroll-to-top-p scroll)
+          (is (plusp dock))
+          (is (= 23
+                 (position-if
+                  (lambda (line) (search "pin-model" line))
+                  screen)))
+          (is (position-if
+               (lambda (line) (search "OVERLAY-MARKER" line))
+               screen))
+          (if scroll
+              (progn
+                (is (position-if
+                     (lambda (line) (search "notice-01" line))
+                     screen))
+                (is (null
+                     (position-if
+                      (lambda (line) (search "notice-30" line))
+                      screen))))
+              (progn
+                (is (null
+                     (position-if
+                      (lambda (line) (search "notice-01" line))
+                      screen)))
+                (is (position-if
+                     (lambda (line) (search "notice-30" line))
+                     screen)))))))))

@@ -313,7 +313,10 @@
                  renderer))
                height))
          (current
-           (clipped-frame-lines terminal lines))
+           (clipped-frame-lines
+            terminal
+            (composite-chat-overlay-placements
+             renderer lines width height)))
          (previous
            (terminal-renderer-previous-lines
             renderer))
