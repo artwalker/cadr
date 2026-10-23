@@ -138,6 +138,12 @@ duplicate, or unknown dispositions make analysis fail.
 Value normalization is confined to exact delimiters and each rule maps a
 known engine/product difference, never a behavior difference.  The current
 rule set covers: fixture temp paths, the product name/version/title strings
+(the release token itself, `v1.4.0` upstream and the dotted release in
+`version.sexp` on the cadr side, each mapped to `v<VERSION>` wherever it
+stands, including the logo line that does not repeat the product name; a
+token is `v` plus that exact dotted release and must not continue into
+another digit or dot, so `v0.84.3`, `v1.4.1`, `v1.4.00`, bare `1.4.0`, and
+counts stay)
 and the `PI_*`/`CADR_*` environment prefix (I04), the spinner glyph (frame
 timing), elapsed seconds, the startup-benchmark variable name, and — added
 for the Goal 18 I7 tail — three more: the product documentation directory
@@ -276,7 +282,7 @@ the authority.
 | Isolated sandbox | Exact per-side temporary sandbox prefix to `<SANDBOX>` | Parent-directory text otherwise contains the random `mkdtemp` name. |
 | Isolated session directory | Exact per-side temporary session directory to `<SESSION_DIR>` | Both drivers persist the same fixture state outside their product-specific config roots; suffixes and command syntax remain checked. |
 | Fixed baseline cache | Exact `/tmp/cadr-render-diff-pi-4a080252f` to `<PI_BASELINE>` | The pi crash stack necessarily names the materialized immutable baseline. |
-| Product/version header | Exact plain and observed styled `pi v1.4.0` / `cadr v0.2.0` forms to `<PRODUCT> v<VERSION>` | Product rename and release version are approved; surrounding SGR remains checked. |
+| Product/version header | Release tokens `v1.4.0` (upstream) and `v` plus the cadr release in `version.sexp` (currently `v0.2.0`) become `v<VERSION>` on both sides, including the logo line that carries the token without the product name. The same pass still maps the plain and observed styled `pi v<VERSION>` / `cadr v<VERSION>` headers to `<PRODUCT> v<VERSION>`. A token does not continue into another digit or dot, so `v0.84.3`, `v1.4.1`, `v1.4.00`, bare `1.4.0`, and counts stay. | Showing cadr's own release is product identity, the same class as the product name. Surrounding SGR remains checked. |
 | Terminal-title product | Exact OSC title prefix `π - ` to `<PRODUCT> - ` | Only the brand glyph is replaced; title existence, workspace suffix, framing, and BEL remain checked. |
 | Product prose/config/commands | Exact onboarding sentences, `.pi/agent` / `.cadr`, untrusted-resource tokens, restart tokens, and styled/plain resume-command product tokens | These are direct consequences of the approved product rename; arbitrary substrings are not replaced. |
 | Export filename | Exact fixed-clock `pi-session-2023-11-14T22-13-20-000Z_render-session.html` / Cadr counterpart to `<PRODUCT>-session-<FIXED_TIME>_<SESSION_ID>.html` | Prefix and ID spellings differ only by the approved brand and fixed driver identity. |

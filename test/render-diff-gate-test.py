@@ -707,6 +707,27 @@ class RenderDiffGateTest(unittest.TestCase):
                     analysis_root=analysis,
                 )
 
+    def test_product_version_tokens_normalize_on_both_sides_only(self) -> None:
+        cadr_version = RENDER_DIFF.cadr_release_version()
+        upstream = b"\x1b[38;2;126;136;142mv1.4.0\x1b[39m beside pi v1.4.0"
+        cadr = (
+            b"\x1b[38;2;126;136;142mv"
+            + cadr_version
+            + b"\x1b[39m beside cadr v"
+            + cadr_version
+        )
+        expected_upstream = (
+            b"\x1b[38;2;126;136;142mv<VERSION>\x1b[39m beside <PRODUCT> v<VERSION>"
+        )
+        expected_cadr = (
+            b"\x1b[38;2;126;136;142mv<VERSION>\x1b[39m beside <PRODUCT> v<VERSION>"
+        )
+        self.assertEqual(RENDER_DIFF.normalize_fixed_values(upstream), expected_upstream)
+        self.assertEqual(RENDER_DIFF.normalize_fixed_values(cadr), expected_cadr)
+        untouched = b"v0.84.3 v1.4.1 v1.4.00 v0.2.1 1.4.0 0.2.0 128k 12 fd-v10.2.0 9.9.9"
+        self.assertNotIn(cadr_version, b"1.4.0")
+        self.assertEqual(RENDER_DIFF.normalize_fixed_values(untouched), untouched)
+
     def test_bash_output_path_normalization_is_bounded_to_product_temp_files(self) -> None:
         pi_path = b"Full output: /tmp/pi-bash-2ccded83dc83b1f8.log"
         cadr_path = b"Full output: /tmp/cadr-bash-3994869173-466576989544909805.log"

@@ -2766,6 +2766,43 @@ _WORKING_STATUS_LINE = re.compile(
 )
 
 
+_UPSTREAM_RELEASE_VERSION = b"1.4.0"
+
+
+def cadr_release_version() -> bytes:
+    """Dotted release from version.sexp, the single cadr version source."""
+    raw = (ROOT / "version.sexp").read_text(encoding="utf-8").strip()
+    if len(raw) >= 2 and raw[0] == raw[-1] == '"':
+        raw = raw[1:-1]
+    if re.fullmatch(r"[0-9]+(?:\.[0-9]+)+", raw) is None:
+        raise HarnessFailure("version.sexp is not a dotted release: " + raw)
+    return raw.encode("ascii")
+
+
+_CADR_RELEASE_VERSION = cadr_release_version()
+_PRODUCT_VERSION_RE = re.compile(
+    rb"v(?:"
+    + b"|".join(
+        re.escape(token)
+        for token in dict.fromkeys(
+            (_UPSTREAM_RELEASE_VERSION, _CADR_RELEASE_VERSION)
+        )
+    )
+    + rb")(?![0-9.])"
+)
+
+
+def normalize_product_versions(data: bytes) -> bytes:
+    """Map each product's own release token to v<VERSION>.
+
+    Upstream v1.4.0 and the cadr release in version.sexp are product
+    identity, the same class as the product name. The token is ``v`` plus
+    that exact dotted release, and it must not continue into another digit
+    or dot. Other numbers stay, including other ``vX.Y.Z`` tokens.
+    """
+    return _PRODUCT_VERSION_RE.sub(b"v<VERSION>", data)
+
+
 def canonicalize_working_status(data: bytes) -> bytes:
     def replace(match: re.Match[bytes]) -> bytes:
         visible = re.sub(rb"\x1b\[[0-9;]*m", b"", match.group(0))
@@ -2781,6 +2818,7 @@ def canonicalize_working_status(data: bytes) -> bytes:
 
 
 def normalize_fixed_values(data: bytes) -> bytes:
+    data = normalize_product_versions(data)
     replacements = [
         (str(Path(f"/tmp/{_BASELINE_CACHE_NAME}")).encode(), b"<PI_BASELINE>"),
         # Product documentation directories: pi resolves docs/ inside the
@@ -2796,11 +2834,11 @@ def normalize_fixed_values(data: bytes) -> bytes:
         (b"extensions/broken/index.ts", b"extensions/broken/<ENTRY>"),
         (b"extensions/broken/extension.lisp", b"extensions/broken/<ENTRY>"),
         (
-            b"pi\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v0.84.3",
+            b"pi\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v<VERSION>",
             b"<PRODUCT>\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (
-            b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.3",
+            b"pi\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         # I01: this host's tmux replay of the baseline banner omits the
@@ -2808,20 +2846,20 @@ def normalize_fixed_values(data: bytes) -> bytes:
         # envelope onto the same I04 placeholder the bold form already
         # produces so the exact screen pair stays stable.
         (
-            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.3\x1b[39m",
+            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v<VERSION>\x1b[39m",
             b"\x1b[1m\x1b[38;2;138;190;183m<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>\x1b[39m",
         ),
         (
-            b"pi\x1b[38;2;102;102;102m v0.84.3",
+            b"pi\x1b[38;2;102;102;102m v<VERSION>",
             b"<PRODUCT>\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (
-            b"cadr\x1b[0m\x1b[38;2;102;102;102m v0.2.0",
+            b"cadr\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
-        (b"cadr v0.2.0\x1b[22m", b"<PRODUCT> v<VERSION>\x1b[22m"),
-        (b"pi v0.84.3", b"<PRODUCT> v<VERSION>"),
-        (b"cadr v0.2.0", b"<PRODUCT> v<VERSION>"),
+        (b"cadr v<VERSION>\x1b[22m", b"<PRODUCT> v<VERSION>\x1b[22m"),
+        (b"pi v<VERSION>", b"<PRODUCT> v<VERSION>"),
+        (b"cadr v<VERSION>", b"<PRODUCT> v<VERSION>"),
         (b"\x1b]0;\xcf\x80 - ", b"\x1b]0;<PRODUCT> - "),
         (b"\x1b]0;cadr - ", b"\x1b]0;<PRODUCT> - "),
         (b"Pi can explain its own features", b"<PRODUCT_TITLE> can explain its own features"),
@@ -4085,15 +4123,27 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure("render-diff fake GitHub CLI contract drifted")
         if normalized(sample, "pi", sandbox) != sample:
             raise HarnessFailure("normalization altered whitespace or ANSI color bytes")
-        pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.3"
+        pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v1.4.0"
         cadr_header = b"cadr\x1b[0m\x1b[38;2;102;102;102m v0.2.0"
         expected_header = b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>"
         if normalize_fixed_values(pi_header) != expected_header:
             raise HarnessFailure("pi styled product header normalization drifted")
         if normalize_fixed_values(cadr_header) != expected_header:
             raise HarnessFailure("cadr styled product header normalization drifted")
+        logo_pi = b"\x1b[38;2;126;136;142mv1.4.0\x1b[39m"
+        logo_cadr = b"\x1b[38;2;126;136;142mv" + cadr_release_version() + b"\x1b[39m"
+        logo_expected = b"\x1b[38;2;126;136;142mv<VERSION>\x1b[39m"
+        if normalize_fixed_values(logo_pi) != logo_expected:
+            raise HarnessFailure("upstream release token normalization drifted")
+        if normalize_fixed_values(logo_cadr) != logo_expected:
+            raise HarnessFailure("cadr release token normalization drifted")
+        untouched_numbers = (
+            b"v0.84.3 v1.4.1 v1.4.00 v0.2.1 1.4.0 0.2.0 128k 12 fd-v10.2.0"
+        )
+        if normalize_fixed_values(untouched_numbers) != untouched_numbers:
+            raise HarnessFailure("product version normalization changed other numbers")
         unbold_pi_header = (
-            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.3\x1b[39m"
+            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v1.4.0\x1b[39m"
         )
         unbold_expected = (
             b"\x1b[1m\x1b[38;2;138;190;183m<PRODUCT>\x1b[0m"
@@ -4103,7 +4153,7 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure("pi unbold product header normalization drifted")
         bold_pi_header = (
             b"\x1b[1m\x1b[38;2;138;190;183mpi\x1b[0m"
-            b"\x1b[38;2;102;102;102m v0.84.3\x1b[39m"
+            b"\x1b[38;2;102;102;102m v1.4.0\x1b[39m"
         )
         if normalize_fixed_values(unbold_pi_header) != normalize_fixed_values(
             bold_pi_header
