@@ -744,33 +744,43 @@
               (cadr-ai::utf8-octets
                session-data)))
            (css-parts +export-html-css-part-octets+)
-           (html-parts +export-html-html-part-octets+))
-      (ensure-directories-exist path)
-      (with-open-file
-          (stream path
-                  :direction :output
-                  :if-exists :supersede
-                  :if-does-not-exist :create
-                  :element-type '(unsigned-byte 8))
-        (write-sequence (first html-parts) stream)
-        (write-sequence (first css-parts) stream)
-        (write-sequence (export-html-utf8-octets theme-vars) stream)
-        (write-sequence (second css-parts) stream)
-        (write-sequence (export-html-utf8-octets page-background) stream)
-        (write-sequence (third css-parts) stream)
-        (write-sequence (export-html-utf8-octets card-background) stream)
-        (write-sequence (fourth css-parts) stream)
-        (write-sequence (export-html-utf8-octets info-background) stream)
-        (write-sequence (fifth css-parts) stream)
-        (write-sequence (second html-parts) stream)
-        (write-sequence encoded-data stream)
-        (write-sequence (third html-parts) stream)
-        (write-sequence +export-html-marked-js-octets+ stream)
-        (write-sequence (fourth html-parts) stream)
-        (write-sequence +export-html-marked-cjk-friendly-js-octets+ stream)
-        (write-sequence (fifth html-parts) stream)
-        (write-sequence +export-html-highlight-js-octets+ stream)
-        (write-sequence (sixth html-parts) stream)
-        (write-sequence +export-html-template-js-octets+ stream)
-        (write-sequence (seventh html-parts) stream))
+           (html-parts +export-html-html-part-octets+)
+           (reported
+             (if (stringp path) path (namestring path))))
+      ;; pi@4a080252f export-html/index.ts writeFileSync does not mkdir.
+      ;; SBCL says the path does not exist; Node 22.22.0 reports
+      ;; ENOENT with the path string as given, including "." segments.
+      (handler-case
+          (with-open-file
+              (stream path
+                      :direction :output
+                      :if-exists :supersede
+                      :if-does-not-exist :create
+                      :element-type '(unsigned-byte 8))
+            (write-sequence (first html-parts) stream)
+            (write-sequence (first css-parts) stream)
+            (write-sequence (export-html-utf8-octets theme-vars) stream)
+            (write-sequence (second css-parts) stream)
+            (write-sequence (export-html-utf8-octets page-background) stream)
+            (write-sequence (third css-parts) stream)
+            (write-sequence (export-html-utf8-octets card-background) stream)
+            (write-sequence (fourth css-parts) stream)
+            (write-sequence (export-html-utf8-octets info-background) stream)
+            (write-sequence (fifth css-parts) stream)
+            (write-sequence (second html-parts) stream)
+            (write-sequence encoded-data stream)
+            (write-sequence (third html-parts) stream)
+            (write-sequence +export-html-marked-js-octets+ stream)
+            (write-sequence (fourth html-parts) stream)
+            (write-sequence +export-html-marked-cjk-friendly-js-octets+ stream)
+            (write-sequence (fifth html-parts) stream)
+            (write-sequence +export-html-highlight-js-octets+ stream)
+            (write-sequence (sixth html-parts) stream)
+            (write-sequence +export-html-template-js-octets+ stream)
+            (write-sequence (seventh html-parts) stream))
+        (file-error (condition)
+          (if (search "does not exist" (princ-to-string condition))
+              (error "ENOENT: no such file or directory, open '~A'"
+                     reported)
+              (error condition))))
       (pathname path))))

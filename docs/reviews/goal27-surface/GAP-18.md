@@ -72,7 +72,7 @@ FiveAM 都在 `test/cadr-cli/session-command-test.lisp`，补全说明在 `test/
 | 未加引号的 JavaScript 空白（Node 22 的 25 个码位）切开参数，状态行是 `Session exported to: a`，文件是 HTML | `jsonl-export-keeps-at-prefix-and-unicode-spaces` | 新增 |
 | 加引号后整段以 `.jsonl` 结尾，JSONL 路径保留该空白 | 同上 | 新增 |
 | `/export` 后面是 Tab，或参数以 U+00A0 开头，按 `trimStart` 和 `command + " "` | `path-command-argument-matches-v140-get-path-command-argument` | 新增 |
-| 没给路径、`.JSONL`、其它后缀是 HTML；`nested/report.html`、`./page.html`、`../side.html`、`foo/./bar.html` 原样进入状态行，并相对进程目录写入 | `jsonl-export-other-paths-stay-html`；默认文件名 `goal13-default-html-export-name-and-status-match-the-baseline-rule` | 新增 / 已覆盖 |
+| 没给路径、`.JSONL`、其它后缀是 HTML。父目录已存在时 `nested/report.html`、`./page.html`、`../side.html`、`foo/./bar.html` 原样进入状态行，并相对进程目录写入。父目录不存在时 `nested/report.html` 与 `foo/./bar.html` 报 `ENOENT: no such file or directory, open '...'`，不建目录 | `jsonl-export-other-paths-stay-html`；默认文件名 `goal13-default-html-export-name-and-status-match-the-baseline-rule` | 已覆盖 |
 | 新会话头 version 3；请求时才写 `pi.share`；写失败有 `Failed to export session` | `jsonl-export-default-name-uses-a-fresh-stamp`、`jsonl-export-reports-a-write-failure` | 已覆盖 |
 | 补全说明 `Export session (HTML default, or specify path: .html/.jsonl)` | `goal9-b3-builtin-autocomplete-command-contract-matches-baseline` | 已覆盖 |
 
@@ -83,3 +83,9 @@ FiveAM 都在 `test/cadr-cli/session-command-test.lisp`，补全说明在 `test/
 | 状态行留下 `.` | `jsonl-export-drops-dot-segments` 对着 Node `path.resolve` |
 | 未加引号的 Unicode 空白仍写 JSONL | 25 个空白码位都改成 HTML，状态行是 `a`；加引号才写 JSONL |
 | HTML 按会话目录写，状态行只剩文件名 | 相对 HTML 按进程目录写，状态行保留 `normalizePath` 的字符串 |
+
+## 第四次返修
+
+| 记录 | 结果 |
+|---|---|
+| 父目录不存在时 `/export nested/report.html` 与 `/export foo/./bar.html` 建目录并成功 | `jsonl-export-other-paths-stay-html` 先锁 `Failed to export session: ENOENT: no such file or directory, open 'nested/report.html'` 和 `open 'foo/./bar.html'`，且 `nested/`、`foo/` 不存在。父目录建好之后，同一条状态行仍是 `normalizePath` 的字符串。`~/foo/./bar.html` 同样不建 `foo/`，状态是 `open '<home>/foo/bar.html'` 的 ENOENT；`foo/` 存在后状态行是 `path.join` 收掉 `.` 的绝对路径 |

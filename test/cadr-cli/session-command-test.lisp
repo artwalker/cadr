@@ -1226,6 +1226,10 @@
   ;; writeFileSync writes it against process.cwd(), and that string
   ;; is the status line. Node 22 keeps "./page.html", "../side.html",
   ;; and "foo/./bar.html"; it does not call path.resolve on them.
+  ;; writeFileSync does not create a missing parent. Node 22.22.0
+  ;; reports ENOENT for nested/report.html and foo/./bar.html and
+  ;; leaves the directory absent. The same paths succeed once the
+  ;; parent exists, and the status line keeps the normalizePath string.
   (with-test-directory (root)
     (let* ((sessions (merge-pathnames "sessions/" root))
            (session-dir (merge-pathnames "project/" root))
@@ -1244,6 +1248,7 @@
               :model (cli-mock-model)
               :session session))
            (output (make-string-output-stream))
+           (errors nil)
            (basename nil))
       (declare (ignore _))
       (cadr-agent:session-append-message
@@ -1251,11 +1256,39 @@
       (uiop:with-current-directory (launch)
         (dolist (line '("/export report.JSONL"
                         "/export report.jsonl.bak"
-                        "/export \"nested/report.html\""
                         "/export ./page.html"
                         "/export ../side.html"
-                        "/export foo/./bar.html"
                         "/export"))
+          (is (cadr-cli::handle-session-command
+               line agent
+               :directory sessions :cwd session-dir :output output)))
+        (dolist (line '("/export \"nested/report.html\""
+                        "/export foo/./bar.html"))
+          (is (cadr-cli::handle-session-command
+               line agent
+               :directory sessions :cwd session-dir :output output
+               :status-function
+               (lambda (message &optional level)
+                 (push (list message level) errors)))))
+        (setf errors (nreverse errors))
+        (is (equal
+             errors
+             '(("Failed to export session: ENOENT: no such file or directory, open 'nested/report.html'"
+                :error)
+               ("Failed to export session: ENOENT: no such file or directory, open 'foo/./bar.html'"
+                :error))))
+        (is (not (probe-file (merge-pathnames "nested/" launch))))
+        (is (not (probe-file (merge-pathnames "foo/" launch))))
+        (is (not (probe-file
+                  (merge-pathnames "nested/report.html" launch))))
+        (is (not (probe-file
+                  (merge-pathnames "foo/bar.html" launch))))
+        (ensure-directories-exist
+         (merge-pathnames "nested/anchor" launch))
+        (ensure-directories-exist
+         (merge-pathnames "foo/anchor" launch))
+        (dolist (line '("/export \"nested/report.html\""
+                        "/export foo/./bar.html"))
           (is (cadr-cli::handle-session-command
                line agent
                :directory sessions :cwd session-dir :output output)))
@@ -1269,6 +1302,7 @@
           (is (not (probe-file (merge-pathnames name session-dir))))
           (with-open-file (stream path :external-format :utf-8)
             (is (char= #\< (peek-char t stream))))))
+      (is (probe-file (merge-pathnames "foo/./bar.html" launch)))
       (is (probe-file (merge-pathnames "../side.html" launch)))
       (is (probe-file (merge-pathnames basename launch)))
       (is (not (probe-file (merge-pathnames basename session-dir))))
@@ -1631,8 +1665,10 @@
   ;; Node 22.22.0: ~/ joins and collapses, ~draft stays a relative name,
   ;; fileURLToPath collapses "." and decodes %20, a bad percent throws
   ;; "URI malformed", and a native absolute path keeps a literal %20.
-  ;; HTML uses normalizePath, so ~/foo/./bar.html is the joined absolute
-  ;; path (path.join collapses) while the status is that string.
+  ;; HTML uses normalizePath. path.join collapses ~/foo/./bar.html to
+  ;; <home>/foo/bar.html. writeFileSync does not create foo/. Node
+  ;; 22.22.0 reports ENOENT with that absolute path. Once foo/ exists,
+  ;; the status line is the collapsed path and the file is written there.
   (with-test-directory (root)
     (let* ((launch (merge-pathnames "launch/" root))
            (session-dir (merge-pathnames "other-project/" root))
@@ -1750,6 +1786,26 @@
                (let ((html
                        (jsonl-export-resolved-name
                         home "foo/bar.html")))
+                 (setf status nil)
+                 (is (cadr-cli::handle-session-command
+                      "/export ~/foo/./bar.html" agent
+                      :directory sessions :cwd session-dir
+                      :output output
+                      :status-function
+                      (lambda (message &optional level)
+                        (setf status (list message level)))))
+                 (is (equal
+                      (list
+                       (format nil
+                               "Failed to export session: ENOENT: no such file or directory, open '~A'"
+                               html)
+                       :error)
+                      status))
+                 (is (not (probe-file html)))
+                 (is (not (probe-file
+                           (merge-pathnames "foo/" home))))
+                 (ensure-directories-exist
+                  (merge-pathnames "foo/anchor" home))
                  (setf status nil)
                  (is (cadr-cli::handle-session-command
                       "/export ~/foo/./bar.html" agent
