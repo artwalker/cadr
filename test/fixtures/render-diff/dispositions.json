@@ -5948,15 +5948,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cb0f915ccb74d77158e955bbbae7cb8e640068b03089a8deb50cff953e8c8f85",
-          "cadr": "b71bc90d71e7fa8c0b4751a5b65427c50c1b08d7995ad2c9d1780db21a620414"
+          "pi": "f8b7e0c93934bd19746980462e2dcdb3aa9d66aaf658d6d13522459f733e82b1",
+          "cadr": "8c2b2bcb4204e0d588fdd946eb475b5162eb0d096cef65752b5ce39b4fe27307"
         },
         "narrow": {
-          "pi": "47bfdc9804a150443f9df3ecf595a79395fbd01e733667258ba6146d183eeecc",
-          "cadr": "2655a3c8d5e76a74ef2f122c9b6a67fc9ff70a33583e400064219f69a6f624d3"
+          "pi": "0cc8ec8cf21bed96d7da76513c6d801419a415acbbedeffab7bca0b6ea7a50f0",
+          "cadr": "d77b671ace8ea230117ae811227381df31c9d2f249eaf07460839aedd39a4668"
         }
       },
-      "note": "At extension-surfaces/extension-input [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At extension-surfaces/extension-input [wide+narrow] the input row is '> ' with an inverse cursor on both sides; the placeholder is not field text. The remaining visible delta is trailing spaces on the startup help line after <PRODUCT_TITLE> substitution, because the cadr title is two cells longer than pi at each of the two replacements (I04). Raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "extension-surfaces",

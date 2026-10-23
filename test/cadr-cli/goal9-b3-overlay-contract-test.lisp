@@ -1874,3 +1874,82 @@
       (is (string= "hello"
                    (cadr-cli::session-selector-state-rename-input state)))
       (is (= 2 (cadr-cli::session-selector-state-rename-cursor state))))))
+
+(test extension-input-placeholder-is-not-the-initial-value
+  ;; v1.4.0 ExtensionInputComponent stores the constructor argument as
+  ;; _placeholder and never passes it to Input.setValue. showExtensionInput
+  ;; forwards that argument and only {tui, timeout}. The field stays empty,
+  ;; so the row is ">". initialValue, when supplied, is the field text.
+  (let ((extension-ui nil)
+        (worker nil)
+        (empty-result :pending)
+        (seeded-result :pending))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 80 :rows 24
+      :inputs
+      (list
+       (footer-sync-submit-input "/extension-input")
+       (footer-sync-wait-for-screen-text "Extension Input")
+       (lambda (terminal)
+         (let ((screen
+                 (format
+                  nil "~{~A~^~%~}"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:virtual-terminal-snapshot terminal)))))
+           (is (search "Extension Input" screen))
+           (is (not (search "type here" screen)))
+           (is (search "> " screen)))
+         t)
+       (string #\Return)
+       (footer-sync-wait-for-screen-text "Seeded Input")
+       (lambda (terminal)
+         (let ((screen
+                 (format
+                  nil "~{~A~^~%~}"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:virtual-terminal-snapshot terminal)))))
+           (is (search "kept-value" screen))
+           (is (not (search "type here" screen)))
+           (is (string= "" empty-result)))
+         t)
+       (string #\Return)
+       (lambda (terminal)
+         (declare (ignore terminal))
+         (string= "kept-value" seeded-result))
+       (footer-sync-submit-input "/quit")))
+     :set-extension-ui-function
+     (lambda (function)
+       (setf extension-ui function))
+     :command-function
+     (lambda (line)
+       (when (string= line "/extension-input")
+         (setf
+          worker
+          (sb-thread:make-thread
+           (lambda ()
+             (setf
+              empty-result
+              (funcall
+               extension-ui :input
+               '(:title "Extension Input"
+                 :placeholder "type here")))
+             (setf
+              seeded-result
+              (funcall
+               extension-ui :input
+               '(:title "Seeded Input"
+                 :placeholder "type here"
+                 :initial-value "kept-value"))))
+           :name "cadr-extension-input-placeholder")))
+       t))
+    (when worker
+      (sb-thread:join-thread worker :timeout 5))
+    (is (string= "" empty-result))
+    (is (string= "kept-value" seeded-result))))

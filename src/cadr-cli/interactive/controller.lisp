@@ -1620,8 +1620,7 @@ interactive-mode.ts:5956-5960).")
                         :description
                         (getf arguments :description)
                         :initial-value
-                        (or (getf arguments :initial-value)
-                            (getf arguments :placeholder))))
+                        (getf arguments :initial-value)))
                      (custom-state
                        (make-extension-custom-ui-state
                         :component component
