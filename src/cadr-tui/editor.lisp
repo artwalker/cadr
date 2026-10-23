@@ -1109,10 +1109,11 @@
                  (char value 0)))))
         (when (and character
                    (not (char= character #\/))
-                   (not (char= character #\@))
-                   (not (char= character #\#))
-                   (not (autocomplete-trigger-separator-p
+                   (not (autocomplete-javascript-whitespace-p
                          character))
+                   (not (member character
+                                '(#\@ #\#)
+                                :test #'char=))
                    (not (member character extras
                                 :test #'char=)))
           (push character extras))))

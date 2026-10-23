@@ -1284,3 +1284,187 @@
       (editor-autocomplete-advance editor now 1)
       (is (equal (list (list "@\"s" nil)) (car box)))
       (is (cadr-tui:editor-autocomplete-visible-p editor)))))
+
+(defparameter +v140-javascript-whitespace-codepoints+
+  ;; Node 22.22.0 /\s/ and /\s/u, 2026-10-23. Same 25 code points.
+  '(#x0009 #x000a #x000b #x000c #x000d #x0020 #x00a0 #x1680
+    #x2000 #x2001 #x2002 #x2003 #x2004 #x2005 #x2006 #x2007
+    #x2008 #x2009 #x200a #x2028 #x2029 #x202f #x205f #x3000
+    #xfeff))
+
+(defparameter +v140-cjk-punctuation-codepoints+
+  ;; Node 22.22.0 scan of v1.4.0 cjkPunctuationRegex, 56 code points.
+  '(#x00b7
+    #x2014 #x2018 #x2019 #x201c #x201d #x2026
+    #x3001 #x3002 #x3003 #x3008 #x3009 #x300a #x300b
+    #x300c #x300d #x300e #x300f #x3010 #x3011
+    #x3014 #x3015 #x3016 #x3017 #x3018 #x3019
+    #x301a #x301b #x301c #x301d #x301e #x301f
+    #x3030 #x303d #x30a0 #x30fb #xfe45 #xfe46
+    #xff01 #xff08 #xff09 #xff0c #xff0e #xff1a #xff1b #xff1f
+    #xff3b #xff3d #xff5b #xff5d
+    #xff61 #xff62 #xff63 #xff64 #xff65
+    #x16fe2))
+
+(defparameter +v140-cjk-punctuation-missing-before-gap32+
+  ;; The 28 code points the previous string omitted.
+  '(#x00b7 #x3003 #x3008 #x3009
+    #x3014 #x3015 #x3016 #x3017 #x3018 #x3019
+    #x301a #x301b #x301c #x301d #x301e #x301f
+    #x3030 #x303d #x30a0 #x30fb #xfe45 #xfe46
+    #xff61 #xff62 #xff63 #xff64 #xff65 #x16fe2))
+
+(test editor-bom-is-javascript-whitespace-before-hash
+  ;; v1.4.0 buildTriggerPattern(["@","#"]) matches \uFEFF#.
+  ;; isWhitespaceChar drops U+FEFF from provider triggers.
+  (dolist (code +v140-javascript-whitespace-codepoints+)
+    (is (cadr-tui::autocomplete-javascript-whitespace-p
+         (code-char code))
+        code)
+    (is (cadr-tui::autocomplete-trigger-separator-p
+         (code-char code))
+        code))
+  (dolist (code '(#x0085 #x200b #x180e))
+    (is (not (cadr-tui::autocomplete-javascript-whitespace-p
+              (code-char code)))
+        code)
+    (is (not (cadr-tui::autocomplete-trigger-separator-p
+              (code-char code)))
+        code))
+  (is (cadr-tui::autocomplete-trigger-context-p
+       '(#\@ #\#)
+       (concatenate 'string (string (code-char #xfeff)) "#")))
+  (multiple-value-bind (provider box)
+      (recording-trigger-provider nil)
+    (multiple-value-bind (editor now)
+        (editor-with-trigger-clock provider)
+      (let ((opened
+              (concatenate 'string (string (code-char #xfeff)) "#")))
+        (editor-event editor :text (string (code-char #xfeff)))
+        (editor-event editor :text "#")
+        (editor-autocomplete-advance editor now 19)
+        (is (null (car box)))
+        (editor-autocomplete-advance editor now 1)
+        (is (equal (list (list opened nil)) (car box)))
+        (is (cadr-tui:editor-autocomplete-visible-p editor))))))
+
+(test editor-node-cjk-punctuation-bounds-hash-completion
+  ;; v1.4.0 cjkPunctuationRegex. ・# and 〈# match the trigger pattern.
+  (dolist (code +v140-cjk-punctuation-codepoints+)
+    (is (cadr-tui::autocomplete-cjk-punctuation-p (code-char code))
+        code)
+    (is (cadr-tui::autocomplete-trigger-separator-p (code-char code))
+        code))
+  (dolist (code '(#x002c #x4e00 #x30a1 #xff0d #x16fe0 #x16fe3 #xfeff))
+    (is (not (cadr-tui::autocomplete-cjk-punctuation-p
+              (code-char code)))
+        code))
+  (dolist (code +v140-cjk-punctuation-missing-before-gap32+)
+    (let ((mark (string (code-char code))))
+      (is (cadr-tui::autocomplete-trigger-context-p
+           '(#\@ #\#)
+           (concatenate 'string mark "#"))
+          code)
+      (is (not (cadr-tui::autocomplete-trigger-context-p
+                '(#\@ #\#)
+                (concatenate 'string "#src" mark)))
+          code)))
+  (multiple-value-bind (provider box)
+      (recording-trigger-provider nil)
+    (multiple-value-bind (editor now)
+        (editor-with-trigger-clock provider)
+      (dolist (code +v140-cjk-punctuation-missing-before-gap32+)
+        (let ((opened
+                (concatenate 'string
+                             (string (code-char code))
+                             "#")))
+          (setf (car box) nil)
+          (cadr-tui:editor-set-text editor "")
+          (editor-event editor :text (string (code-char code)))
+          (editor-event editor :text "#")
+          (editor-autocomplete-advance editor now 19)
+          (is (null (car box)) opened)
+          (editor-autocomplete-advance editor now 1)
+          (is (equal (list (list opened nil)) (car box)) opened)
+          (is (cadr-tui:editor-autocomplete-visible-p editor)
+              opened)))))
+  (dolist (code '(#x30fb #x3008 #x16fe2))
+    (let ((separator (string (code-char code))))
+      (multiple-value-bind (provider box)
+          (recording-trigger-provider
+           nil
+           :accept-p (lambda (text) (string= text "#src")))
+        (multiple-value-bind (editor now)
+            (editor-with-trigger-clock provider)
+          (cadr-tui:editor-set-text editor "#sr")
+          (editor-event editor :text "c")
+          (editor-autocomplete-advance editor now 20)
+          (is (cadr-tui:editor-autocomplete-visible-p editor)
+              separator)
+          (editor-event editor :text separator)
+          (editor-autocomplete-settle editor)
+          (is (equal
+               (list (list (concatenate 'string "#src" separator) nil)
+                     (list "#src" nil))
+               (car box))
+              separator)
+          (is (not (cadr-tui:editor-autocomplete-visible-p editor))
+              separator))))))
+
+(test editor-provider-trigger-keeps-fullwidth-comma-and-drops-bom
+  ;; v1.4.0 setAutocompleteTriggerCharacters skips length !== 1, "/",
+  ;; isWhitespaceChar, and duplicates. U+FF0C is not whitespace.
+  (let ((editor (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-autocomplete-provider
+     editor
+     (cadr-tui:make-autocomplete-provider
+      :trigger-characters
+      (list (code-char #xfeff)
+            (code-char #xff0c)
+            #\/
+            #\Space
+            "$$"
+            (code-char #xff0c))))
+    (is (equal (list #\@ #\# (code-char #xff0c))
+               (cadr-tui::editor-provider-trigger-characters editor))))
+  (let ((editor (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-autocomplete-provider
+     editor
+     (cadr-tui:make-autocomplete-provider
+      :trigger-characters
+      (mapcar #'code-char +v140-javascript-whitespace-codepoints+)))
+    (is (equal '(#\@ #\#)
+               (cadr-tui::editor-provider-trigger-characters editor))))
+  (let ((comma (string (code-char #xff0c)))
+        (triggers (list #\@ #\# (code-char #xff0c))))
+    (dolist (text (list comma
+                        (concatenate 'string comma "foo")
+                        (concatenate 'string "(" comma)
+                        (concatenate 'string " " comma)
+                        (concatenate 'string " (" comma)))
+      (is (cadr-tui::autocomplete-trigger-context-p triggers text)
+          text))
+    (dolist (text (list (concatenate 'string "x" comma)
+                        (concatenate 'string "x" comma "foo")
+                        (concatenate 'string "#src" comma)
+                        "prefix#123"
+                        "问题#123"))
+      (is (not (cadr-tui::autocomplete-trigger-context-p triggers text))
+          text)))
+  (multiple-value-bind (provider box)
+      (recording-trigger-provider (list (code-char #xff0c)))
+    (multiple-value-bind (editor now)
+        (editor-with-trigger-clock provider)
+      (editor-event editor :text (string (code-char #xff0c)))
+      (editor-autocomplete-advance editor now 19)
+      (is (null (car box)))
+      (editor-autocomplete-advance editor now 1)
+      (is (equal
+           (list (list (string (code-char #xff0c)) nil))
+           (car box)))
+      (cadr-tui:editor-set-text editor "")
+      (setf (car box) nil)
+      (editor-type editor "x")
+      (editor-event editor :text (string (code-char #xff0c)))
+      (editor-autocomplete-advance editor now 20)
+      (is (null (car box))))))

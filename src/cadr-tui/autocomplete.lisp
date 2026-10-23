@@ -68,9 +68,37 @@
    :should-trigger-file-completion-function
    should-trigger-file-completion-function))
 
+(defun autocomplete-javascript-whitespace-p (character)
+  ;; v1.4.0 packages/tui/src/utils.ts: isWhitespaceChar uses /\s/, and
+  ;; autocompleteSeparatorRegex uses /\s/u. Node 22 matches the same 25
+  ;; code points for both, including U+FEFF.
+  (or (find character
+            '(#\Tab #\Newline #\Page #\Return #\Space)
+            :test #'char=)
+      (let ((value (codepoint character)))
+        (or (= value #x0b) (= value #xa0) (= value #x1680)
+            (between-p value #x2000 #x200a)
+            (= value #x2028) (= value #x2029)
+            (= value #x202f) (= value #x205f)
+            (= value #x3000) (= value #xfeff)))))
+
 (defun autocomplete-cjk-punctuation-p (character)
-  (find character
-        "，．：；！？（）［］｛｝“”‘’…—。、「」『』《》【】"))
+  ;; v1.4.0 cjkPunctuationRegex: Punctuation whose Script_Extensions is
+  ;; Han, Hiragana, Katakana, Hangul, or Bopomofo, plus the explicit
+  ;; class. Node 22.22.0 scan on 2026-10-23, 56 code points.
+  (member (codepoint character)
+          '(#x00b7
+            #x2014 #x2018 #x2019 #x201c #x201d #x2026
+            #x3001 #x3002 #x3003 #x3008 #x3009 #x300a #x300b
+            #x300c #x300d #x300e #x300f #x3010 #x3011
+            #x3014 #x3015 #x3016 #x3017 #x3018 #x3019
+            #x301a #x301b #x301c #x301d #x301e #x301f
+            #x3030 #x303d #x30a0 #x30fb #xfe45 #xfe46
+            #xff01 #xff08 #xff09 #xff0c #xff0e #xff1a #xff1b #xff1f
+            #xff3b #xff3d #xff5b #xff5d
+            #xff61 #xff62 #xff63 #xff64 #xff65
+            #x16fe2)
+          :test #'=))
 
 (defun autocomplete-separator-p (character)
   (or (member character
@@ -80,17 +108,8 @@
       (autocomplete-cjk-punctuation-p character)))
 
 (defun autocomplete-trigger-separator-p (character)
-  ;; packages/tui/src/utils.ts autocompleteSeparatorRegex:
-  ;; JavaScript \s (White_Space, not U+FEFF) or CJK punctuation.
-  (or (find character
-            '(#\Tab #\Newline #\Page #\Return #\Space)
-            :test #'char=)
-      (let ((value (codepoint character)))
-        (or (= value #x0b) (= value #xa0) (= value #x1680)
-            (between-p value #x2000 #x200a)
-            (= value #x2028) (= value #x2029)
-            (= value #x202f) (= value #x205f)
-            (= value #x3000)))
+  ;; packages/tui/src/utils.ts autocompleteSeparatorRegex.
+  (or (autocomplete-javascript-whitespace-p character)
       (autocomplete-cjk-punctuation-p character)))
 
 (defun autocomplete-trigger-wrapper-p (character)
@@ -112,6 +131,10 @@
          (autocomplete-trigger-boundary-p text start))))
 
 (defun autocomplete-unquoted-trigger-p (triggers text)
+  ;; v1.4.0 buildTriggerPattern: boundary, optional wrappers, then
+  ;; one trigger and a non-separator suffix. A trigger may itself be
+  ;; a separator (provider U+FF0C); that character is not part of the
+  ;; suffix, and the suffix may be empty.
   (let ((length (length text))
         (index (length text)))
     (loop while (and (plusp index)
@@ -119,15 +142,22 @@
                            (char text (1- index)))))
           do (decf index))
     (let ((token-start index))
-      (loop while (and (< index length)
-                       (autocomplete-trigger-wrapper-p
-                        (char text index)))
-            do (incf index))
-      (and (< index length)
-           (member (char text index) triggers :test #'char=)
-           (or (zerop token-start)
-               (autocomplete-trigger-separator-p
-                (char text (1- token-start))))))))
+      (or
+       (let ((cursor token-start))
+         (loop while (and (< cursor length)
+                          (autocomplete-trigger-wrapper-p
+                           (char text cursor)))
+               do (incf cursor))
+         (and (< cursor length)
+              (member (char text cursor) triggers :test #'char=)
+              (or (zerop token-start)
+                  (autocomplete-trigger-separator-p
+                   (char text (1- token-start))))))
+       (and (plusp token-start)
+            (member (char text (1- token-start)) triggers
+                    :test #'char=)
+            (autocomplete-trigger-boundary-p
+             text (1- token-start)))))))
 
 (defun autocomplete-trigger-context-p (triggers text)
   (and (stringp text)
