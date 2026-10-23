@@ -344,3 +344,112 @@
         (is (search (string #\LARGE_CIRCLE) screen))
         (is (search (string #\BOX_DRAWINGS_LIGHT_DIAGONAL_CROSS) screen))
         (is (null (search "Agent is thinking" screen)))))))
+
+(defun tic-tac-toe-agent-play-stream (responses)
+  (lambda (provider model context on-event
+           &key max-tokens temperature abort-p
+             cache-retention session-id reasoning)
+    (declare (ignore provider model context max-tokens temperature
+                     abort-p cache-retention session-id reasoning))
+    (let ((message (pop responses)))
+      (unless message
+        (error "No more faux responses queued"))
+      (funcall on-event
+               (cadr-ai:make-stream-event :type :start :message message))
+      (dolist (block (cadr-ai:assistant-message-content message))
+        (when (typep block 'cadr-ai:text-content)
+          (funcall on-event
+                   (cadr-ai:make-stream-event
+                    :type :text-delta
+                    :delta (cadr-ai:text-content-text block)
+                    :message message))))
+      (funcall on-event
+               (cadr-ai:make-stream-event
+                :type (if (eq (cadr-ai:assistant-message-stop-reason message)
+                              :error)
+                          :error
+                          :done)
+                :message message
+                :reason (cadr-ai:assistant-message-stop-reason message)))
+      message)))
+
+(test goal27-tic-tac-toe-agent-play-returns-placed-o
+  ;; v1.4.0 tic-tac-toe.ts execute "play" (line 925). The user's enter
+  ;; places X at the center and triggerTurn starts the queued
+  ;; tic_tac_toe play. The agent cursor is still home (0,0), so the
+  ;; tool result is exactly
+  ;; "Placed O at (0,0). Cursor reset to (0,0). Your turn, X!".
+  (with-tic-tac-toe-extension (host package)
+    (uiop:with-temporary-file (:pathname marker :keep t)
+      (delete-file marker)
+      (let* ((root
+               (uiop:ensure-directory-pathname
+                (pathname
+                 (format nil "~A-ttt-agent/" (namestring marker)))))
+             (sessions (merge-pathnames "sessions/" root))
+             (cwd (merge-pathnames "project/" root))
+             (make-state (find-symbol "MAKE-TIC-TAC-TOE-STATE" package))
+             (state-var (find-symbol "*TIC-TAC-TOE-STATE*" package))
+             (active-var (find-symbol "*TIC-TAC-TOE-ACTIVE-P*" package))
+             (apply (find-symbol "TIC-TAC-TOE-APPLY-USER-PLAY" package))
+             (board-reader (find-symbol "TIC-TAC-TOE-STATE-BOARD" package))
+             (turn-reader
+               (find-symbol "TIC-TAC-TOE-STATE-CURRENT-TURN" package))
+             (responses
+               (list
+                (cadr-ai:faux-assistant-message
+                 (cadr-ai:faux-tool-call
+                  "tic_tac_toe"
+                  (cadr-ai::json-object "action" "play")
+                  :id "tool-ttt-play")
+                 :stop-reason :tool-use)
+                (cadr-ai:faux-assistant-message "O is in the corner."))))
+        (ensure-directories-exist (merge-pathnames "anchor" sessions))
+        (ensure-directories-exist (merge-pathnames "anchor" cwd))
+        (let* ((session
+                 (cadr-agent:create-session
+                  :directory sessions :cwd cwd :id "ttt-agent-play"))
+               (agent
+                 (cadr-agent:make-agent
+                  :provider :openai
+                  :model (tic-tac-toe-steer-mock-model)
+                  :session session
+                  :auto-compact-p nil
+                  :stream-function
+                  (tic-tac-toe-agent-play-stream responses)))
+               (signaled nil))
+          (unwind-protect
+               (progn
+                 (cadr-agent::attach-extension-host host agent)
+                 (setf (cadr-agent::extension-host-session-started-p host) t
+                       (symbol-value state-var) (funcall make-state)
+                       (symbol-value active-var) t)
+                 (handler-case
+                     (funcall apply 1 1)
+                   (error (condition)
+                     (setf signaled (princ-to-string condition))))
+                 (is (null signaled) "user play signaled ~A" signaled)
+                 (let ((result
+                         (find-if
+                          (lambda (message)
+                            (and (typep message 'cadr-ai:tool-result-message)
+                                 (string=
+                                  "tic_tac_toe"
+                                  (cadr-ai:tool-result-message-tool-name
+                                   message))))
+                          (cadr-agent:agent-messages agent))))
+                   (is (not (null result)))
+                   (when result
+                     (is (null (cadr-ai:tool-result-message-is-error result)))
+                     (is (string=
+                          "Placed O at (0,0). Cursor reset to (0,0). Your turn, X!"
+                          (cadr-ai:text-content-text
+                           (first
+                            (cadr-ai:tool-result-message-content result)))))))
+                 (let ((state (symbol-value state-var)))
+                   (is (char= #\X (aref (funcall board-reader state) 1 1)))
+                   (is (char= #\O (aref (funcall board-reader state) 0 0)))
+                   (is (char= #\X (funcall turn-reader state)))))
+            (when (probe-file root)
+              (uiop:delete-directory-tree
+               root :validate t :if-does-not-exist :ignore))))))))
