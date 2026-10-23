@@ -698,7 +698,8 @@
     ;; path, load cache, reader, and loader
     ;; (interactive/components/announcement.lisp).
     ;; +1 GAP-63: theme-file-summary (interactive/themes.lisp).
-    (is (= 453 definition-count)
+    ;; +1 GAP-74: window-tic-tac-toe-editor-slot (interactive/frame.lisp).
+    (is (= 454 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

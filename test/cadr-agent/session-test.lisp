@@ -591,3 +591,67 @@
         (is (typep head 'cadr-ai:user-message))
         (is (search "plain history"
                     (cadr-ai:user-message-content head)))))))
+
+(test goal27-trigger-turn-custom-message-is-a-session-entry
+  ;; pi@4a080252f agent-session.ts sendCustomMessage + message_end.
+  ;; A triggerTurn custom message is a CustomMessageEntry. Persisting
+  ;; it through session-append-message etypecases on message-timestamp
+  ;; and the turn never reaches the model.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "ttt-custom-turn"))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (cadr-ai:make-text-content :text "queued")))))
+           (*contexts* nil)
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (mock-model)
+              :session session
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (declare (special *responses* *contexts*))
+      (let ((result
+              (cadr-agent::agent-prompt-custom
+               agent
+               (list :custom-type "tic-tac-toe-move"
+                     :content
+                     "Player X played at (row=1, col=1)."
+                     :display-p t
+                     :details (list :current-turn "O")))))
+        (is (typep result 'cadr-ai:assistant-message))
+        (is (string=
+             "queued"
+             (cadr-ai:text-content-text
+              (first
+               (cadr-ai:assistant-message-content result)))))
+        (let ((entry
+                (find :custom-message
+                      (cadr-agent:session-entries session)
+                      :key #'cadr-agent:session-entry-type)))
+          (is (not (null entry)))
+          (is (string=
+               "tic-tac-toe-move"
+               (cadr-agent:session-entry-custom-type entry)))
+          (is (cadr-agent:session-entry-display-p entry))
+          (is (search
+               "Player X played at (row=1, col=1)."
+               (cadr-agent:session-entry-content entry))))
+        (is (some
+             (lambda (message)
+               (and (typep message 'cadr-ai:user-message)
+                    (let ((content
+                            (cadr-ai:user-message-content
+                             message)))
+                      (and (stringp content)
+                           (search
+                            "Player X played at (row=1, col=1)."
+                            content)))))
+             (cadr-ai:context-messages
+              (first *contexts*))))))))

@@ -168,8 +168,19 @@
 
 (defun append-agent-message (agent message &key id)
   (when (agent-session agent)
-    (session-append-message
-     (agent-session agent) message :id id))
+    ;; pi@4a080252f agent-session.ts message_end: role "custom" is a
+    ;; CustomMessageEntry. session-append-message's timestamp etypecase
+    ;; only accepts LLM messages, so a triggerTurn tic-tac-toe move
+    ;; used to print that condition instead of the move banner.
+    (if (custom-agent-message-p message)
+        (session-append-custom-message
+         (agent-session agent)
+         (custom-agent-message-custom-type message)
+         (custom-agent-message-content message)
+         :details (custom-agent-message-details message)
+         :display-p (custom-agent-message-display-p message))
+        (session-append-message
+         (agent-session agent) message :id id)))
   (let ((cell (list message)))
     (if (agent-messages agent)
         (setf

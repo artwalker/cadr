@@ -51,6 +51,153 @@
                                   :focused-p focused-p)
        0 0)))
 
+(defun window-tic-tac-toe-editor-slot
+    (transcript pending status widgets-above editor
+     widgets-below footer rows)
+  ;; pi@4a080252f chat-viewport.ts createChatViewport and
+  ;; packages/tui/src/components/stack.ts allocateStackSizes. The
+  ;; transcript keeps at least one line and grows. The dock's editor
+  ;; keeps at least three lines and shows its top when shrunk, so a
+  ;; 20-row board keeps the title and turn and clips the move help.
+  ;; The footer shows its top line when it shrinks.
+  (labels ((clamp (size min max)
+             (let ((floor-min (max 0 (floor (or min 0)))))
+               (max floor-min
+                    (min (or max most-positive-fixnum)
+                         (max 0 (floor size))))))
+           (distribute (sizes mins maxs grows shrinks amount grow-p)
+             (let ((remaining amount))
+               (loop while (plusp remaining)
+                     do
+                     (let* ((candidates
+                              (loop for size in sizes
+                                    for min in mins
+                                    for max in maxs
+                                    for grow in grows
+                                    for shrink in shrinks
+                                    for index from 0
+                                    when (if grow-p
+                                             (and (plusp grow)
+                                                  (< size max))
+                                             (and (plusp shrink)
+                                                  (> size min)))
+                                      collect index))
+                            (total-weight
+                              (loop for index in candidates
+                                    sum
+                                    (if grow-p
+                                        (nth index grows)
+                                        (* (nth index shrinks)
+                                           (max 1 (nth index sizes)))))))
+                       (when (or (null candidates)
+                                 (zerop total-weight))
+                         (return))
+                       (let ((distributed 0))
+                         (dolist (index candidates)
+                           (when (plusp remaining)
+                             (let* ((weight
+                                      (if grow-p
+                                          (nth index grows)
+                                          (* (nth index shrinks)
+                                             (max 1 (nth index sizes)))))
+                                    (proposed
+                                      (max 1
+                                           (floor
+                                            (* remaining weight)
+                                            total-weight)))
+                                    (capacity
+                                      (if grow-p
+                                          (- (nth index maxs)
+                                             (nth index sizes))
+                                          (- (nth index sizes)
+                                             (nth index mins))))
+                                    (delta
+                                      (min remaining proposed
+                                           capacity)))
+                               (when (plusp delta)
+                                 (setf (nth index sizes)
+                                       (+ (nth index sizes)
+                                          (if grow-p delta (- delta))))
+                                 (decf remaining delta)
+                                 (incf distributed delta)))))
+                         (when (zerop distributed)
+                           (return))))))
+             sizes)
+           (allocate (specs available)
+             (let* ((sizes
+                      (mapcar
+                       (lambda (spec)
+                         (destructuring-bind
+                             (basis min max grow shrink intrinsic)
+                             spec
+                           (declare (ignore grow shrink))
+                           (clamp
+                            (if (eq basis :auto) intrinsic basis)
+                            min max)))
+                       specs))
+                    (mins (mapcar #'second specs))
+                    (maxs (mapcar #'third specs))
+                    (grows (mapcar #'fourth specs))
+                    (shrinks (mapcar #'fifth specs))
+                    (total (reduce #'+ sizes :initial-value 0)))
+               (cond
+                 ((< total available)
+                  (distribute sizes mins maxs grows shrinks
+                              (- available total) t))
+                 ((> total available)
+                  (distribute sizes mins maxs grows shrinks
+                              (- total available) nil)))
+               sizes))
+           (take-lines (lines start count)
+             (if (or (null lines) (not (plusp count)))
+                 nil
+                 (subseq lines start
+                         (min (length lines)
+                              (+ start count)))))
+           (take-head (lines count)
+             (take-lines lines 0 count))
+           (take-tail (lines count)
+             (if (or (null lines) (not (plusp count)))
+                 nil
+                 (take-lines
+                  lines
+                  (max 0 (- (length lines) count))
+                  count))))
+    (let* ((dock-specs
+             (list
+              (list :auto 0 most-positive-fixnum 0 1
+                    (length pending))
+              (list :auto 0 most-positive-fixnum 0 1
+                    (length status))
+              (list :auto 0 most-positive-fixnum 0 1
+                    (length widgets-above))
+              (list :auto 3 most-positive-fixnum 0 1
+                    (length editor))
+              (list :auto 0 most-positive-fixnum 0 1
+                    (length widgets-below))
+              (list :auto 0 most-positive-fixnum 0 1
+                    (length footer))))
+           (dock-natural
+             (reduce #'+ dock-specs
+                     :key #'sixth :initial-value 0))
+           (root-sizes
+             (allocate
+              (list
+               (list 0 1 most-positive-fixnum 1 1 0)
+               (list :auto 1 most-positive-fixnum 0 1
+                     dock-natural))
+              rows))
+           (child-sizes
+             (allocate dock-specs (second root-sizes))))
+      (append
+       (take-tail transcript (first root-sizes))
+       (take-head pending (first child-sizes))
+       (take-head status (second child-sizes))
+       (take-head widgets-above (third child-sizes))
+       (take-head editor (fourth child-sizes))
+       (take-head widgets-below (fifth child-sizes))
+       (take-head footer (sixth child-sizes))))))
+
 (defun render-tui-state
     (state editor width rows
      &key overlay busy-p extension-host
@@ -299,14 +446,38 @@
                   (length active-editor-lines)
                   (length widget-below-lines)
                   (length footer-lines)))
+             (tic-tac-toe-slot-p
+               (and overlay
+                    (not floating-overlay)
+                    (extension-custom-ui-state-p overlay)
+                    (not (extension-custom-ui-state-overlay-p overlay))
+                    (let ((component
+                            (extension-custom-ui-state-component
+                             overlay)))
+                      (and component
+                           (string=
+                            "TIC-TAC-TOE-BOARD-COMPONENT"
+                            (symbol-name
+                             (class-name
+                              (class-of component))))))))
              (frame
-              (nconc visible
-                     pending-message-lines
-                     status-indicator
-                     widget-above-lines
-                     active-editor-lines
-                     widget-below-lines
-                     footer-lines)))
+               (if tic-tac-toe-slot-p
+                   (window-tic-tac-toe-editor-slot
+                    all-content
+                    pending-message-lines
+                    status-indicator
+                    widget-above-lines
+                    active-editor-lines
+                    widget-below-lines
+                    footer-lines
+                    rows)
+                   (nconc visible
+                          pending-message-lines
+                          status-indicator
+                          widget-above-lines
+                          active-editor-lines
+                          widget-below-lines
+                          footer-lines))))
         (when (and floating-overlay
                    (extension-custom-ui-visible-p floating-overlay))
           (let ((options

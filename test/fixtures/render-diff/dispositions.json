@@ -4159,15 +4159,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "99e205e1c43ac597dcf0c501c6b2fea661fd42354f454471ff2f0400d6fe1a3d",
-          "cadr": "6369842cf731f75a3dec75c7f382cc2551254bb0ca6eef70f29e1233dd8723f2"
+          "pi": "0f8814492f25650fd55de3ca97e1e38fe23e68e02100402f899954de6a2ccd78",
+          "cadr": "d3143563ba50319933b73ecf07c2791b45ed70875abba4639c5320ba1e5dae87"
         },
         "narrow": {
-          "pi": "d3ea5d448c2ca439a38c8558a89372f023b6ba6b2cb263ee975e4ece75a578d2",
-          "cadr": "f42253e6e21289521b8dfbe51e40d03cb9d43b41f79af6339e3a08b377ef2383"
+          "pi": "2a55dc3116df5f94eaa13c0f7794097e2f15c67862b6216f78ff4a480804fdfb",
+          "cadr": "7579c3aff937c9335c71b3f43c70e788be431b91acd268892d7758c1fcb26818"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-initial the overlay is now the baseline's byte for byte: dim rules around the bold blue Tic-Tac-Toe banner, the Turn: X (You) | O (Agent) status line, the board with 22m-closing DIM borders and no stray m, the arrows/ENTER/ESC footer, and the dim width separator (tic-tac-toe.ts:443-500). Remaining deltas, itemized: (a) startup chrome - cadr's product banner and key-help lines vs pi's tagline plus [Extensions] tic-tac-toe.ts block (I04 surfaces); (b) narrow only, the <CWD> footer path truncates with ... on pi because the product paths differ in length (I04); (c) I01 raw segmentation."
+      "note": "At example-tic-tac-toe/ttt-initial the editor slot follows chat-viewport.ts allocateStackSizes. Narrow 48x20 shows one transcript line, the Tic-Tac-Toe title, Turn: X (You) | O (Agent), and the full board; the move-help line and the stats footer are clipped, and the cwd footer is the last line. The only narrow text delta is the cwd path: pi truncates it with ... and cadr does not, because the sandbox paths differ in length (I04). Wide shows the title, turn, board, move help, separator, and both footer lines. Wide residuals are the startup chrome (cadr's logo and Press ctrl+o versus pi's [Extensions] tic-tac-toe.ts block) and the footer cwd (pi appends the Tic-Tac-Toe session name) (I04). I01 is raw ANSI segmentation."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -4182,15 +4182,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c5f63674cdc014d188206e16b9a34f8d0ce215a7b722fafb7442fb2eadcee67f",
-          "cadr": "aeaf065c70d51105fc9e9456d073cbdd9527947edfdc78dcd025a08621a50f0a"
+          "pi": "01e9110127f1e2bb7bc0edecb7b8bab2fa3485b744a40130ee63e00dc031435a",
+          "cadr": "200a138ead6183223a0b0486bee1040da5b122f3b7efda246aeb010c49e73813"
         },
         "narrow": {
-          "pi": "7c970d7b1cd1ea2a73c31bf6ca2e99c72153e34fd4e85d5422fdbde37983c4e0",
-          "cadr": "6e7dab706b4a6e7ad006271dcdb980f55d386b49f9c17ccb7bbc2b848a5d949e"
+          "pi": "bb69a4dd95467753ea33db0964f008f6198a1f354e3bc986da8ad4f35b0cdafb",
+          "cadr": "c84c6d20360681d0573fefe05c837eaa655c7c339132becd5c72188c28b90d81"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-cursor the user cursor has moved one cell up and cadr highlights the same borders with the same 32;1m SGR as the baseline. Residuals are exactly the ttt-initial set: startup chrome (I04 surfaces), narrow <CWD> truncation (I04), I01 raw segmentation."
+      "note": "At example-tic-tac-toe/ttt-cursor the cursor has moved one cell up and both sides highlight the same cell borders. Residuals are the ttt-initial set: wide startup chrome (cadr logo and Press ctrl+o versus [Extensions] tic-tac-toe.ts) and the footer cwd session-name bullet (I04); narrow cwd truncation (I04); I01 raw segmentation."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -4204,11 +4204,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "78e146cce166e4946311963c095bb1675fd295d6c98c5de4a75a01cd634d2c3e",
-          "cadr": "5e070cb005a0235728afa04188832057ddca50600e142799be90d3cea8eccfe7"
+          "pi": "0cfc43216c3676ac4a4571e76afd43d3a630cd559fe2ecf24f2ca125196364b8",
+          "cadr": "0086ed2fcc24480d5e73fe76f4813cafe386c4b31ad4df32448cdf3de5ae0211"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-played [wide] both overlays show X in the center cell, Turn: O (Agent), Agent is thinking, the empty-faux-queue error, and the same 1.7k footer. The semantic residual is the startup-chrome scroll offset (I04 surfaces): pi's top row is the tic-tac-toe.ts extension line and the Player X separator, while cadr still shows the tail of the user-move prompt. I01 raw segmentation remains."
+      "note": "At example-tic-tac-toe/ttt-played [wide] both sides show the Player X banner, the empty-faux-queue error, X in the center cell, X (You) | Turn: O (Agent), and Agent is thinking. The semantic residual is one startup-chrome row (I04): pi leaves a blank above the banner while cadr's shorter startup puts the banner on that row. The bug hint names pi versus cadr (I04). Footer counters are pi 2.3k versus cadr 1.7k because cadr's driver fires session-start on UI attach. I01 raw segmentation remains."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -4221,11 +4221,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "231b94a7a7c56295f9ba7a2ece371b119646741cdcd7235dd927b4c84be99542",
-          "cadr": "231b94a7a7c56295f9ba7a2ece371b119646741cdcd7235dd927b4c84be99542"
+          "pi": "d3a29920410317a16a371761d1bcb5175bafe4df06aac9c0197b829d146dc1e8",
+          "cadr": "d3a29920410317a16a371761d1bcb5175bafe4df06aac9c0197b829d146dc1e8"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-played [narrow] the semantic screens match, including the center X, the agent-turn status, Agent is thinking, and the empty-faux-queue error. Only raw ANSI segmentation differs (I01)."
+      "note": "At example-tic-tac-toe/ttt-played [narrow] the semantic screens match: the wrapped bug-hint tail, the Tic-Tac-Toe title, X (You) | Turn: O (Agent), the center X, and the cwd footer. The move help is clipped. Only raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "example-space-invaders",
@@ -4281,15 +4281,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d8336088a29a23c3a6c11fd6996f955bc3f0223bdd8a892a7e392e91b6a7fd82",
-          "cadr": "27a2a949a409c87f79dba712c0a4f42090947cf41657258fdfa7fa3bcfc05165"
+          "pi": "355303040aed10a4150d7cc7912b990fea7930456686ed74d538dfacc8567eb4",
+          "cadr": "290aa1d08d044df4d9edfbb3cada1fd1a1f59a79833ea5a5cc2f505d454155b7"
         },
         "narrow": {
           "pi": "d1906c1ee4f727a4976c9691f43fb3036c02eb236977b2773c3735af033027c8",
           "cadr": "65eaa269511d2356b182368ca01edf491216b326a89e3f35b75e910e23e8a32a"
         }
       },
-      "note": "At example-tic-tac-toe-agent/ttt-agent-repaint both overlays show O at top-left and X at center, and the status is back to Turn: X (You), after the tic_tac_toe play tool rather than after the keystroke. Residuals, itemized: (a) wide only, cadr still shows the tail of the user-move prompt on the top row while pi has scrolled that row off, the same one-row startup-chrome offset as ttt-played (I04 surfaces); (b) the footer path is pi00/workspace on pi and cadr/workspace on cadr (I04); (c) footer counters are pi R130 CH3.9% versus cadr R184 CH5.5% because cadr's driver fires session-start on UI attach, the same Part E difference already recorded on ttt-played; (d) I01 raw segmentation. Narrow hides the scroll offset."
+      "note": "At example-tic-tac-toe-agent/ttt-agent-repaint both sides show O at top-left and X at center, status Turn: X (You), after the tic_tac_toe play tool. Wide residual is one startup-chrome row (I04): cadr still has the Player X banner on the first content row and pi has scrolled that banner off, so the tool name and Placed O line sit one row lower on cadr. Footer counters differ (pi 2.4k/97.4% versus cadr 1.7k/96.6%) because cadr fires session-start on UI attach. Narrow hides that scroll offset. I01 is raw segmentation."
     },
     {
       "scenario": "example-tic-tac-toe-agent",
@@ -4304,15 +4304,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1fb391e18633509586b7e456613ea45bb1b166975e97021e4cdaf8e14122c1e5",
-          "cadr": "6c95a9ce5d696c7606c26afeb001d7a1b95c2c04cb967f2305f9674bff24756c"
+          "pi": "d50ed3b42605986cc1fd41bc40dd6c7e59c1d7c2b8f8849e363e7389cafec9f8",
+          "cadr": "95798ba24b5008b3074673e0f5baa35986cd523ecd9447adea41dcc9c8837ae2"
         },
         "narrow": {
           "pi": "23b9fd9b3ca9d567215d9b5bbeff520a34e532e44b79c701e62961cde4864cea",
           "cadr": "bd1cb8e300a11ef7ef88adfe8cde20a45a4074053f62eaa4ff58282bda357607"
         }
       },
-      "note": "At example-tic-tac-toe-agent/process-exit the session has exited. Residuals are the ttt-agent-repaint set: wide still has the one-row prompt-tail scroll offset (I04 surfaces), the footer path is pi00 versus cadr (I04), footer counters remain pi R130 CH3.9% versus cadr R184 CH5.5% from session-start on UI attach, and I01 teardown."
+      "note": "At example-tic-tac-toe-agent/process-exit the session has exited. Wide still has the one-row startup-chrome offset (I04): pi keeps the [Extensions] tic-tac-toe.ts block and cadr has already scrolled to the Player X banner, so the exit cursor row differs. Footer counters remain pi 2.4k/97.4% versus cadr 1.7k/96.6% from session-start on UI attach. Narrow hides the scroll offset. I01 teardown remains."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -4327,15 +4327,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "48a3f44236a50452d1ce24f537be96f4a8afe423f068d5df014958753f2bf1fd",
-          "cadr": "b7a4b04334eaa3bf1bd403050e89d4f48ab55a086656de9713ad7f1ff1da091c"
+          "pi": "88d235d0bf6849dfd32745e30c15ec235b052da3bcf894a89e0b82097784ad60",
+          "cadr": "9e004b74aeb7d4fe472b88d60c8baa23dcc0d43e95bdafd2e97cbe6d2659d9ac"
         },
         "narrow": {
-          "pi": "56bc3cc00d1a373f2fdf1643a982a5e59666cc59260308cee4cfed883d57124c",
-          "cadr": "ef261d5e436afb7882df64f6545ab3edeb943a17f67d6c6a6b67fc71b3181a07"
+          "pi": "459ee662d6f634849a573c2b70dc981695fbe5a0f839b8a39ad4e578bebdf69b",
+          "cadr": "3b2dda299a3519aa87334e64c0acc763d8ea23702cfe06f5be424f9bd9f4a97b"
         }
       },
-      "note": "At example-tic-tac-toe/process-exit the overlay is gone and both sides show the empty-faux-queue error with matching 1.7k footers. The residual is the startup-chrome scroll offset (I04 surfaces): wide, pi's top row is the tic-tac-toe.ts line plus the Player X separator while cadr still shows the user-move prompt tail; narrow, pi retains the startup help and [Extensions] line while cadr retains the text board summary and the same prompt. I01 teardown remains."
+      "note": "At example-tic-tac-toe/process-exit the board is gone and both sides show the Player X banner, the empty-faux-queue error, and the bug hint. The residual is startup chrome (I04): pi keeps the [Extensions] tic-tac-toe.ts block in the scrollback, cadr keeps the logo and Press ctrl+o lines, so the banner sits on a different row and the exit cursor row differs. The hint names pi versus cadr (I04). Footer counters are pi 2.3k versus cadr 1.7k from session-start on UI attach. I01 teardown remains."
     },
     {
       "scenario": "example-bookmark",

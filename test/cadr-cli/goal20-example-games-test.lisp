@@ -822,3 +822,46 @@
     (when worker
       (sb-thread:join-thread worker))
     (is (not (null finished-p)))))
+
+(test goal27-tic-tac-toe-narrow-keeps-title-and-clips-help
+  ;; pi@4a080252f createChatViewport + allocateStackSizes. A 23-line
+  ;; board on a 20-row terminal keeps one transcript line, the title
+  ;; through the board, and the cwd footer. The move-help line and the
+  ;; stats footer are below the clip. On 32 rows the help and both
+  ;; footer lines stay.
+  (let* ((transcript
+           (list "startup-a" "startup-b" "startup-c" "startup-d"
+                 "startup-e" "startup-f" "startup-g" "TAIL"))
+         (editor
+           (append
+            (list "TITLE" "turn-blank" "TURN" "pad-a" "pad-b")
+            (loop for index from 1 to 13 collect (format nil "BOARD-~D" index))
+            (list "after-a" "after-b" "HELP" "after-c" "SEP")))
+         (widgets (list ""))
+         (footer (list "CWD" "STATS"))
+         (narrow
+           (cadr-cli::window-tic-tac-toe-editor-slot
+            transcript nil nil widgets editor nil footer 20))
+         (wide
+           (cadr-cli::window-tic-tac-toe-editor-slot
+            transcript nil nil widgets editor nil footer 32)))
+    (is (= 23 (length editor)))
+    (is (= 20 (length narrow)))
+    (is (equal "TAIL" (first narrow)))
+    (is (equal "TITLE" (second narrow)))
+    (is (equal "TURN" (fourth narrow)))
+    (is (equal "BOARD-13" (nth 18 narrow)))
+    (is (equal "CWD" (car (last narrow))))
+    (is (null (find "HELP" narrow :test #'string=)))
+    (is (null (find "SEP" narrow :test #'string=)))
+    (is (null (find "STATS" narrow :test #'string=)))
+    (is (null (find "startup-a" narrow :test #'string=)))
+    (is (= 32 (length wide)))
+    (is (equal "startup-c" (first wide)))
+    (is (equal "TAIL" (nth 5 wide)))
+    (is (equal "" (nth 6 wide)))
+    (is (equal "TITLE" (nth 7 wide)))
+    (is (equal "HELP" (nth 27 wide)))
+    (is (equal "SEP" (nth 29 wide)))
+    (is (equal "CWD" (nth 30 wide)))
+    (is (equal "STATS" (nth 31 wide)))))

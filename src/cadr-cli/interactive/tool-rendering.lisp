@@ -827,7 +827,12 @@
                (when (and (not (tui-state-bug-report-hint-shown-p
                                 state))
                           (stringp hint))
-                 (add-tui-notice state hint)
+                 ;; pi@4a080252f interactive-mode.ts:2175 styles this
+                 ;; notice with theme.fg("muted"), not dim.
+                 (add-tui-notice
+                  state
+                  (cadr-tui:theme-foreground
+                   :muted hint :enabled-p t))
                  (setf (tui-state-bug-report-hint-shown-p state)
                        t))))))
          (accumulate-message-usage state message)
