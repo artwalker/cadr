@@ -40,6 +40,13 @@
 (defun goal27-schema-text (condition)
   (princ-to-string condition))
 
+(defun goal27-theme-other-errors (label &rest lines)
+  ;; theme-schema.ts writes the title, then "\n\nOther errors:\n".
+  (format nil
+          "Invalid theme \"~A\":~%~%~%Other errors:~%~{~A~^~%~}"
+          label
+          lines))
+
 (defun goal27-copy-theme (mutate)
   (let ((object
           (cadr-ai::copy-json-value
@@ -237,6 +244,32 @@
     (is (string=
          (cdr (assoc :muted overrides))
          (cdr (assoc :scrollbar-track overrides)))))
+  ;; scrollbar-theme.test.ts: omitted scrollbarThumb matches text.
+  ;; dark.json text is okhsl(234 3% 89%) -> #dee0e1 (222 224 225).
+  ;; selectedBg is okhsl(233 41% 24%) -> #213b49 (33 59 73).
+  (let* ((without-thumb
+           (goal27-copy-theme
+            (lambda (object)
+              (remhash "scrollbarThumb"
+                       (gethash "colors" object)))))
+         (overrides
+           (cadr-cli::theme-object-overrides
+            without-thumb)))
+    (is (string= "#dee0e1"
+                 (cdr (assoc :text overrides))))
+    (is (string= "#dee0e1"
+                 (cdr (assoc :scrollbar-thumb overrides))))
+    (is (string= "#213b49"
+                 (cdr (assoc :selected-bg overrides)))))
+  (let ((overrides
+          (cadr-cli::theme-object-overrides
+           (goal27-copy-theme
+            (lambda (object)
+              (setf (gethash "scrollbarThumb"
+                             (gethash "colors" object))
+                    "#123456"))))))
+    (is (string= "#123456"
+                 (cdr (assoc :scrollbar-thumb overrides)))))
   (let ((condition
           (nth-value
            1
@@ -262,32 +295,42 @@
             (format nil "  - ~A" token)
             (goal27-schema-text condition)))
           token)))
-  (dolist (mutate
+  (dolist (case
            (list
-            (lambda (object)
-              (setf (gethash "unexpected" object) t))
-            (lambda (object)
-              (setf (gethash
-                     "scrollbarThmb"
-                     (gethash "colors" object))
-                    ""))
-            (lambda (object)
-              (setf (gethash "export" object)
-                    (cadr-ai::json-object "unexpected" "")))))
-    (let ((condition
-            (nth-value
-             1
-             (ignore-errors
-              (cadr-cli::theme-object-overrides
-               (goal27-copy-theme mutate))))))
-      (is (search
-           "Invalid theme \"dark\":"
-           (goal27-schema-text condition)))
-      (is (search
-           "must not have additional properties"
-           (goal27-schema-text condition)))
-      (is (search "schema is false"
-                  (goal27-schema-text condition))))))
+            (list
+             (lambda (object)
+               (setf (gethash "unexpected" object) t))
+             (goal27-theme-other-errors
+              "dark"
+              "  - /unexpected: schema is false"
+              "  - /: must not have additional properties"))
+            (list
+             (lambda (object)
+               (setf (gethash
+                      "scrollbarThmb"
+                      (gethash "colors" object))
+                     ""))
+             (goal27-theme-other-errors
+              "dark"
+              "  - /colors/scrollbarThmb: schema is false"
+              "  - /colors: must not have additional properties"))
+            (list
+             (lambda (object)
+               (setf (gethash "export" object)
+                     (cadr-ai::json-object "unexpected" "")))
+             (goal27-theme-other-errors
+              "dark"
+              "  - /export/unexpected: schema is false"
+              "  - /export: must not have additional properties"))))
+    (let* ((mutate (first case))
+           (expected (second case))
+           (condition
+             (nth-value
+              1
+              (ignore-errors
+               (cadr-cli::theme-object-overrides
+                (goal27-copy-theme mutate))))))
+      (is (string= expected (goal27-schema-text condition))))))
 
 (test goal27-theme-load-drops-invalid-documents
   ;; v1.4.0 resource-loader-theme.test.ts: additional properties stay
@@ -316,12 +359,11 @@
           (let ((message
                   (cadr-agent::resource-diagnostic-message
                    (first diagnostics))))
-            (is (search
-                 (format nil "Invalid theme \"~A\":" label)
-                 message))
-            (is (search "/unsupported" message))
-            (is (search
-                 "must not have additional properties"
+            (is (string=
+                 (goal27-theme-other-errors
+                  label
+                  "  - /unsupported: schema is false"
+                  "  - /: must not have additional properties")
                  message)))))
       (remhash "unsupported" object)
       (write-json path object)
@@ -382,13 +424,10 @@
                         summary
                         :capabilities
                         (cadr-tui:make-terminal-capabilities))))))
-               (is (search
-                    (format nil "Invalid theme \"~A\":" label)
-                    (goal27-schema-text condition)))
-               (is (search
-                    "/unsupported"
-                    (goal27-schema-text condition)))
-               (is (search
-                    "must not have additional properties"
+               (is (string=
+                    (goal27-theme-other-errors
+                     label
+                     "  - /unsupported: schema is false"
+                     "  - /: must not have additional properties")
                     (goal27-schema-text condition)))))
         (cadr-tui:set-current-theme previous)))))

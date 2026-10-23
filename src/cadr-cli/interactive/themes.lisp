@@ -83,7 +83,7 @@
                  '("$schema" "name" "appearance" "vars"
                    "colors" "export")
                  :test #'string=)
-       (error "Invalid theme \"~A\":~%~%Other errors:~%  - /~A: schema is false~%  - /: must not have additional properties"
+       (error "Invalid theme \"~A\":~%~%~%Other errors:~%  - /~A: schema is false~%  - /: must not have additional properties"
               label name)))
    object)
   (multiple-value-bind (schema present-p)
@@ -128,7 +128,7 @@
      (lambda (name value)
        (unless
            (member name known :test #'string=)
-         (error "Invalid theme \"~A\":~%~%Other errors:~%  - /colors/~A: schema is false~%  - /colors: must not have additional properties"
+         (error "Invalid theme \"~A\":~%~%~%Other errors:~%  - /colors/~A: schema is false~%  - /colors: must not have additional properties"
                 label name))
        (unless (valid-tui-theme-primitive-p value)
          (error "Invalid theme color value: ~S"
@@ -163,7 +163,7 @@
        (lambda (name value)
          (unless
              (member name known :test #'string=)
-           (error "Invalid theme \"~A\":~%~%Other errors:~%  - /export/~A: schema is false~%  - /export: must not have additional properties"
+           (error "Invalid theme \"~A\":~%~%~%Other errors:~%  - /export/~A: schema is false~%  - /export: must not have additional properties"
                   label name))
          (unless (valid-tui-theme-primitive-p value)
            (error "Invalid theme export value: ~S"
@@ -269,8 +269,8 @@
              (gethash "thinkingXhigh" colors)
              variables))
            overrides))
-       ;; pi@4a080252f theme.ts:326-332 — optional scrollbarThumb
-       ;; falls back to selectedBg; scrollbarTrack falls back to muted.
+       ;; v1.4.0 theme-tokens.ts fallback is text. withThemeTokenFallbacks
+       ;; copies that resolved value; scrollbarTrack still copies muted.
        (unless
            (nth-value 1
                       (gethash "scrollbarThumb"
@@ -278,9 +278,7 @@
          (push
           (cons
            :scrollbar-thumb
-           (resolve-tui-theme-value
-            (gethash "selectedBg" colors)
-            variables))
+           (cdr (assoc :text overrides)))
           overrides))
        (unless
            (nth-value 1

@@ -88,9 +88,9 @@
 (test dynamic-resources-example-theme-scrollbar-colors
   ;; v1.4.0 examples/extensions/dynamic-resources/dynamic.json
   ;; (457ae8c79). scrollbarTrack names vars.darkGray "#505050".
-  ;; scrollbarThumb "" stays a terminal-default token. Omitting it
-  ;; would fall back to selectedBg "#3a3a4a". With no reported
-  ;; terminal color, the empty thumb is the dark foreground guess.
+  ;; scrollbarThumb "" stays a terminal-default token. Omitting the
+  ;; key copies resolved text, not selectedBg "#3a3a4a". With no
+  ;; reported terminal color, the empty thumb is the dark foreground guess.
   (let* ((path
            (merge-pathnames
             "examples/extensions/dynamic-resources/dynamic.json"
