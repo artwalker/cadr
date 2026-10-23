@@ -2263,3 +2263,40 @@ The gray `Working` status rule is canonicalized in
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-32 and GAP-45.
   The status cell keeps the previous blocked text after the new open
   prefix.
+
+## 2026-10-23 — GAP-05a 性能：否决放宽，先剖析再优化
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):** the
+  implementer proposed widening 5''b so a later `return 1 + 1` may take
+  1.1 seconds. The advisor rejects that widening (option A). The choice
+  is B, with condition 5'''' added below. Conditions 5', 5'', and 5'''
+  in the same day's entry "GAP-05a 补充：AOT 与运行期硬指标" stay as
+  written. 5''b stays at most 200 milliseconds for each later execution.
+  Widening that number does not pass the row.
+- **Measured (2026-10-23, GAP-05a status cell):** build wall time 3:53
+  (3:53.13); peak RSS 1.33GB (1334684 kB); compressed image growth
+  +3.2MB (26165424 bytes against 22949512 bytes without this wasm,
+  3215912 bytes); first `return 1 + 1` 1113ms; later runs about 1s
+  (1026ms, then 953ms); one instance RSS +57MB (57524 kB, which already
+  includes the QuickJS heap the instance actually used); startup frame
+  401-458ms.
+- **Options:**
+  - A. Widen 5''b so a later execution may take 1.1 seconds.
+  - B. Raise the AOT optimization, or inline the numeric helpers, then
+    measure again.
+- **Choice:** B, plus condition 5''''.
+- **Why:** a later `return 1 + 1` that stays near 1 second on every call
+  is a fixed cost (a fresh instantiation, or initializing memory again)
+  or translated code an order of magnitude slower (generic arithmetic,
+  undeclared types, a safety check on every memory access, consing).
+  Code that slow would make a real codemode script tens of times slower
+  than upstream. Widening the number would hide that cost.
+- **条件 5''''（全文）:**
+  1. 先剖析再优化：用 sb-sprof（或同等工具）对"后续执行 `return 1 + 1`"做剖析，把时间分到：实例化（线性内存分配/清零、data 段拷贝、表初始化）、QuickJS 初始化（qjs_init / 新建 runtime 与 context）、真正求值、宿主侧（worker、序列化）。剖析结果（前 20 个热点和各段占比）写进 docs/reviews/goal27-surface/GAP-05a-perf.md。
+  2. 对照上游语义决定能否复用：查 v1.4.0 `packages/codemode/src` 每次执行是否新建 QuickJS 实例/上下文；上游复用什么，cadr 就可以复用什么（例如保留已初始化的模块实例、对初始化后的线性内存做快照再按页拷贝恢复），但每次执行之间的 JS 可观察隔离必须与上游一致，并有测试锁住（上一次执行定义的全局变量下一次看不到等，按上游实际行为）。
+  3. 翻译器代码质量：i32/i64 值用 `(unsigned-byte 32)`/`(signed-byte 64)` 等精确类型声明并用模运算内联，局部变量是有类型的词法变量，线性内存用 `(simple-array (unsigned-byte 8) (*))` 加 sap/带类型的读写，边界检查显式做一次而不是靠 safety 3，生成函数在 `(optimize (speed 3) (safety 0) (debug 0))` 下编译；trap 语义（越界、除零、整数溢出转换、不可达）必须仍按规范触发，官方 spec testsuite 全过。
+  4. 新增吞吐基准，不只测 `1+1`：同一份 quickjs-wasi 3.6.2 wasm 上跑一段 JS 循环（例如 1e6 次整数累加，和一次 1MB 字符串的 JSON.parse/stringify），在本机 Node 22 用上游 `quickjs-wasi` 包跑同一段，记录 cadr/上游 的倍数。
+  5. 硬指标：5''b 维持"后续执行 ≤ 200ms"；吞吐倍数目标 ≤ 5 倍。剖析和优化之后仍达不到，状态写 blocked，附剖析数据、倍数和已经做过的优化，交顾问裁决（届时的备选是分层执行或回到原生运行时），不许放宽数字。
+  6. 已列出的 review-fail 五条若尚未全部修完，一并修完。另外：状态格提到"官方冷启动脚本要等的 `cadr v` 在有无 AOT 的镜像里都不出现"，冷启动门禁必须能真实跑通；查清是脚本等的启动串在 Goal 27 期间变了，还是别的原因，修好让门禁对着真实启动帧计时，并记录有无 AOT 两个镜像的冷启动数字。
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. The status
+  cell is open. The previous blocked text stays after the new prefix.
