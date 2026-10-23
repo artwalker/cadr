@@ -287,11 +287,14 @@
      (model-provider model))
     (let ((api-version (azure-api-version provider))
           (url (request-spec-url request)))
+      ;; openai@7.19.0 AzureOpenAI defaultQuery, then buildURL
+      ;; stringifyQuery. encode leaves RFC 3986 unreserved octets and
+      ;; writes a space as %20. url.toString keeps that encoding.
       (setf (request-spec-url request)
             (format nil "~A~Capi-version=~A"
                     url
                     (if (position #\? url) #\& #\?)
-                    api-version)))
+                    (percent-encode api-version))))
     request))
 
 (defmethod reduce-provider-sse-event

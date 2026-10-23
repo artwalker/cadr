@@ -209,7 +209,8 @@
 
 (test azure-api-version-follows-option-then-env-then-v1
   ;; pi@4a080252f azure-openai-config.ts resolveAzureConfig and
-  ;; openai@7.19.0 AzureOpenAI defaultQuery api-version.
+  ;; openai@7.19.0 AzureOpenAI defaultQuery, then buildURL
+  ;; stringifyQuery. A single space is api-version=%20.
   ;; Completions stays on openAICompletionsApi and does not send it.
   (let ((responses
           "https://my-resource.openai.azure.com/openai/v1/responses")
@@ -252,7 +253,7 @@
              (azure-version-request
               "gpt-5.5" :azure-api-version ""))))
        (is (string=
-            (concatenate 'string responses "?api-version= ")
+            (concatenate 'string responses "?api-version=%20")
             (cadr-ai:request-spec-url
              (azure-version-request
               "gpt-5.5" :azure-api-version " "))))
