@@ -105,9 +105,9 @@
            (set-kitty-protocol-active t)
            (values nil nil))))
     (:device-attributes
-     (if (eq :kitty
-             (keyboard-protocol-negotiator-mode
-              negotiator))
+     (if (member
+          (keyboard-protocol-negotiator-mode negotiator)
+          '(:kitty :modify-other-keys))
          (values nil nil)
          (progn
            (setf
@@ -889,25 +889,25 @@
            (process-terminal-saved-termios terminal))))
       (setf
        (process-terminal-started-p terminal) nil
-       (process-terminal-keyboard-protocol-pushed-p
-        terminal)
-       nil
+       (process-terminal-keyboard-protocol-pushed-p terminal) nil
        (process-terminal-saved-termios terminal) nil
        (process-terminal-progress-active-p terminal) nil
-       (process-terminal-progress-next-keepalive-at terminal)
-       nil
-       (process-terminal-program-status-supported-p
-        terminal)
-       nil
-       (process-terminal-program-status-query-pending-p
-        terminal)
-       nil
+       (process-terminal-progress-next-keepalive-at terminal) nil
+       (process-terminal-program-status-supported-p terminal) nil
+       (process-terminal-program-status-query-pending-p terminal) nil
        (process-terminal-stdin-prefix-time terminal) nil
        (process-terminal-keyboard-prefix-time terminal) nil
        (process-terminal-pending-input terminal) nil)
       (stdin-buffer-destroy
        (process-terminal-stdin-buffer terminal))
-      (set-kitty-protocol-active nil)))
+      (set-kitty-protocol-active nil)
+      (let ((negotiator
+              (process-terminal-keyboard-negotiator
+               terminal)))
+        (when (eq :modify-other-keys
+                  (keyboard-protocol-negotiator-mode negotiator))
+          (setf (keyboard-protocol-negotiator-mode negotiator)
+                :negotiating)))))
   terminal)
 
 (defun tui-write-log-normalize-parts (parts allow-above-root)

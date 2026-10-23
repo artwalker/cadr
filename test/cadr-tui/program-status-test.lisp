@@ -301,6 +301,9 @@
      (is (zerop (goal36-count (goal36-captured output) +goal36-working+))))))
 
 (test program-status-restart-does-not-let-an-old-da-end-the-query
+  ;; v1.4.0 terminal.test.ts writes.at(-1) after the late DA, the
+  ;; OSC 7501 answer, and the new DA is the working report.
+  ;; enableModifyOtherKeys does not write ESC [ >4;2m again once active.
   (goal36-run
    :unset :unset
    (lambda (terminal output send)
@@ -311,7 +314,16 @@
      (is (zerop (goal36-count (goal36-captured output) +goal36-working+)))
      (is (string= "" (funcall send +goal36-query+)))
      (is (= 1 (goal36-count (goal36-captured output) +goal36-working+)))
-     (is (string= "" (funcall send +goal36-da+))))))
+     (is (string= "" (funcall send +goal36-da+)))
+     (let* ((text (goal36-captured output))
+            (enable (format nil "~C[>4;2m" #\Escape)))
+       (is (= 1 (goal36-count text +goal36-working+)))
+       (is (= 1 (goal36-count text enable)))
+       (is (string=
+            +goal36-working+
+            (subseq text
+                    (- (length text)
+                       (length +goal36-working+)))))))))
 
 (test program-status-stop-clears-and-asks-again
   (goal36-run
