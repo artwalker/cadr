@@ -62,6 +62,203 @@
         ((and (consp bt) (eq (car bt) :val)) (cons #() (vector (cdr bt))))
         (t (type-at module (cdr bt)))))
 
+(defun ref-type-p (type)
+  (member type '(:funcref :externref)))
+
+(defun numeric-function-p (module sig locals body)
+  "True when the operand stack and locals hold only integer bit patterns.
+quickjs-wasi 3.6.2 is in this set: its call_indirect tables stay off the
+operand stack. Spec functions that push a funcref or externref are not."
+  (and (notany #'ref-type-p (coerce (sig-params sig) 'list))
+       (notany #'ref-type-p (coerce (sig-results sig) 'list))
+       (notany #'ref-type-p locals)
+       (not (find-if (lambda (item)
+                       (member (instr-op item)
+                               '(:ref.null :ref.func :ref.is-null
+                                 :table.get :table.set :table.grow
+                                 :table.fill :table.copy :table.init)))
+                     body))
+       (not (find-if (lambda (item)
+                       (and (member (instr-op item) '(:global.get :global.set))
+                            (ref-type-p (car (global-type-at
+                                              module (instr-a item))))))
+                     body))
+       (let ((sigs (collect-sigs module)))
+         (not (find-if (lambda (item)
+                         (and (eq (instr-op item) :call)
+                              (let ((target (aref sigs (instr-a item))))
+                                (or (some #'ref-type-p (sig-params target))
+                                    (some #'ref-type-p (sig-results target))))))
+                       body)))))
+
+(defun bit-binop (width function left right)
+  (let ((mask (if (= width 32) '(byte 32 0) '(byte 64 0))))
+    (case function
+      ((i32-add i64-add) `(ldb ,mask (+ (the (unsigned-byte 64) ,left)
+                                        (the (unsigned-byte 64) ,right))))
+      ((i32-sub i64-sub) `(ldb ,mask (- (the (unsigned-byte 64) ,left)
+                                        (the (unsigned-byte 64) ,right))))
+      ((i32-mul i64-mul) `(ldb ,mask (* (the (unsigned-byte 64) ,left)
+                                        (the (unsigned-byte 64) ,right))))
+      ((i32-and i64-and) `(logand (the (unsigned-byte 64) ,left)
+                                  (the (unsigned-byte 64) ,right)
+                                  ,(if (= width 32) '#xffffffff '#xffffffffffffffff)))
+      ((i32-or i64-or) `(ldb ,mask (logior (the (unsigned-byte 64) ,left)
+                                           (the (unsigned-byte 64) ,right))))
+      ((i32-xor i64-xor) `(ldb ,mask (logxor (the (unsigned-byte 64) ,left)
+                                             (the (unsigned-byte 64) ,right))))
+      ((i32-eq i64-eq) `(if (= (the (unsigned-byte 64) ,left)
+                               (the (unsigned-byte 64) ,right))
+                            1 0))
+      ((i32-ne i64-ne) `(if (= (the (unsigned-byte 64) ,left)
+                               (the (unsigned-byte 64) ,right))
+                            0 1))
+      ((i32-lt-u i64-lt-u) `(if (< (the (unsigned-byte 64) ,left)
+                                   (the (unsigned-byte 64) ,right))
+                                1 0))
+      ((i32-gt-u i64-gt-u) `(if (> (the (unsigned-byte 64) ,left)
+                                   (the (unsigned-byte 64) ,right))
+                                1 0))
+      ((i32-le-u i64-le-u) `(if (<= (the (unsigned-byte 64) ,left)
+                                    (the (unsigned-byte 64) ,right))
+                                1 0))
+      ((i32-ge-u i64-ge-u) `(if (>= (the (unsigned-byte 64) ,left)
+                                    (the (unsigned-byte 64) ,right))
+                                1 0))
+      (t nil))))
+
+(defun fast-unop-form (function arg)
+  (case function
+    (i32-eqz `(if (zerop (ldb (byte 32 0) (the (unsigned-byte 64) ,arg))) 1 0))
+    (i64-eqz `(if (zerop (the (unsigned-byte 64) ,arg)) 1 0))
+    (i32-wrap-i64 `(ldb (byte 32 0) (the (unsigned-byte 64) ,arg)))
+    (i64-extend-i32-u `(ldb (byte 32 0) (the (unsigned-byte 64) ,arg)))
+    (i64-extend-i32-s `(let ((low (ldb (byte 32 0) (the (unsigned-byte 64) ,arg))))
+                         (if (logbitp 31 low) (logior low #xffffffff00000000) low)))
+    (t nil)))
+
+(defun fast-binop-form (function left right)
+  (or (bit-binop (if (member function '(i32-add i32-sub i32-mul i32-and i32-or i32-xor
+                                        i32-eq i32-ne i32-lt-u i32-gt-u i32-le-u i32-ge-u))
+                     32 64)
+                 function left right)
+      (case function
+        (i32-lt-s `(if (< (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,left)) #x80000000)
+                          (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,right)) #x80000000))
+                       1 0))
+        (i32-gt-s `(if (> (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,left)) #x80000000)
+                          (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,right)) #x80000000))
+                       1 0))
+        (i32-le-s `(if (<= (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,left)) #x80000000)
+                           (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,right)) #x80000000))
+                       1 0))
+        (i32-ge-s `(if (>= (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,left)) #x80000000)
+                           (logxor (ldb (byte 32 0) (the (unsigned-byte 64) ,right)) #x80000000))
+                       1 0))
+        (i64-lt-s `(if (< (logxor (the (unsigned-byte 64) ,left) #x8000000000000000)
+                          (logxor (the (unsigned-byte 64) ,right) #x8000000000000000))
+                       1 0))
+        (i64-gt-s `(if (> (logxor (the (unsigned-byte 64) ,left) #x8000000000000000)
+                          (logxor (the (unsigned-byte 64) ,right) #x8000000000000000))
+                       1 0))
+        (i64-le-s `(if (<= (logxor (the (unsigned-byte 64) ,left) #x8000000000000000)
+                           (logxor (the (unsigned-byte 64) ,right) #x8000000000000000))
+                       1 0))
+        (i64-ge-s `(if (>= (logxor (the (unsigned-byte 64) ,left) #x8000000000000000)
+                           (logxor (the (unsigned-byte 64) ,right) #x8000000000000000))
+                       1 0))
+        (i32-shl `(ldb (byte 32 0)
+                       (ash (ldb (byte 32 0) (the (unsigned-byte 64) ,left))
+                            (logand (the (unsigned-byte 64) ,right) 31))))
+        (i32-shr-u `(ash (ldb (byte 32 0) (the (unsigned-byte 64) ,left))
+                         (- (logand (the (unsigned-byte 64) ,right) 31))))
+        (i64-shl `(ldb (byte 64 0)
+                       (ash (the (unsigned-byte 64) ,left)
+                            (logand (the (unsigned-byte 64) ,right) 63))))
+        (i64-shr-u `(ash (the (unsigned-byte 64) ,left)
+                         (- (logand (the (unsigned-byte 64) ,right) 63))))
+        (t nil))))
+
+(defmacro with-mem-ea ((bytes ea memory address offset size) &body body)
+  "Effective address matches mem-range: a 32-bit sum that overflows traps."
+  (let ((sum (gensym "SUM")) (len (gensym "LEN")))
+    `(let* ((,bytes (the (simple-array (unsigned-byte 8) (*))
+                         (wasm-memory-bytes ,memory)))
+            (,sum (+ (ldb (byte 32 0) (the (unsigned-byte 64) ,address))
+                     (ldb (byte 32 0) (the (unsigned-byte 64) ,offset))))
+            (,len (length ,bytes)))
+       (declare (type (simple-array (unsigned-byte 8) (*)) ,bytes)
+                (type (unsigned-byte 33) ,sum))
+       (unless (and (< ,sum #x100000000) (<= ,size (- ,len ,sum)))
+         (wasm-trap "out of bounds memory access"))
+       (let ((,ea ,sum))
+         (declare (type (unsigned-byte 32) ,ea))
+         ,@body))))
+
+(defun fast-load-form (op memory address offset)
+  (let ((width (case op
+                 ((:i32.load8-s :i32.load8-u :i64.load8-s :i64.load8-u) 1)
+                 ((:i32.load16-s :i32.load16-u :i64.load16-s :i64.load16-u) 2)
+                 ((:i32.load :f32.load :i64.load32-s :i64.load32-u) 4)
+                 ((:i64.load :f64.load) 8))))
+    (when width
+      `(with-mem-ea (bytes ea ,memory ,address ,offset ,width)
+         ,(case op
+            ((:i32.load :f32.load :i32.load8-u :i64.load8-u)
+             (if (= width 1)
+                 '(aref bytes ea)
+                 '(logior (aref bytes ea)
+                          (ash (aref bytes (+ ea 1)) 8)
+                          (ash (aref bytes (+ ea 2)) 16)
+                          (ash (aref bytes (+ ea 3)) 24))))
+            ((:i32.load16-u :i64.load16-u)
+             '(logior (aref bytes ea) (ash (aref bytes (+ ea 1)) 8)))
+            (:i32.load8-s
+             '(let ((byte (aref bytes ea)))
+                (if (logbitp 7 byte) (logior byte #xffffff00) byte)))
+            (:i64.load8-s
+             '(let ((byte (aref bytes ea)))
+                (if (logbitp 7 byte) (logior byte #xffffffffffffff00) byte)))
+            ((:i32.load16-s)
+             '(let ((value (logior (aref bytes ea) (ash (aref bytes (+ ea 1)) 8))))
+                (if (logbitp 15 value) (logior value #xffff0000) value)))
+            (:i64.load16-s
+             '(let ((value (logior (aref bytes ea) (ash (aref bytes (+ ea 1)) 8))))
+                (if (logbitp 15 value) (logior value #xffffffffffff0000) value)))
+            (:i64.load32-u
+             '(logior (aref bytes ea)
+                      (ash (aref bytes (+ ea 1)) 8)
+                      (ash (aref bytes (+ ea 2)) 16)
+                      (ash (aref bytes (+ ea 3)) 24)))
+            (:i64.load32-s
+             '(let ((value (logior (aref bytes ea)
+                                   (ash (aref bytes (+ ea 1)) 8)
+                                   (ash (aref bytes (+ ea 2)) 16)
+                                   (ash (aref bytes (+ ea 3)) 24))))
+                (if (logbitp 31 value) (logior value #xffffffff00000000) value)))
+            ((:i64.load :f64.load)
+             '(logior (aref bytes ea)
+                      (ash (aref bytes (+ ea 1)) 8)
+                      (ash (aref bytes (+ ea 2)) 16)
+                      (ash (aref bytes (+ ea 3)) 24)
+                      (ash (aref bytes (+ ea 4)) 32)
+                      (ash (aref bytes (+ ea 5)) 40)
+                      (ash (aref bytes (+ ea 6)) 48)
+                      (ash (aref bytes (+ ea 7)) 56))))))))
+
+(defun fast-store-form (op memory address offset value)
+  (let ((width (case op
+                 ((:i32.store8 :i64.store8) 1)
+                 ((:i32.store16 :i64.store16) 2)
+                 ((:i32.store :f32.store :i64.store32) 4)
+                 ((:i64.store :f64.store) 8))))
+    (when width
+      `(with-mem-ea (bytes ea ,memory ,address ,offset ,width)
+         (let ((word (the (unsigned-byte 64) ,value)))
+           ,@(loop for index from 0 below width
+                   collect `(setf (aref bytes (+ ea ,index))
+                                  (ldb (byte 8 ,(* 8 index)) word))))))))
+
 (defun translate-function (module sig locals body)
   (let* ((code nil)
         (frames nil)
@@ -69,9 +266,18 @@
         (ht 0)
         (max-ht 1)
         (reachable t)
+        ;; A few hundred typed locals make SBCL's control stack overflow
+        ;; while it compiles the function (skip-stack-guard-page). quickjs
+        ;; wasm stays under 64 locals, so it keeps the typed path.
+        (fast (and (<= (+ (length (sig-params sig)) (length locals)) 64)
+                   (numeric-function-p module sig locals body)))
         (param-vars (loop for type across (sig-params sig) collect (gensym "P")))
         (param-count (length param-vars))
         (local-count (+ param-count (length locals)))
+        (local-names (when fast
+                       (concatenate 'vector
+                                    param-vars
+                                    (loop repeat (length locals) collect (gensym "L")))))
         (sigs (collect-sigs module)))
     (labels ((temp ()
                (let ((symbol (gensym "T")))
@@ -79,7 +285,8 @@
                  symbol))
              (emit (form) (push form code))
              (slot (index) `(aref stack ,index))
-             (local-form (index) `(aref locs ,index))
+             (local-form (index)
+               (if fast (aref local-names index) `(aref locs ,index)))
              (bump (n)
                (incf ht n)
                (setf max-ht (max max-ht ht)))
@@ -89,17 +296,24 @@
                  (bump 1)))
              (unop (function)
                (when reachable
-                 (emit `(setf ,(slot (1- ht)) (,function ,(slot (1- ht)))))))
+                 (let* ((arg (slot (1- ht)))
+                        (fast-form (and fast (fast-unop-form function arg))))
+                   (emit `(setf ,(slot (1- ht)) ,(or fast-form `(,function ,arg)))))))
              (binop (function)
                (when reachable
-                 (let ((left (- ht 2)))
-                   (emit `(setf ,(slot left) (,function ,(slot left) ,(slot (1+ left)))))
+                 (let* ((left (- ht 2))
+                        (lhs (slot left))
+                        (rhs (slot (1+ left)))
+                        (fast-form (and fast (fast-binop-form function lhs rhs))))
+                   (emit `(setf ,(slot left) ,(or fast-form `(,function ,lhs ,rhs))))
                    (decf ht))))
              (relop (function) (binop function))
              (copy-form (base arity)
                (let ((temps (loop repeat arity collect (temp)))
                      (sources (loop for index from (- ht arity) below ht collect index)))
                  `(let ,(mapcar (lambda (temp source) `(,temp ,(slot source))) temps sources)
+                    ,@(when (and fast temps)
+                        `((declare (type (unsigned-byte 64) ,@temps))))
                     ,@(mapcar (lambda (temp dest) `(setf ,(slot dest) ,temp))
                               temps
                               (loop for index from base below (+ base arity) collect index)))))
@@ -361,13 +575,20 @@
               :i32.load16-s :i32.load16-u :i64.load8-s :i64.load8-u :i64.load16-s
               :i64.load16-u :i64.load32-s :i64.load32-u)
              (when reachable
-               (emit `(setf ,(slot (1- ht))
-                            (,(load-name op) ,(memory) ,(slot (1- ht)) ,(instr-b item))))))
+               (let* ((addr (slot (1- ht)))
+                      (fast-form (and fast (fast-load-form op (memory) addr (instr-b item)))))
+                 (emit `(setf ,(slot (1- ht))
+                              ,(or fast-form
+                                   `(,(load-name op) ,(memory) ,addr ,(instr-b item))))))))
             ((:i32.store :i64.store :f32.store :f64.store :i32.store8 :i32.store16
               :i64.store8 :i64.store16 :i64.store32)
              (when reachable
-               (emit `(,(store-name op) ,(memory) ,(slot (- ht 2)) ,(instr-b item)
-                       ,(slot (1- ht))))
+               (let* ((addr (slot (- ht 2)))
+                      (value (slot (1- ht)))
+                      (fast-form (and fast (fast-store-form op (memory) addr
+                                                            (instr-b item) value))))
+                 (emit (or fast-form
+                           `(,(store-name op) ,(memory) ,addr ,(instr-b item) ,value))))
                (decf ht 2)))
             (t (let ((function (or (simple-function op)
                                    (error "unsupported opcode ~A" op))))
@@ -375,29 +596,54 @@
       (emit `(return-from wasm-fn
                (values ,@(loop for index from 0 below (length (sig-results sig))
                                collect (slot index)))))
-      (let* ((param-inits (loop for var in param-vars
-                                for index from 0
-                                collect `(setf (aref locs ,index) ,var)))
-             (local-inits (loop for type in locals
-                                for index from param-count
-                                for default = (default-for type)
-                                unless (eql default 0)
-                                  collect `(setf (aref locs ,index) ,default)))
-             (form `(lambda ,param-vars
-                      (declare (optimize (speed 1) (safety 1)
-                                         (debug 0) (compilation-speed 3))
-                               (ignorable ,@param-vars))
-                      (let ((*wasm-depth* (1+ *wasm-depth*))
-                            (stack (make-array ,max-ht :initial-element 0))
-                            (locs (make-array ,local-count :initial-element 0))
-                            ,@(mapcar (lambda (var) `(,var 0)) hoisted))
-                        (declare (ignorable ,@hoisted stack locs))
-                        ,@param-inits
-                        ,@local-inits
-                        (when (> *wasm-depth* *wasm-call-limit*)
-                          (error 'wasm-exhaustion :message "call stack exhausted"))
-                        (block wasm-fn
-                          (tagbody ,@(nreverse code)))))))
+      (let* ((param-inits (unless fast
+                              (loop for var in param-vars
+                                    for index from 0
+                                    collect `(setf (aref locs ,index) ,var))))
+             (local-inits (unless fast
+                            (loop for type in locals
+                                  for index from param-count
+                                  for default = (default-for type)
+                                  unless (eql default 0)
+                                    collect `(setf (aref locs ,index) ,default))))
+             (extra-locals (when fast
+                             (loop for index from param-count below local-count
+                                   collect (aref local-names index))))
+             (form (if fast
+                       `(lambda ,param-vars
+                          (declare (optimize (speed 3) (safety 0) (debug 0))
+                                   ,@(when param-vars
+                                       `((type (unsigned-byte 64) ,@param-vars)
+                                         (ignorable ,@param-vars))))
+                          (let ((*wasm-depth* (1+ *wasm-depth*))
+                                (stack (make-array ,max-ht
+                                                   :element-type '(unsigned-byte 64)
+                                                   :initial-element 0))
+                                ,@(mapcar (lambda (var) `(,var 0)) extra-locals)
+                                ,@(mapcar (lambda (var) `(,var 0)) hoisted))
+                            (declare (type (simple-array (unsigned-byte 64) (*)) stack)
+                                     ,@(when (or extra-locals hoisted)
+                                         `((type (unsigned-byte 64) ,@extra-locals ,@hoisted)))
+                                     (ignorable stack ,@extra-locals ,@hoisted))
+                            (when (> *wasm-depth* *wasm-call-limit*)
+                              (error 'wasm-exhaustion :message "call stack exhausted"))
+                            (block wasm-fn
+                              (tagbody ,@(nreverse code)))))
+                       `(lambda ,param-vars
+                          (declare (optimize (speed 1) (safety 1)
+                                             (debug 0) (compilation-speed 3))
+                                   (ignorable ,@param-vars))
+                          (let ((*wasm-depth* (1+ *wasm-depth*))
+                                (stack (make-array ,max-ht :initial-element 0))
+                                (locs (make-array ,local-count :initial-element 0))
+                                ,@(mapcar (lambda (var) `(,var 0)) hoisted))
+                            (declare (ignorable ,@hoisted stack locs))
+                            ,@param-inits
+                            ,@local-inits
+                            (when (> *wasm-depth* *wasm-call-limit*)
+                              (error 'wasm-exhaustion :message "call stack exhausted"))
+                            (block wasm-fn
+                              (tagbody ,@(nreverse code))))))))
         form))))
 
 (defun compile-function (module sig locals body)

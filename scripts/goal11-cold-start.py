@@ -13,7 +13,10 @@ import termios
 import time
 
 
-READY_MARKER = b"cadr v"
+# The first frame draws the half-block logo in place of the word "cadr"
+# (src/cadr-cli/interactive/components/pi-logo.lisp) and themes the version.
+# After CSI/OSC removal the version token is still there, for example v0.2.0.
+VERSION_MARKER = re.compile(rb"v\d+\.\d+\.\d+")
 CSI_SEQUENCE = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]")
 OSC_SEQUENCE = re.compile(rb"\x1b\].*?(?:\x07|\x1b\\)", re.DOTALL)
 
@@ -58,10 +61,14 @@ def sanitized_environment(home):
 def read_until_ready(master_fd, process, timeout_seconds):
     transcript = bytearray()
     deadline = time.monotonic() + timeout_seconds
-    while READY_MARKER not in visible_terminal_text(transcript):
+    while VERSION_MARKER.search(visible_terminal_text(transcript)) is None:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise RuntimeError("timed out waiting for the first TUI frame")
+            visible = visible_terminal_text(transcript)
+            tail = visible[-500:].decode("utf-8", errors="backslashreplace")
+            raise RuntimeError(
+                f"timed out waiting for the first TUI frame: {tail!r}"
+            )
         readable, _, _ = select.select(
             [master_fd], [], [], min(0.1, remaining)
         )
@@ -102,13 +109,16 @@ def measure(binary):
                 os.setsid()
                 fcntl.ioctl(0, termios.TIOCSCTTY, 0)
 
+            # An empty directory has no project resources, so the trust
+            # prompt does not run before the first frame. The binary's own
+            # directory is this repo, which does have them.
             started_at = time.perf_counter_ns()
             process = subprocess.Popen(
                 [binary],
                 stdin=slave_fd,
                 stdout=slave_fd,
                 stderr=slave_fd,
-                cwd=os.path.dirname(binary),
+                cwd=home,
                 env=environment,
                 close_fds=True,
                 preexec_fn=establish_controlling_terminal,

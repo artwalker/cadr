@@ -106,4 +106,7 @@
 (:assert-invalid nil "AGFzbQEAAAABBAFgAAADAgEABgYBfwFBAAsKCwEJACQAQQFBAhsL" "type mismatch")
 (:assert-invalid nil "AGFzbQEAAAABCQJgAABgAX8BfwMDAgABBgYBfwFBAAsKDQIGACQAEAELBAAgAAs=" "type mismatch")
 (:assert-invalid nil "AGFzbQEAAAABCQJgAX8Bf2AAAAMDAgABBAUBcAEBAQYGAX8BQQALCQcBAEEACwEAChMCBAAgAAsMAAJ/JABBABEAAAsL" "type mismatch")
+(:assert-malformed-quote "KGdsb2JhbCAkZm9vIGkzMiAoaTMyLmNvbnN0IDApKShnbG9iYWwgJGZvbyBpMzIgKGkzMi5jb25zdCAwKSk=" "duplicate global")
+(:assert-malformed-quote "KGltcG9ydCAiIiAiIiAoZ2xvYmFsICRmb28gaTMyKSkoZ2xvYmFsICRmb28gaTMyIChpMzIuY29uc3QgMCkp" "duplicate global")
+(:assert-malformed-quote "KGltcG9ydCAiIiAiIiAoZ2xvYmFsICRmb28gaTMyKSkoaW1wb3J0ICIiICIiIChnbG9iYWwgJGZvbyBpMzIpKQ==" "duplicate global")
 )

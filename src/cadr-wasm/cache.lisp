@@ -33,8 +33,15 @@
              (when d (vector-push (logand (logior (ash c 6) d) #xff) out)))
     (coerce out '(simple-array (unsigned-byte 8) (*)))))
 
+(defvar *quickjs-wasm-bytes* nil)
+
 (defun quickjs-wasm-bytes ()
-  (decode-base64 (uiop:read-file-string (vendor-file "quickjs.wasm.b64"))))
+  "The pinned quickjs.wasm bytes. Decoded once; later calls return the same vector.
+v1.4.0 loadQuickJSWasm compiles a path once. Re-decoding on every execution
+is not part of that contract."
+  (or *quickjs-wasm-bytes*
+      (setf *quickjs-wasm-bytes*
+            (decode-base64 (uiop:read-file-string (vendor-file "quickjs.wasm.b64"))))))
 
 (defun sha256-hex (octets)
   (let* ((k (vector
@@ -103,6 +110,12 @@
     (+ seconds (/ microseconds 1000000d0))))
 
 (defun ensure-compiled (octets)
+  ;; The memoized quickjs vector already matches the pinned digest. Hashing
+  ;; those 637405 bytes on every codemode execution is pure overhead.
+  (when (and *quickjs-wasm-bytes* (eq octets *quickjs-wasm-bytes*))
+    (setf *last-compile-cached-p* t
+          *last-compile-seconds* 0d0)
+    (return-from ensure-compiled (ensure-quickjs-aot)))
   (let* ((key (sha256-hex octets))
          (cached (gethash key *compile-cache*)))
     (cond

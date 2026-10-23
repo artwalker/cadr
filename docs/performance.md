@@ -62,7 +62,10 @@ Allocation comes from `sb-ext:get-bytes-consed`; heap occupancy comes from
 `sb-kernel:dynamic-usage`; Linux RSS comes from `/proc/self/statm`. Cold start
 is started by a standalone Python stdlib PTY harness, which launches the native
 `./cadr` in a brand-new temporary `HOME` with no provider credentials in the
-environment, times from `Popen` until `cadr v` appears in the first frame, and
+environment and with the working directory set to that HOME (a project
+directory stops on the trust prompt before any frame), times from `Popen` until the
+first frame's version token (`v<major>.<minor>.<patch>`, the half-block logo
+no longer leaves a contiguous `cadr v`) appears, and
 then verifies a clean exit with `/quit`. It is "new process to first real TUI
 frame", not the weaker `--version` path, and it does not obtain non-portable
 fake cold-disk numbers by dropping caches.

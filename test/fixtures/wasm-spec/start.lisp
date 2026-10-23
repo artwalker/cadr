@@ -18,4 +18,5 @@
 (:module nil "AGFzbQEAAAABCAJgAX8AYAAAAhYBCHNwZWN0ZXN0CXByaW50X2kzMgAAAwIBAQgBAQoIAQYAQQIQAAs=")
 (:module nil "AGFzbQEAAAABBAFgAAACEgEIc3BlY3Rlc3QFcHJpbnQAAAgBAA==")
 (:assert-trap-module nil "AGFzbQEAAAABBAFgAAADAgEACAEACgUBAwAACw==" "unreachable")
+(:assert-malformed-quote "KG1vZHVsZSAoZnVuYyAkYSAodW5yZWFjaGFibGUpKSAoZnVuYyAkYiAodW5yZWFjaGFibGUpKSAoc3RhcnQgJGEpIChzdGFydCAkYikp" "multiple start sections")
 )

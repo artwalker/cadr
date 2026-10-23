@@ -258,4 +258,5 @@
 (:assert-trap (:invoke nil "64_good3" (:i32 4294967295)) "out of bounds memory access")
 (:assert-trap (:invoke nil "64_bad" (:i32 0)) "out of bounds memory access")
 (:assert-trap (:invoke nil "64_bad" (:i32 1)) "out of bounds memory access")
+(:assert-malformed-quote "KG1lbW9yeSAxKShmdW5jIChkcm9wIChpMzIubG9hZCBvZmZzZXQ9NDI5NDk2NzI5NiAoaTMyLmNvbnN0IDApKSkp" "i32 constant")
 )

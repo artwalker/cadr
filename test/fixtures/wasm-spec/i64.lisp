@@ -413,4 +413,6 @@
 (:assert-invalid nil "AGFzbQEAAAABBQFgAAF+AwIBAAoMAQoAQQBDAAAAAFML" "type mismatch")
 (:assert-invalid nil "AGFzbQEAAAABBQFgAAF+AwIBAAoMAQoAQQBDAAAAAFQL" "type mismatch")
 (:assert-invalid nil "AGFzbQEAAAABBQFgAAF+AwIBAAoMAQoAQQBDAAAAAFIL" "type mismatch")
+(:assert-malformed-quote "KGZ1bmMgKHJlc3VsdCBpNjQpIChpNjQuY29uc3QgbmFuOmFyaXRobWV0aWMpKQ==" "unexpected token")
+(:assert-malformed-quote "KGZ1bmMgKHJlc3VsdCBpNjQpIChpNjQuY29uc3QgbmFuOmNhbm9uaWNhbCkp" "unexpected token")
 )

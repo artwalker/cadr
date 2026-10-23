@@ -1,3 +1,5 @@
 (
 (:module nil "AGFzbQEAAAABiQEXYAAAYAAAYAF/AGABfwBgAAF/YAF/AX9gAX8Bf2ACfXwAYAACfn1gAn9+An18YAJ9fABgAn18AGACfXwAYAJ9fABgAAJ+fWACf34CfXxgAn9+An18YAZ9fH98f38AYAAFfn59fX9gBH9/fn8EfXx8f2ADfXx/AGAAA35+fWAFf39+f38EfXx8fw==")
+(:assert-malformed-quote "KHR5cGUgKGZ1bmMgKHJlc3VsdCBpMzIpIChwYXJhbSBpMzIpKSk=" "unexpected token")
+(:assert-malformed-quote "KHR5cGUgKGZ1bmMgKHJlc3VsdCAkeCBpMzIpKSk=" "unexpected token")
 )

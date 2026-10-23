@@ -258,6 +258,16 @@
                "unknown operator f32x4.convert_s/i32x4")
              (mapcar #'third (fixture-commands "obsolete-keywords.lisp")))))
 
+(test wasm-2-0-quote-malformed-covers-the-non-simd-suite
+  "Official wg-2.0 test/core has 581 non-SIMD (module quote) assert_malformed.
+The two files that were empty before the review are included in that total."
+  (is (= 581
+         (loop for path in (spec-fixtures)
+               sum (count-if (lambda (command)
+                               (and (consp command)
+                                    (eq (first command) :assert-malformed-quote)))
+                             (with-open-file (stream path) (read stream)))))))
+
 (defun run-fixture-isolated (path)
   "Compile one spec fixture in a fresh default-heap SBCL.
 skip-stack-guard-page's compiler temporary alone is about 400MB, and
