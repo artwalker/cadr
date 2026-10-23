@@ -694,7 +694,10 @@
     ;; -3 GAP-39 fourth repair: deleted +egg-v140-dark-okhsl+,
     ;; +egg-builtin-dark-hex+, and egg-theme-color-text.
     ;; The egg reads theme-color-value.
-    (is (= 446 definition-count)
+    ;; +6 GAP-57: announcement image filename, max width, relative
+    ;; path, load cache, reader, and loader
+    ;; (interactive/components/announcement.lisp).
+    (is (= 452 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

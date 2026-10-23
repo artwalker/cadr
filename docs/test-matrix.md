@@ -210,6 +210,7 @@ the remote-execution daemon is not one of the nine.
 | G.17 status | `test/cadr-cli/goal27-g17-status-test.lisp` |
 | SDK lock | `test/cadr-cli/goal12-sdk-test.lisp` |
 | TUI composition lock | `test/cadr-cli/goal12-tui-composition-test.lisp` |
+| Earendil announcement image | `test/cadr-cli/goal27-earendil-announcement-test.lisp` |
 | presentation lock | `test/cadr-cli/goal13-presentation-test.lisp` |
 | code-organization A0 | `test/cadr-cli/goal14-a0-test.lisp` |
 | code organization | `test/cadr-cli/goal14-organization-test.lisp` |
