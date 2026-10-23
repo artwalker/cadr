@@ -4,7 +4,7 @@
   "try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
 ")
 
-(defun run-powershell-command (cwd command timeout)
+(defun run-powershell-command (cwd command timeout &key environment)
   (declare (ignore timeout))
   (let* ((config (get-powershell-config))
          (full-command
@@ -12,7 +12,7 @@
     (when (cadr-agent::current-tool-aborted-p)
       (error "Command aborted"))
     (multiple-value-bind (stdout stderr exit-code)
-        (uiop:run-program
+        (apply #'uiop:run-program
          (append
           (list (shell-config-shell config))
           (shell-config-arguments config)
@@ -20,7 +20,9 @@
          :directory cwd
          :output :string
          :error-output :string
-         :ignore-error-status t)
+         :ignore-error-status t
+         (when environment
+           (list :environment environment)))
       (let* ((full-output
                (cond
                  ((and (zerop (length stdout)) (plusp (length stderr)))
@@ -41,9 +43,10 @@
                       exit-code)))
            (append (list :exit-code exit-code) details)))))))
 
-(defun execute-powershell-tool-command (cwd command timeout)
+(defun execute-powershell-tool-command
+    (cwd command timeout &key environment)
   (multiple-value-bind (content details)
-      (run-powershell-command cwd command timeout)
+      (run-powershell-command cwd command timeout :environment environment)
     (let* ((exit-code (getf details :exit-code))
            (text
              (bash-strip-exit-footer
@@ -61,7 +64,8 @@
        details))))
 
 (defun execute-powershell-tool-command-with-context
-    (context cwd command timeout)
+    (context cwd command timeout &key environment)
+  (let ((cadr-agent::*execution-spawn-environment* environment))
   (multiple-value-bind (result operation-error)
       (cadr-agent:execution-tool-exec
        context
@@ -87,10 +91,12 @@
           (format nil "Command exited with code ~D" exit-code))))
       (values
        (list (cadr-ai:make-text-content :text output))
-       (list :exit-code exit-code)))))
+       (list :exit-code exit-code))))))
 
-(defun make-powershell-tool (cwd &key context)
-  (cadr-ai:make-tool
+(defun make-powershell-tool
+    (cwd &key context (expose-session-environment t) spawn-hook)
+  (note-shell-session-tool
+   (cadr-ai:make-tool
    :name "powershell"
    :description
    "Execute a PowerShell command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds."
@@ -107,9 +113,19 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (let ((command (required-string arguments "command"))
-           (timeout (cadr-ai::json-get arguments "timeout")))
+     (let* ((command (required-string arguments "command"))
+            (timeout (cadr-ai::json-get arguments "timeout"))
+            (spawn
+              (resolve-shell-spawn-context
+               command cwd
+               :expose-p expose-session-environment
+               :spawn-hook spawn-hook))
+            (environment (shell-env-strings (getf spawn :env))))
        (if context
            (execute-powershell-tool-command-with-context
-            context cwd command timeout)
-           (execute-powershell-tool-command cwd command timeout))))))
+            context (getf spawn :cwd) (getf spawn :command) timeout
+            :environment environment)
+           (execute-powershell-tool-command
+            (getf spawn :cwd) (getf spawn :command) timeout
+            :environment environment)))))
+   expose-session-environment))

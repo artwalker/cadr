@@ -40,6 +40,7 @@
 
 (defparameter +goal9-baseline-tool-guidelines+
   '("Use read to examine files instead of cat or sed."
+    "You can inspect CADR_* environment variables for current model and session details."
     "Use edit for precise changes (edits[].oldText must match exactly)"
     "When changing multiple separate locations in one file, use one edit call with multiple entries in edits[] instead of multiple edit calls"
     "Each edits[].oldText is matched against the original file, not after earlier edits are applied. Do not emit overlapping or nested edits. Merge nearby changes into one edit."

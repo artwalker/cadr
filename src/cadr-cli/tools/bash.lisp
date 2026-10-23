@@ -302,7 +302,8 @@
        (abort-p
          #'cadr-agent::current-tool-aborted-p)
        command-prefix
-       custom-shell-path)
+       custom-shell-path
+       environment)
   (when (and timeout (<= timeout 0))
     (error "timeout must be positive"))
   (when (and abort-p (funcall abort-p))
@@ -319,7 +320,7 @@
            (pathname
             (format nil "~A.pgid" (namestring output-path))))
          (process
-           (uiop:launch-program
+           (apply #'uiop:launch-program
             (list
              "/usr/bin/setsid" "--fork" "--wait"
              "/bin/sh" "-c"
@@ -335,7 +336,9 @@
             ;; Keep setsid's own diagnostics on its separate null stderr so
             ;; wrapper lifecycle races can never enter the tool result.
             :error-output nil
-            :wait nil))
+            :wait nil
+            (when environment
+              (list :environment environment))))
          (group-id (read-process-group-id group-path))
          (deadline (process-deadline timeout))
          (capture (make-string-output-stream))
@@ -506,12 +509,13 @@
 
 (defun execute-bash-tool-command
     (cwd command timeout
-     &key command-prefix custom-shell-path)
+     &key command-prefix custom-shell-path environment)
   (multiple-value-bind (content details)
       (run-bash-command
        cwd command timeout
        :command-prefix command-prefix
-       :custom-shell-path custom-shell-path)
+       :custom-shell-path custom-shell-path
+       :environment environment)
     (let* ((exit-code (getf details :exit-code))
            (text
              (bash-strip-exit-footer
@@ -639,9 +643,121 @@
         :command-prefix command-prefix
         :custom-shell-path custom-shell-path)))))
 
+(defparameter +shell-session-env-names+
+  '("CADR_SESSION_ID"
+    "CADR_SESSION_FILE"
+    "CADR_PROVIDER"
+    "CADR_MODEL"
+    "CADR_REASONING_LEVEL"))
+
+(defparameter +shell-session-prompt-guideline+
+  "You can inspect CADR_* environment variables for current model and session details.")
+
+(defvar *shell-session-tools* (make-hash-table :test 'eq))
+
+(defun shell-session-tool-p (tool)
+  (gethash tool *shell-session-tools*))
+
+(defun note-shell-session-tool (tool expose-p)
+  (if expose-p
+      (setf (gethash tool *shell-session-tools*) t)
+      (remhash tool *shell-session-tools*))
+  tool)
+
+(defun shell-env-strings (alist)
+  (mapcar
+   (lambda (pair)
+     (format nil "~A=~A" (car pair) (cdr pair)))
+   alist))
+
+(defun shell-session-name (value)
+  (cond
+    ((and (stringp value) (plusp (length value))) value)
+    ((and value (symbolp value))
+     (string-downcase (symbol-name value)))
+    (t nil)))
+
+(defun absolute-session-file (path)
+  (when path
+    (let ((text (namestring path)))
+      (when (plusp (length text))
+        (namestring
+         (uiop:ensure-absolute-pathname
+          (pathname path)
+          (uiop:getcwd)))))))
+
+(defun shell-session-bindings (agent)
+  ;; Resolved when the command starts. The selected model is the one
+  ;; on the agent, including a virtual model, not a routed upstream id.
+  (let ((session (and agent (cadr-agent:agent-session agent)))
+        (model (and agent (cadr-agent:agent-model agent)))
+        (level (and agent (cadr-agent::agent-thinking-level agent)))
+        (bindings nil))
+    (when session
+      (let ((id (cadr-agent:session-id session)))
+        (when (and (stringp id) (plusp (length id)))
+          (push (cons "CADR_SESSION_ID" id) bindings)))
+      (let ((file
+              (absolute-session-file
+               (cadr-agent:session-path session))))
+        (when file
+          (push (cons "CADR_SESSION_FILE" file) bindings))))
+    (when model
+      (let ((provider
+              (shell-session-name
+               (cadr-ai:model-provider model)))
+            (id (cadr-ai:model-id model)))
+        (when provider
+          (push (cons "CADR_PROVIDER" provider) bindings))
+        (when (and (stringp id) (plusp (length id)))
+          (push (cons "CADR_MODEL" id) bindings))))
+    (let ((reasoning (shell-session-name level)))
+      (when reasoning
+        (push (cons "CADR_REASONING_LEVEL" reasoning) bindings)))
+    bindings))
+
+(defun strip-shell-session-env (alist)
+  (remove-if
+   (lambda (pair)
+     (member (car pair) +shell-session-env-names+
+             :test #'string=))
+   alist))
+
+(defun shell-session-environment
+    (&key (expose-p t)
+          (agent cadr-agent::*tool-search-agent*))
+  (let ((base (strip-shell-session-env (get-shell-env))))
+    (if (and expose-p agent)
+        (append (shell-session-bindings agent) base)
+        base)))
+
+(defun resolve-shell-spawn-context
+    (command cwd &key (expose-p t) spawn-hook)
+  (let ((context
+          (list :command command
+                :cwd cwd
+                :env (shell-session-environment :expose-p expose-p))))
+    (if (null spawn-hook)
+        context
+        (let ((updated (funcall spawn-hook context)))
+          (if (listp updated)
+              (list :command
+                    (or (getf updated :command)
+                        (getf context :command))
+                    :cwd
+                    (or (getf updated :cwd)
+                        (getf context :cwd))
+                    :env
+                    (or (getf updated :env)
+                        (getf context :env)))
+              context)))))
+
 (defun make-bash-tool
-    (cwd &key context command-prefix shell-path)
-  (cadr-ai:make-tool
+    (cwd &key context command-prefix shell-path
+              (expose-session-environment t)
+              spawn-hook)
+  (note-shell-session-tool
+   (cadr-ai:make-tool
    :name "bash"
    :description
    "Execute a bash command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds."
@@ -658,14 +774,22 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (let ((command (required-string arguments "command"))
-           (timeout (cadr-ai::json-get arguments "timeout")))
+     (let* ((command (required-string arguments "command"))
+            (timeout (cadr-ai::json-get arguments "timeout"))
+            (spawn
+              (resolve-shell-spawn-context
+               (bash-command-with-prefix command-prefix command)
+               (effective-tool-cwd cwd)
+               :expose-p expose-session-environment
+               :spawn-hook spawn-hook)))
        (if context
-           (execute-bash-tool-command-with-context
-            context (effective-tool-cwd cwd)
-            (bash-command-with-prefix command-prefix command)
-            timeout)
+           (let ((cadr-agent::*execution-spawn-environment*
+                   (shell-env-strings (getf spawn :env))))
+             (execute-bash-tool-command-with-context
+              context (getf spawn :cwd) (getf spawn :command)
+              timeout))
            (execute-bash-tool-command
-            (effective-tool-cwd cwd) command timeout
-            :command-prefix command-prefix
-            :custom-shell-path shell-path))))))
+            (getf spawn :cwd) (getf spawn :command) timeout
+            :custom-shell-path shell-path
+            :environment (shell-env-strings (getf spawn :env)))))))
+   expose-session-environment))

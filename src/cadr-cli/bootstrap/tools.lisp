@@ -183,6 +183,8 @@
           ((string= "read" (cadr-ai:tool-name tool))
            (list
             "Use read to examine files instead of cat or sed."))
+          ((shell-session-tool-p tool)
+           (list +shell-session-prompt-guideline+))
           ((string= "edit" (cadr-ai:tool-name tool))
            (list
             "Use edit for precise changes (edits[].oldText must match exactly)"

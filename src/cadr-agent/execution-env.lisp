@@ -637,6 +637,10 @@
    (namestring group-path)
    shell command))
 
+(defvar *execution-spawn-environment* nil
+  "NAME=VALUE strings for the child of the next execution-env-exec.
+Nil keeps the execution environment's own merge.")
+
 (defun execution-env-exec
     (execution-environment command
      &key cwd environment
@@ -700,10 +704,11 @@
                      group-path shell command)
                     :directory working-directory
                     :environment
-                    (merge-execution-environment
-                     execution-environment
-                     environment
-                     inherit-environment-p)
+                    (or *execution-spawn-environment*
+                        (merge-execution-environment
+                         execution-environment
+                         environment
+                         inherit-environment-p))
                     :input nil
                     :output :stream
                     :error-output :stream

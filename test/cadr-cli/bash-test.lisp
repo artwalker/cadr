@@ -329,3 +329,241 @@
         (is (search
              "Command terminated without an exit code"
              message))))))
+
+(defparameter +shell-env-probe+
+  "printf '%s\\n' __CADR_ENV__ \"${CADR_SESSION_ID-UNSET}\" \"${CADR_SESSION_FILE-UNSET}\" \"${CADR_PROVIDER-UNSET}\" \"${CADR_MODEL-UNSET}\" \"${CADR_REASONING_LEVEL-UNSET}\"")
+
+(defun shell-env-probe-lines (text)
+  ;; Login bash (-lc) may print profile diagnostics before the command.
+  ;; The marker is the probe's own first field, so those lines stay out.
+  (let* ((lines
+           (remove ""
+                   (uiop:split-string text :separator '(#\Newline))
+                   :test #'string=))
+         (values (cdr (member "__CADR_ENV__" lines :test #'string=))))
+    (subseq values 0 (min 5 (length values)))))
+
+(defun call-with-stale-shell-session-env (function)
+  (let ((previous
+          (mapcar
+           (lambda (name)
+             (cons name (uiop:getenv name)))
+           cadr-cli::+shell-session-env-names+)))
+    (unwind-protect
+         (progn
+           (dolist (name cadr-cli::+shell-session-env-names+)
+             (sb-posix:setenv name "stale-parent" 1))
+           (funcall function))
+      (dolist (pair previous)
+        (if (cdr pair)
+            (sb-posix:setenv (car pair) (cdr pair) 1)
+            (sb-posix:unsetenv (car pair)))))))
+
+(defun shell-env-test-model (id provider)
+  (cadr-ai:make-model
+   :id id
+   :name id
+   :provider provider
+   :api :anthropic-messages))
+
+(defun shell-env-test-agent (session model level)
+  (let ((agent
+          (cadr-agent:make-agent
+           :session session
+           :model model)))
+    (setf (cadr-agent::agent-thinking-level agent) level)
+    agent))
+
+(test shell-session-env-reaches-bash-and-powershell-children
+  (with-test-directory (directory)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory directory
+              :cwd directory
+              :id "bash-env-test"
+              :persist-p t))
+           (model
+             (shell-env-test-model "claude-sonnet-4-5" :anthropic))
+           (agent (shell-env-test-agent session model :xhigh))
+           (tool (make-bash-tool directory))
+           (cadr-agent::*tool-search-agent* agent))
+      (call-with-stale-shell-session-env
+       (lambda ()
+         (let ((lines
+                 (shell-env-probe-lines
+                  (result-text
+                   (invoke-tool
+                    tool (args "command" +shell-env-probe+))))))
+           (is (equal
+                (list "bash-env-test"
+                      (namestring (cadr-agent:session-path session))
+                      "anthropic"
+                      "claude-sonnet-4-5"
+                      "xhigh")
+                lines))
+           (setf (cadr-agent:agent-model agent)
+                 (shell-env-test-model "other-model" :openai))
+           (setf (cadr-agent::agent-thinking-level agent) :minimal)
+           (is (equal
+                (list "bash-env-test"
+                      (namestring (cadr-agent:session-path session))
+                      "openai"
+                      "other-model"
+                      "minimal")
+                (shell-env-probe-lines
+                 (result-text
+                  (invoke-tool
+                   tool (args "command" +shell-env-probe+)))))))))
+      (let ((ephemeral
+              (cadr-agent:create-in-memory-session
+               :cwd directory
+               :id "ephemeral-id"))
+            (bare (shell-env-test-agent nil nil :off)))
+        (setf (cadr-agent:agent-session bare) ephemeral)
+        (let ((cadr-agent::*tool-search-agent* bare))
+          (call-with-stale-shell-session-env
+           (lambda ()
+             (is (equal
+                  (list "ephemeral-id" "UNSET" "UNSET" "UNSET" "off")
+                  (shell-env-probe-lines
+                   (result-text
+                    (invoke-tool
+                     tool
+                     (args "command" +shell-env-probe+))))))))))
+      (let ((opted
+              (make-bash-tool
+               directory :expose-session-environment nil))
+            (cadr-agent::*tool-search-agent* agent))
+        (call-with-stale-shell-session-env
+         (lambda ()
+           (is (equal
+                '("UNSET" "UNSET" "UNSET" "UNSET" "UNSET")
+                (shell-env-probe-lines
+                 (result-text
+                  (invoke-tool
+                   opted
+                   (args "command" +shell-env-probe+))))))))
+        (is (not (cadr-cli::shell-session-tool-p opted)))
+        (is (not
+             (member
+              cadr-cli::+shell-session-prompt-guideline+
+              (cadr-cli::tool-prompt-guidelines (list opted))
+              :test #'string=)))
+        (is (member
+             cadr-cli::+shell-session-prompt-guideline+
+             (cadr-cli::tool-prompt-guidelines (list tool))
+             :test #'string=)))
+      (let* ((seen nil)
+             (hooked
+               (make-bash-tool
+                directory
+                :spawn-hook
+                (lambda (context)
+                  (setf seen (getf context :env))
+                  (list :command
+                        "printf '%s\\n' __CADR_ENV__ \"$CADR_SESSION_ID\" \"$CADR_SPAWN_HOOK\""
+                        :cwd (getf context :cwd)
+                        :env (acons "CADR_SPAWN_HOOK" "seen"
+                                    (getf context :env))))))
+             (lines
+               (shell-env-probe-lines
+                (result-text
+                 (invoke-tool hooked (args "command" "ignored"))))))
+        (is (string=
+             "bash-env-test"
+             (cdr (assoc "CADR_SESSION_ID" seen :test #'string=))))
+        (is (equal '("bash-env-test" "seen") lines)))
+      (let ((user-lines
+              (call-with-stale-shell-session-env
+               (lambda ()
+                 (shell-env-probe-lines
+                  (result-text
+                   (cadr-cli::execute-user-bash
+                    nil directory +shell-env-probe+)))))))
+        (is (equal
+             '("stale-parent" "stale-parent" "stale-parent"
+               "stale-parent" "stale-parent")
+             user-lines)))
+      (let ((context-tool
+              (make-bash-tool
+               directory
+               :context (cadr-agent:make-execution-tool-context))))
+        (is (equal
+             (list "bash-env-test"
+                   (namestring (cadr-agent:session-path session))
+                   "openai"
+                   "other-model"
+                   "minimal")
+             (shell-env-probe-lines
+              (result-text
+               (invoke-tool
+                context-tool
+                (args "command" +shell-env-probe+)))))))
+      (let* ((virtual
+               (cadr-agent:register-virtual-model
+                :provider "router"
+                :id "selected-model"
+                :route
+                (lambda (request)
+                  (declare (ignore request))
+                  (error "shell env must not route the selected model"))))
+             (routed (shell-env-test-agent session virtual :high)))
+        (unwind-protect
+             (let ((cadr-agent::*tool-search-agent* routed))
+               (is (equal
+                    (list "bash-env-test"
+                          (namestring (cadr-agent:session-path session))
+                          "router"
+                          "selected-model"
+                          "high")
+                    (shell-env-probe-lines
+                     (result-text
+                      (invoke-tool
+                       tool
+                       (args "command" +shell-env-probe+)))))))
+          (cadr-agent:unregister-virtual-model
+           "router" "selected-model")))
+      (let* ((seen nil)
+             (powershell
+               (make-powershell-tool
+                directory
+                :spawn-hook
+                (lambda (context)
+                  (setf seen context)
+                  context))))
+        (handler-case
+            (invoke-tool
+             powershell
+             (args "command" "Write-Output ok"))
+          (error () nil))
+        (is (string=
+             "bash-env-test"
+             (cdr (assoc "CADR_SESSION_ID"
+                         (getf seen :env)
+                         :test #'string=))))
+        (is (string=
+             "minimal"
+             (cdr (assoc "CADR_REASONING_LEVEL"
+                         (getf seen :env)
+                         :test #'string=)))))
+      (let* ((seen nil)
+             (powershell
+               (make-powershell-tool
+                directory
+                :expose-session-environment nil
+                :spawn-hook
+                (lambda (context)
+                  (setf seen (getf context :env))
+                  context))))
+        (call-with-stale-shell-session-env
+         (lambda ()
+           (handler-case
+               (invoke-tool
+                powershell
+                (args "command" "Write-Output ok"))
+             (error () nil))
+           (is (consp seen))
+           (is (null
+                (assoc "CADR_SESSION_ID" seen :test #'string=)))
+           (is (null
+                (assoc "CADR_MODEL" seen :test #'string=)))))))))
