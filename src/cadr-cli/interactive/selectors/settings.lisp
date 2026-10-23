@@ -283,12 +283,17 @@
                (if (cadr-ai:model-reasoning-p model)
                    (cadr-ai:supported-thinking-levels model)
                    '(:off)))
+             (active (cdr (assoc model-key overrides :test #'string=)))
              (items
                (loop for level in levels
                      collect
                      (make-settings-option
                       :id (string-downcase (symbol-name level))
-                      :label (string-downcase (symbol-name level))
+                      :label
+                      (concatenate
+                       'string
+                       (if (eql level active) "✓ " "  ")
+                       (string-downcase (symbol-name level)))
                       :description (settings-thinking-description level)
                       :value level))))
         (when (assoc model-key overrides :test #'string=)
@@ -297,7 +302,7 @@
                         (list
                          (make-settings-option
                           :id "clear-override"
-                          :label "(clear override)"
+                          :label "  (clear override)"
                           :description
                           (format nil "Revert to global default (~A)"
                                     (settings-display-value
@@ -1088,6 +1093,104 @@
           width "...")
          width))))))
 
+(defun settings-submenu-description-line (description)
+  (when (and description (plusp (length description)))
+    (let ((collapsed
+            (with-output-to-string (out)
+              (loop with break-p = nil
+                    for character across description
+                    do (cond
+                         ((or (char= character #\Newline)
+                              (char= character #\Return))
+                          (setf break-p t))
+                         (t
+                          (when break-p
+                            (write-char #\Space out)
+                            (setf break-p nil))
+                          (write-char character out)))))))
+      (let ((trimmed (string-trim '(#\Space #\Tab) collapsed)))
+        (when (plusp (length trimmed))
+          trimmed)))))
+
+(defun settings-select-list-lines
+    (options width selected
+     &key (min-primary 12) (max-primary 32))
+  (labels ((column-width ()
+             (let* ((low (max 1 (min min-primary max-primary)))
+                    (high (max 1 (max min-primary max-primary)))
+                    (widest 0))
+               (dolist (option options widest)
+                 (setf widest
+                       (max widest
+                            (+ 2
+                               (cadr-tui:visible-width
+                                (or (settings-option-label option) ""))))))
+               (max low (min widest high))))
+           (row (option selected-p primary)
+             (let* ((prefix (if selected-p "→ " "  "))
+                    (prefix-width (cadr-tui:visible-width prefix))
+                    (label (or (settings-option-label option) ""))
+                    (description
+                      (settings-submenu-description-line
+                       (settings-option-description option))))
+               (labels ((clipped (maximum)
+                          (cadr-tui:truncate-to-width
+                           label (max 0 maximum) "")))
+                 (when (and description (> width 40))
+                   (let* ((effective
+                            (max 1
+                                 (min primary
+                                      (- width prefix-width 4))))
+                          (primary-limit (max 1 (- effective 2)))
+                          (truncated (clipped primary-limit))
+                          (truncated-width
+                            (cadr-tui:visible-width truncated))
+                          (spacing
+                            (make-string
+                             (max 1 (- effective truncated-width))
+                             :initial-element #\Space))
+                          (description-start
+                            (+ prefix-width truncated-width
+                               (length spacing)))
+                          (remaining
+                            (- width description-start 2)))
+                     (when (> remaining 10)
+                       (let ((fitted
+                               (cadr-tui:truncate-to-width
+                                description remaining "")))
+                         (return-from row
+                           (if selected-p
+                               (cadr-tui:theme-foreground
+                                :accent
+                                (concatenate
+                                 'string prefix truncated
+                                 spacing fitted))
+                               (concatenate
+                                'string prefix truncated
+                                (cadr-tui:theme-foreground
+                                 :muted
+                                 (concatenate
+                                  'string spacing fitted)))))))))
+                 (let ((truncated
+                         (clipped (- width prefix-width 2))))
+                   (if selected-p
+                       (cadr-tui:theme-foreground
+                        :accent
+                        (concatenate 'string prefix truncated))
+                       (concatenate 'string prefix truncated)))))))
+    (multiple-value-bind (visible start end total)
+        (settings-selector-visible-slice options selected 10)
+      (let ((primary (column-width)))
+        (append
+         (loop for option in visible
+               for index from start
+               collect (row option (= index selected) primary))
+         (when (or (> start 0) (< end total))
+           (list
+            (cadr-tui:theme-foreground
+             :muted
+             (format nil "  (~D/~D)" (1+ selected) total)))))))))
+
 (defun render-settings-select-submenu
     (state width title description &key searchable)
   (let* ((options (settings-selector-submenu-options state))
@@ -1130,61 +1233,14 @@
     (values
      (append
       header
-     (multiple-value-bind (visible start end total)
-         (settings-selector-visible-slice options selected 10)
-       (let ((primary-width
-               (max 12
-                    (min 32
-                         (loop for option in options
-                               maximize
-                               (+ 2 (cadr-tui:visible-width
-                                     (settings-option-label option))))))))
-         (append
-          (loop for option in visible
-                for index from start
-                for selected-p = (= index selected)
-                for label = (settings-option-label option)
-                for desc = (settings-option-description option)
-                for prefix = (if selected-p "→ " "  ")
-                for label-padding =
-                  (and desc (> width 40)
-                       (make-string
-                        (max 1 (- primary-width
-                                  (cadr-tui:visible-width label)))
-                        :initial-element #\Space))
-                for description-start =
-                  (+ (cadr-tui:visible-width prefix)
-                     (cadr-tui:visible-width label)
-                     (if label-padding
-                         (cadr-tui:visible-width label-padding)
-                         0))
-                for fitted-desc =
-                  (and label-padding
-                       (cadr-tui:truncate-to-width
-                        desc
-                        (max 0 (- width description-start 2))
-                        ""))
-                collect
-                (if selected-p
-                    (cadr-tui:theme-foreground
-                     :accent
-                     (concatenate
-                      'string prefix label
-                      (or label-padding "")
-                      (or fitted-desc "")))
-                    (concatenate
-                     'string prefix label
-                     (if label-padding
-                         (cadr-tui:theme-foreground
-                          :muted
-                          (concatenate
-                           'string label-padding fitted-desc))
-                         ""))))
-          (when (or (> start 0) (< end total))
-            (list
-             (cadr-tui:theme-foreground
-              :muted
-              (format nil "  (~D/~D)" (1+ selected) total)))))))
+     (multiple-value-bind (min-primary max-primary)
+         (if (eq (settings-selector-state-mode state) :model-thinking)
+             (values 12 46)
+             (values 12 32))
+       (settings-select-list-lines
+        options width selected
+        :min-primary min-primary
+        :max-primary max-primary))
      (list "")
      (component-text-lines
       (cadr-tui:theme-foreground

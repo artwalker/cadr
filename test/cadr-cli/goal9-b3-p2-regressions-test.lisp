@@ -437,6 +437,247 @@
           :label "Default thinking level per model"
           :value "low"))))))))
 
+(test goal27-settings-submenu-columns-follow-v140-select-list
+  ;; v1.4.0 packages/tui/src/components/select-list.ts renderItem clamps
+  ;; the primary column and truncates the label to that width minus 2.
+  ;; packages/tui/test/select-list.test.ts locks the shared starts.
+  ;; settings-submenu.ts uses 12–32. settings-selector.ts MODEL_PICKER_LAYOUT
+  ;; is 12–46. Thinking and theme labels include the check or two spaces.
+  (let ((plain
+          (lambda (lines)
+            (mapcar #'cadr-tui:strip-terminal-sequences lines))))
+    (labels ((at (line text)
+               (let ((index (search text line)))
+                 (is (integerp index))
+                 (if (integerp index)
+                     (cadr-tui:visible-width (subseq line 0 index))
+                     -1)))
+             (option (label description)
+               (cadr-cli::make-settings-option
+                :id label :label label :description description
+                :value label)))
+    (let* ((long "very-long-command-name-that-needs-truncation")
+           (lines
+             (funcall
+              plain
+              (cadr-cli::settings-select-list-lines
+               (list (option "short" "short description")
+                     (option long "long description"))
+               80 0))))
+      (is (= 34 (at (first lines) "short description")))
+      (is (= 34 (at (second lines) "long description")))
+      (is (search "very-long-command-name-that-ne" (second lines)))
+      (is (null (search "needs-truncation" (second lines)))))
+    (let ((lines
+            (funcall
+             plain
+             (cadr-cli::settings-select-list-lines
+              (list
+               (option "very-long-command-name-that-needs-truncation"
+                       "first")
+               (option "short" "second"))
+              80 0
+              :min-primary 12 :max-primary 20))))
+      (is (= 22 (at (first lines) "first")))
+      (is (= 22 (at (second lines) "second"))))
+    (let ((lines
+            (funcall
+             plain
+             (cadr-cli::settings-select-list-lines
+              (list (option "a" "first") (option "bb" "second"))
+              80 0
+              :min-primary 12 :max-primary 20))))
+      (is (= 14 (at (first lines) "first")))
+      (is (= 14 (at (second lines) "second"))))
+    (let* ((short
+             (cadr-ai:make-model
+              :provider :openai :id "gpt-4o"
+              :context-window 128000 :reasoning-p t))
+           (long-model
+             (cadr-ai:make-model
+              :provider :amazon-bedrock
+              :id "amazon.nova-2-lite-v1:0"
+              :context-window 128000 :reasoning-p t))
+           (state
+             (cadr-cli::make-settings-selector-state
+              :available-models (list short long-model)
+              :options
+              (list
+               (cadr-cli::make-settings-option
+                :id "model-thinking"
+                :label "Default thinking level per model"
+                :value (list :overrides
+                             (list (cons "openai/gpt-4o" :high)
+                                   (cons "amazon-bedrock/amazon.nova-2-lite-v1:0"
+                                         :low))
+                             :current-model short)
+                :submenu :model-thinking)))))
+      (setf (cadr-cli::settings-selector-state-mode state) :model-thinking)
+      (let ((lines
+              (funcall
+               plain
+               (cadr-cli::render-settings-selector state 80))))
+        (is (= 44 (at (find-if (lambda (line) (search "gpt-4o" line)) lines)
+                      "high")))
+        (is (= 44
+               (at (find-if
+                    (lambda (line)
+                      (search "amazon.nova-2-lite-v1:0" line))
+                    lines)
+                   "low")))
+        (is (search "amazon.nova-2-lite-v1:0 [amazon-bedrock]"
+                    (find-if
+                     (lambda (line)
+                       (search "amazon.nova-2-lite-v1:0" line))
+                     lines)))))
+    (let* ((overflow
+             (cadr-ai:make-model
+              :provider :openai
+              :id (make-string 60 :initial-element #\x)
+              :context-window 128000 :reasoning-p t))
+           (short
+             (cadr-ai:make-model
+              :provider :openai :id "gpt-4o"
+              :context-window 128000 :reasoning-p t))
+           (state
+             (cadr-cli::make-settings-selector-state
+              :available-models (list short overflow)
+              :options
+              (list
+               (cadr-cli::make-settings-option
+                :id "model-thinking"
+                :label "Default thinking level per model"
+                :value (list :overrides
+                             (list (cons "openai/gpt-4o" :high)
+                                   (cons (format nil "openai/~A"
+                                                 (cadr-ai:model-id overflow))
+                                         :low))
+                             :current-model short)
+                :submenu :model-thinking)))))
+      (setf (cadr-cli::settings-selector-state-mode state) :model-thinking)
+      (let* ((lines
+               (funcall
+                plain
+                (cadr-cli::render-settings-selector state 80)))
+             (long-line
+               (find-if
+                (lambda (line) (search "xxxx" line))
+                lines)))
+        (is (= 48 (at long-line "low")))
+        (is (= 48
+               (at (find-if (lambda (line) (search "gpt-4o" line)) lines)
+                   "high")))
+        (is (search (make-string 44 :initial-element #\x) long-line))
+        (is (null (search (make-string 45 :initial-element #\x) long-line)))))
+    (let* ((model
+             (cadr-ai:make-model
+              :provider :openai :id "gpt-4o"
+              :context-window 128000 :reasoning-p t))
+           (key "openai/gpt-4o")
+           (state
+             (cadr-cli::make-settings-selector-state
+              :available-models (list model)
+              :options
+              (list
+               (cadr-cli::make-settings-option
+                :id "model-thinking"
+                :label "Default thinking level per model"
+                :value (list :overrides (list (cons key :high))
+                             :global-default :medium)
+                :submenu :model-thinking)))))
+      (setf (cadr-cli::settings-selector-state-mode state)
+            :model-thinking-level
+            (cadr-cli::settings-selector-state-model-thinking-key state)
+            key)
+      (let ((lines
+              (funcall
+               plain
+               (cadr-cli::render-settings-selector state 80))))
+        (is (find-if
+             (lambda (line) (search "✓ high" line))
+             lines))
+        (is (find-if
+             (lambda (line) (search "  off" line))
+             lines))
+        (is (= 22
+               (at (find-if
+                    (lambda (line)
+                      (search "Deep reasoning (~16k tokens)" line))
+                    lines)
+                   "Deep reasoning (~16k tokens)")))
+        (is (= 22
+               (at (find-if
+                    (lambda (line) (search "(clear override)" line))
+                    lines)
+                   "Revert to global default (medium)")))))
+    (let ((state
+            (cadr-cli::make-settings-selector-state
+             :theme-names '("system" "dark" "light")
+             :current-theme "dark")))
+      (setf (cadr-cli::settings-selector-state-mode state) :theme-single)
+      (let ((lines
+              (funcall
+               plain
+               (cadr-cli::render-settings-selector state 80))))
+        (is (= 15
+               (at (find-if
+                    (lambda (line)
+                      (search "Use separate themes" line))
+                    lines)
+                   "Use separate themes for light and dark terminal appearance")))
+        (is (= 15
+               (at (find-if
+                    (lambda (line)
+                      (search "Theme created from your terminal's colors" line))
+                    lines)
+                   "Theme created from your terminal's colors")))
+        (is (equal '("system" "/" "dark" "light")
+                   (mapcar #'cadr-cli::settings-option-value
+                           (cadr-cli::settings-selector-submenu-options
+                            state))))
+        (is (find-if (lambda (line) (search "✓ dark" line)) lines))
+        (is (some
+             (lambda (line)
+               (search
+                "Select a theme, or choose automatic to follow terminal appearance."
+                line))
+             lines))))
+    (let ((state
+            (cadr-cli::make-settings-selector-state
+             :theme-names '("system" "dark" "light")
+             :current-theme "dark"
+             :options
+             (list
+              (cadr-cli::make-settings-option
+               :id "theme" :label "Theme" :value "dark"
+               :values '("system" "dark" "light")
+               :submenu :theme)))))
+      (cadr-cli::settings-selector-open-submenu
+       state
+       (first (cadr-cli::settings-selector-state-options state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :up))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :enter))
+      (is (eq :theme-automatic
+              (cadr-cli::settings-selector-state-mode state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :enter))
+      (is (eq :theme-light
+              (cadr-cli::settings-selector-state-mode state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :escape))
+      (is (eq :theme-automatic
+              (cadr-cli::settings-selector-state-mode state)))
+      (is (zerop
+           (cadr-cli::settings-selector-state-submenu-selected state)))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :down))
+      (cadr-cli::settings-selector-handle-event
+       state (cadr-tui:make-input-event :kind :enter))
+      (is (eq :theme-dark
+              (cadr-cli::settings-selector-state-mode state)))))))
+
 (test goal9-b3-settings-overlay-retains-the-complete-ansi-screen-contract
   (let ((capabilities
           (cadr-tui:make-terminal-capabilities

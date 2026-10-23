@@ -3350,9 +3350,10 @@
       (is (null (search "Import session (3s)" title-line))))))
 
 (test goal17-settings-submenu-uses-select-list-and-text-width-contracts
-  ;; Fixed pi@4a080252f settings-selector.ts:191-218 uses natural-width
-  ;; SelectList rows, but Automatic Theme diagnostics are Text components and
-  ;; therefore pad to the full viewport width.
+  ;; v1.4.0 settings-selector.ts singleModeThemeItems marks the current
+  ;; theme with "✓ " and the automatic row with "  automatic". SelectList
+  ;; then pads that row to the 12–32 column. Automatic Theme diagnostics
+  ;; are Text components and therefore pad to the full viewport width.
   (let ((state
           (cadr-cli::make-settings-selector-state
            :options nil
