@@ -139,29 +139,315 @@
                (asdf:system-relative-pathname
                 "cadr-wasm" "src/cadr-wasm/cache.lisp")))))
 
+(defun codemode-signal-text (function)
+  (handler-case
+      (progn (funcall function) nil)
+    (error (condition)
+      (princ-to-string condition))))
+
+(test codemode-models-discovery-images-and-schema-match-v140
+  (let ((cadr-cli::*codemode-model-runtime* nil)
+        (cadr-cli::*active-native-model-registry* nil)
+        (cadr-cli::*codemode-tool-namespaces* nil))
+    (let ((info (cadr-cli::codemode-model-call
+                 "models.getModelOfType"
+                 (vector "classifier" "typesafe" "jev-latest"))))
+      (is (hash-table-p info))
+      (is (string= "jev-latest" (gethash "id" info)))
+      (is (string= "typesafe" (gethash "provider" info)))
+      (is (cadr-ai::json-present-p info "input"))
+      (is (not (cadr-ai::json-present-p info "headers"))))
+    (is (eq :codemode-undefined
+            (cadr-cli::codemode-model-call
+             "models.getModelOfType"
+             (vector "classifier" "typesafe" "missing"))))
+    (is (zerop (length (cadr-cli::codemode-model-call
+                        "models.getAvailableOfType"
+                        (vector "classifier")))))
+    (is (find "jev-latest"
+              (cadr-cli::codemode-model-call
+               "models.getModelsOfType" (vector "classifier" "typesafe"))
+              :key (lambda (model) (gethash "id" model))
+              :test #'string=))
+    (let ((text (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-model-call
+                    "models.getModelOfType" (vector "video"))))))
+      (is (search "Unknown model type \"video\". Use \"chat\", \"image\", or \"classifier\"."
+                  text)))
+    (let ((text (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-model-call
+                    "models.getModelOfType" (vector "classifier" "typesafe"))))))
+      (is (search "models.getModelOfType(type, provider, id) expects three strings, got (a string, a string)."
+                  text))
+      (is (search "models.getModelOfType(\"classifier\", \"typesafe\", \"jev-latest\")" text)))
+    (let ((text (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-model-call
+                    "models.classify"
+                    (vector (cadr-ai::json-object "provider" "scorer" "id" "nope")
+                            (cadr-ai::json-object)))))))
+      (is (search "Unknown classifier model \"scorer/nope\"." text))
+      (is (search "models.getAvailableOfType(\"classifier\")" text)))
+    (let ((text (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-model-call
+                    "models.classify"
+                    (vector (cadr-ai::json-object
+                             "provider" "openrouter"
+                             "id" "black-forest-labs/flux-3-image")
+                            (cadr-ai::json-object)))))))
+      (is (search "\"openrouter/black-forest-labs/flux-3-image\" is an image model, not a classifier model."
+                  text)))
+    (let ((text (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-model-call
+                    "models.classify"
+                    (cadr-cli::codemode-parse-ordered
+                     "[{\"provider\":\"typesafe\",\"id\":\"jev-latest\"},{\"prompt\":\"x\"}]"))))))
+      (is (search "models.classify() context.state must be an object, got undefined." text))
+      (is (search "See \"Classify\" in " text))
+      (is (search "codemode.md" text)))
+    (let ((text (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-model-call
+                    "models.classify"
+                    (cadr-cli::codemode-parse-ordered
+                     "[{\"provider\":\"typesafe\",\"id\":\"jev-latest\"},[]]"))))))
+      (is (search "models.classify() expects a context object as its second argument, got an empty array."
+                  text)))
+    (let ((result (cadr-cli::codemode-handle-call
+                   nil nil
+                   (list :call 1 "global" "models.generateImages"
+                         "[{\"provider\":\"openrouter\",\"id\":\"black-forest-labs/flux-3-image\"},{\"input\":[{\"type\":\"text\",\"text\":\"x\"},{\"type\":\"file\",\"data\":\"zz\"}]}]")
+                   (list 0))))
+      (is (search "models.generateImages() context.input[1] must be a text or image block, got { type, data }."
+                  (second result))))
+    (let ((text (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-model-call
+                    "models.generateImages"
+                    (cadr-cli::codemode-parse-ordered
+                     "[{\"provider\":\"openrouter\",\"id\":\"black-forest-labs/flux-3-image\"},{\"prompt\":\"x\"}]"))))))
+      (is (search "models.generateImages() context.input must be a non-empty array of blocks, got undefined."
+                  text))
+      (is (search "See \"Generate images\" in " text)))
+    (let ((result (cadr-cli::codemode-model-call
+                   "models.classify"
+                   (cadr-cli::codemode-parse-ordered
+                    "[{\"provider\":\"typesafe\",\"id\":\"jev-latest\"},{\"state\":{},\"questions\":{\"kind\":{\"type\":\"bool\",\"instructions\":\"Is it?\",\"criteria\":{\"true\":\"yes\",\"false\":\"no\"}}}}]"))))
+      (is (string= "error" (gethash "stopReason" result)))
+      (is (search "API key" (gethash "errorMessage" result))))
+    (let ((called (list nil)))
+      (let ((cadr-cli::*codemode-model-runtime*
+              (cadr-cli::make-codemode-model-backend
+               :models (list (cadr-cli::make-codemode-resolved-model
+                              :type "classifier" :provider "scorer" :id "textonly"
+                              :name "Text" :api "test" :input '("text")))
+               :classify-function (lambda (model context)
+                                    (declare (ignore model context))
+                                    (setf (car called) t)))))
+        (let ((result (cadr-cli::codemode-model-call
+                       "models.classify"
+                       (cadr-cli::codemode-parse-ordered
+                        "[{\"provider\":\"scorer\",\"id\":\"textonly\"},{\"state\":{},\"images\":[{\"type\":\"image\",\"data\":\"aa\",\"mimeType\":\"image/png\"}],\"questions\":{\"k\":{\"type\":\"bool\",\"instructions\":\"q\",\"criteria\":{\"true\":\"y\",\"false\":\"n\"}}}}]"))))
+          (is (null (car called)))
+          (is (string= "error" (gethash "stopReason" result)))
+          (is (search "Model scorer/textonly does not accept image input"
+                      (gethash "errorMessage" result))))))
+    (let* ((tools (append
+                   (loop for index from 1 to 9
+                         collect (cadr-ai:make-tool
+                                  :name (format nil "widget~A" index)
+                                  :description "widget catalog"
+                                  :parameters (cadr-ai::json-object "type" "object")))
+                   (list (cadr-ai:make-tool
+                          :name "mcp__docs__search"
+                          :description "Search the docs"
+                          :parameters (cadr-ai::json-object "type" "object"))
+                         (cadr-ai:make-tool
+                          :name "list_radius"
+                          :description "List radius"
+                          :parameters (cadr-ai::json-object "type" "object")))))
+           (cadr-cli::*codemode-tool-namespaces*
+             (list (cadr-cli::make-codemode-namespace
+                    :name "dev_radius"
+                    :aliases '("dev-radius")
+                    :description "Radius tools"
+                    :instructions "Use list."
+                    :tool-names '("list_radius")))))
+      (is (search "searchTools() expects a query string"
+                  (codemode-signal-text
+                   (lambda ()
+                     (cadr-cli::codemode-discovery tools "searchTools" (vector 1))))))
+      (is (search "searchTools() limit must be a positive integer"
+                  (codemode-signal-text
+                   (lambda ()
+                     (cadr-cli::codemode-discovery
+                      tools "searchTools"
+                      (cadr-cli::codemode-parse-ordered "[\"widget\",{\"limit\":0}]"))))))
+      (is (search "searchTools() namespace must be a string"
+                  (codemode-signal-text
+                   (lambda ()
+                     (cadr-cli::codemode-discovery
+                      tools "searchTools"
+                      (cadr-cli::codemode-parse-ordered "[\"widget\",{\"namespace\":1}]"))))))
+      (is (= 8 (length (cadr-cli::codemode-discovery
+                        tools "searchTools" (vector "widget")))))
+      (is (= 8 (length (cadr-cli::codemode-discovery
+                        tools "searchTools"
+                        (cadr-cli::codemode-parse-ordered
+                         "[\"widget\",{\"limit\":null}]")))))
+      (is (= 1 (length (cadr-cli::codemode-discovery
+                        tools "searchTools"
+                        (cadr-cli::codemode-parse-ordered
+                         "[\"widget\",{\"limit\":1}]")))))
+      (let ((namespace (cadr-cli::codemode-discovery
+                        tools "describeNamespace" (vector "dev-radius"))))
+        (is (string= "dev_radius" (gethash "name" namespace)))
+        (is (string= "Radius tools" (gethash "description" namespace)))
+        (is (string= "Use list." (gethash "instructions" namespace)))
+        (is (find "list_radius" (gethash "tools" namespace) :test #'string=)))
+      (let ((namespace (cadr-cli::codemode-discovery
+                        tools "describeNamespace" (vector "mcp__docs"))))
+        (is (string= "mcp__docs" (gethash "name" namespace)))
+        (is (not (cadr-ai::json-present-p namespace "description")))
+        (is (find "mcp__docs__search" (gethash "tools" namespace) :test #'string=)))
+      (is (eq :codemode-undefined
+              (cadr-cli::codemode-discovery
+               tools "describeNamespace" (vector "missing"))))
+      (is (search "describeNamespace() expects a namespace name"
+                  (codemode-signal-text
+                   (lambda ()
+                     (cadr-cli::codemode-discovery
+                      tools "describeNamespace" (vector))))))
+      (is (search "describeTool() expects a tool name"
+                  (codemode-signal-text
+                   (lambda ()
+                     (cadr-cli::codemode-discovery tools "describeTool" #())))))
+    (let* ((data "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==")
+           (saved (cadr-cli::codemode-save-images
+                   (list (list :image data "image/png")
+                         (list :image data "image/png"))))
+           (label (cadr-ai:text-content-text (first saved))))
+      (is (search "[Image saved to " label))
+      (is (search "pi-codemode" label))
+      (is (search ".png (image/png, " label))
+      (is (string= label (cadr-ai:text-content-text (third saved))))
+      (is (typep (second saved) 'cadr-ai:image-content))
+      (let* ((start (length "[Image saved to "))
+             (end (position #\Space label :start start))
+             (path (subseq label start end)))
+        (is (equalp (cadr-cli::decode-base64-bytes data)
+                    (with-open-file (stream path :element-type '(unsigned-byte 8))
+                      (let ((bytes (make-array (file-length stream)
+                                               :element-type '(unsigned-byte 8))))
+                        (read-sequence bytes stream)
+                        bytes)))))
+    (is (search "No file extension for image type image/bmp"
+                (codemode-signal-text
+                 (lambda ()
+                   (cadr-cli::codemode-save-images
+                    (list (list :image "aaaa" "image/bmp")))))))
+    (let ((truncated (cadr-cli::codemode-truncate
+                      (list (cadr-ai:make-text-content
+                             :text (make-string 100000 :initial-element #\a)))
+                      10)))
+      (is (search "pi-codemode" (cadr-ai:text-content-text (first truncated)))))
+    (let ((schema (cadr-ai::json-object "type" "object")))
+      (is (equalp (cadr-ai::json-object "files" 2)
+                  (cadr-cli::codemode-script-value
+                   (cadr-ai:make-tool :name "stats" :output-schema schema)
+                   t "disk full" (cadr-ai::json-object "files" 2))))
+      (is (search "Tool \"bare\" failed"
+                  (codemode-signal-text
+                   (lambda ()
+                     (cadr-cli::codemode-script-value
+                      (cadr-ai:make-tool :name "bare")
+                      t nil nil)))))
+      (is (string= "hello-text"
+                   (cadr-cli::codemode-script-value
+                    (cadr-ai:make-tool :name "plain")
+                    nil "hello-text" (cadr-ai::json-object "hidden" t)))))))))
+
 (defun codemode-quickjs-contract ()
   (let ((cadr-cli::*codemode-script-tools*
           (list (cadr-ai:make-tool
                  :name "echo"
-                 :description "Echo"
+                 :description "Echo the text"
                  :parameters (cadr-ai::json-object "type" "object")
                  :executor (lambda (id arguments)
                              (declare (ignore id))
-                             (gethash "text" arguments)))))
+                             (gethash "text" arguments)))
+                (cadr-ai:make-tool
+                 :name "stats"
+                 :description "Count files"
+                 :parameters (cadr-ai::json-object "type" "object")
+                 :output-schema (cadr-ai::json-object "type" "object")
+                 :executor (lambda (id arguments)
+                             (declare (ignore id arguments))
+                             (cadr-ai:make-tool-result-message
+                              :content (list (cadr-ai:make-text-content :text "2 files"))
+                              :structured-content (cadr-ai::json-object "files" 2)
+                              :is-error nil)))
+                (cadr-ai:make-tool
+                 :name "broken"
+                 :description "Fails with a schema"
+                 :parameters (cadr-ai::json-object "type" "object")
+                 :output-schema (cadr-ai::json-object "type" "object")
+                 :executor (lambda (id arguments)
+                             (declare (ignore id arguments))
+                             (cadr-ai:make-tool-result-message
+                              :content (list (cadr-ai:make-text-content :text "disk full"))
+                              :structured-content (cadr-ai::json-object "code" "full")
+                              :is-error t)))
+                (cadr-ai:make-tool
+                 :name "plain"
+                 :description "Text only"
+                 :parameters (cadr-ai::json-object "type" "object")
+                 :executor (lambda (id arguments)
+                             (declare (ignore id arguments))
+                             (cadr-ai:make-tool-result-message
+                              :content (list (cadr-ai:make-text-content :text "hello-text"))
+                              :structured-content (cadr-ai::json-object "hidden" t)
+                              :is-error nil)))
+                (cadr-ai:make-tool
+                 :name "nope"
+                 :description "Fails without a schema"
+                 :parameters (cadr-ai::json-object "type" "object")
+                 :executor (lambda (id arguments)
+                             (declare (ignore id arguments))
+                             (cadr-ai:make-tool-result-message
+                              :content nil
+                              :is-error t)))
+                (cadr-ai:make-tool
+                 :name "mcp__docs__search"
+                 :description "Search the docs"
+                 :parameters (cadr-ai::json-object "type" "object"))))
+        (cadr-cli::*codemode-tool-namespaces* nil)
         (cadr-cli::*codemode-model-runtime*
-          (cadr-ai::json-object))
+          (cadr-cli::make-codemode-model-backend
+           :models (list (cadr-cli::make-codemode-resolved-model
+                          :type "classifier" :provider "test" :id "c"
+                          :name "C" :api "test" :input '("text"))
+                         (cadr-cli::make-codemode-resolved-model
+                          :type "image" :provider "test" :id "img"
+                          :name "Img" :api "test" :input '("text")))
+           :classify-function
+           (lambda (model context)
+             (declare (ignore context))
+             (cadr-ai::json-object
+              "label" (cadr-cli::codemode-resolved-model-id model)
+              "stopReason" "stop"))
+           :images-function
+           (lambda (model context)
+             (declare (ignore model context))
+             (cadr-ai::json-object
+              "stopReason" "stop"
+              "output" (vector (cadr-ai::json-object
+                                "type" "image" "data" "aaaa" "mimeType" "image/png"))))))
         (failures nil))
-    (setf (gethash "classify" cadr-cli::*codemode-model-runtime*)
-          (lambda (model context)
-            (declare (ignore context))
-            (cadr-ai::json-object "label" (gethash "id" model) "stopReason" "stop")))
-    (setf (gethash "generateImages" cadr-cli::*codemode-model-runtime*)
-          (lambda (model context)
-            (declare (ignore model context))
-            (cadr-ai::json-object
-             "stopReason" "stop"
-             "output" (vector (cadr-ai::json-object
-                               "type" "image" "data" "aaaa" "mimeType" "image/png")))))
     (labels ((run-script (code)
                (cadr-cli::execute-codemode
                 nil "script"
@@ -180,18 +466,54 @@
                      (push (format nil "~A: ~A" name text) failures))
                    (list text is-error)))))
       (check "return" "return 1 + 1;" "2")
-      (let ((first (codemode-wasm-call "LAST-COMPILE-CACHED-P")))
-        (check "tool" "return await tools.echo({ text: \"hi\" });" "hi")
-        (unless (or first (codemode-wasm-call "LAST-COMPILE-CACHED-P"))
-          (push "second script did not use the compile cache" failures)))
+      (unless (codemode-wasm-call "LAST-COMPILE-CACHED-P")
+        (push "first script compiled the quickjs module on the default heap" failures))
+      (check "tool" "return await tools.echo({ text: \"hi\" });" "hi")
       (check "store" (format nil "store(\"k\", 7); return load(\"k\");") "7")
-      (check "classify"
-             "const model = { provider: \"test\", id: \"c\" }; return await models.classify(model, { prompt: \"x\" });"
-             "c")
-      (let ((pair (check "images"
-                         "const model = { provider: \"test\", id: \"img\" }; await models.generateImages(model, { prompt: \"x\" }); return \"done\";"
-                         "Note: models.generateImages() returned 1 image")))
-        (declare (ignore pair)))
+      (let ((text (first
+                   (check "contract"
+                          (concatenate 'string
+                           "const lines = [];"
+                           "async function grab(label, fn) {"
+                           "  try { lines.push(label + \"=\" + JSON.stringify(await fn())); }"
+                           "  catch (e) { lines.push(label + \"=\" + e.message); }"
+                           "}"
+                           "await grab(\"classify\", () => models.classify({ provider: \"test\", id: \"c\" }, { prompt: \"x\" }));"
+                           "await grab(\"images\", () => models.generateImages({ provider: \"test\", id: \"img\" }, { prompt: \"x\" }));"
+                           "await grab(\"search\", () => searchTools(1));"
+                           "await grab(\"ns\", () => describeNamespace(\"mcp__docs\"));"
+                           "await grab(\"missing\", () => describeNamespace(\"no-such\"));"
+                           "await grab(\"stats\", () => tools.stats({}));"
+                           "await grab(\"broken\", () => tools.broken({}));"
+                           "await grab(\"plain\", () => tools.plain({}));"
+                           "try { await tools.nope({}); lines.push(\"nope=unexpected\"); }"
+                           "catch (e) { lines.push(\"nope=\" + e.message); }"
+                           "const ok = await models.classify({ provider: \"test\", id: \"c\" }, { state: {}, questions: { k: { type: \"bool\", instructions: \"q\", criteria: { true: \"y\", false: \"n\" } } } });"
+                           "lines.push(\"ok=\" + ok.label);"
+                           "await models.generateImages({ provider: \"test\", id: \"img\" }, { input: [{ type: \"text\", text: \"x\" }] });"
+                           "return lines.join(\"\\n\");")
+                          "ok=c"))))
+        (dolist (needle '("models.classify() context.state must be an object, got undefined."
+                          "models.generateImages() context.input must be a non-empty array of blocks, got undefined."
+                          "searchTools() expects a query string"
+                          "mcp__docs"
+                          "mcp__docs__search"
+                          "missing=undefined"
+                          "\"files\":2"
+                          "\"code\":\"full\""
+                          "hello-text"
+                          "Tool \"nope\" failed"
+                          "Note: models.generateImages() returned 1 image"))
+          (unless (search needle text)
+            (push (format nil "missing ~A in ~A" needle text) failures)))
+        (when (search "hidden" text)
+          (push (format nil "plain tool leaked structured content: ~A" text) failures)))
+      (let ((text (first
+                   (check "image"
+                          "image(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==\"); return \"shown\";"
+                          "[Image saved to "))))
+        (unless (and (search "pi-codemode" text) (search ".png (image/png, " text))
+          (push (format nil "image label: ~A" text) failures)))
       (let ((pair (check "interrupt"
                          (format nil "// @options: {\"timeout_ms\": 500}~%while (true) {}")
                          "Script timed out: Execution timed out after")))
@@ -207,28 +529,4 @@
     t))
 
 (test codemode-quickjs-runs-the-upstream-contract
-  (if (>= (sb-ext:dynamic-space-size) (* 6 1024 1024 1024))
-      (is (eq t (codemode-quickjs-contract)))
-      (let* ((root (asdf:system-source-directory "cadr-cli"))
-             (asds '("cadr-core.asd" "cadr-chord.asd" "cadr-durable.asd"
-                     "cadr-telemetry.asd" "cadr-ai.asd" "cadr-agent.asd"
-                     "cadr-tui.asd" "cadr-cli.asd" "cadr-live-test-support.asd"
-                     "cadr-wasm.asd"))
-             (args (append
-                    (list "sbcl" "--dynamic-space-size" "8192" "--noinform"
-                          "--non-interactive" "--disable-debugger"
-                          "--load" (namestring
-                                    (uiop:parse-native-namestring
-                                     (or (uiop:getenv "QUICKLISP_SETUP")
-                                         (merge-pathnames "quicklisp/setup.lisp"
-                                                          (user-homedir-pathname))))))
-                    (loop for name in asds
-                          append (list "--eval"
-                                       (format nil "(asdf:load-asd ~S)"
-                                               (namestring (merge-pathnames name root)))))
-                    (list "--eval" "(asdf:load-system \"cadr-cli/tests\")"
-                          "--eval" "(cadr-cli/tests::codemode-quickjs-contract)"
-                          "--quit")))
-             (code (nth-value 2 (uiop:run-program args :output nil :error-output nil
-                                                  :ignore-error-status t))))
-        (is (zerop code)))))
+  (is (eq t (codemode-quickjs-contract))))

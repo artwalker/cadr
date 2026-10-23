@@ -25,6 +25,31 @@
 (defvar *codemode-model-lock* (sb-thread:make-mutex :name "codemode-models"))
 (defvar *codemode-model-wait* (sb-thread:make-waitqueue :name "codemode-models"))
 (defvar *codemode-script-tools* nil)
+(defvar *codemode-tool-namespaces* nil)
+
+(defstruct codemode-namespace
+  (name "" :type string)
+  (aliases nil :type list)
+  (description nil :type (or null string))
+  (instructions nil :type (or null string))
+  (tool-names nil :type list))
+
+(defstruct codemode-resolved-model
+  (type "" :type string)
+  (provider "" :type string)
+  (id "" :type string)
+  (name "" :type string)
+  (api "" :type string)
+  (base-url "" :type string)
+  (input nil :type list)
+  (context-window nil)
+  (source nil))
+
+(defstruct codemode-model-backend
+  (models nil :type list)
+  (classify-function nil :type (or null function))
+  (images-function nil :type (or null function))
+  (available-providers nil :type list))
 
 (define-condition codemode-source-error (error)
   ((text :initarg :text :reader codemode-source-error-text))
@@ -382,22 +407,203 @@
 (defun codemode-text-of (content)
   (cadr-ai::content-text content (string #\Newline)))
 
-(defun codemode-tool-result-value (outcome)
-  (let* ((result (cadr-agent::nested-tool-call-outcome-result outcome))
-         (structured (and result (cadr-ai:tool-result-message-structured-content result)))
-         (text (codemode-text-of (and result (cadr-ai:tool-result-message-content result)))))
-    (if (cadr-agent::nested-tool-call-outcome-is-error outcome)
-        (error (if (and text (plusp (length text))) text "Tool failed"))
-        (or structured text ""))))
+(defparameter +codemode-search-limit+ 8)
+(defparameter +codemode-classifier-shape+
+  "{ state: { ... }, images?: [{ type: \"image\", data: <base64>, mimeType }], questions: { <id>: { type: \"choice\", instructions, criteria: { <label>: <meaning> } } | { type: \"score\", instructions, criteria: [<lowest level>, ..., <highest level>] } | { type: \"bool\", instructions, criteria: { true: <meaning>, false: <meaning> } } } }")
+(defparameter +codemode-images-shape+
+  "{ input: [{ type: \"text\", text: <prompt> }, ...optional { type: \"image\", data: <base64>, mimeType } references] }")
+
+(defun codemode-json-null-p (value)
+  (and (symbolp value)
+       (not (keywordp value))
+       (string= (symbol-name value) "NULL")))
+
+(defun codemode-skip-ws (source start)
+  (loop for index from start below (length source)
+        for char = (char source index)
+        while (member char '(#\Space #\Tab #\Newline #\Return))
+        finally (return index)))
+
+(defun codemode-read-string (source start)
+  (let ((index (1+ start)))
+    (loop while (< index (length source))
+          do (cond ((char= (char source index) #\\)
+                    (incf index 2))
+                   ((char= (char source index) #\")
+                    (return-from codemode-read-string
+                      (values (cadr-ai::parse-json
+                               (subseq source start (1+ index)))
+                              (1+ index))))
+                   (t (incf index))))
+    (error "unterminated JSON string")))
+
+(defun codemode-read-json (source start)
+  (let ((index (codemode-skip-ws source start)))
+    (when (>= index (length source))
+      (error "empty JSON value"))
+    (case (char source index)
+      (#\{ (codemode-read-object source index))
+      (#\[ (codemode-read-array source index))
+      (#\" (codemode-read-string source index))
+      (t (let ((end (or (position-if
+                         (lambda (char)
+                           (member char '(#\, #\] #\} #\: #\Space #\Tab
+                                          #\Newline #\Return)))
+                         source :start index)
+                        (length source))))
+           (values (cadr-ai::parse-json (subseq source index end)) end))))))
+
+(defun codemode-read-object (source start)
+  (let ((index (codemode-skip-ws source (1+ start)))
+        (pairs nil))
+    (when (and (< index (length source)) (char= (char source index) #\}))
+      (return-from codemode-read-object (values (list :json-object) (1+ index))))
+    (loop
+      (multiple-value-bind (key next) (codemode-read-json source index)
+        (unless (stringp key)
+          (error "JSON object key must be a string"))
+        (setf index (codemode-skip-ws source next))
+        (unless (and (< index (length source)) (char= (char source index) #\:))
+          (error "JSON object expected a colon"))
+        (multiple-value-bind (value after) (codemode-read-json source (1+ index))
+          (setf pairs (append pairs (list key value)))
+          (setf index (codemode-skip-ws source after))))
+      (cond
+        ((and (< index (length source)) (char= (char source index) #\,))
+         (incf index))
+        ((and (< index (length source)) (char= (char source index) #\}))
+         (return (values (cons :json-object pairs) (1+ index))))
+        (t (error "JSON object expected a comma or end"))))))
+
+(defun codemode-read-array (source start)
+  (let ((index (codemode-skip-ws source (1+ start)))
+        (items nil))
+    (when (and (< index (length source)) (char= (char source index) #\]))
+      (return-from codemode-read-array (values #() (1+ index))))
+    (loop
+      (multiple-value-bind (value next) (codemode-read-json source index)
+        (push value items)
+        (setf index (codemode-skip-ws source next)))
+      (cond
+        ((and (< index (length source)) (char= (char source index) #\,))
+         (incf index))
+        ((and (< index (length source)) (char= (char source index) #\]))
+         (return (values (coerce (nreverse items) 'vector) (1+ index))))
+        (t (error "JSON array expected a comma or end"))))))
+
+(defun codemode-parse-ordered (source)
+  (unless (stringp source)
+    (return-from codemode-parse-ordered source))
+  (multiple-value-bind (value end) (codemode-read-json source 0)
+    (when (< (codemode-skip-ws source end) (length source))
+      (error "trailing JSON"))
+    value))
+
+(defun codemode-object-p (value)
+  (or (hash-table-p value) (cadr-ai::json-object-pairs-p value)))
+
+(defun codemode-object-keys (value)
+  (cond
+    ((cadr-ai::json-object-pairs-p value)
+     (loop for (key item) on (cdr value) by #'cddr
+           when (stringp key) collect key))
+    ((hash-table-p value)
+     (loop for key being the hash-keys of value collect key))
+    (t nil)))
+
+(defun codemode-field (value key)
+  (if (and (codemode-object-p value) (cadr-ai::json-present-p value key))
+      (cadr-ai::json-get value key)
+      :codemode-absent))
+
+(defun codemode-describe-value (value)
+  (cond
+    ((eq value :codemode-absent) "undefined")
+    ((codemode-json-null-p value) "null")
+    ((null value) "a boolean")
+    ((eq value t) "a boolean")
+    ((stringp value) "a string")
+    ((vectorp value)
+     (if (zerop (length value)) "an empty array" "an array"))
+    ((codemode-object-p value)
+     (let ((keys (codemode-object-keys value)))
+       (if (null keys)
+           "{}"
+           (format nil "{ ~{~A~^, ~}~A }"
+                   (subseq keys 0 (min 6 (length keys)))
+                   (if (> (length keys) 6) ", ..." "")))))
+    ((numberp value) "a number")
+    (t "a object")))
+
+(defun codemode-shown (value)
+  (if (eq value :codemode-absent)
+      "undefined"
+      (cadr-ai::stringify-json value)))
+
+(defun codemode-with-article (word)
+  (format nil "~A ~A"
+          (if (and (plusp (length word))
+                   (member (char word 0) '(#\a #\e #\i #\o #\u)))
+              "an" "a")
+          word))
+
+(defun codemode-arguments (arguments)
+  (cond ((vectorp arguments) arguments)
+        ((null arguments) #())
+        ((listp arguments) (coerce arguments 'vector))
+        (t (vector arguments))))
+
+(defun codemode-arg (arguments index)
+  (let ((vector (codemode-arguments arguments)))
+    (if (< index (length vector))
+        (aref vector index)
+        :codemode-absent)))
+
+(defun codemode-describe-args (arguments)
+  (format nil "~{~A~^, ~}"
+          (map 'list #'codemode-describe-value (codemode-arguments arguments))))
+
+(defun codemode-payload (value)
+  (cond ((eq value :codemode-undefined) nil)
+        ((codemode-json-null-p value) "null")
+        ((null value) "false")
+        (t (cadr-ai::stringify-json value))))
+
+(defun codemode-script-value (tool is-error text structured)
+  (if (and tool (cadr-ai::tool-output-schema tool) structured)
+      structured
+      (if is-error
+          (error "Tool \"~A\" failed~@[~%~A~]"
+                 (cadr-ai:tool-name tool)
+                 (and (stringp text) (plusp (length text)) text))
+          (or text ""))))
+
+(defun codemode-tool-result-value (tool outcome)
+  (let ((result (cadr-agent::nested-tool-call-outcome-result outcome)))
+    (codemode-script-value
+     tool
+     (cadr-agent::nested-tool-call-outcome-is-error outcome)
+     (and result (codemode-text-of (cadr-ai:tool-result-message-content result)))
+     (and result (cadr-ai:tool-result-message-structured-content result)))))
+
+(defun codemode-executor-value (tool arguments)
+  (let ((value (funcall (cadr-ai:tool-executor tool) "codemode" arguments)))
+    (if (typep value 'cadr-ai:tool-result-message)
+        (codemode-script-value
+         tool
+         (cadr-ai:tool-result-message-is-error value)
+         (codemode-text-of (cadr-ai:tool-result-message-content value))
+         (cadr-ai:tool-result-message-structured-content value))
+        value)))
 
 (defun codemode-find-tool (agent name)
   (find name (cadr-agent::agent-callable-tools agent)
         :key #'cadr-ai:tool-name :test #'string=))
 
-(defun codemode-execute-named-tool (context name arguments)
+(defun codemode-execute-named-tool (context tool arguments)
   (let ((outcome (cadr-agent:extension-context-execute-tool
-                  context name arguments)))
-    (codemode-tool-result-value outcome)))
+                  context (cadr-ai:tool-name tool) arguments)))
+    (codemode-tool-result-value tool outcome)))
 
 (defun codemode-store-json (context)
   (let ((store (cadr-ai::json-object))
@@ -458,16 +664,474 @@
       (decf *codemode-model-in-flight*)
       (sb-thread:condition-broadcast *codemode-model-wait*))))
 
+(defun codemode-to-model-type (value)
+  (if (and (stringp value)
+           (member value '("chat" "image" "classifier") :test #'string=))
+      value
+      (error "Unknown model type ~A. Use \"chat\", \"image\", or \"classifier\"."
+             (codemode-shown value))))
+
+(defun codemode-provider-keyword (name)
+  (intern (string-upcase name) :keyword))
+
+(defun codemode-wire-name (value)
+  (cond ((stringp value) value)
+        ((symbolp value) (string-downcase (symbol-name value)))
+        (t "")))
+
+(defun codemode-input-names (input)
+  (mapcar (lambda (item)
+            (string-downcase
+             (if (symbolp item) (symbol-name item) (princ-to-string item))))
+          (or input nil)))
+
+(defun codemode-resolved-chat (metadata)
+  (make-codemode-resolved-model
+   :type "chat"
+   :provider (codemode-wire-name (cadr-ai::model-metadata-provider metadata))
+   :id (cadr-ai::model-metadata-id metadata)
+   :name (cadr-ai::model-metadata-name metadata)
+   :api (codemode-wire-name (cadr-ai::model-metadata-api metadata))
+   :base-url (cadr-ai::model-metadata-base-url metadata)
+   :input (if (cadr-ai::model-metadata-supports-images-p metadata)
+              '("text" "image")
+              '("text"))
+   :context-window (cadr-ai::model-metadata-context-window metadata)
+   :source metadata))
+
+(defun codemode-resolved-image (model)
+  (make-codemode-resolved-model
+   :type "image"
+   :provider (codemode-wire-name (cadr-ai::image-model-provider model))
+   :id (cadr-ai::image-model-id model)
+   :name (cadr-ai::image-model-name model)
+   :api (codemode-wire-name (cadr-ai::image-model-api model))
+   :base-url (cadr-ai::image-model-base-url model)
+   :input (codemode-input-names (cadr-ai::image-model-input model))
+   :source model))
+
+(defun codemode-resolved-classifier (model)
+  (make-codemode-resolved-model
+   :type "classifier"
+   :provider (codemode-wire-name (cadr-ai::classifier-model-provider model))
+   :id (cadr-ai::classifier-model-id model)
+   :name (cadr-ai::classifier-model-name model)
+   :api (codemode-wire-name (cadr-ai::classifier-model-api model))
+   :base-url (cadr-ai::classifier-model-base-url model)
+   :input (codemode-input-names (cadr-ai::classifier-model-input model))
+   :context-window (cadr-ai::classifier-model-context-window model)
+   :source model))
+
+(defun codemode-catalog-models (type provider)
+  (let ((keyword (and provider (codemode-provider-keyword provider))))
+    (cond
+      ((string= type "chat")
+       (mapcar #'codemode-resolved-chat (cadr-ai:list-model-metadata keyword)))
+      ((string= type "image")
+       (mapcar #'codemode-resolved-image (cadr-ai:list-image-models keyword)))
+      ((string= type "classifier")
+       (mapcar #'codemode-resolved-classifier
+               (cadr-ai:list-classifier-models keyword)))
+      (t nil))))
+
+(defun codemode-extra-models ()
+  (let ((backend *codemode-model-runtime*))
+    (if (typep backend 'codemode-model-backend)
+        (codemode-model-backend-models backend)
+        nil)))
+
+(defun codemode-models-of-type (type provider)
+  (remove-if-not
+   (lambda (model)
+     (and (string= (codemode-resolved-model-type model) type)
+          (or (null provider)
+              (string= (codemode-resolved-model-provider model) provider))))
+   (append (codemode-catalog-models type provider) (codemode-extra-models))))
+
+(defun codemode-find-model (type provider id)
+  (find-if (lambda (model)
+             (and (string= (codemode-resolved-model-provider model) provider)
+                  (string= (codemode-resolved-model-id model) id)))
+           (codemode-models-of-type type provider)))
+
+(defun codemode-model-info (model)
+  (let ((info (cadr-ai::json-object
+               "provider" (codemode-resolved-model-provider model)
+               "id" (codemode-resolved-model-id model)
+               "name" (codemode-resolved-model-name model)
+               "api" (codemode-resolved-model-api model)
+               "baseUrl" (codemode-resolved-model-base-url model)
+               "input" (coerce (codemode-resolved-model-input model) 'vector))))
+    (when (codemode-resolved-model-context-window model)
+      (setf (gethash "contextWindow" info)
+            (codemode-resolved-model-context-window model)))
+    info))
+
+(defun codemode-provider-available-p (provider)
+  (let ((backend *codemode-model-runtime*))
+    (or (and (typep backend 'codemode-model-backend)
+             (member provider
+                     (codemode-model-backend-available-providers backend)
+                     :test #'string=))
+        (let ((registry *active-native-model-registry*))
+          (and registry
+               (model-registry-authentication-status
+                registry (codemode-provider-keyword provider)))))))
+
+(defun codemode-list-hint (type)
+  (format nil "List the ~A models you can use with models.getAvailableOfType(\"~A\")."
+          type type))
+
+(defun codemode-model-reference-p (value)
+  (and (codemode-object-p value)
+       (stringp (codemode-field value "provider"))
+       (stringp (codemode-field value "id"))))
+
+(defun codemode-require-model (name type given)
+  (unless (codemode-model-reference-p given)
+    (error "~A() expects ~A model as its first argument, got ~A.~A ~A"
+           name
+           (codemode-with-article type)
+           (codemode-describe-value given)
+           (if (or (eq given :codemode-absent) (codemode-json-null-p given))
+               " models.getModelOfType() returns undefined for an unknown provider or id."
+               "")
+           (codemode-list-hint type)))
+  (let* ((provider (codemode-field given "provider"))
+         (id (codemode-field given "id"))
+         (resolved (codemode-find-model type provider id)))
+    (unless resolved
+      (let ((actual (find-if (lambda (other)
+                               (and (not (string= other type))
+                                    (codemode-find-model other provider id)))
+                             '("chat" "image" "classifier"))))
+        (if actual
+            (error "\"~A/~A\" is ~A model, not ~A model. ~A"
+                   provider id
+                   (codemode-with-article actual)
+                   (codemode-with-article type)
+                   (codemode-list-hint type))
+            (error "Unknown ~A model \"~A/~A\". ~A"
+                   type provider id
+                   (codemode-list-hint type)))))
+    resolved))
+
+(defun codemode-string-values-p (value)
+  (let ((items (cond
+                 ((vectorp value) (coerce value 'list))
+                 ((codemode-object-p value)
+                  (mapcar (lambda (key) (codemode-field value key))
+                          (codemode-object-keys value)))
+                 (t nil))))
+    (and items (every #'stringp items))))
+
+(defun codemode-classify-fail (problem)
+  (error "models.classify() ~A. Expected context: ~A. See \"Classify\" in ~A."
+         problem +codemode-classifier-shape+ (codemode-docs-path)))
+
+(defun codemode-check-question (id question fail)
+  (let ((at (format nil "context.questions.~A" id)))
+    (unless (codemode-object-p question)
+      (funcall fail (format nil "~A must be a question object, got ~A"
+                            at (codemode-describe-value question))))
+    (let ((type (codemode-field question "type"))
+          (instructions (codemode-field question "instructions"))
+          (criteria (codemode-field question "criteria")))
+      (unless (stringp instructions)
+        (funcall fail (format nil "~A.instructions must be a string" at)))
+      (cond
+        ((equal type "choice")
+         (unless (and (codemode-object-p criteria)
+                      (not (vectorp criteria))
+                      (codemode-string-values-p criteria))
+           (funcall fail
+                    (format nil "~A is a \"choice\" question, so criteria must map each label to its meaning"
+                            at))))
+        ((equal type "score")
+         (unless (and (vectorp criteria) (codemode-string-values-p criteria))
+           (funcall fail
+                    (format nil "~A is a \"score\" question, so criteria must list the levels as strings, lowest first"
+                            at))))
+        ((equal type "bool")
+         (unless (and (stringp (codemode-field criteria "true"))
+                      (stringp (codemode-field criteria "false")))
+           (funcall fail
+                    (format nil "~A is a \"bool\" question, so criteria must be { true: string, false: string }"
+                            at))))
+        (t (funcall fail
+                    (format nil "~A.type must be \"choice\", \"score\", or \"bool\", got ~A"
+                            at (codemode-shown type))))))))
+
+(defun codemode-check-classifier-context (context)
+  (unless (codemode-object-p context)
+    (codemode-classify-fail
+     (format nil "expects a context object as its second argument, got ~A"
+             (codemode-describe-value context))))
+  (let ((state (codemode-field context "state"))
+        (images (codemode-field context "images"))
+        (questions (codemode-field context "questions")))
+    (unless (codemode-object-p state)
+      (codemode-classify-fail
+       (format nil "context.state must be an object, got ~A"
+               (codemode-describe-value state))))
+    (unless (eq images :codemode-absent)
+      (unless (vectorp images)
+        (codemode-classify-fail
+         (format nil "context.images must be an array, got ~A"
+                 (codemode-describe-value images))))
+      (loop for image across images
+            for index from 0
+            unless (and (codemode-object-p image)
+                        (equal (codemode-field image "type") "image")
+                        (stringp (codemode-field image "data"))
+                        (stringp (codemode-field image "mimeType")))
+              do (codemode-classify-fail
+                  (format nil "context.images[~A] must be an image block, got ~A"
+                          index (codemode-describe-value image)))))
+    (unless (and (codemode-object-p questions)
+                 (codemode-object-keys questions))
+      (codemode-classify-fail
+       (format nil "context.questions must map question IDs to questions, got ~A"
+               (codemode-describe-value questions))))
+    (dolist (id (codemode-object-keys questions))
+      (codemode-check-question id (codemode-field questions id)
+                               #'codemode-classify-fail)))
+  context)
+
+(defun codemode-images-fail (problem)
+  (error "models.generateImages() ~A. Expected context: ~A. See \"Generate images\" in ~A."
+         problem +codemode-images-shape+ (codemode-docs-path)))
+
+(defun codemode-check-images-context (context)
+  (unless (codemode-object-p context)
+    (codemode-images-fail
+     (format nil "expects a context object as its second argument, got ~A"
+             (codemode-describe-value context))))
+  (let ((input (codemode-field context "input")))
+    (unless (and (vectorp input) (plusp (length input)))
+      (codemode-images-fail
+       (format nil "context.input must be a non-empty array of blocks, got ~A"
+               (codemode-describe-value input))))
+    (loop for block across input
+          for index from 0
+          unless (or (and (codemode-object-p block)
+                          (equal (codemode-field block "type") "text")
+                          (stringp (codemode-field block "text")))
+                     (and (codemode-object-p block)
+                          (equal (codemode-field block "type") "image")
+                          (stringp (codemode-field block "data"))
+                          (stringp (codemode-field block "mimeType"))))
+            do (codemode-images-fail
+                (format nil "context.input[~A] must be a text or image block, got ~A"
+                        index (codemode-describe-value block)))))
+  context)
+
+(defun codemode-as-hash (value)
+  (cond
+    ((hash-table-p value) value)
+    ((cadr-ai::json-object-pairs-p value)
+     (let ((table (cadr-ai::json-object)))
+       (loop for (key item) on (cdr value) by #'cddr
+             when (stringp key)
+               do (setf (gethash key table) (codemode-as-hash item)))
+       table))
+    ((vectorp value) (map 'vector #'codemode-as-hash value))
+    (t value)))
+
+(defun codemode-content-block (block)
+  (let ((type (codemode-field block "type")))
+    (cond
+      ((equal type "image")
+       (cadr-ai:make-image-content
+        :data (codemode-field block "data")
+        :mime-type (codemode-field block "mimeType")))
+      (t (cadr-ai:make-text-content :text (or (codemode-field block "text") ""))))))
+
+(defun codemode-stop-name (reason)
+  (cond ((or (eq reason :stop) (equal reason "stop")) "stop")
+        ((or (eq reason :aborted) (equal reason "aborted")) "aborted")
+        (t "error")))
+
+(defun codemode-classifier-error (model message)
+  (cadr-ai::json-object
+   "api" (codemode-resolved-model-api model)
+   "provider" (codemode-resolved-model-provider model)
+   "model" (codemode-resolved-model-id model)
+   "answers" (cadr-ai::json-object)
+   "stopReason" "error"
+   "errorMessage" message))
+
+(defun codemode-image-error (model message)
+  (cadr-ai::json-object
+   "api" (codemode-resolved-model-api model)
+   "provider" (codemode-resolved-model-provider model)
+   "model" (codemode-resolved-model-id model)
+   "output" #()
+   "stopReason" "error"
+   "errorMessage" message))
+
+(defun codemode-classifier-json (result)
+  (let ((object (cadr-ai::json-object
+                 "api" (codemode-wire-name (cadr-ai::classifier-result-api result))
+                 "provider" (codemode-wire-name (cadr-ai::classifier-result-provider result))
+                 "model" (cadr-ai::classifier-result-model result)
+                 "answers" (cadr-ai::classifier-result-answers result)
+                 "stopReason" (codemode-stop-name
+                               (cadr-ai::classifier-result-stop-reason result)))))
+    (when (cadr-ai::classifier-result-error-message result)
+      (setf (gethash "errorMessage" object)
+            (cadr-ai::classifier-result-error-message result)))
+    object))
+
+(defun codemode-image-json (result)
+  (let ((object (cadr-ai::json-object
+                 "api" (codemode-wire-name (cadr-ai::assistant-images-api result))
+                 "provider" (codemode-wire-name (cadr-ai::assistant-images-provider result))
+                 "model" (cadr-ai::assistant-images-model result)
+                 "output" (coerce
+                           (mapcar #'codemode-output-block
+                                   (cadr-ai::assistant-images-output result))
+                           'vector)
+                 "stopReason" (codemode-stop-name
+                               (cadr-ai::assistant-images-stop-reason result)))))
+    (when (cadr-ai::assistant-images-error-message result)
+      (setf (gethash "errorMessage" object)
+            (cadr-ai::assistant-images-error-message result)))
+    object))
+
+(defun codemode-output-block (block)
+  (cond
+    ((typep block 'cadr-ai:image-content)
+     (cadr-ai::json-object
+      "type" "image"
+      "data" (cadr-ai:image-content-data block)
+      "mimeType" (cadr-ai:image-content-mime-type block)))
+    ((typep block 'cadr-ai:text-content)
+     (cadr-ai::json-object "type" "text" "text" (cadr-ai:text-content-text block)))
+    ((hash-table-p block) block)
+    (t (cadr-ai::json-object "type" "text" "text" (princ-to-string block)))))
+
+(defun codemode-has-classifier-images-p (context)
+  (let ((images (codemode-field context "images")))
+    (and (vectorp images) (plusp (length images)))))
+
+(defun codemode-invoke-classify (model context)
+  (when (and (codemode-has-classifier-images-p context)
+             (not (member "image" (codemode-resolved-model-input model)
+                          :test #'string=)))
+    (return-from codemode-invoke-classify
+      (codemode-classifier-error
+       model
+       (format nil "Model ~A/~A does not accept image input"
+               (codemode-resolved-model-provider model)
+               (codemode-resolved-model-id model)))))
+  (let ((backend *codemode-model-runtime*))
+    (cond
+      ((and (typep backend 'codemode-model-backend)
+            (codemode-model-backend-classify-function backend))
+       (funcall (codemode-model-backend-classify-function backend) model context))
+      ((typep (codemode-resolved-model-source model) 'cadr-ai:classifier-model)
+       (handler-case
+           (codemode-classifier-json
+            (cadr-ai:classify-model
+             (codemode-resolved-model-source model)
+             (cadr-ai:make-classifier-context
+              :state (codemode-as-hash (codemode-field context "state"))
+              :questions (codemode-as-hash (codemode-field context "questions"))
+              :images (let ((images (codemode-field context "images")))
+                        (if (vectorp images)
+                            (loop for block across images
+                                  collect (codemode-content-block block))
+                            nil)))))
+         (error (condition)
+           (codemode-classifier-error model (princ-to-string condition)))))
+      (t (codemode-classifier-error
+          model
+          (format nil "Provider ~A does not support classification"
+                  (codemode-resolved-model-provider model)))))))
+
+(defun codemode-invoke-images (model context)
+  (let ((backend *codemode-model-runtime*))
+    (cond
+      ((and (typep backend 'codemode-model-backend)
+            (codemode-model-backend-images-function backend))
+       (funcall (codemode-model-backend-images-function backend) model context))
+      ((typep (codemode-resolved-model-source model) 'cadr-ai:image-model)
+       (handler-case
+           (codemode-image-json
+            (cadr-ai:generate-images
+             (codemode-resolved-model-source model)
+             (cadr-ai:make-images-context
+              :input (loop for block across (codemode-field context "input")
+                           collect (codemode-content-block block)))))
+         (error (condition)
+           (codemode-image-error model (princ-to-string condition)))))
+      (t (codemode-image-error
+          model
+          (format nil "Provider ~A does not support image generation"
+                  (codemode-resolved-model-provider model)))))))
+
+(defun codemode-truncate-text (text max)
+  (if (or (not (stringp text)) (<= (length text) max))
+      text
+      (concatenate 'string (subseq text 0 (- max 3)) "...")))
+
+(defun codemode-model-status (value)
+  (if (hash-table-p value)
+      (let ((reason (gethash "stopReason" value)))
+        (cond ((equal reason "stop") "ok")
+              ((equal reason "aborted") "cancelled")
+              (t "error")))
+      "ok"))
+
 (defun codemode-model-call (name arguments)
-  (let ((runtime *codemode-model-runtime*))
-    (unless runtime
-      (error "Unknown model type. Use \"chat\", \"image\", or \"classifier\"."))
-    (let ((function (gethash name runtime)))
-      (unless function
-        (error "Unknown model type. Use \"chat\", \"image\", or \"classifier\"."))
-      (if (member name '("classify" "generateImages") :test #'string=)
-          (codemode-with-model-slot (lambda () (apply function arguments)))
-          (apply function arguments)))))
+  (cond
+    ((string= name "models.getModelsOfType")
+     (let ((type (codemode-to-model-type (codemode-arg arguments 0)))
+           (provider (codemode-arg arguments 1)))
+       (unless (or (eq provider :codemode-absent)
+                   (codemode-json-null-p provider)
+                   (stringp provider))
+         (error "provider must be a string"))
+       (map 'vector #'codemode-model-info
+            (codemode-models-of-type
+             type (if (stringp provider) provider nil)))))
+    ((string= name "models.getAvailableOfType")
+     (let ((type (codemode-to-model-type (codemode-arg arguments 0)))
+           (provider (codemode-arg arguments 1)))
+       (unless (or (eq provider :codemode-absent)
+                   (codemode-json-null-p provider)
+                   (stringp provider))
+         (error "provider must be a string"))
+       (map 'vector #'codemode-model-info
+            (remove-if-not
+             (lambda (model)
+               (codemode-provider-available-p
+                (codemode-resolved-model-provider model)))
+             (codemode-models-of-type
+              type (if (stringp provider) provider nil))))))
+    ((string= name "models.getModelOfType")
+     (let ((type (codemode-to-model-type (codemode-arg arguments 0)))
+           (provider (codemode-arg arguments 1))
+           (id (codemode-arg arguments 2)))
+       (unless (and (stringp provider) (stringp id))
+         (error "models.getModelOfType(type, provider, id) expects three strings, got (~A). The provider and the id are separate arguments, for example models.getModelOfType(\"classifier\", \"typesafe\", \"jev-latest\")."
+                (codemode-describe-args arguments)))
+       (let ((model (codemode-find-model type provider id)))
+         (if model (codemode-model-info model) :codemode-undefined))))
+    ((or (string= name "models.classify") (string= name "models.generateImages"))
+     (let* ((type (if (string= name "models.classify") "classifier" "image"))
+            (resolved (codemode-require-model
+                       name type (codemode-arg arguments 0)))
+            (context (if (string= type "classifier")
+                         (codemode-check-classifier-context (codemode-arg arguments 1))
+                         (codemode-check-images-context (codemode-arg arguments 1)))))
+       (codemode-with-model-slot
+        (lambda ()
+          (if (string= type "classifier")
+              (codemode-invoke-classify resolved context)
+              (codemode-invoke-images resolved context))))))
+    (t (error "Unknown model type. Use \"chat\", \"image\", or \"classifier\"."))))
 
 (defun codemode-globals-json ()
   (cadr-ai::stringify-json
@@ -494,27 +1158,189 @@
             tools)
     'vector)))
 
+(defun codemode-split (text separator)
+  (let ((parts nil)
+        (start 0)
+        (width (length separator)))
+    (loop for pos = (search separator text :start2 start)
+          do (push (subseq text start (or pos (length text))) parts)
+             (unless pos (return (nreverse parts)))
+             (setf start (+ pos width)))))
+
+(defun codemode-implied-namespace (tool-name)
+  (let ((parts (codemode-split tool-name "__")))
+    (when (and (>= (length parts) 3)
+               (string= (first parts) "mcp")
+               (plusp (length (second parts))))
+      (make-codemode-namespace
+       :name (format nil "mcp__~A" (second parts))
+       :aliases (list (second parts))))))
+
+(defun codemode-tool-namespace (tool-name)
+  (or (find-if (lambda (namespace)
+                 (member tool-name (codemode-namespace-tool-names namespace)
+                         :test #'string=))
+               *codemode-tool-namespaces*)
+      (codemode-implied-namespace tool-name)))
+
+(defun codemode-namespace-named-p (namespace query)
+  (some (lambda (name)
+          (or (string= name query)
+              (string= (codemode-identifier name) (codemode-identifier query))))
+        (cons (codemode-namespace-name namespace)
+              (codemode-namespace-aliases namespace))))
+
+(defun codemode-namespace-payload (namespace names)
+  (let ((pairs (list "name" (codemode-namespace-name namespace))))
+    (when (and (stringp (codemode-namespace-description namespace))
+               (plusp (length (codemode-namespace-description namespace))))
+      (setf pairs (append pairs
+                          (list "description"
+                                (codemode-namespace-description namespace)))))
+    (when (and (stringp (codemode-namespace-instructions namespace))
+               (plusp (length (codemode-namespace-instructions namespace))))
+      (setf pairs (append pairs
+                          (list "instructions"
+                                (codemode-namespace-instructions namespace)))))
+    (apply #'cadr-ai::json-object
+           (append pairs (list "tools" (coerce names 'vector))))))
+
+(defun codemode-search-limit (options)
+  (let ((limit (codemode-field options "limit")))
+    (cond ((or (eq limit :codemode-absent) (codemode-json-null-p limit))
+           +codemode-search-limit+)
+          ((and (integerp limit) (plusp limit)) limit)
+          (t (error "searchTools() limit must be a positive integer")))))
+
+(defun codemode-search-namespace (options)
+  (let ((namespace (codemode-field options "namespace")))
+    (cond ((or (eq namespace :codemode-absent) (codemode-json-null-p namespace))
+           nil)
+          ((not (stringp namespace))
+           (error "searchTools() namespace must be a string"))
+          ((zerop (length namespace)) nil)
+          (t namespace))))
+
 (defun codemode-discovery (tools name arguments)
-  (let ((args (if (vectorp arguments) arguments (vector arguments))))
+  (let ((args (codemode-arguments arguments)))
     (cond
       ((string= name "describeTool")
-       (let* ((wanted (if (plusp (length args)) (aref args 0) nil))
-              (tool (and (stringp wanted)
-                         (find-if (lambda (tool)
-                                    (or (string= (cadr-ai:tool-name tool) wanted)
-                                        (string= (codemode-identifier (cadr-ai:tool-name tool))
-                                                 wanted)))
-                                  tools))))
-         (if tool
-             (codemode-tool-sample (cadr-ai:tool-name tool)
-                                   (cadr-ai:tool-description tool)
-                                   (cadr-ai:tool-parameters tool))
-             'null)))
+       (let ((wanted (if (plusp (length args)) (aref args 0) :codemode-absent)))
+         (unless (stringp wanted)
+           (error "describeTool() expects a tool name"))
+         (let ((tool (find-if (lambda (tool)
+                                (or (string= (cadr-ai:tool-name tool) wanted)
+                                    (string= (codemode-identifier
+                                              (cadr-ai:tool-name tool))
+                                             wanted)))
+                              tools)))
+           (if tool
+               (codemode-tool-sample (cadr-ai:tool-name tool)
+                                     (cadr-ai:tool-description tool)
+                                     (cadr-ai:tool-parameters tool))
+               :codemode-undefined))))
       ((string= name "searchTools")
-       (vector))
+       (let ((query (if (plusp (length args)) (aref args 0) :codemode-absent)))
+         (unless (stringp query)
+           (error "searchTools() expects a query string"))
+         (let* ((options (if (> (length args) 1) (aref args 1) nil))
+                (limit (codemode-search-limit options))
+                (namespace (codemode-search-namespace options))
+                (pool (if namespace
+                          (remove-if-not
+                           (lambda (tool)
+                             (let ((tool-namespace
+                                     (codemode-tool-namespace
+                                      (cadr-ai:tool-name tool))))
+                               (and tool-namespace
+                                    (codemode-namespace-named-p
+                                     tool-namespace namespace))))
+                           tools)
+                          tools))
+                (documents
+                  (mapcar
+                   (lambda (tool)
+                     (cadr-agent:tool-search-document
+                      (list :name (cadr-ai:tool-name tool)
+                            :description (cadr-ai:tool-description tool)
+                            :parameters (cadr-ai:tool-parameters tool))
+                      (let ((tool-namespace
+                              (codemode-tool-namespace (cadr-ai:tool-name tool))))
+                        (when tool-namespace
+                          (list :name (codemode-namespace-name tool-namespace)
+                                :description (or (codemode-namespace-description
+                                                  tool-namespace)
+                                                 "")
+                                :instructions (or (codemode-namespace-instructions
+                                                   tool-namespace)
+                                                  ""))))))
+                   pool))
+                (ranked (cadr-agent:tool-search-rank query documents limit)))
+           (map 'vector
+                (lambda (match)
+                  (let ((tool (find (cadr-agent:tool-search-match-name match)
+                                    pool :key #'cadr-ai:tool-name :test #'string=)))
+                    (cadr-ai::json-object
+                     "name" (codemode-identifier (cadr-ai:tool-name tool))
+                     "description" (codemode-tool-sample
+                                    (cadr-ai:tool-name tool)
+                                    (cadr-ai:tool-description tool)
+                                    (cadr-ai:tool-parameters tool)))))
+                ranked))))
       ((string= name "describeNamespace")
-       'null)
+       (let ((wanted (if (plusp (length args)) (aref args 0) :codemode-absent)))
+         (unless (stringp wanted)
+           (error "describeNamespace() expects a namespace name"))
+         (let ((namespace nil)
+               (names nil))
+           (dolist (tool tools)
+             (let ((tool-namespace (codemode-tool-namespace (cadr-ai:tool-name tool))))
+               (when (and tool-namespace
+                          (codemode-namespace-named-p tool-namespace wanted))
+                 (unless namespace (setf namespace tool-namespace))
+                 (push (codemode-identifier (cadr-ai:tool-name tool)) names))))
+           (if namespace
+               (codemode-namespace-payload namespace (nreverse names))
+               :codemode-undefined))))
       (t (error "Unknown global \"~A\"" name)))))
+
+(defun codemode-image-extension (mime)
+  (or (cdr (assoc mime '(("image/png" . ".png")
+                         ("image/jpeg" . ".jpg")
+                         ("image/gif" . ".gif")
+                         ("image/webp" . ".webp"))
+                  :test #'equal))
+      (error "No file extension for image type ~A" mime)))
+
+(defun codemode-image-label (data mime labels)
+  (or (gethash data labels)
+      (let* ((bytes (decode-base64-bytes data))
+             (kind (format nil "~A, ~A"
+                           mime
+                           (cadr-agent:format-size (if bytes (length bytes) 0))))
+             (extension (codemode-image-extension mime))
+             (label (handler-case
+                        (progn
+                          (unless bytes (error "invalid base64 image data"))
+                          (format nil "[Image saved to ~A (~A)]"
+                                  (write-output-file "pi-codemode" extension bytes)
+                                  kind))
+                      (error (condition)
+                        (format nil "[Image (~A) could not be saved: ~A]"
+                                kind (princ-to-string condition))))))
+        (setf (gethash data labels) label))))
+
+(defun codemode-save-images (blocks)
+  (let ((labels (make-hash-table :test #'equal)))
+    (loop for block in blocks
+          append (if (and (consp block) (eq (first block) :image))
+                     (list (cadr-ai:make-text-content
+                            :text (codemode-image-label
+                                   (second block) (third block) labels))
+                           (cadr-ai:make-image-content
+                            :data (second block)
+                            :mime-type (or (third block) "")))
+                     (list block)))))
 
 (defun codemode-format-output (items)
   (let* ((texts (count-if (lambda (item) (eq (first item) :text)) items))
@@ -583,7 +1409,7 @@
                                  "")))
                (suffix (handler-case
                            (format nil "~%~%[Full output: ~A (read with offset/limit)]"
-                                   (write-output-file "cadr-codemode" ".txt" combined))
+                                   (write-output-file "pi-codemode" ".txt" combined))
                          (error (condition)
                            (format nil "~%~%[Could not save the full output: ~A]"
                                    condition)))))
@@ -621,26 +1447,32 @@
                      "No tool calls were made.")))
     (format nil "~A~%~%~A" head summary)))
 
+(defun codemode-host-arguments (name args-json)
+  (unless args-json
+    (return-from codemode-host-arguments nil))
+  (if (or (and (stringp name) (eql 0 (search "models." name)))
+          (member name '("searchTools" "describeTool" "describeNamespace")
+                  :test #'string=))
+      (codemode-parse-ordered args-json)
+      (cadr-ai::parse-json args-json)))
+
 (defun codemode-handle-call (context tools call generated)
   (destructuring-bind (kind id target name args-json) call
     (declare (ignore kind id))
     (handler-case
-        (let ((arguments (if args-json (cadr-ai::parse-json args-json) nil)))
+        (let ((arguments (codemode-host-arguments name args-json)))
           (cond
             ((string= target "tool")
              (let* ((tool (find name tools :key #'cadr-ai:tool-name :test #'string=))
                     (value (cond
                              ((and context tool)
-                              (codemode-execute-named-tool context name arguments))
+                              (codemode-execute-named-tool context tool arguments))
                              ((and tool (cadr-ai:tool-executor tool))
-                              (funcall (cadr-ai:tool-executor tool) "codemode" arguments))
+                              (codemode-executor-value tool arguments))
                              (t (error "Unknown tool \"~A\"" name)))))
-               (list t (if (eq value 'null) "null" (cadr-ai::stringify-json value)))))
-            ((eql 0 (search "models." name))
-             (let ((value (codemode-model-call (subseq name (length "models."))
-                                               (if (vectorp arguments)
-                                                   (coerce arguments 'list)
-                                                   (list arguments)))))
+               (list t (codemode-payload value))))
+            ((and (stringp name) (eql 0 (search "models." name)))
+             (let ((value (codemode-model-call name arguments)))
                (when (and (string= name "models.generateImages")
                           (hash-table-p value))
                  (let ((output (gethash "output" value)))
@@ -650,9 +1482,15 @@
                                        (and (hash-table-p block)
                                             (string= (gethash "type" block) "image")))
                                      output)))))
-               (list t (if (eq value 'null) "null" (cadr-ai::stringify-json value)))))
-            (t (let ((value (codemode-discovery tools name arguments)))
-                 (list t (if (eq value 'null) "null" (cadr-ai::stringify-json value)))))))
+               (if (member name '("models.classify" "models.generateImages")
+                           :test #'string=)
+                   (list t (codemode-payload value)
+                         (codemode-model-status value)
+                         (and (hash-table-p value)
+                              (codemode-truncate-text
+                               (gethash "errorMessage" value) 500)))
+                   (list t (codemode-payload value)))))
+            (t (list t (codemode-payload (codemode-discovery tools name arguments))))))
       (error (condition)
         (list nil (princ-to-string condition))))))
 
@@ -719,7 +1557,11 @@
                                        (let ((result (codemode-handle-call
                                                       context (or tools nil) call generated)))
                                          (setf (gethash "status" record)
-                                               (if (first result) "ok" "error"))
+                                               (or (third result)
+                                                   (if (first result) "ok" "error")))
+                                         (when (fourth result)
+                                           (setf (gethash "error" record)
+                                                 (fourth result)))
                                          result))))
                        (codemode-finish-script
                         started ok value writes output error-text kind
@@ -777,7 +1619,9 @@
                     (list (cadr-ai:make-text-content
                            :text (format nil "Note: models.generateImages() returned ~A image~A that the script did not show. Show each image block of result.output with image(block)."
                                          images (if (= images 1) "" "s")))))))
-    (let ((body (codemode-join-text (codemode-truncate items max-tokens))))
+    (let ((body (codemode-join-text
+                 (codemode-save-images
+                  (codemode-truncate items max-tokens)))))
       (values
        (cons (cadr-ai:make-text-content
               :text (format nil "Script ~A~%Wall time ~A seconds~%Output:~%"

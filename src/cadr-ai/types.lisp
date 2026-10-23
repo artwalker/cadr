@@ -176,7 +176,10 @@
   ;; nil = absent; :false = JSON false; cons = sampling config plist.
   (constrained-sampling nil :type (or null cons (member :false)))
   (execution-mode :parallel :type symbol)
-  (executor nil :type (or null function)))
+  (executor nil :type (or null function))
+  ;; pi@4a080252f toScriptValue returns structuredContent on success and
+  ;; failure only when the tool declares outputSchema. Nil means absent.
+  (output-schema nil))
 
 (defstruct tool-reference
   (name "" :type string))
