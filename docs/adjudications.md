@@ -1974,3 +1974,80 @@ The gray `Working` status rule is canonicalized in
   unreviewed or red code must not land.
 - **Where:** `AGENTS.md`, `.cursor/skills/cadr-mode/SKILL.md`,
   `.cursor/rules/cadr-mode.mdc`.
+
+## 2026-10-23 — Lisp-native capabilities, and when a difference may default on
+
+**Ruled**: advisor Claude, 2026-10-23. The user authorized the rule the
+same day and keeps the veto. **Proposal**:
+[`proposals/2026-10-23-lisp-native-capabilities.md`](proposals/2026-10-23-lisp-native-capabilities.md).
+
+**User authorization.** A new capability that changes pi's default, and
+that is a Lisp advantage, may ship default-on when the advisor says so.
+Three conditions bind that choice. Record the ruling in this file. Keep
+a compatibility switch that returns the process to pi behavior. Lock
+both the old behavior and the new one with tests. Security stays
+default-off. That class is a new listening port, and model-written code
+loaded into the image. Self-optimization waits. The user put that class
+aside for later.
+
+**Decided**:
+
+1. Do not add a listening port or socket. `--slynk` stays the only
+   listener and stays bound to `127.0.0.1`. Add
+   `cadr-cli::agent-live-snapshot`. Do not export it. This follows the
+   proposal.
+2. Interactive recovery (the `--recover` set) runs only in the
+   interactive TUI. It never appears under `--print`, rpc, or json.
+   It defaults on. When the provider retry budget is spent, or a tool
+   errors, the interactive TUI opens the recovery menu. The user is at
+   the terminal and can retry, switch model, or skip there. pi leaves
+   an error message. The condition and restart machinery is the
+   advantage the advisor is turning on.
+3. One global switch, `--pi-compat`. With it on, every default-on
+   intentional difference turns off and behavior returns to pi v1.4.0.
+   There is no per-feature off flag. `--pi-compat` stays out of
+   `print-cli-usage`, so the help byte lock is unchanged. Document the
+   switch in the README and in `docs/parity-map.md`. Tests that were
+   locked to pi keep running under `--pi-compat` and stay green.
+   Default mode has separate tests for the new behavior.
+4. A hook may also return `(:invoke-restart name)`. Validation accepts
+   that return only while the recovery menu is on. That is the
+   interactive TUI without `--pi-compat`. This follows the proposal. It
+   is an explicit change to the frozen return values in
+   `docs/architecture.md` section 28.
+5. `/reload` keeps pi's semantics, `session_shutdown` then
+   `session_start`. `/redef` is available by default and does not need
+   `--redef`. Under `--pi-compat` the command does not exist. It appears
+   in the slash-command table and in completion. That is a recorded
+   intentional difference.
+6. `--self-extend` waits. Model-written code, compiled and tested in a
+   subprocess and then loaded into the image, is the self-optimization
+   the user deferred. It is off this schedule.
+   `OQ-G20-AGENT-EVAL-TOOL` still holds. The subprocess compile gate
+   still ships, and only `/redef` uses it.
+7. Record intentional differences in `docs/parity-map.md` with the
+   `--slynk` notation. Do not invent a class. Mark which rows default
+   on and turn off under `--pi-compat`.
+8. Start after Goal 27 merges into `cadr-migration`. Order: the snapshot
+   function, interactive recovery including `--pi-compat`, the
+   subprocess compile gate, `/redef`, then `:invoke-restart`.
+
+**Why it was decidable**: the proposal at `7f6db4d72` names each
+behavior that would diverge from pi v1.4.0 (`4a080252f`). Policy
+section 6.6 already keeps the condition system off a paired failure
+path until a ruling. The user supplied the three-class rule the same
+day, so default-on for recovery and `/redef` is an advisor choice
+inside that rule. A new intentional-difference class is not required.
+The `--slynk` row in `docs/parity-map.md` is the existing notation.
+`--self-extend` stays out because the user parked self-optimization,
+and because loading model-written code into the image is in the
+default-off security class. `OQ-G20-AGENT-EVAL-TOOL` (user authorized
+the advisor, 2026-08-13, `docs/open-questions.md`) still refuses to
+hand evaluation to the model.
+
+**Standing consequence**: implementation starts only after Goal 27 is
+in `cadr-migration`, in the order above. `--pi-compat` is the only off
+switch for these default-on differences. It stays out of
+`print-cli-usage`. Ledger rows and the README note land in the
+implementation commits. This entry does not edit `docs/parity-map.md`
+and does not add a difference class.
