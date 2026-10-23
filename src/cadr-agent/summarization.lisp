@@ -48,10 +48,20 @@
                    (multiple-value-bind
                          (request-model request-provider
                           request-thinking route-error)
-                       (agent-stream-target
-                        agent
-                        (cadr-ai:context-messages context)
-                        :reason :direct)
+                       (let ((captured
+                               (agent-compaction-request-model
+                                agent)))
+                         (if (and captured
+                                  (not (virtual-model-p captured)))
+                             (values
+                              captured
+                              (agent-provider agent)
+                              (agent-thinking-level agent)
+                              nil)
+                             (agent-stream-target
+                              agent
+                              (cadr-ai:context-messages context)
+                              :reason :direct)))
                      (cond
                        (route-error
                         (cadr-ai:make-assistant-message

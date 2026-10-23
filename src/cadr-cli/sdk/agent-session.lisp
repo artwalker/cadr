@@ -323,6 +323,14 @@
   (setf
    (cadr-agent::agent-auto-compact-p agent)
    (sdk-settings-compaction-enabled-p settings)
+   (cadr-agent::agent-compaction-settings-function agent)
+   (lambda (model)
+     (values
+      (sdk-settings-compaction-reserve-tokens
+       settings model)
+      (sdk-settings-compaction-keep-recent-tokens
+       settings model)
+      (sdk-settings-compaction-enabled-p settings)))
    (cadr-agent::agent-compaction-keep-recent-tokens
     agent)
    (sdk-settings-compaction-keep-recent-tokens

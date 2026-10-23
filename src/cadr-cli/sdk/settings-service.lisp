@@ -156,14 +156,16 @@
         default)))
 
 (defun sdk-settings-compaction-keep-recent-tokens
-    (manager)
-  (sdk-settings-positive-integer
-   manager "compaction" "keepRecentTokens" 20000))
+    (manager &optional model)
+  (settings-compaction-token-field
+   (sdk-settings-value manager "compaction" :missing)
+   "keepRecentTokens" model 20000))
 
 (defun sdk-settings-compaction-reserve-tokens
-    (manager)
-  (sdk-settings-positive-integer
-   manager "compaction" "reserveTokens" 16384))
+    (manager &optional model)
+  (settings-compaction-token-field
+   (sdk-settings-value manager "compaction" :missing)
+   "reserveTokens" model 16384))
 
 (defun sdk-settings-branch-summary-reserve-tokens
     (manager)

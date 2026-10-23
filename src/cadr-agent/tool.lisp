@@ -280,6 +280,7 @@
                          (auto-compact-p t)
                          (compaction-reserve-tokens 16384)
                          (compaction-keep-recent-tokens 20000)
+                         compaction-settings-function
                          (auto-retry-p t)
                          (auto-retry-max-attempts 3)
                          (auto-retry-base-delay 2)
@@ -322,6 +323,8 @@
            compaction-reserve-tokens
            :compaction-keep-recent-tokens
            compaction-keep-recent-tokens
+           :compaction-settings-function
+           compaction-settings-function
            :auto-retry-p auto-retry-p
            :auto-retry-max-attempts auto-retry-max-attempts
            :auto-retry-base-delay auto-retry-base-delay

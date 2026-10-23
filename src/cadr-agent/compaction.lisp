@@ -560,7 +560,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
 
 (defun make-compaction-preparation
     (source-entries kept-entry tokens-before
-     keep-recent reserve)
+     keep-recent reserve &optional (enabled t))
   (let* ((previous
            (find :compaction source-entries
                  :key #'session-entry-type
@@ -598,7 +598,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                             (session-entry-summary previous))
      :file-ops (compaction-file-operations file-entries)
      :settings
-     (list :enabled-p t
+     (list :enabled-p (not (null enabled))
            :reserve-tokens reserve
            :keep-recent-tokens keep-recent))))
 
@@ -752,18 +752,23 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                  context-window
                  (plusp context-window))
       (return-from %compact-agent nil))
-    (let* ((messages (session-messages session))
-           (tokens-before
-             (let ((estimated
-                     (context-estimated-tokens messages)))
-               (if (some #'valid-assistant-usage-p messages)
-                   estimated
-                   (+ estimated
-                      (declared-system-cut-tokens agent)))))
-           (reserve
-             (agent-compaction-reserve-tokens agent))
-           (keep-recent
-             (agent-compaction-keep-recent-tokens agent)))
+    (multiple-value-bind (reserve keep-recent enabled)
+        (let ((reader
+                (agent-compaction-settings-function agent)))
+          (if reader
+              (funcall reader model)
+              (values
+               (agent-compaction-reserve-tokens agent)
+               (agent-compaction-keep-recent-tokens agent)
+               (agent-auto-compact-p agent))))
+      (let* ((messages (session-messages session))
+             (tokens-before
+               (let ((estimated
+                       (context-estimated-tokens messages)))
+                 (if (some #'valid-assistant-usage-p messages)
+                     estimated
+                     (+ estimated
+                        (declared-system-cut-tokens agent))))))
       (unless
           (or force-p
               (> tokens-before
@@ -790,7 +795,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                (preparation
                  (make-compaction-preparation
                   source-entries kept-entry tokens-before
-                  keep-recent reserve))
+                  keep-recent reserve enabled))
                (signal
                  (make-extension-cancellation-signal
                   :aborted-function
@@ -806,6 +811,7 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                   signal))
           (unwind-protect
                (progn
+                 (setf (agent-compaction-request-model agent) model)
                  (emit-agent-event
                   agent :compaction-start
                   :reason reason)
@@ -960,10 +966,13 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                          nil)))))
             (sb-thread:with-mutex
                 ((agent-state-lock agent))
+              (when (eq (agent-compaction-request-model agent)
+                        model)
+                (setf (agent-compaction-request-model agent) nil))
               (when (eq (agent-compaction-cancellation agent)
                         signal)
                 (setf (agent-compaction-cancellation agent)
-                      nil)))))))))
+                      nil))))))))))
 
 (defun compact-agent
     (agent &key force-p custom-instructions

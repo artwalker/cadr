@@ -92,14 +92,16 @@
         default)))
 
 (defun settings-compaction-keep-recent-tokens
-    (manager)
-  (settings-positive-integer-value
-   manager "compaction" "keepRecentTokens" 20000))
+    (manager &optional model)
+  (settings-compaction-token-field
+   (settings-value manager "compaction" :missing)
+   "keepRecentTokens" model 20000))
 
 (defun settings-compaction-reserve-tokens
-    (manager)
-  (settings-positive-integer-value
-   manager "compaction" "reserveTokens" 16384))
+    (manager &optional model)
+  (settings-compaction-token-field
+   (settings-value manager "compaction" :missing)
+   "reserveTokens" model 16384))
 
 (defun settings-branch-summary-reserve-tokens
     (manager)
@@ -689,6 +691,15 @@
    (settings-boolean-value
     settings-manager
     "compaction" t "enabled")
+   (cadr-agent::agent-compaction-settings-function agent)
+   (lambda (model)
+     (values
+      (settings-compaction-reserve-tokens
+       settings-manager model)
+      (settings-compaction-keep-recent-tokens
+       settings-manager model)
+      (settings-boolean-value
+       settings-manager "compaction" t "enabled")))
    (cadr-agent::agent-compaction-keep-recent-tokens
     agent)
    (settings-compaction-keep-recent-tokens
@@ -1457,3 +1468,82 @@
     (values
      (apply #'build-system-prompt options)
      (copy-tree options))))
+
+(defun settings-compaction-token-field
+    (compaction field model default)
+  ;; pi@4a080252f settings-manager.ts getCompactionTokenSetting.
+  ;; Override, then the ordinary compaction field, then DEFAULT.
+  ;; Each present value must be a non-negative safe integer. Zero is
+  ;; valid. An invalid ordinary value errors even when the matching
+  ;; model override is valid. enabled stays outside this lookup.
+  (labels ((js-text (value)
+             (cond
+               ((cadr-ai::json-null-p value) "null")
+               ((eq value t) "true")
+               ((null value) "false")
+               ((stringp value) value)
+               ((integerp value)
+                (write-to-string value :base 10))
+               ((rationalp value)
+                (cadr-ai::terminating-rational-json-text value))
+               ((floatp value)
+                (cond
+                  ((sb-ext:float-nan-p value) "NaN")
+                  ((sb-ext:float-infinity-p value)
+                   (if (minusp value) "-Infinity" "Infinity"))
+                  (t
+                   (cadr-ai::terminating-rational-json-text
+                    (rationalize value)))))
+               ((hash-table-p value) "[object Object]")
+               ((vectorp value)
+                (with-output-to-string (out)
+                  (loop for item across value
+                        for first-p = t then nil
+                        do (unless first-p
+                             (write-char #\, out))
+                           (write-string (js-text item) out))))
+               (t (princ-to-string value))))
+           (safe-integer-p (value)
+             (and (integerp value)
+                  (<= 0 value 9007199254740991)))
+           (present (object key)
+             (if (hash-table-p object)
+                 (cadr-ai::json-get object key :missing)
+                 :missing)))
+    (let* ((compaction
+             (if (hash-table-p compaction) compaction nil))
+           (ordinary (present compaction field)))
+      (unless (or (eq ordinary :missing)
+                  (safe-integer-p ordinary))
+        (error
+         "Invalid compaction.~A setting: ~A. Expected a non-negative safe integer."
+         field (js-text ordinary)))
+      (let* ((model-key
+               (and model
+                    (model-setting-key
+                     (cadr-ai:model-provider model)
+                     (cadr-ai:model-id model))))
+             (overrides
+               (present compaction "modelOverrides"))
+             (entry
+               (if (and model-key (hash-table-p overrides))
+                   (present overrides model-key)
+                   :missing)))
+        (unless (or (eq entry :missing)
+                    (hash-table-p entry))
+          (error
+           "Invalid compaction.modelOverrides[\"~A\"] setting: ~A. Expected an object."
+           model-key (js-text entry)))
+        (let ((override
+                (if (hash-table-p entry)
+                    (present entry field)
+                    :missing)))
+          (unless (or (eq override :missing)
+                      (safe-integer-p override))
+            (error
+             "Invalid compaction.modelOverrides[\"~A\"].~A setting: ~A. Expected a non-negative safe integer."
+             model-key field (js-text override)))
+          (cond
+            ((not (eq override :missing)) override)
+            ((not (eq ordinary :missing)) ordinary)
+            (t default)))))))

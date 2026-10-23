@@ -123,6 +123,7 @@
                              (:file "truncate-test")
                              (:file "execution-env-test")
                              (:file "extensions-test")
+                             (:file "goal27-compaction-model-overrides-test")
                              (:file "goal28-tool-call-events-test")
                              (:file "goal27-tool-call-result-rewrite-test")
                              (:file "extensions-wave2-test")

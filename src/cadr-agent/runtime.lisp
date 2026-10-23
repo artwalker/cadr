@@ -46,9 +46,14 @@
   (max-turns 100 :type (integer 1 *))
   (auto-compact-p t :type boolean)
   (compaction-reserve-tokens 16384
-                             :type (integer 1 *))
+                             :type (integer 0 *))
   (compaction-keep-recent-tokens 20000
-                                 :type (integer 1 *))
+                                 :type (integer 0 *))
+  ;; (model) -> reserve, keep, enabled. Nil uses the slots above.
+  ;; pi@4a080252f reads getCompactionSettings at each compaction.
+  compaction-settings-function
+  ;; Model captured for the compaction already in progress.
+  compaction-request-model
   abort-p
   finish-turn-function
   (abort-requested-p nil :type boolean)

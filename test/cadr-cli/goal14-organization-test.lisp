@@ -455,7 +455,9 @@
     ;; rpc-resource-source-info (modes/rpc/commands.lisp),
     ;; rpc-context-usage (modes/rpc/sessions.lisp).
     ;; +1 GAP-18: export-session-jsonl (bootstrap/sessions.lisp).
-    (is (= 199 definition-count)
+    ;; +1 GAP-22: settings-compaction-token-field
+    ;; (bootstrap/settings.lisp).
+    (is (= 200 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

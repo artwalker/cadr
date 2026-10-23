@@ -123,6 +123,7 @@ above are unchanged. Measured 2026-10-23: 210 listed files
 | Theme | File |
 |---|---|
 | compaction | `test/cadr-agent/compaction-test.lisp` |
+| compaction model overrides | `test/cadr-agent/goal27-compaction-model-overrides-test.lisp` |
 | execution env | `test/cadr-agent/execution-env-test.lisp` |
 | extensions | `test/cadr-agent/extensions-test.lisp` |
 | extensions wave2 | `test/cadr-agent/extensions-wave2-test.lisp` |
@@ -210,6 +211,7 @@ above are unchanged. Measured 2026-10-23: 210 listed files
 | render-diff A0 | `test/cadr-cli/goal15-a0-test.lisp` |
 | render-diff part C | `test/cadr-cli/goal15-part-c-test.lisp` |
 | compaction lock | `test/cadr-cli/goal17-compaction-test.lisp` |
+| compaction model overrides | `test/cadr-cli/goal27-compaction-model-overrides-test.lisp` |
 | login dialog lock | `test/cadr-cli/goal17-login-dialog-test.lisp` |
 | content migration lock | `test/cadr-cli/goal18-content-migration-test.lisp` |
 | debug command lock | `test/cadr-cli/goal18-debug-command-test.lisp` |

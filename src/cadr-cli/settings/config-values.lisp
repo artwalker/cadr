@@ -151,8 +151,30 @@
                     config command-function))))))
       (resolve-config-template config environment)))
 
+(defun copy-settings-tree (value)
+  ;; JSON text cannot carry NaN or Infinity. Runtime compaction
+  ;; overrides still have to reach the token check as numbers
+  ;; (pi@4a080252f applyOverrides / getCompactionTokenSetting).
+  (cond
+    ((hash-table-p value)
+     (let ((copy (make-hash-table :test #'equal)))
+       (maphash
+        (lambda (key item)
+          (setf (gethash key copy) (copy-settings-tree item)))
+        value)
+       copy))
+    ((and (vectorp value) (not (stringp value)))
+     (map 'vector #'copy-settings-tree value))
+    (t value)))
+
 (defun copy-json-object (object)
-  (cadr-ai::copy-json-value object))
+  (handler-case
+      (cadr-ai::copy-json-value object)
+    (simple-error (condition)
+      (if (search "Cannot encode non-finite float"
+                  (princ-to-string condition))
+          (copy-settings-tree object)
+          (error condition)))))
 
 (defun empty-json-object ()
   (cadr-ai::json-object))
