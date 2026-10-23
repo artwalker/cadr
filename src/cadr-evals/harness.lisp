@@ -525,11 +525,18 @@
                      :output
                      (make-string-output-stream)
                      :mode :rpc))
-                   ;; The eval package mirrors the baseline's empty,
-                   ;; isolated extension start. Bundled CLI factories
-                   ;; are not eval inputs.
+                   ;; v1.4.0 eval passes extensionFactories without
+                   ;; builtInExtensions. main.ts prepends that set only
+                   ;; for the CLI. This manager copies the standard set
+                   ;; into the builtin slot at construction, so clearing
+                   ;; factories alone still loads llama.cpp, codemode,
+                   ;; tool-search, and mcp.
                    (setf
                     (cadr-cli::cli-extension-manager-extension-factories
+                     manager)
+                    nil)
+                   (setf
+                    (cadr-cli::cli-extension-manager-builtin-extensions
                      manager)
                     nil)
                    (let ((initial
