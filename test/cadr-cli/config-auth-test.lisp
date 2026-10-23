@@ -366,7 +366,8 @@
   (is (eq
        'cadr-ai::refresh-xai-oauth-credential
        (cadr-cli::auth-command-oauth-refresh-function :xai)))
-  (is (null
+  (is (eq
+       'cadr-ai::refresh-openai-chatgpt-oauth-credential
        (cadr-cli::auth-command-oauth-refresh-function
         :openai))))
 
@@ -406,10 +407,23 @@
                 (cadr-cli:provider-config-model
                  config)))))))))
 
-(test misidentified-openai-oauth-does-not-block-login-recovery
+(test stored-openai-oauth-with-time-remaining-is-the-access-token
+  ;; pi@4a080252f resolveStoredOAuth uses a token that still has more
+  ;; than five minutes left. clientId is required only for the refresh
+  ;; POST, so a still-valid access is the request token with no HTTP.
   (with-test-directory (directory)
-    (let ((auth-path
-            (merge-pathnames "auth.json" directory)))
+    (let* ((auth-path
+             (merge-pathnames "auth.json" directory))
+           (calls 0)
+           (cadr-cli::*environment-function*
+             (lambda (name)
+               (and (string= name "OPENAI_API_KEY")
+                    "sk-proj-test")))
+           (cadr-ai::*oauth-flow-request-function*
+             (lambda (&rest args)
+               (declare (ignore args))
+               (incf calls)
+               (values (chatgpt-auth-file-token) 200))))
       (cadr-ai:write-auth-credential
        auth-path
        (cadr-ai:make-oauth-credential
@@ -427,18 +441,22 @@
                #P"/definitely/missing/config.json"
                :auth-path auth-path
                :allow-missing-auth-p t)))
-        (is (eq
-             :none
-             (cadr-cli:provider-config-auth-source
-              config)))
+        (is (eq :oauth
+                (cadr-cli:provider-config-auth-source config)))
+        ;; pi@4a080252f openai-chatgpt.ts toAuth returns
+        ;; { apiKey: credential.access }.
+        (is (string=
+             "legacy-access"
+             (cadr-ai::provider-api-key
+              (cadr-cli:provider-config-provider config))))
         (is (null
              (cadr-ai::provider-oauth-access-token
-              (cadr-cli:provider-config-provider
-               config))))
-        (is (typep
-             (cadr-ai:read-auth-credential
-              auth-path :openai)
-             'cadr-ai:oauth-credential))))))
+              (cadr-cli:provider-config-provider config))))
+        (is (zerop calls))
+        (is (string=
+             "legacy-access"
+             (cadr-ai:oauth-credential-access
+              (cadr-ai:read-auth-credential auth-path :openai))))))))
 
 (test repl-dispatches-slash-commands-without-prompting-model
   (let ((commands nil)
@@ -777,19 +795,36 @@
                       (cadr-ai:oauth-credential-metadata credential)
                       :test #'string=))))))
 
+(defun chatgpt-auth-file-expire (path)
+  (cadr-cli:auth-storage-modify
+   (cadr-cli:make-file-auth-storage path)
+   :openai
+   (lambda (current)
+     (cadr-ai:make-oauth-credential
+      :provider :openai
+      :access (cadr-ai:oauth-credential-access current)
+      :refresh (cadr-ai:oauth-credential-refresh current)
+      :expires 0
+      :account-id (cadr-ai:oauth-credential-account-id current)
+      :metadata
+      (copy-list (cadr-ai:oauth-credential-metadata current))))))
+
 (defun chatgpt-auth-file-refresh-client (path)
-  (let ((calls nil)
-        (credential
-          (cadr-cli:auth-storage-read
-           (cadr-cli:make-file-auth-storage path)
-           :openai)))
+  ;; Next start: resolve-stored-credential, not the refresh function
+  ;; on a credential read out of the file.
+  (chatgpt-auth-file-expire path)
+  (let ((calls nil))
     (let ((cadr-ai::*oauth-flow-request-function*
             (lambda (url &key method content &allow-other-keys)
               (push (list url method content) calls)
               (values (chatgpt-auth-file-token) 200))))
-      (cadr-ai::refresh-openai-chatgpt-oauth-credential credential))
-    (values (cadr-ai::parse-query (third (first calls)))
-            (first (first calls)))))
+      (multiple-value-bind (credential source)
+          (cadr-cli::resolve-stored-credential path :openai)
+        (values
+         (cadr-ai::parse-query (third (first calls)))
+         (first (first calls))
+         source
+         (cadr-ai:oauth-credential-access credential))))))
 
 (test chatgpt-login-writes-issued-client-and-scopes-into-auth-json
   ;; pi@4a080252f credentialFromTokenResponse stores clientId and scopes.
@@ -830,11 +865,197 @@
           (is (equal '("openid" "profile" "email" "offline_access"
                        "resource.invoke" "chatgpt.tokens.use.direct")
                      stored-scopes)))
-        (multiple-value-bind (body url)
+        (multiple-value-bind (body url source access)
             (chatgpt-auth-file-refresh-client path)
+          (is (eq :oauth source))
+          (is (string= "access-token" access))
           (is (string= +chatgpt-auth-token-url+ url))
           (is (string= client-id (gethash "client_id" body)))
           (is (string= "refresh_token" (gethash "grant_type" body)))
           (is (string= "refresh-token" (gethash "refresh_token" body)))
           (is (string= "https://api.openai.com/v1"
                        (gethash "resource" body))))))))
+
+(defun chatgpt-startup-credential
+    (&key (access "stale-access") (expires 0) (client-id "oaiapp_issued"))
+  (cadr-ai:make-oauth-credential
+   :provider :openai
+   :access access
+   :refresh "refresh-token"
+   :expires expires
+   :metadata
+   (append
+    (when client-id `(("clientId" . ,client-id)))
+    '(("scopes" . ("openid" "chatgpt.tokens.use.direct"))))))
+
+(defun chatgpt-startup-calls ()
+  (let ((calls nil))
+    (values
+     (lambda (url &key method content &allow-other-keys)
+       (push (list url method content) calls)
+       (values (chatgpt-auth-file-token) 200))
+     (lambda () (reverse calls)))))
+
+(test stored-chatgpt-oauth-becomes-the-request-token-on-the-next-start
+  ;; pi@4a080252f resolve.ts resolveStoredOAuth. A stored oauth
+  ;; credential owns the provider. Less than five minutes remaining
+  ;; posts the credential's clientId to the token endpoint. Otherwise
+  ;; the stored access is the request token. OPENAI_API_KEY is ambient
+  ;; and is not read while that oauth credential is stored.
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (models-path (merge-pathnames "models.json" directory))
+           (cadr-cli::*environment-function* (constantly nil)))
+      (multiple-value-bind (request calls)
+          (chatgpt-startup-calls)
+        (let ((cadr-ai::*oauth-flow-request-function* request))
+          (cadr-ai:write-auth-credential
+           path (chatgpt-startup-credential))
+          (cadr-ai:write-auth-credential
+           path
+           (cadr-ai:make-oauth-credential
+            :provider :openai-codex
+            :access "codex-access"
+            :refresh "codex-refresh"
+            :expires
+            (+ (cadr-ai::unix-milliseconds) 3600000)))
+          (let* ((registry
+                   (cadr-cli:make-model-registry
+                    :path models-path
+                    :credentials
+                    (cadr-cli:make-file-auth-storage path)))
+                 (model
+                   (cadr-cli:model-registry-find
+                    registry :openai "gpt-5.5")))
+            (is (equal
+                 '(:type :oauth :source "stored")
+                 (cadr-cli::model-registry-authentication-status
+                  registry :openai)))
+            (is (null (funcall calls)))
+            (let ((config
+                    (cadr-cli::provider-config-for-model
+                     registry model
+                     :config-path
+                     #P"/definitely/missing/config.json"
+                     :auth-path path
+                     :allow-missing-auth-p t)))
+              (is (string= "openai"
+                           (cadr-cli:provider-config-name config)))
+              (is (eq :oauth
+                      (cadr-cli:provider-config-auth-source config)))
+              (is (string=
+                   "access-token"
+                   (cadr-ai::provider-api-key
+                    (cadr-cli:provider-config-provider config))))
+              (is (null
+                   (cadr-ai::provider-oauth-access-token
+                    (cadr-cli:provider-config-provider config)))))
+            (let ((seen (funcall calls)))
+              (is (= 1 (length seen)))
+              (is (string= +chatgpt-auth-token-url+ (first (first seen))))
+              (is (string=
+                   "oaiapp_issued"
+                   (gethash
+                    "client_id"
+                    (cadr-ai::parse-query (third (first seen)))))))
+            (is (find-if
+                 (lambda (candidate)
+                   (and (eq (cadr-ai:model-provider candidate) :openai)
+                        (string= (cadr-ai:model-id candidate) "gpt-5.5")))
+                 (cadr-cli::model-registry-available-models
+                  registry :auth-path path
+                  :config-path #P"/definitely/missing/config.json")))
+            (is (= 1 (length (funcall calls)))))))))
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (cadr-cli::*environment-function*
+             (lambda (name)
+               (and (string= name "OPENAI_API_KEY")
+                    "sk-proj-test"))))
+      (multiple-value-bind (request calls)
+          (chatgpt-startup-calls)
+        (let ((cadr-ai::*oauth-flow-request-function* request))
+          (cadr-ai:write-auth-credential
+           path (chatgpt-startup-credential))
+          (let* ((registry
+                   (cadr-cli:make-model-registry
+                    :path (merge-pathnames "models.json" directory)
+                    :credentials
+                    (cadr-cli:make-file-auth-storage path)))
+                 (config
+                   (cadr-cli::provider-config-for-model
+                    registry
+                    (cadr-cli:model-registry-find
+                     registry :openai "gpt-5.5")
+                    :config-path
+                    #P"/definitely/missing/config.json"
+                    :auth-path path)))
+            (is (eq :oauth
+                    (cadr-cli:provider-config-auth-source config)))
+            (is (string=
+                 "access-token"
+                 (cadr-ai::provider-api-key
+                  (cadr-cli:provider-config-provider config))))
+            (is (null
+                 (cadr-ai::provider-oauth-access-token
+                  (cadr-cli:provider-config-provider config))))
+            (is (= 1 (length (funcall calls)))))))))
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (cadr-cli::*environment-function* (constantly nil)))
+      (multiple-value-bind (request calls)
+          (chatgpt-startup-calls)
+        (let ((cadr-ai::*oauth-flow-request-function* request))
+          (cadr-ai:write-auth-credential
+           path
+           (chatgpt-startup-credential
+            :expires
+            (+ (cadr-ai::unix-milliseconds) (* 10 60 1000))))
+          (multiple-value-bind (credential source)
+              (cadr-cli::resolve-stored-credential path :openai)
+            (is (eq :oauth source))
+            (is (string=
+                 "stale-access"
+                 (cadr-ai:oauth-credential-access credential)))
+            (is (null (funcall calls))))
+          (cadr-ai:write-auth-credential
+           path
+           (chatgpt-startup-credential
+            :expires
+            (+ (cadr-ai::unix-milliseconds) 60000)))
+          (multiple-value-bind (credential source)
+              (cadr-cli::resolve-stored-credential path :openai)
+            (is (eq :oauth source))
+            (is (string=
+                 "access-token"
+                 (cadr-ai:oauth-credential-access credential)))
+            (is (= 1 (length (funcall calls)))))))))
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (cadr-cli::*environment-function*
+             (lambda (name)
+               (and (string= name "OPENAI_API_KEY")
+                    "sk-proj-test")))
+           (cadr-ai::*oauth-flow-request-function*
+             (lambda (&rest args)
+               (declare (ignore args))
+               (error "refresh must not be reached without a client id"))))
+      (cadr-ai:write-auth-credential
+       path (chatgpt-startup-credential :client-id nil))
+      (let ((message
+              (handler-case
+                  (progn
+                    (cadr-cli:resolve-provider-config
+                     :provider "openai"
+                     :config-path
+                     #P"/definitely/missing/config.json"
+                     :auth-path path)
+                    nil)
+                (cadr-ai:authentication-error (condition)
+                  (princ-to-string condition)))))
+        (is (search "issued client ID" message))
+        (is (search "OAuth refresh failed" message))
+        (is (string=
+             "stale-access"
+             (cadr-ai:oauth-credential-access
+              (cadr-ai:read-auth-credential path :openai))))))))

@@ -125,7 +125,8 @@
         (cadr-ai::json-object))))
 
 (defparameter +oauth-login-providers+
-  '((:openai-codex . cadr-ai:refresh-openai-oauth-credential)
+  '((:openai . cadr-ai::refresh-openai-chatgpt-oauth-credential)
+    (:openai-codex . cadr-ai:refresh-openai-oauth-credential)
     (:anthropic . cadr-ai:refresh-anthropic-oauth-credential)
     (:github-copilot
      . cadr-ai::refresh-github-copilot-oauth-credential)
@@ -189,13 +190,18 @@
                  (cadr-ai::no-api-key-found-message "unknown"))))
     (setf name (string-downcase name))
     (let* ((provider-id (provider-symbol name)))
-      ;; /login openai stores under openai-codex. Prefer that OAuth over
-      ;; an empty openai API-key provider when the caller said openai
-      ;; or left the provider unset.
+      ;; A stored ChatGPT subscription owns provider openai
+      ;; (pi@4a080252f resolveStoredOAuth). The legacy alias sends
+      ;; that name to openai-codex only when no openai oauth is stored.
       (when
           (and (eq provider-id :openai)
                (null api-key)
                (null (environment-value "OPENAI_API_KEY"))
+               (not (and (probe-file auth-path)
+                         (typep
+                          (cadr-ai:read-auth-credential
+                           auth-path :openai)
+                          'cadr-ai:oauth-credential)))
                (openai-codex-oauth-credential auth-path))
         (setf name "openai-codex"
               provider-id :openai-codex))
