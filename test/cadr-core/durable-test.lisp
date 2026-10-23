@@ -614,7 +614,7 @@
                (is (string= "info" (cadr-chord:json-get diagnostic "severity")))
                (is (null (cadr-chord:json-get diagnostic "code")))
                (is (null (nth-value 1 (gethash "code" diagnostic))))
-               (is (string= "40 more lines in file. Use offset=61 to continue."
+               (is (string= "41 more lines in file. Use offset=61 to continue."
                             (cadr-chord:json-get diagnostic "message")))
                (is (null (cadr-durable:tool-result-details result)))
                (is (string= (format nil "~{~A~^~%~}" (make-list 20 :initial-element "line")) text))
@@ -623,9 +623,41 @@
                     (diagnostic (first (cadr-durable:tool-result-diagnostics from-start))))
                (is (string= "info" (cadr-chord:json-get diagnostic "severity")))
                (is (null (nth-value 1 (gethash "code" diagnostic))))
-               (is (string= "80 more lines in file. Use offset=21 to continue."
+               (is (string= "81 more lines in file. Use offset=21 to continue."
                             (cadr-chord:json-get diagnostic "message")))
                (is (null (cadr-durable:tool-result-details from-start))))
+             (let* ((at-end (cadr-durable:execute-read env "sample.txt" :offset 101))
+                    (text (cadr-chord:json-get
+                           (aref (cadr-durable:tool-result-output at-end) 0) "text")))
+               (is (null (cadr-durable:tool-result-diagnostics at-end)))
+               (is (null (cadr-durable:tool-result-details at-end)))
+               (is (string= "" text)))
+             (is (string= "Offset 102 is beyond end of file (101 lines total)"
+                          (durable-error-text
+                           (lambda ()
+                             (cadr-durable:execute-read env "sample.txt" :offset 102)))))
+           (cadr-durable:execute-write
+            env "joined.txt"
+            (with-output-to-string (stream)
+              (loop for index from 1 to 100
+                    do (unless (= index 1) (write-char #\Newline stream))
+                       (write-string "line" stream))))
+           (let* ((joined (cadr-durable:execute-read env "joined.txt" :offset 41 :limit 20))
+                  (diagnostic (first (cadr-durable:tool-result-diagnostics joined))))
+             (is (string= "info" (cadr-chord:json-get diagnostic "severity")))
+             (is (null (nth-value 1 (gethash "code" diagnostic))))
+             (is (string= "40 more lines in file. Use offset=61 to continue."
+                          (cadr-chord:json-get diagnostic "message")))
+             (is (null (cadr-durable:tool-result-details joined))))
+           (let* ((joined-start (cadr-durable:execute-read env "joined.txt" :limit 20))
+                  (diagnostic (first (cadr-durable:tool-result-diagnostics joined-start))))
+             (is (string= "80 more lines in file. Use offset=21 to continue."
+                          (cadr-chord:json-get diagnostic "message")))
+             (is (null (cadr-durable:tool-result-details joined-start))))
+           (is (string= "Offset 101 is beyond end of file (100 lines total)"
+                        (durable-error-text
+                         (lambda ()
+                           (cadr-durable:execute-read env "joined.txt" :offset 101)))))
            (cadr-durable:execute-write
             env "long.txt"
             (concatenate 'string (make-string 40000 :initial-element #\é) #(#\Newline) "next" #(#\Newline)))
@@ -683,6 +715,19 @@
            (let ((result (cadr-durable:execute-read env "exact.txt")))
              (is (null (cadr-durable:tool-result-diagnostics result)))
              (is (null (cadr-durable:tool-result-details result))))
+           (cadr-durable:execute-write
+            env "terminated.txt"
+            (with-output-to-string (stream)
+              (loop repeat 2500 do (write-line "x" stream))))
+           (let* ((result (cadr-durable:execute-read env "terminated.txt"))
+                  (diagnostic (first (cadr-durable:tool-result-diagnostics result)))
+                  (truncation (cadr-chord:json-get
+                               (cadr-durable:tool-result-details result) "truncation")))
+             (is (string= "Showing lines 1-2000 of 2501. Use offset=2001 to continue."
+                          (cadr-chord:json-get diagnostic "message")))
+             (is (string= "truncated" (cadr-chord:json-get diagnostic "code")))
+             (is (= 2500 (cadr-chord:json-get truncation "totalLines")))
+             (is (= 2000 (cadr-chord:json-get truncation "outputLines"))))
              (let ((png #(137 80 78 71 13 10 26 10 0 0 0 13 73 72 68 82 0 0 0 1
                           0 0 0 1 8 6 0 0 0 31 21 196 137 0 0 0 13 73 68 65 84
                           120 156 99 96 96 96 248 15 0 1 4 1 0 95 229 195 75 0

@@ -66,15 +66,23 @@
     diagnostic))
 
 (defun read-text-page (path text &key (offset 1) limit)
+  ;; File length is newline bytes plus one, so a trailing newline is a line.
+  ;; The lines we emit still drop that empty segment, the way truncateHead does,
+  ;; which keeps a file of exactly 2000 terminated lines under the line cap.
   (let* ((lines (text-lines text))
-         (total (length lines))
+         (content-count (length lines))
+         (total (1+ (count #\Newline text)))
          (start (1- offset)))
     (when (> offset total)
       (error "Offset ~A is beyond end of file (~A lines total)" offset total))
-    (let* ((window-end (if limit (min total (+ start limit)) total))
-           (selected (subseq lines start window-end))
-           (selected-lines (- window-end start))
-           (selected-bytes (if (and (zerop start) (= window-end total))
+    (let* ((content-start (min start content-count))
+           (limit-end (if limit (+ start limit) content-count))
+           (window-end (max content-start (min content-count limit-end)))
+           (selected (subseq lines content-start window-end))
+           (selected-lines (- window-end content-start))
+           (selected-bytes (if (and (zerop content-start)
+                                    (= window-end content-count)
+                                    (or (null limit) (>= (+ start limit) total)))
                                (utf8-byte-length text)
                                (utf8-byte-length
                                 (with-output-to-string (stream)
@@ -154,12 +162,12 @@
                            :output-lines emitted
                            :output-bytes (utf8-byte-length page)
                            :first-line-exceeds nil)))))
-        ((and limit (< window-end total))
-         (let ((next (+ offset (length selected))))
+        ((and limit (< (+ start limit) total))
+         (let ((next (+ offset limit)))
            (push (tool-diagnostic
                   "info"
                   (format nil "~A more lines in file. Use offset=~A to continue."
-                          (- total (1- next)) next))
+                          (- total (+ start limit)) next))
                  diagnostics))))
       (values (coerce output 'string) (nreverse diagnostics) details))))
 
