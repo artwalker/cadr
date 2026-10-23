@@ -2154,3 +2154,32 @@ The gray `Working` status rule is canonicalized in
   `packages/ai/test/telemetry.test.ts`.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-43. The status
   cell keeps the previous blocked text after the new open prefix.
+
+## 2026-10-23 — GAP-20 gets a third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-20 is open for a third repair. Keep the row whole. If the third
+  acceptance fails, write the status `blocked` and hand the row to the
+  advisor.
+- **Why:** two acceptances failed. The defect is concrete and fixable.
+  `prepare-tool-execution` does not follow the step order of upstream
+  `prepareToolCall`. The approach stands. Do not split the row.
+- **Repair order** (upstream v1.4.0
+  `packages/agent/src/agent-loop.ts`, `prepareToolCall`):
+  1. Look up the tool. An unknown tool returns an error and enters no
+     hook.
+  2. Validate the arguments. A failure returns an error and enters no
+     hook.
+  3. Run the `tool_call` hook. A throw blocks the call and yields an
+     isError result.
+  4. Execute with that same already-validated argument object. A rewrite
+     is not validated again.
+  5. A blocked or immediate result does not run `tool_result`.
+- **Test lock:** lock the `hookCalls` sequence to upstream
+  `packages/agent/test/agent-loop.test.ts` lines 2210–2211, and lock the
+  behavior to `extensions-runner.test.ts`. After the change, tests for
+  rows that are already aligned must still pass. If one conflicts, the
+  status cell names that row and which upstream version's behavior it
+  is.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-20. The status
+  cell keeps the previous blocked text after the new open prefix.
