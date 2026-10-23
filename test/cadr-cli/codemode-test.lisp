@@ -124,6 +124,10 @@
   (apply (find-symbol name "CADR-WASM") arguments))
 
 (test codemode-vendored-quickjs-matches-the-published-sha256
+  ;; cadr-cli does not depend on cadr-wasm. The host loads the asd
+  ;; on the first script; this check has to do the same.
+  (asdf:load-asd
+   (asdf:system-relative-pathname "cadr-cli" "cadr-wasm.asd"))
   (asdf:load-system "cadr-wasm")
   (is (string= "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9"
                (codemode-wasm-call "QUICKJS-WASM-SHA256")))
