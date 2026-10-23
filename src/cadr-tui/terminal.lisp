@@ -817,24 +817,29 @@
                    terminal)
                   +program-status-query+
                   "")))
+        ;; Bracketed paste, the startup cursor hide, and the keyboard
+        ;; DA query are process.stdout.write in v1.4.0 terminal.start.
+        ;; TUI.start then write()s ?2031h and, when images exist, CSI 16 t.
         (write-process-terminal-output
          terminal
          (format nil
-                 "~C[?2004h~C[?25l~A~A~A~A~A"
+                 "~C[?2004h~C[?25l~A~A~A"
                  #\Escape #\Escape
                  +keyboard-protocol-query-without-da+
                  program-status-query
-                 +device-attributes-query+
-                 (if
-                     (terminal-capabilities-images
-                      (get-terminal-capabilities))
-                     (format nil "~C[16t" #\Escape)
-                     "")
-                 (if
-                     (process-terminal-color-scheme-notifications-enabled-p
-                      terminal)
-                     (format nil "~C[?2031h" #\Escape)
-                     "")))
+                 +device-attributes-query+))
+        (when
+            (process-terminal-color-scheme-notifications-enabled-p
+             terminal)
+          (terminal-write
+           terminal
+           (format nil "~C[?2031h" #\Escape)))
+        (when
+            (terminal-capabilities-images
+             (get-terminal-capabilities))
+          (terminal-write
+           terminal
+           (format nil "~C[16t" #\Escape)))
         (when
             (process-terminal-program-status-supported-p
              terminal)
@@ -861,15 +866,16 @@
               terminal
               (format-program-status
                (make-program-status :state :clear))))
+           (when
+               (process-terminal-color-scheme-notifications-enabled-p
+                terminal)
+             (terminal-write
+              terminal
+              (format nil "~C[?2031l" #\Escape)))
            (write-process-terminal-output
             terminal
             (format nil
-                    "~A~C[0m~C[?25h~C[?2004l~C[<u~A"
-                    (if
-                        (process-terminal-color-scheme-notifications-enabled-p
-                         terminal)
-                        (format nil "~C[?2031l" #\Escape)
-                        "")
+                    "~C[0m~C[?25h~C[?2004l~C[<u~A"
                     #\Escape #\Escape #\Escape #\Escape
                     +modify-other-keys-disable+)))
       #+sbcl
@@ -1164,6 +1170,29 @@
   (finish-output
    (process-terminal-output terminal))
   text)
+
+(defmethod terminal-write-stdout ((terminal process-terminal) text)
+  ;; v1.4.0 process.stdout.write. The write log only records write().
+  (write-process-terminal-output terminal text))
+
+(defmethod terminal-write-stdout ((terminal terminal) text)
+  (terminal-write terminal text))
+
+(defun terminal-set-title (terminal title)
+  (terminal-write-stdout
+   terminal
+   (format nil "~C]0;~A~C"
+           #\Escape title (code-char 7))))
+
+(defun terminal-hide-cursor (terminal)
+  (terminal-write-stdout
+   terminal
+   (format nil "~C[?25l" #\Escape)))
+
+(defun terminal-show-cursor (terminal)
+  (terminal-write-stdout
+   terminal
+   (format nil "~C[?25h" #\Escape)))
 
 (defmethod terminal-write ((terminal process-terminal) text)
   ;; stdout first. appendFileSync failures are ignored and do not
@@ -1510,7 +1539,7 @@
      nil)
     (terminal-response-expect-color
      (process-terminal-response-filter terminal))
-    (write-process-terminal-output
+    (terminal-write
      terminal
      (format nil "~C]11;?~C"
              #\Escape (code-char 7)))
@@ -1548,7 +1577,7 @@
                 (coerce timeout-seconds 'double-float))))
     (setf (terminal-response-filter-color-query filter) query)
     (setf (terminal-response-filter-color-result filter) nil)
-    (write-process-terminal-output terminal (terminal-color-query-sequence))
+    (terminal-write terminal (terminal-color-query-sequence))
     (loop
       (let ((input (terminal-read-input terminal)))
         (when (plusp (length input))
@@ -1635,7 +1664,7 @@
         terminal)
        enabled-p)
       (when (process-terminal-started-p terminal)
-        (write-process-terminal-output
+        (terminal-write
          terminal
          (format nil "~C[?2031~C"
                  #\Escape

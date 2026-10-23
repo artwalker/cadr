@@ -339,6 +339,9 @@
    #:terminal-start
    #:terminal-stop
    #:terminal-write
+   #:terminal-set-title
+   #:terminal-hide-cursor
+   #:terminal-show-cursor
    #:terminal-read-input
    #:terminal-resized-p
    #:terminal-query-background-color

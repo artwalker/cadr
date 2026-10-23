@@ -156,14 +156,12 @@
                 (< cursor-row total-lines))))
     (if (or (zerop total-lines)
             (not cursor-visible-p))
-      (let ((output
-              (format nil "~C[?25l"
-                      #\Escape)))
-        (terminal-write
-         (terminal-renderer-terminal renderer)
-         output)
-        output)
-      (let* ((target-row
+        ;; v1.4.0 hideCursor uses process.stdout.write, not write().
+        (terminal-hide-cursor
+         (terminal-renderer-terminal renderer))
+      (let* ((terminal
+               (terminal-renderer-terminal renderer))
+             (target-row
                (max
                 0
                 (min cursor-row
@@ -174,27 +172,25 @@
                (- target-row
                   (terminal-renderer-hardware-cursor-row
                    renderer)))
-             (output
+             (move
                (with-output-to-string (stream)
                  (write-relative-row-move
                   stream difference)
-                 (format stream "~C[~DG~C[?25~C"
+                 (format stream "~C[~DG"
                          #\Escape
-                         (1+ target-column)
-                         #\Escape
-                         (if
-                             (terminal-renderer-show-hardware-cursor-p
-                              renderer)
-                             #\h
-                             #\l)))))
-        (terminal-write
-         (terminal-renderer-terminal renderer)
-         output)
+                         (1+ target-column)))))
+        (terminal-write terminal move)
         (setf
          (terminal-renderer-hardware-cursor-row
           renderer)
          target-row)
-        output))))
+        (concatenate
+         'string
+         move
+         (if (terminal-renderer-show-hardware-cursor-p
+              renderer)
+             (terminal-show-cursor terminal)
+             (terminal-hide-cursor terminal)))))))
 
 (defun main-renderer-store-frame
     (renderer current width height)

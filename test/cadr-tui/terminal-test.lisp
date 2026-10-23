@@ -309,8 +309,8 @@
 
 (test tui-write-log-appends-writes-and-ignores-log-errors
   ;; ProcessTerminal.write appends the same string after stdout.
-  ;; fs.appendFileSync errors are ignored. Cursor, progress, and query
-  ;; bytes use process.stdout.write in v1.4.0 and stay out of the log.
+  ;; fs.appendFileSync errors are ignored. setProgress uses
+  ;; process.stdout.write in v1.4.0 and stays out of the log.
   (let ((root (tui-write-log-temp-dir)))
     (unwind-protect
          (let* ((log (namestring (merge-pathnames "ansi.log" root)))
@@ -407,4 +407,200 @@
                (is (string= "ab"
                             (uiop:read-file-string
                              sticky :external-format :utf-8))))))
+      (uiop:delete-directory-tree root :validate t))))
+
+(defun tui-write-log-file (path)
+  (when (probe-file path)
+    (uiop:read-file-string path :external-format :utf-8)))
+
+(defun tui-write-log-color-query ()
+  ;; v1.4.0 packages/tui/src/tui.ts TERMINAL_COLOR_QUERY (OSC 10, OSC 11,
+  ;; OSC 4 for palette 0-15, then DA1).
+  (with-output-to-string (out)
+    (format out "~C]10;?~C~C]11;?~C"
+            #\Escape (code-char 7) #\Escape (code-char 7))
+    (loop for index below 16
+          do (format out "~C]4;~D;?~C"
+                     #\Escape index (code-char 7)))
+    (format out "~C[c" #\Escape)))
+
+(test tui-write-log-splits-stdout-writes-from-terminal-write
+  ;; v1.4.0 terminal.ts setTitle / hideCursor / showCursor and
+  ;; setProgress use process.stdout.write. tui.ts queryTerminalColors,
+  ;; start's ?2031h, queryCellSize's CSI 16 t, stop's ?2031l, and
+  ;; setTerminalColorSchemeNotifications use terminal.write.
+  ;; tui-main-screen.ts positionHardwareCursor logs the move only.
+  (let ((root (tui-write-log-temp-dir)))
+    (unwind-protect
+         (let* ((title-log (namestring (merge-pathnames "title.log" root)))
+                (title-out (make-string-output-stream))
+                (title-terminal
+                  (tui-write-log-terminal title-log :output title-out))
+                (title
+                  (format nil "~C]0;Lane~C" #\Escape (code-char 7))))
+           (cadr-tui:terminal-set-title title-terminal "Lane")
+           (cadr-tui:terminal-write title-terminal "frame")
+           (is (string= "frame" (tui-write-log-file title-log)))
+           (is (string= (concatenate 'string title "frame")
+                        (get-output-stream-string title-out)))
+           (let* ((theme-log (namestring (merge-pathnames "theme.log" root)))
+                  (theme-out (make-string-output-stream))
+                  (theme
+                    (tui-write-log-terminal theme-log :output theme-out)))
+             (setf (cadr-tui::process-terminal-started-p theme) t)
+             (cadr-tui:terminal-query-theme-colors
+              theme :timeout-seconds 0d0)
+             (is (string= (tui-write-log-color-query)
+                          (tui-write-log-file theme-log)))
+             (is (string= (tui-write-log-color-query)
+                          (get-output-stream-string theme-out)))
+             (setf (cadr-tui::process-terminal-started-p theme) nil))
+           (let* ((back-log (namestring (merge-pathnames "back.log" root)))
+                  (back-out (make-string-output-stream))
+                  (back
+                    (tui-write-log-terminal back-log :output back-out))
+                  (osc11
+                    (format nil "~C]11;?~C" #\Escape (code-char 7))))
+             (setf (cadr-tui::process-terminal-started-p back) t)
+             (cadr-tui:terminal-query-background-color
+              back :timeout-seconds 0d0)
+             (is (string= osc11 (tui-write-log-file back-log)))
+             (is (string= osc11 (get-output-stream-string back-out)))
+             (setf (cadr-tui::process-terminal-started-p back) nil))
+           (let* ((note-log (namestring (merge-pathnames "note.log" root)))
+                  (note-out (make-string-output-stream))
+                  (note
+                    (tui-write-log-terminal note-log :output note-out))
+                  (enable (format nil "~C[?2031h" #\Escape))
+                  (disable (format nil "~C[?2031l" #\Escape)))
+             ;; Not started: the flag is recorded and nothing is written.
+             ;; v1.4.0 setTerminalColorSchemeNotifications returns when
+             ;; stopped. A repeat of the same value does not write again.
+             (cadr-tui:terminal-set-color-scheme-notifications note t)
+             (is (null (tui-write-log-file note-log)))
+             (setf (cadr-tui::process-terminal-color-scheme-notifications-enabled-p
+                    note)
+                   nil
+                   (cadr-tui::process-terminal-started-p note)
+                   t)
+             (cadr-tui:terminal-set-color-scheme-notifications note t)
+             (cadr-tui:terminal-set-color-scheme-notifications note t)
+             (is (string= enable (tui-write-log-file note-log)))
+             (cadr-tui:terminal-set-color-scheme-notifications note nil)
+             (is (string= (concatenate 'string enable disable)
+                          (tui-write-log-file note-log)))
+             (is (string= (concatenate 'string enable disable)
+                          (get-output-stream-string note-out)))
+             (setf (cadr-tui::process-terminal-started-p note) nil))
+           (let* ((cursor-log
+                    (namestring (merge-pathnames "cursor.log" root)))
+                  (cursor-out (make-string-output-stream))
+                  (cursor-terminal
+                    (tui-write-log-terminal
+                     cursor-log :output cursor-out))
+                  (hide (format nil "~C[?25l" #\Escape))
+                  (show (format nil "~C[?25h" #\Escape))
+                  (column (format nil "~C[4G" #\Escape))
+                  (up (format nil "~C[1A" #\Escape)))
+             (setf (cadr-tui:terminal-columns cursor-terminal) 20
+                   (cadr-tui:terminal-rows cursor-terminal) 4)
+             (let ((renderer
+                     (cadr-tui:make-terminal-renderer
+                      cursor-terminal
+                      :show-hardware-cursor-p t)))
+               ;; A full frame parks the hardware row on the last line,
+               ;; then positionHardwareCursor moves back to row 0.
+               (cadr-tui:render-frame
+                renderer '("editor" "next")
+                :cursor-row 0 :cursor-column 0)
+               (cadr-tui:render-frame
+                renderer '("editor")
+                :cursor-row 0 :cursor-column 3))
+             (is (search up (tui-write-log-file cursor-log)))
+             (is (search column (tui-write-log-file cursor-log)))
+             (is (null (search hide (tui-write-log-file cursor-log))))
+             (is (null (search show (tui-write-log-file cursor-log))))
+             (is (search show (get-output-stream-string cursor-out))))
+           (let* ((hidden-log
+                    (namestring (merge-pathnames "hidden.log" root)))
+                  (hidden-out (make-string-output-stream))
+                  (hidden-terminal
+                    (tui-write-log-terminal
+                     hidden-log :output hidden-out))
+                  (hide (format nil "~C[?25l" #\Escape)))
+             (setf (cadr-tui:terminal-columns hidden-terminal) 20
+                   (cadr-tui:terminal-rows hidden-terminal) 4)
+             (cadr-tui:render-frame
+              (cadr-tui:make-terminal-renderer hidden-terminal)
+              '("editor")
+              :cursor-row 0 :cursor-column 3)
+             (cadr-tui:render-frame
+              (cadr-tui:make-terminal-renderer hidden-terminal)
+              '("editor")
+              :cursor-row nil :cursor-column nil)
+             (is (null (search hide (tui-write-log-file hidden-log))))
+             (is (search hide (get-output-stream-string hidden-out)))))
+      (uiop:delete-directory-tree root :validate t))))
+
+(test tui-write-log-records-cell-size-and-color-scheme-startup
+  ;; v1.4.0 tui.ts start writes ?2031h then CSI 16 t through terminal.write.
+  ;; stop writes ?2031l through terminal.write. Bracketed paste, the
+  ;; cursor hide, and the keyboard DA query stay on process.stdout.write.
+  (let ((root (tui-write-log-temp-dir))
+        (saved-capabilities (cadr-tui:get-terminal-capabilities)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-terminal-capabilities
+            (cadr-tui:make-terminal-capabilities :images t))
+           (call-with-pty-input
+            (lambda (input)
+              (let* ((log (namestring (merge-pathnames "start.log" root)))
+                     (output (make-string-output-stream))
+                     (terminal
+                       (cadr-tui:make-process-terminal
+                        :input input
+                        :output output
+                        :dimensions-refresh-function (lambda () nil)
+                        :windows-vt-input-function (lambda () nil)
+                        :write-log-environment
+                        `(("CADR_TUI_WRITE_LOG" . ,log))
+                        :write-log-directory-p
+                        #'cadr-tui::tui-write-log-directory-p
+                        :write-log-clock
+                        (constantly
+                         (encode-universal-time 9 5 8 23 10 2026))
+                        :write-log-pid 4242))
+                     (enable (format nil "~C[?2031h" #\Escape))
+                     (cell (format nil "~C[16t" #\Escape))
+                     (disable (format nil "~C[?2031l" #\Escape))
+                     (paste (format nil "~C[?2004h" #\Escape))
+                     (hide (format nil "~C[?25l" #\Escape)))
+                (cadr-tui:terminal-set-color-scheme-notifications
+                 terminal t)
+                (is (null (probe-file log)))
+                (unwind-protect
+                     (progn
+                       (cadr-tui:terminal-start terminal)
+                       (is (string= (concatenate 'string enable cell)
+                                    (tui-write-log-file log)))
+                       (let ((stdout (get-output-stream-string output)))
+                         (is (search paste stdout))
+                         (is (search hide stdout))
+                         (is (search (concatenate 'string enable cell)
+                                     stdout)))
+                       (cadr-tui:terminal-stop terminal)
+                       (is (string= (concatenate 'string enable cell disable)
+                                    (tui-write-log-file log)))
+                       (is (null (search paste (tui-write-log-file log))))
+                       (is (null (search hide (tui-write-log-file log))))
+                       (is (null
+                            (search (format nil "~C[?2004l" #\Escape)
+                                    (tui-write-log-file log))))
+                       (is (null
+                            (search (format nil "~C[?25h" #\Escape)
+                                    (tui-write-log-file log)))))
+                  (when (cadr-tui::process-terminal-started-p terminal)
+                    (ignore-errors (cadr-tui:terminal-stop terminal)))
+                  (cadr-tui::disarm-terminal-exit-restore terminal))))))
+      (cadr-tui:set-terminal-capabilities saved-capabilities)
       (uiop:delete-directory-tree root :validate t))))

@@ -695,10 +695,8 @@ interactive-mode.ts:5956-5960).")
                       (tui-state-session-name state))))
                (unless (string= title
                                 (or last-terminal-title ""))
-                 (cadr-tui:terminal-write
-                  terminal
-                  (format nil "~C]0;~A~C"
-                          #\Escape title (code-char 7)))
+                 (cadr-tui:terminal-set-title
+                  terminal title)
                  (setf last-terminal-title title)))))
          (refresh-footer-state
              (&optional (refresh-session-state-p t))
@@ -1736,10 +1734,8 @@ interactive-mode.ts:5956-5960).")
               (let ((title
                       (sanitize-terminal-title-text
                        (getf arguments :title))))
-                (cadr-tui:terminal-write
-                 terminal
-                 (format nil "~C]0;~A~C"
-                         #\Escape title (code-char 7))))
+                (cadr-tui:terminal-set-title
+                 terminal title))
               nil)
              (:set-header
               (set-extension-header (getf arguments :factory)))
