@@ -419,6 +419,7 @@
   (ensure-supported-content model context)
   (multiple-value-bind (key oauth-token federation-p header-overlay)
       (anthropic-request-auth provider model headers)
+    (setf *anthropic-federation-bearer-p* federation-p)
     (let* ((cache-control
              (anthropic-cache-control
               model
@@ -543,6 +544,31 @@
                 :session-id session-id)
                (model-headers model))
               header-overlay)))
+       (when federation-p
+         (let* ((existing
+                  (anthropic-header-value headers "anthropic-beta"))
+                (parts
+                  (if existing
+                      (mapcar
+                       (lambda (part)
+                         (string-trim
+                          '(#\Space #\Tab #\Newline #\Return)
+                          part))
+                       (uiop:split-string existing :separator '(#\,)))
+                      nil)))
+           (unless (member +anthropic-federation-oauth-api-beta+ parts
+                           :test #'string=)
+             (setf headers
+                   (anthropic-headers-with-overlay
+                    headers
+                    (list
+                     (cons
+                      "anthropic-beta"
+                      (format
+                       nil "~{~A~^,~}"
+                       (append
+                        parts
+                        (list +anthropic-federation-oauth-api-beta+))))))))))
        headers)
      :payload payload
      :stream-p stream-p

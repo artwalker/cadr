@@ -68,26 +68,59 @@
 
 (defmacro with-federation-transport ((calls &key (expires-in 3600)
                                             (token "federated-token")
-                                            (clock 4000000000))
+                                            (clock 4000000000)
+                                            (messages-status 200)
+                                            (token-fn nil)
+                                            (message-body-fn nil))
                                      &body body)
-  (let ((box (gensym "CALLS")))
+  (let ((box (gensym "CALLS"))
+        (message-n (gensym "MESSAGE-N"))
+        (saved-client (gensym "SAVED-CLIENT"))
+        (saved-clock (gensym "SAVED-CLOCK")))
     `(let* ((,box (federation-calls))
             (,calls ,box)
-            (cadr-ai::*anthropic-federation-client* nil)
-            (cadr-ai::*anthropic-federation-clock* (lambda () ,clock))
+            (,message-n (list 0))
+            (,saved-client cadr-ai::*anthropic-federation-client*)
+            (,saved-clock cadr-ai::*anthropic-federation-clock*)
             (*http-request-function*
               (lambda (url &key method headers content &allow-other-keys)
                 (federation-record ,box url method headers content)
-                (if (search "/v1/oauth/token" url)
-                    (values
-                     (format nil
-                             "{\"access_token\":\"~A\",\"expires_in\":~D}"
-                             ,token ,expires-in)
-                     200
-                     '(("content-type" . "application/json")))
-                    (values (federation-sse) 200
-                            '(("content-type" . "text/event-stream")))))))
-       ,@body)))
+                (cond
+                  ((search "/v1/oauth/token" url)
+                   (let ((issued
+                           (if ,token-fn
+                               (funcall ,token-fn)
+                               ,token)))
+                     (values
+                      (format nil
+                              "{\"access_token\":\"~A\",\"expires_in\":~D}"
+                              issued ,expires-in)
+                      200
+                      '(("content-type" . "application/json")))))
+                  (t
+                   (incf (car ,message-n))
+                   (let ((status
+                           (if (functionp ,messages-status)
+                               (funcall ,messages-status (car ,message-n))
+                               ,messages-status)))
+                     (values
+                      (if ,message-body-fn
+                          (funcall ,message-body-fn status)
+                          (if (<= 200 status 299)
+                              (federation-sse)
+                              "{\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid\"}}"))
+                      status
+                      (if (<= 200 status 299)
+                          '(("content-type" . "text/event-stream"))
+                          '(("content-type" . "application/json"))))))))))
+       ;; Process-global cache: advisory refresh runs on another thread and
+       ;; must see the same client the request path wrote.
+       (setf cadr-ai::*anthropic-federation-client* nil
+             cadr-ai::*anthropic-federation-clock* (lambda () ,clock))
+       (unwind-protect
+            (progn ,@body)
+         (setf cadr-ai::*anthropic-federation-client* ,saved-client
+               cadr-ai::*anthropic-federation-clock* ,saved-clock)))))
 
 (defun federation-recorded (calls suffix)
   (remove-if-not
@@ -208,8 +241,7 @@
           (is (null (federation-header (getf call :headers) "x-api-key")))
           (let ((beta (federation-header (getf call :headers)
                                          "anthropic-beta")))
-            (is (or (null beta)
-                    (not (search "oauth-2025-04-20" beta)))))))
+            (is (search "oauth-2025-04-20" beta)))))
       (let* ((token (first (federation-recorded calls "/v1/oauth/token")))
              (body (cadr-ai::parse-json (getf token :content))))
         (is (string= "urn:ietf:params:oauth:grant-type:jwt-bearer"
@@ -281,6 +313,126 @@
                  (federation-recorded calls "/v1/oauth/token"))))
           (is (equal '("header.payload.two" "header.payload.one")
                      assertions)))))))
+
+;;; @anthropic-ai/sdk@0.129.0 lib/credentials/token-cache.ts:
+;;; remaining > 120 keeps the cache; 30 < remaining <= 120 returns the
+;;; stale token and refreshes in the background while rereading the file.
+(test anthropic-federation-refreshes-in-the-background-inside-the-advisory-window
+  (uiop:with-temporary-file (:pathname path)
+    (with-open-file (stream path :direction :output :if-exists :supersede)
+      (write-string "header.payload.one" stream))
+    (let ((now 4000000000)
+          (token-n (list 0)))
+      (with-federation-transport
+          (calls
+           :clock now
+           :expires-in 3600
+           :token-fn
+           (lambda ()
+             (incf (car token-n))
+             (format nil "federated-token-~D" (car token-n))))
+        (flet ((chat ()
+                 (stream-chat
+                  (cadr-ai:make-anthropic-provider
+                   :provider-id :anthropic
+                   :options
+                   (list :environment
+                         (federation-env :service nil
+                                         :file (namestring path))))
+                  (federation-model)
+                  (federation-context)
+                  (lambda (event) (declare (ignore event))))))
+          (chat)
+          (with-open-file (stream path :direction :output :if-exists :supersede)
+            (write-string "header.payload.two" stream))
+          (incf now 3500)
+          (let ((message (chat)))
+            (is (eq :stop (assistant-message-stop-reason message))))
+          (loop repeat 50
+                until (>= (length (federation-recorded calls "/v1/oauth/token"))
+                          2)
+                do (sleep 0.02))
+          (is (= 2 (length (federation-recorded calls "/v1/oauth/token"))))
+          (let* ((messages (federation-recorded calls "/v1/messages"))
+                 (first-message (second messages))
+                 (second-message (first messages))
+                 (assertions
+                   (mapcar
+                    (lambda (call)
+                      (cadr-ai::json-get
+                       (cadr-ai::parse-json (getf call :content))
+                       "assertion"))
+                    (federation-recorded calls "/v1/oauth/token"))))
+            (is (string= "Bearer federated-token-1"
+                         (federation-header (getf first-message :headers)
+                                            "authorization")))
+            (is (string= "Bearer federated-token-1"
+                         (federation-header (getf second-message :headers)
+                                            "authorization")))
+            (is (equal '("header.payload.two" "header.payload.one")
+                       assertions))
+            (chat)
+            (let ((third
+                    (first (federation-recorded calls "/v1/messages"))))
+              (is (string= "Bearer federated-token-2"
+                           (federation-header (getf third :headers)
+                                              "authorization"))))))))))
+
+;;; pi sets SDK maxRetries to 0; shouldRetry still invalidates the cache on
+;;; 401, so the next request exchanges again.
+(test anthropic-federation-exchanges-again-after-a-401
+  (uiop:with-temporary-file (:pathname path)
+    (with-open-file (stream path :direction :output :if-exists :supersede)
+      (write-string "header.payload.one" stream))
+    (let ((now 4000000000)
+          (token-n (list 0)))
+      (with-federation-transport
+          (calls
+           :clock now
+           :token-fn
+           (lambda ()
+             (incf (car token-n))
+             (format nil "federated-token-~D" (car token-n)))
+           :messages-status
+           (lambda (n)
+             (if (= n 1) 401 200)))
+        (flet ((chat ()
+                 (stream-chat
+                  (cadr-ai:make-anthropic-provider
+                   :provider-id :anthropic
+                   :options
+                   (list :environment
+                         (federation-env :service nil
+                                         :file (namestring path))))
+                  (federation-model)
+                  (federation-context)
+                  (lambda (event) (declare (ignore event))))))
+          (let ((first (chat)))
+            (is (eq :error (assistant-message-stop-reason first))))
+          (with-open-file (stream path :direction :output :if-exists :supersede)
+            (write-string "header.payload.two" stream))
+          (let ((second (chat)))
+            (is (eq :stop (assistant-message-stop-reason second))))
+          (is (= 2 (length (federation-recorded calls "/v1/oauth/token"))))
+          (let* ((messages (federation-recorded calls "/v1/messages"))
+                 (assertions
+                   (mapcar
+                    (lambda (call)
+                      (cadr-ai::json-get
+                       (cadr-ai::parse-json (getf call :content))
+                       "assertion"))
+                    (federation-recorded calls "/v1/oauth/token"))))
+            (is (= 2 (length messages)))
+            (is (string= "Bearer federated-token-1"
+                         (federation-header
+                          (getf (second messages) :headers)
+                          "authorization")))
+            (is (string= "Bearer federated-token-2"
+                         (federation-header
+                          (getf (first messages) :headers)
+                          "authorization")))
+            (is (equal '("header.payload.two" "header.payload.one")
+                       assertions))))))))
 
 (test anthropic-federation-lets-an-explicit-api-key-win
   (uiop:with-temporary-file (:pathname path)

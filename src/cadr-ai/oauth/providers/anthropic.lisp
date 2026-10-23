@@ -93,6 +93,8 @@
 (defparameter +anthropic-federation-assertion-limit+ (* 16 1024))
 (defparameter +anthropic-federation-advisory-refresh-seconds+ 120)
 (defparameter +anthropic-federation-mandatory-refresh-seconds+ 30)
+(defparameter +anthropic-federation-advisory-backoff-seconds+ 5)
+(defparameter +anthropic-federation-oauth-api-beta+ "oauth-2025-04-20")
 
 (defvar *anthropic-federation-client* nil)
 (defvar *anthropic-federation-lock*
@@ -102,7 +104,10 @@
 (defstruct anthropic-federation-client
   key
   token
-  expires-at)
+  expires-at
+  (force-refresh-p nil)
+  (pending-refresh nil)
+  (last-advisory-error 0))
 
 (defun anthropic-configured-string (value)
   (and (stringp value) (plusp (length value)) value))
@@ -384,25 +389,122 @@
                  "Token endpoint response missing required fields"))
         (cons token (round expires-in))))))
 
-(defun anthropic-federation-access-token (base-url env)
+(defun anthropic-federation-store-exchange (key base-url env now)
+  (let ((exchanged
+          (exchange-anthropic-federation-token base-url env)))
+    (setf *anthropic-federation-client*
+          (make-anthropic-federation-client
+           :key key
+           :token (car exchanged)
+           :expires-at (+ now (cdr exchanged))
+           :force-refresh-p nil
+           :pending-refresh nil
+           :last-advisory-error
+           (if *anthropic-federation-client*
+               (anthropic-federation-client-last-advisory-error
+                *anthropic-federation-client*)
+               0)))
+    (car exchanged)))
+
+(defun anthropic-federation-clear-advisory-pending (key &optional errorp)
   (sb-thread:with-mutex (*anthropic-federation-lock*)
-    (let* ((key (anthropic-federation-cache-key base-url env))
-           (cached *anthropic-federation-client*)
-           (now (funcall *anthropic-federation-clock*)))
+    (let ((cached *anthropic-federation-client*))
       (when (and cached
-                 (equal key (anthropic-federation-client-key cached))
-                 (> (- (anthropic-federation-client-expires-at cached) now)
-                    +anthropic-federation-mandatory-refresh-seconds+))
-        (return-from anthropic-federation-access-token
-          (anthropic-federation-client-token cached)))
-      (let ((exchanged
-              (exchange-anthropic-federation-token base-url env)))
-        (setf *anthropic-federation-client*
-              (make-anthropic-federation-client
-               :key key
-               :token (car exchanged)
-               :expires-at (+ now (cdr exchanged))))
-        (car exchanged)))))
+                 (equal key (anthropic-federation-client-key cached)))
+        (setf (anthropic-federation-client-pending-refresh cached) nil)
+        (when errorp
+          (setf (anthropic-federation-client-last-advisory-error cached)
+                (funcall *anthropic-federation-clock*)))))))
+
+(defun anthropic-federation-run-advisory-refresh (key base-url env)
+  (handler-case
+      (let* ((now (funcall *anthropic-federation-clock*))
+             (exchanged
+               (exchange-anthropic-federation-token base-url env)))
+        (sb-thread:with-mutex (*anthropic-federation-lock*)
+          (let ((cached *anthropic-federation-client*))
+            (when (and cached
+                       (equal key (anthropic-federation-client-key cached)))
+              (setf *anthropic-federation-client*
+                    (make-anthropic-federation-client
+                     :key key
+                     :token (car exchanged)
+                     :expires-at (+ now (cdr exchanged))
+                     :force-refresh-p nil
+                     :pending-refresh nil
+                     :last-advisory-error
+                     (anthropic-federation-client-last-advisory-error
+                      cached)))))))
+    (error ()
+      (anthropic-federation-clear-advisory-pending key t))))
+
+(defun anthropic-federation-kick-advisory-refresh (key base-url env)
+  (let ((http *http-request-function*)
+        (clock *anthropic-federation-clock*))
+    (sb-thread:make-thread
+     (lambda ()
+       (let ((*http-request-function* http)
+             (*anthropic-federation-clock* clock))
+         (anthropic-federation-run-advisory-refresh key base-url env)))
+     :name "anthropic-federation-advisory-refresh"))
+  nil)
+
+(defun anthropic-federation-access-token (base-url env)
+  (let ((advisory nil)
+        (token nil))
+    (sb-thread:with-mutex (*anthropic-federation-lock*)
+      (let* ((key (anthropic-federation-cache-key base-url env))
+             (cached *anthropic-federation-client*)
+             (now (funcall *anthropic-federation-clock*))
+             (force
+               (and cached
+                    (equal key (anthropic-federation-client-key cached))
+                    (anthropic-federation-client-force-refresh-p cached))))
+        (when (and cached
+                   (equal key (anthropic-federation-client-key cached))
+                   force)
+          (setf (anthropic-federation-client-force-refresh-p cached) nil))
+        (cond
+          ((or force
+               (null cached)
+               (not (equal key (anthropic-federation-client-key cached))))
+           (setf token
+                 (anthropic-federation-store-exchange key base-url env now)))
+          (t
+           (let ((remaining
+                   (- (anthropic-federation-client-expires-at cached) now)))
+             (cond
+               ((> remaining +anthropic-federation-advisory-refresh-seconds+)
+                (setf token (anthropic-federation-client-token cached)))
+               ((> remaining +anthropic-federation-mandatory-refresh-seconds+)
+                (unless (or (anthropic-federation-client-pending-refresh cached)
+                            (< (- now
+                                  (anthropic-federation-client-last-advisory-error
+                                   cached))
+                               +anthropic-federation-advisory-backoff-seconds+))
+                  (setf (anthropic-federation-client-pending-refresh cached) t
+                        advisory (list key env)))
+                (setf token (anthropic-federation-client-token cached)))
+               (t
+                (setf token
+                      (anthropic-federation-store-exchange
+                       key base-url env now)))))))))
+    (when advisory
+      (anthropic-federation-kick-advisory-refresh
+       (first advisory) base-url (second advisory)))
+    token))
+
+(defun invalidate-anthropic-federation-token-cache ()
+  (sb-thread:with-mutex (*anthropic-federation-lock*)
+    (let ((cached *anthropic-federation-client*))
+      (when cached
+        (setf (anthropic-federation-client-token cached) nil
+              (anthropic-federation-client-expires-at cached) 0
+              (anthropic-federation-client-force-refresh-p cached) t)))))
+
+(defun note-anthropic-federation-response (status)
+  (when (and *anthropic-federation-bearer-p* (eql status 401))
+    (invalidate-anthropic-federation-token-cache)))
 
 (defun anthropic-request-auth (provider model headers)
   (let* ((oauth (provider-oauth-access-token provider))

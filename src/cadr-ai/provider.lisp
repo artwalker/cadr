@@ -131,6 +131,9 @@
 (defvar *responses-request-service-tier-p* nil
   "True when the caller passed service_tier, including JSON null.")
 
+(defvar *anthropic-federation-bearer-p* nil
+  "True while the Anthropic request in flight authenticated with a federation token.")
+
 (defun suppress-client-identity-p (provider)
   ;; Anthropic OAuth sends Claude Code headers instead of the client identity.
   (and (typep provider 'anthropic-provider)
@@ -859,6 +862,7 @@ string. Returns the buffer to store back. Per-delta
       (progn
         (check-abort abort-p)
         (let* ((*identity-deleted-header-names* (list nil))
+               (*anthropic-federation-bearer-p* nil)
                (*responses-request-service-tier* service-tier)
                (*responses-request-service-tier-p* service-tier-p)
                (transcript (ensure-transcript-context context))
@@ -914,6 +918,8 @@ string. Returns the buffer to store back. Per-delta
                        (getf (provider-options provider) :environment)
                        :on-response
                        (lambda (status headers)
+                         (when (typep provider 'anthropic-provider)
+                           (note-anthropic-federation-response status))
                          (notify-provider-response
                           on-response
                           status headers model)))
@@ -1034,7 +1040,8 @@ string. Returns the buffer to store back. Per-delta
                 (start-sent-p nil))
             (loop
               (check-abort abort-p)
-              (let* ((*anthropic-preferred-strict-sent-p* nil)
+              (let* ((*anthropic-federation-bearer-p* nil)
+                     (*anthropic-preferred-strict-sent-p* nil)
                      (request
                        (apply #'build-request
                               provider model transcript
@@ -1112,6 +1119,9 @@ string. Returns the buffer to store back. Per-delta
                              http-proxy)
                             :on-response
                             (lambda (status headers)
+                              (when (typep provider 'anthropic-provider)
+                                (note-anthropic-federation-response
+                                 status))
                               (when (typep provider 'bedrock-provider)
                                 (setf response-request-id
                                       (normalize-bedrock-diagnostic-value

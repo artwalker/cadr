@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=341 lines=149564 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=177 in-progress=0 done=159 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=341 lines=150191 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=177 in-progress=0 done=159 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -123,7 +123,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/oauth/openai-anthropic.lisp` | 304 | 13 | Exchange, refresh, and orchestrate the browser OAuth flows shared by OpenAI Codex and Anthropic. | pass | done | login-pkce-browser-oauth. I0: one PKCE+browser flow. | 20 |
 | `src/cadr-ai/oauth/page.lisp` | 149 | 6 | Render the branded OAuth callback success and error pages. | pass | done | oauth-callback-provider-key. I0: same display-name owner as callback. | 20 |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | 36 | Own OAuth metadata plus the SHA-256, Base64URL, PKCE, state, and authorization-URL primitives. | pass | no-rewrite | Hand-indexed SHA-256 at :165-195 is spec-locked 32-bit arithmetic; dep policy bars ironclad, so test-vector transcription is correct. | 20 |
-| `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | 1 | Project the Anthropic browser OAuth flow into the runtime callback contract. | pass | no-rewrite | 16-line adapter; closure wrappers at :7-16 are precisely the seam keeping the login flow decoupled. | 20 |
+| `src/cadr-ai/oauth/providers/anthropic.lisp` | 532 | 40 | Project Anthropic browser OAuth and workload-identity federation into the runtime auth contract. | pass · large | no-rewrite | Browser OAuth adapters stay thin; federation token cache, advisory refresh, and 401 invalidate follow the SDK wire contract in one owner. | 27 |
 | `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | 15 | Implement GitHub Copilot device login, token exchange, refresh, and model filtering. | pass | no-rewrite | RFC 8628 code lists at :117-118 are wire tokens; the single-owner fix belongs to oauth-poll-token defaults, not this file. | 20 |
 | `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | 6 | Implement Kimi Coding device login and credential refresh. | pass | no-rewrite | Poll vocabulary at :43-44 is wire constants; owner fix lives in oauth-poll-token (xai.lisp:91), not here. | 20 |
 | `src/cadr-ai/oauth/providers/meta.lisp` | 200 | 21 | Implement Meta Muse device login and the 24-hour Model API key mint. | pass | no-rewrite | Failure-message alist and mint status classes are the wire contract; polling reuses poll-device-authorization. | 27 |
@@ -141,7 +141,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/auth/radius-cloudflare.lisp` | 118 | 6 | Validate Radius configuration and materialize Radius/Cloudflare endpoints. | pass | done | +radius-oauth-client-id+ / scope. I0: one client identity. | 20 |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | 8 | Resolve Google Vertex credentials and exchange service-account access tokens. | pass | no-rewrite | string= dispatch on method ids at :31-53 is the baseline prompt-flow contract; injected probes and data-driven specs are Lisp-native. | 20 |
 | `src/cadr-ai/provider.lisp` | 1,163 | 79 | Define provider protocol classes plus common request, retry, history, stream, and error machinery. | pass · large | no-rewrite | append-content-block at :470-474 emulates push, but the list position IS the content-index contract; CLOS generics and constructor macro used elsewhere. | 20 |
-| `src/cadr-ai/providers/anthropic.lisp` | 778 | 20 | Implement Anthropic Messages request, response, cache, tool, and stream semantics. | pass · large | done | pop traversal. I0: no nth on prepared. | 20 |
+| `src/cadr-ai/providers/anthropic.lisp` | 889 | 24 | Implement Anthropic Messages request, response, cache, tool, and stream semantics. | pass · large | done | pop traversal. I0: no nth on prepared. Federation messages append oauth-2025-04-20. | 27 |
 | `src/cadr-ai/providers/google.lisp` | 442 | 20 | Implement Google Generative AI request, thinking, response, and stream semantics. | pass · large | done | google-gemini-3-model-p. I0: one tool-id sniff. | 20 |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | 12 | Adapt Azure, Copilot, and Cloudflare OpenAI-compatible endpoints and headers. | pass | done | &rest/apply build-request. I0: one keyword list. | 20 |
 | `src/cadr-ai/providers/bedrock.lisp` | 1,011 | 35 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | pass · large | done | bedrock-sigv4-headers. I0: one sigv4 bind. | 20 |
