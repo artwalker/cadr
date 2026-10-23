@@ -361,7 +361,13 @@ thread other than the one that created the stream does not return a short read."
             (sb-thread:condition-broadcast (spawn-connection-wait connection)))
           (error condition))))))
 
-(defun spawn-request-on-session (connection session op json &key payload on-event abort timeout)
+(defun spawn-kill (connection id session-id)
+  (let ((current (spawn-connection-session connection)))
+    (when (and current (spawn-session-live current)
+               (eql (spawn-session-id current) session-id))
+      (spawn-write-frame current (make-frame +cancel+ id (json-object "mode" "kill"))))))
+
+(defun spawn-request-on-session (connection session op json &key payload on-event abort timeout on-start)
   (unless (spawn-session-live session)
     (remote-lost "pi-env connection lost"))
   (let ((box (make-mailbox))
@@ -377,6 +383,8 @@ thread other than the one that created the stream does not return a short read."
     (sb-thread:with-mutex ((spawn-session-lock session))
       (setf (gethash id (spawn-session-pending session)) box))
     (spawn-write-frame session (make-frame +request+ id body (or payload #())))
+    (when on-start
+      (funcall on-start id (spawn-session-id session)))
     (when cancel-sent
       (spawn-write-frame session (make-frame +cancel+ id (empty-json))))
     (loop
@@ -398,17 +406,19 @@ thread other than the one that created the stream does not return a short read."
       (error (mailbox-failure box)))
     (values (car (mailbox-result box)) (cdr (mailbox-result box)))))
 
-(defun spawn-request (connection op json &key payload on-event abort session)
+(defun spawn-request (connection op json &key payload on-event abort session on-start)
   (if session
       (let ((current (spawn-connection-session connection)))
         (unless (and current (spawn-session-live current)
                      (eql (spawn-session-id current) session))
           (remote-lost "pi-env connection lost"))
         (spawn-request-on-session connection current op json
-                                  :payload payload :on-event on-event :abort abort))
+                                  :payload payload :on-event on-event :abort abort
+                                  :on-start on-start))
       (let ((current (spawn-connect connection)))
         (spawn-request-on-session connection current op json
-                                  :payload payload :on-event on-event :abort abort))))
+                                  :payload payload :on-event on-event :abort abort
+                                  :on-start on-start))))
 
 (defun spawn-info (connection)
   (spawn-session-info (spawn-connect connection)))

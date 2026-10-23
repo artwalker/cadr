@@ -55,7 +55,33 @@
    #:remote-list-files
    #:remote-open-binary-reader
    #:remote-reader-read
+   #:remote-reader-info
+   #:remote-reader-scan-lines
    #:remote-reader-close
+   #:remote-create-dir
+   #:remote-remove
+   #:remote-file-info
+   #:remote-list-dir
+   #:remote-open-dir-reader
+   #:remote-dir-next
+   #:remote-dir-close
+   #:remote-watch
+   #:remote-watcher-mode
+   #:remote-watcher-close
+   #:remote-rename-file
+   #:remote-exists
+   #:remote-cleanup
+   #:remote-read-text-lines
+   #:remote-open-text-line-reader
+   #:remote-line-read
+   #:remote-line-close
+   #:remote-truncate-file
+   #:remote-flush-file
+   #:remote-canonical-path
+   #:remote-absolute-path
+   #:remote-join-path
+   #:remote-create-temp-dir
+   #:remote-create-temp-file
    #:env-ok
    #:env-ok-p
    #:env-ok-value

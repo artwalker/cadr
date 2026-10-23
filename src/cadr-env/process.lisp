@@ -66,7 +66,8 @@
 (defun control-cancel (control kill)
   (if kill
       (setf (control-killed control) t)
-      (setf (control-aborted control) t)))
+      (setf (control-aborted control) t))
+  (sb-thread:barrier (:write)))
 
 (defun control-aborted-p (control)
   (sb-thread:barrier (:read))
@@ -326,7 +327,7 @@
                (aborted nil))
           (unwind-protect
                (loop
-                 (when (and control (control-killed control))
+                 (when (and control (progn (sb-thread:barrier (:read)) (control-killed control)))
                    (kill-group pid))
                  (when (and control (control-aborted control))
                    (setf aborted t)

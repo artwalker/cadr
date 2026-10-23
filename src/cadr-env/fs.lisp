@@ -161,7 +161,7 @@
     (empty-json)))
 
 (defun op-rename (request)
-  (let ((from (require-string request "from"))
+  (let ((from (require-string request "path"))
         (to (require-string request "to")))
     (call-posix "rename" from (lambda () (sb-posix:rename from to)) to)
     (empty-json)))
@@ -194,7 +194,13 @@
   (mkdir-one path))
 
 (defun op-mkdir (request)
-  (mkdir-recursive (require-string request "path"))
+  (let ((path (require-string request "path")))
+    (if (json-flag request "recursive" t)
+        (mkdir-recursive path)
+        (handler-case
+            (sb-posix:mkdir path #o777)
+          (sb-posix:syscall-error (condition)
+            (io-failure (sb-posix:syscall-errno condition) "mkdir" path)))))
   (empty-json))
 
 (defun remove-tree (path force)
@@ -246,7 +252,10 @@
     (char alphabet (random (length alphabet)))))
 
 (defun op-mkdtemp (request)
-  (let ((prefix (require-string request "prefix")))
+  (let ((prefix (or (json-string request "path")
+                    (json-string request "prefix"))))
+    (unless prefix
+      (env-failure "EINVAL" "missing field path"))
     (loop for attempt from 1 to 128
           do (let ((path (concatenate 'string prefix
                                       (with-output-to-string (stream)
@@ -309,23 +318,28 @@
                  "stat" (info-from-stat path stat))))
 
 (defun open-binary-handle (path handles nofollow)
-  (let ((stat (call-posix "lstat" path (lambda () (sb-posix:lstat path)))))
-    (when (and nofollow (= (logand (sb-posix:stat-mode stat) #o170000) #o120000))
-      (env-failure "SYMLINK" "Refusing to follow a symbolic link" :path path))
-    (let ((kind (logand (sb-posix:stat-mode stat) #o170000)))
-      (cond
-        ((= kind #o040000)
-         (env-failure "EISDIR"
-                      (format nil "EISDIR: illegal operation on a directory, open '~A'" path)
-                      :syscall "open" :path path))
-        ((/= kind #o100000)
-         (env-failure "NOT_REGULAR" "not a regular file" :path path))))
-    (let ((fd (call-posix "open" path
-                          (lambda ()
-                            (sb-posix:open path
-                                           (logior sb-posix:o-rdonly sb-posix:o-nonblock)
-                                           0)))))
-      (json-object "handle" (register-handle handles :binary fd path)))))
+  (let* ((flags (logior sb-posix:o-rdonly sb-posix:o-nonblock
+                        (if nofollow sb-posix:o-nofollow 0)))
+         (fd (handler-case (sb-posix:open path flags 0)
+               (sb-posix:syscall-error (condition)
+                 (let ((errno (sb-posix:syscall-errno condition)))
+                   (if (and nofollow (or (eql errno sb-posix:eloop)
+                                         (eql errno sb-posix:emlink)))
+                       (env-failure "SYMLINK" "Refusing to follow a symbolic link" :path path)
+                       (io-failure errno "open" path))))))
+         (stat (handler-case (sb-posix:fstat fd)
+                 (sb-posix:syscall-error (condition)
+                   (sb-posix:close fd)
+                   (io-failure (sb-posix:syscall-errno condition) "fstat" path))))
+         (kind (logand (sb-posix:stat-mode stat) #o170000)))
+    (cond
+      ((= kind #o040000)
+       (sb-posix:close fd)
+       (env-failure "EISDIR" "EISDIR: illegal operation on a directory, read" :path path))
+      ((/= kind #o100000)
+       (sb-posix:close fd)
+       (env-failure "NOT_REGULAR" "not a regular file" :path path)))
+    (json-object "handle" (register-handle handles :binary fd path))))
 
 (defun op-open (request handles)
   (let ((path (require-string request "path"))
@@ -344,12 +358,13 @@
       (sb-posix:syscall-error (condition)
         (io-failure (sb-posix:syscall-errno condition) "read" "")))))
 
-(defun pread-fd (fd offset count)
+(defun pread-fd (fd offset count path)
   (let ((buffer (make-array count :element-type '(unsigned-byte 8))))
-    (let ((read (%pread fd (sb-sys:vector-sap buffer) count offset)))
-      (when (< read 0)
-        (env-failure "EIO" "pread failed"))
-      (subseq buffer 0 read))))
+    (sb-sys:with-pinned-objects (buffer)
+      (let ((read (%pread fd (sb-sys:vector-sap buffer) count offset)))
+        (when (< read 0)
+          (io-failure (sb-alien:get-errno) "read" path))
+        (subseq buffer 0 read)))))
 
 (defun op-pread (request handles)
   (let* ((handle (lookup-handle handles (require-u64 request "handle")))
@@ -359,7 +374,7 @@
     (unless fd (env-failure "EBADF" "EBADF: bad file descriptor"))
     (values (empty-json)
             (if (and (integerp offset) (>= offset 0))
-                (pread-fd fd offset length)
+                (pread-fd fd offset length (file-handle-path handle))
                 (read-fd fd length)))))
 
 (defun op-fstat (request handles)
@@ -378,14 +393,16 @@
     (when (and end (<= end start))
       (env-failure "EINVAL" "Invalid line range"))
     (unless fd (env-failure "EBADF" "EBADF: bad file descriptor"))
-    (let ((scanner (make-line-scan start end)))
+    (let ((scanner (make-line-scan start end))
+          (position 0))
       (loop
         (when (and aborted (funcall aborted))
           (env-failure "aborted" "aborted"))
-        (let ((chunk (read-fd fd +scan-chunk+)))
+        (let ((chunk (pread-fd fd position +scan-chunk+ (file-handle-path handle))))
           (when (zerop (length chunk))
             (return (line-scan-finish scanner)))
-          (line-scan-push scanner chunk))))))
+          (line-scan-push scanner chunk)
+          (incf position (length chunk)))))))
 
 (defun op-opendir (request handles)
   (let* ((path (require-string request "path"))
