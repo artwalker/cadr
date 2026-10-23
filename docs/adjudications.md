@@ -2207,3 +2207,40 @@ The gray `Working` status rule is canonicalized in
 - **Acceptance:** the third acceptance checks that mapping case by case.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-41. The status
   cell keeps the previous blocked text after the new open prefix.
+
+## 2026-10-23 — Condition S; GAP-18 and GAP-35 reopen; GAP-42 splits
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  The shared third-repair condition is 条件 S, quoted in full below.
+  GAP-18 and GAP-35 are open for a third repair under 条件 S. GAP-42
+  is split into GAP-42a and GAP-42b. A third acceptance that fails
+  writes the status `blocked` and hands that row to the advisor.
+
+- **条件 S（全文）:** 通用第三次返修条件（以下记作"条件 S"）：返修先用 `git show v1.4.0:<path>` 列出这一行涉及的上游测试文件和每一个 test/it 用例（以及文档里写明的行为），在 docs/reviews/goal27-surface/<GAP 编号>.md 里逐条对应到 cadr 的 FiveAM 测试（已覆盖 / 新增 / 范围外及理由），断言对着上游锁死；已记录的全部 review-fail 问题修完。第三次验收逐条核对这张对应表；第三次验收不通过直接 blocked 交顾问。
+
+- **GAP-18 and GAP-35:** each row is open for a third repair under
+  条件 S. The status cell keeps the previous blocked text after the new
+  open prefix.
+
+- **GAP-42 split:** SSH deployment is an independent upstream piece
+  (`packages/env/src/ssh.ts`, `packages/env/src/remote-env.ts`, and the
+  three tests `packages/env/test/ssh.test.ts`, `remote.test.ts`, and
+  `ssh-external.test.ts`). That piece is inside the alignment scope.
+  GAP-42a is the daemon and the local environment, implemented in Lisp.
+  GAP-42b is SSH deployment and the remote environment. GAP-42b depends
+  only on the system `ssh` executable and does not add a new native
+  library. External tests that need a real remote use a local sshd, or
+  are marked out of scope with a written reason. The parent GAP-42 row
+  keeps the previous blocked text after the split prefix. GAP-42a must
+  finish every review-fail already recorded on that parent row.
+
+- **Already reopened:** the third repair already recorded for GAP-41
+  is 条件 S. The third repairs of GAP-20 and GAP-43 also apply the
+  mapping-table requirement in 条件 S
+  (`docs/reviews/goal27-surface/<GAP 编号>.md`, each upstream test case
+  marked covered, newly added, or out of scope with a reason, assertions
+  locked to upstream).
+
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-18, GAP-35,
+  GAP-42, GAP-42a, and GAP-42b. The status cells keep the previous
+  blocked text after the new prefix.
