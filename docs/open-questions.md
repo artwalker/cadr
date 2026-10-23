@@ -314,6 +314,13 @@ Adjudicated and implemented:
   with the note describing it truthfully). Once upstream fixes that regression,
   I05 is retired and the 14 keys return to verbatim alignment. The disposition
   record is in `docs/proposals/goal18-auth-cancel-regression.md`.
+  Revised 2026-10-24 by GAP-82 (user 2026-10-23: align to pi v1.4.0).
+  Aborting an in-flight login now shows
+  `Error: Failed to login to <provider>: This operation was aborted`
+  (API key: `Failed to save API key for`). The exact message
+  `Login cancelled` without an abort stays off the screen. No auth
+  checkpoint still cites I05. The class text remains in
+  `test/fixtures/render-diff/dispositions.json` and is unused.
 
 - `OQ-G15-I02-FATAL-REDACTION`: on 2026-08-04 it was confirmed that the crash
   redaction mechanism implemented in Goal 13 is retained. The fixed baseline

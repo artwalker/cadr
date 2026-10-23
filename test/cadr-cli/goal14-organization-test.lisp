@@ -702,7 +702,9 @@
     ;; +1 GAP-65: extension-custom-ui-overlay-placement
     ;; (interactive/extension-ui.lisp) builds the overlay layer after
     ;; the dock suffix, so a visible layer does not zero the pin.
-    (is (= 455 definition-count)
+    ;; +2 GAP-82: login-dialog-failure-text and
+    ;; tui-command-notice-message (interactive/controller.lisp).
+    (is (= 457 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

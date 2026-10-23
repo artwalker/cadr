@@ -159,6 +159,105 @@
        (push message notices)))
     (is (equal '("OAuth state mismatch") notices))))
 
+(test goal27-login-abort-notice-matches-v140-show-login-dialog
+  ;; v1.4.0 interactive-mode.ts showLoginDialog / showApiKeyLoginDialog.
+  ;; AbortSignal.reason is "This operation was aborted". Exact
+  ;; "Login cancelled" stays silent. Any other message is prefixed.
+  (let ((cancelled
+          (make-condition 'cadr-ai:authentication-cancelled
+                          :message "Login cancelled")))
+    (is (null
+         (cadr-cli::tui-command-notice-message cancelled)))
+    (is (string=
+         "This operation was aborted"
+         (cadr-cli::tui-command-notice-message
+          cancelled
+          :login-aborted-p (constantly t))))
+    (is (null
+         (cadr-cli::login-dialog-failure-text
+          "Render Auth" "Login cancelled")))
+    (dolist (name '("Render Auth" "Render Device" "Render Loopback"))
+      (is (string=
+           (format nil "Failed to login to ~A: This operation was aborted"
+                   name)
+           (cadr-cli::login-dialog-failure-text
+            name "This operation was aborted"))))
+    (is (string=
+         "Failed to save API key for Render Auth: This operation was aborted"
+         (cadr-cli::login-dialog-failure-text
+          "Render Auth" "This operation was aborted"
+          :api-key-p t)))
+    (is (string=
+         "Failed to login to Render Auth: OAuth state mismatch"
+         (cadr-cli::login-dialog-failure-text
+          "Render Auth" "OAuth state mismatch")))
+    (is (string=
+         "OAuth state mismatch"
+         (cadr-cli::tui-command-notice-message
+          (make-condition 'cadr-ai:authentication-error
+                          :message "OAuth state mismatch"))))))
+
+(defun goal27-login-option (id name auth-type)
+  (cadr-cli::make-oauth-selector-option
+   :id id
+   :name name
+   :auth-type auth-type
+   :method-name name))
+
+(defun goal27-run-cancelled-login
+    (provider-id provider-name auth-type expected)
+  (let ((aborted-p nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 100 :rows 32
+      :inputs
+      (list
+       (footer-sync-submit-input
+        (format nil "/login ~(~A~)" provider-id))
+       (footer-sync-submit-input "")
+       (footer-sync-wait-for-screen-text
+        (if (eq auth-type :api-key)
+            "Enter API key"
+            (format nil "Login to ~A" provider-name)))
+       (string #\Escape)
+       (footer-sync-wait-for-screen-text expected)
+       (footer-sync-submit-input "/quit")))
+     :login-options-function
+     (lambda ()
+       (list
+        (goal27-login-option
+         provider-id provider-name auth-type)))
+     :abort-function
+     (lambda ()
+       (setf aborted-p t))
+     :command-function
+     (lambda (line)
+       (when (search "/login" line)
+         (loop until aborted-p
+               do (sleep 0.01))
+         (error 'cadr-ai:authentication-cancelled
+                :message "Login cancelled"))
+       (values t nil)))))
+
+(test goal27-aborted-login-dialog-shows-the-v140-error-line
+  (dolist
+      (spec
+       '((:render-auth "Render Auth" :oauth
+          "Error: Failed to login to Render Auth: This operation was aborted")
+         (:render-device "Render Device" :oauth
+          "Error: Failed to login to Render Device: This operation was aborted")
+         (:render-loopback "Render Loopback" :oauth
+          "Error: Failed to login to Render Loopback: This operation was aborted")
+         (:render-auth "Render Auth" :api-key
+          "Error: Failed to save API key for Render Auth: This operation was aborted")))
+    (destructuring-bind (id name auth-type expected) spec
+      (goal27-run-cancelled-login id name auth-type expected)
+      (is (search "This operation was aborted" expected)))))
+
 (test goal13-login-provider-list-preserves-baseline-provider-and-method-names
   (dolist
       (expected

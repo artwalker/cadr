@@ -86,15 +86,48 @@ interactive-mode.ts:5956-5960).")
   #-sbcl
   *standard-output*)
 
+(defun login-dialog-failure-text
+    (provider-name message &key api-key-p)
+  ;; v1.4.0 showLoginDialog / showApiKeyLoginDialog. The exact message
+  ;; "Login cancelled" goes to onBack and stays off the screen. Every
+  ;; other message is the red error line.
+  (unless (string= message "Login cancelled")
+    (format nil "~A ~A: ~A"
+            (if api-key-p
+                "Failed to save API key for"
+                "Failed to login to")
+            provider-name
+            message)))
+
+(defun tui-command-notice-message
+    (condition &key login-aborted-p)
+  ;; v1.4.0 raceWithAbortSignal. abort() with no reason sets
+  ;; AbortSignal.reason to a DOMException whose message is
+  ;; "This operation was aborted", and that rejection wins over a
+  ;; later "Login cancelled" from the abandoned login.
+  (if (typep condition 'cadr-ai:authentication-cancelled)
+      (let ((message (cadr-ai:cadr-error-message condition)))
+        (cond
+          ((and login-aborted-p
+                (funcall login-aborted-p)
+                (string= message "Login cancelled"))
+           "This operation was aborted")
+          ((string= message "Login cancelled")
+           nil)
+          (t message)))
+      (princ-to-string condition)))
+
 (defun call-with-tui-command-error-notice
-    (function notice-function)
+    (function notice-function &key login-aborted-p)
   (handler-case
       (funcall function)
-    (cadr-ai:authentication-cancelled () nil)
     (error (condition)
-      (funcall
-       notice-function
-       (format nil "~A" condition)))))
+      (let ((message
+              (tui-command-notice-message
+               condition
+               :login-aborted-p login-aborted-p)))
+        (when message
+          (funcall notice-function message))))))
 
 (defun call-with-sigcont-handler
     (handler thunk)
@@ -523,6 +556,8 @@ interactive-mode.ts:5956-5960).")
          (login-provider-auth-type nil)
          (busy-p nil)
          (abort-requested-p nil)
+         (login-failure-name nil)
+         (login-failure-api-key-p nil)
          (done-p nil)
          (last-clear-at nil)
          (worker nil)
@@ -1888,7 +1923,11 @@ interactive-mode.ts:5956-5960).")
          (start-work (line)
            (unless busy-p
              (let ((live-bash-entry nil)
-                   (work-kind nil))
+                   (work-kind nil)
+                   (failure-name login-failure-name)
+                   (failure-api-key-p login-failure-api-key-p))
+               (setf login-failure-name nil
+                     login-failure-api-key-p nil)
                (setf abort-requested-p nil)
                (when reset-abort-function
                  (funcall reset-abort-function))
@@ -1965,7 +2004,17 @@ interactive-mode.ts:5956-5960).")
                                (stringp result)
                                (plusp (length result)))
                               (notice result)))))
-                           #'show-error))
+                         (lambda (message)
+                           (let ((text
+                                   (if failure-name
+                                       (login-dialog-failure-text
+                                        failure-name message
+                                        :api-key-p failure-api-key-p)
+                                       message)))
+                             (when text
+                               (show-error text))))
+                         :login-aborted-p
+                         (lambda () abort-requested-p)))
                      (sb-thread:with-mutex (lock)
                        (when
                            (and live-bash-entry
@@ -2141,7 +2190,10 @@ interactive-mode.ts:5956-5960).")
               (setf overlay-kind :login-dialog
                     overlay
                     (make-login-dialog-state
-                     (oauth-selector-option-name option)))
+                     (oauth-selector-option-name option))
+                    login-failure-name
+                    (oauth-selector-option-name option)
+                    login-failure-api-key-p nil)
               (set-program-status-blocked
                "login"
                (list
@@ -2165,7 +2217,10 @@ interactive-mode.ts:5956-5960).")
               (setf overlay-kind :login-dialog
                     overlay
                     (make-login-dialog-state
-                     (oauth-selector-option-name option)))
+                     (oauth-selector-option-name option))
+                    login-failure-name
+                    (oauth-selector-option-name option)
+                    login-failure-api-key-p t)
               (set-program-status-blocked
                "login"
                (list
@@ -3019,6 +3074,7 @@ interactive-mode.ts:5956-5960).")
               (accept-selection value :persist t))
              (:cancel
               (let ((cancelled-kind overlay-kind)
+                     (cancelled-overlay overlay)
                      (return-to-login-method-p
                       (and
                        (eq overlay-kind :login-provider)
@@ -3056,6 +3112,18 @@ interactive-mode.ts:5956-5960).")
                   ((eq cancelled-kind
                        :import-confirmation)
                    (status "Import cancelled"))
+                  ((eq cancelled-kind :api-key-input)
+                   ;; v1.4.0 showApiKeyLoginDialog. Escape aborts the
+                   ;; in-flight API-key login, so the dialog error is the
+                   ;; AbortSignal reason, not "Login cancelled".
+                   (show-error
+                    (login-dialog-failure-text
+                     (oauth-selector-option-name
+                      (api-key-input-state-option
+                       cancelled-overlay))
+                     "This operation was aborted"
+                     :api-key-p t))
+                   (request-render))
                   (t
                    (request-render)))))
              (:load-all
