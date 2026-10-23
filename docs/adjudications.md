@@ -2300,3 +2300,29 @@ The gray `Working` status rule is canonicalized in
   6. 已列出的 review-fail 五条若尚未全部修完，一并修完。另外：状态格提到"官方冷启动脚本要等的 `cadr v` 在有无 AOT 的镜像里都不出现"，冷启动门禁必须能真实跑通；查清是脚本等的启动串在 Goal 27 期间变了，还是别的原因，修好让门禁对着真实启动帧计时，并记录有无 AOT 两个镜像的冷启动数字。
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. The status
   cell is open. The previous blocked text stays after the new prefix.
+
+## 2026-10-23 — GAP-43 splits into telemetry outside durable and durable telemetry
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-43's third acceptance failed. Split the row. GAP-43a is telemetry
+  for ai, agent, and coding-agent. GAP-43b is durable telemetry. The
+  parent GAP-43 row keeps the previous blocked text after the split
+  prefix.
+- **Why:** every failure named in that acceptance is in the durable
+  package. When the host passes a span, durable does not emit
+  telemetry. The exported schema does not match upstream
+  `DURABLE_TELEMETRY_SCHEMA` field for field. That acceptance raised no
+  defect in ai, agent, or coding-agent telemetry. Durable telemetry
+  hangs on the durable harness, and GAP-41 is in its third repair.
+  Leaving both on one row blocks each of them.
+- **GAP-43a:** the implementation stays the commits from GAP-43's third
+  repair. The status is done, pending an independent re-review that
+  checks the upstream telemetry tests for ai, agent, and coding-agent
+  against the mapping table required by 条件 S.
+- **GAP-43b:** open under 条件 S. Finish the two durable defects
+  recorded on the parent row: harness and submit take telemetry, and
+  the schema matches `DURABLE_TELEMETRY_SCHEMA` field for field. Do
+  this after GAP-41.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-43, GAP-43a, and
+  GAP-43b. The parent status cell keeps the previous blocked text after
+  the split prefix.
