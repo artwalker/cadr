@@ -1,0 +1,10 @@
+(
+(:module nil "AGFzbQEAAAABGgRgAX4BfmABfgJ+fmACfn4Dfn5+YAJ+fgF+AwkIAAAAAAABAgAHSwYHZmFjLXJlYwAADWZhYy1yZWMtbmFtZWQAAQhmYWMtaXRlcgACDmZhYy1pdGVyLW5hbWVkAAMHZmFjLW9wdAAEB2ZhYy1zc2EABwrrAQgXACAAQgBRBH5CAQUgACAAQgF9EAB+CwsXACAAQgBRBH5CAQUgACAAQgF9EAF+CwsvAQJ+IAAhAUIBIQICQANAIAFCAFEEQAwCBSABIAJ+IQIgAUIBfSEBCwwACwsgAgsvAQJ+IAAhAUIBIQICQANAIAFCAFEEQAwCBSABIAJ+IQIgAUIBfSEBCwwACwsgAgssAQF+QgEhAQJAIABCAlMNAANAIAEgAH4hASAAQn98IQAgAEIBVQ0ACwsgAQsGACAAIAALCAAgACABIAALHABCASAAAwMQBhAGfhAGQgF9EAVCAFYNABoPCws=")
+(:assert-return (:invoke nil "fac-rec" (:i64 25)) ((:i64 7034535277573963776)))
+(:assert-return (:invoke nil "fac-iter" (:i64 25)) ((:i64 7034535277573963776)))
+(:assert-return (:invoke nil "fac-rec-named" (:i64 25)) ((:i64 7034535277573963776)))
+(:assert-return (:invoke nil "fac-iter-named" (:i64 25)) ((:i64 7034535277573963776)))
+(:assert-return (:invoke nil "fac-opt" (:i64 25)) ((:i64 7034535277573963776)))
+(:assert-return (:invoke nil "fac-ssa" (:i64 25)) ((:i64 7034535277573963776)))
+(:assert-exhaustion (:invoke nil "fac-rec" (:i64 1073741824)) "call stack exhausted")
+)

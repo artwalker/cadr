@@ -62,6 +62,8 @@ Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
 above are unchanged. Measured 2026-10-23: 210 listed files
 (`rg -c '^\|[^|]*\| \x60test/.*\.(lisp|py)\x60 \|$' docs/test-matrix.md`).
+`cadr-wasm/tests` is a tenth system and is not in the `GOAL20_TEST_CHECKS`
+nine-system denominator.
 
 ### cadr-core
 
@@ -298,6 +300,14 @@ above are unchanged. Measured 2026-10-23: 210 listed files
 | pi harness | `test/cadr-evals/pi-harness-test.lisp` |
 | reporter | `test/cadr-evals/reporter-test.lisp` |
 | summary | `test/cadr-evals/summary-test.lisp` |
+
+### cadr-wasm (not one of the nine FiveAM systems)
+
+| Theme | File |
+|---|---|
+| runtime | `test/cadr-wasm/runtime-test.lisp` |
+| spec suite | `test/cadr-wasm/spec.lisp` |
+| support (package) | `test/cadr-wasm/package.lisp` |
 
 ### Live runner (not one of the nine FiveAM systems)
 

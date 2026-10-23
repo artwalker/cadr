@@ -1,0 +1,10 @@
+(
+(:module nil "AGFzbQEAAAABEQRgAABgAAF/YAABfWABfwF/AwcGAAEBAgMBBQQBAQEBB2sGD3plcm9fZXZlcnl0aGluZwAAEnRlc3Rfc3RvcmVfdG9fbG9hZAABE3Rlc3RfcmVkdW5kYW50X2xvYWQAAg90ZXN0X2RlYWRfc3RvcmUAAwZtYWxsb2MABA9tYWxsb2NfYWxpYXNpbmcABQqlAQYeAEEAQQA2AgBBBEEANgIAQQhBADYCAEEMQQA2AgALGABBCEEANgIAQQVDAAAAgDgCAEEIKAIACyIBAn9BCCgCACEAQQVBgICAgHg2AgBBCCgCACEBIAAgAWoLHwEBfUEIQaPGjJkCNgIAQQsqAgAhAEEIQQA2AgAgAAsEAEEQCyMBAn9BBBAEIQBBBBAEIQEgAEEqNgIAIAFBKzYCACAAKAIACw==")
+(:assert-return (:invoke nil "test_store_to_load" ) ((:i32 128)))
+(:action (:invoke nil "zero_everything" ))
+(:assert-return (:invoke nil "test_redundant_load" ) ((:i32 128)))
+(:action (:invoke nil "zero_everything" ))
+(:assert-return (:invoke nil "test_dead_store" ) ((:f32 35)))
+(:action (:invoke nil "zero_everything" ))
+(:assert-return (:invoke nil "malloc_aliasing" ) ((:i32 43)))
+)

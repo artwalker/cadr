@@ -1,0 +1,10 @@
+(
+(:module nil "AGFzbQEAAAA=")
+(:module nil "AGFzbQEAAAA=")
+(:module nil "AGFzbQEAAAA=")
+(:module nil "AGFzbQEAAAA=")
+(:module nil "AGFzbQEAAAABBQFgAAF/AwQDAAAABxADAmYxAAACZjIAAQJmMwACChkDBwBBAUECDwsHAEEBQQIPCwcAQQFBAg8L")
+(:assert-return (:invoke nil "f1" ) ((:i32 2)))
+(:assert-return (:invoke nil "f2" ) ((:i32 2)))
+(:assert-return (:invoke nil "f3" ) ((:i32 2)))
+)
