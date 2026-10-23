@@ -398,6 +398,22 @@
                       :test #'string=))
             (registry-tools (agent-tool-registry agent)))
            pending))
+    ;; pi@4a080252f buildSystemPromptSections puts the custom prompt and
+    ;; the <cwd> section on the first system message. A session that
+    ;; already installed that message keeps it. Otherwise the tool
+    ;; declaration inserted above has empty content, and faux estimates
+    ;; only the tool JSON.
+    (unless (find-if #'cadr-ai:system-message-p
+                     (agent-messages agent))
+      (let ((prompt (current-agent-system-prompt agent))
+            (head (find-if #'cadr-ai:system-message-p pending)))
+        (when (and head
+                   (null (cadr-ai:system-message-sections head))
+                   (stringp (cadr-ai:system-message-content head))
+                   (zerop (length (cadr-ai:system-message-content head)))
+                   (stringp prompt)
+                   (plusp (length prompt)))
+          (setf (cadr-ai:system-message-content head) prompt))))
     (when pending
       (let ((session (agent-session agent)))
         (setf (agent-prompt-insert-index agent)

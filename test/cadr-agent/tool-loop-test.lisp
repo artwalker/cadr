@@ -1969,3 +1969,52 @@
                     (cadr-ai:tool-result-message-usage got))))))
       (uiop:delete-directory-tree
        directory :validate t :if-does-not-exist :ignore))))
+
+(test first-turn-system-message-carries-the-prompt-into-faux-usage
+  ;; pi@4a080252f estimateTokens on the render-diff shape: the first
+  ;; system message is the custom prompt (including the <cwd> section)
+  ;; plus tool+: JSON. Node length 302, ceil(/4) = 76, output 6.
+  ;; An empty tool-only message is 57.
+  (let* ((handle (cadr-ai:make-faux-provider))
+         (prompt
+           (format nil "Render differential fixed system prompt.~%~%<cwd>~%/tmp/pi00/workspace~%</cwd>"))
+         (tool
+           (cadr-ai:make-tool
+            :name "read"
+            :description "Read file"
+            :parameters
+            (cadr-ai::json-object
+             "type" "object"
+             "properties"
+             (cadr-ai::json-object
+              "path" (cadr-ai::json-object "type" "string"))
+             "required" (cadr-ai::json-array "path"))
+            :constrained-sampling
+            '(:type :json-schema :strict :prefer)
+            :executor (lambda (&rest args) (declare (ignore args)) nil)))
+         (agent
+           (make-agent
+            :provider :faux
+            :model (cadr-ai:faux-get-model handle)
+            :system-prompt prompt
+            :tools (list tool)
+            :stream-function
+            (lambda (provider model context on-event &rest options)
+              (declare (ignore provider))
+              (apply #'cadr-ai:faux-stream
+                     handle model context on-event options)))))
+    (cadr-ai:faux-set-responses
+     handle
+     (list (cadr-ai:faux-assistant-message "Fixed plain response.")))
+    (agent-prompt agent "plain prompt")
+    (let ((wire (find-if #'cadr-ai:system-message-p
+                         (agent-messages agent))))
+      (is (string= prompt (cadr-ai:system-message-content wire))))
+    (let ((usage
+            (cadr-ai:assistant-message-usage
+             (find-if #'cadr-ai::assistant-message-p
+                      (agent-messages agent)))))
+      (is (= 76 (cadr-ai:usage-input usage)))
+      (is (= 6 (cadr-ai:usage-output usage)))
+      (is (= 0 (cadr-ai:usage-cache-read usage)))
+      (is (= 0 (cadr-ai:usage-cache-write usage))))))

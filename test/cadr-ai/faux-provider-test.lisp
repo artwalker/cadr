@@ -607,3 +607,57 @@
         (is (= 1 (cadr-ai:usage-output (gap66-usage uncached))))
         (is (= 0 (cadr-ai:usage-cache-read (gap66-usage uncached))))
         (is (= 0 (cadr-ai:usage-cache-write (gap66-usage uncached))))))))
+
+(test faux-provider-counts-prompt-text-and-constrained-sampling
+  ;; node, pi-ai 1.4.0 toToolDeclaration JSON plus
+  ;; getSystemMessageText of the render-diff prompt
+  ;; (preamble, blank line, <cwd> section) and user "plain prompt":
+  ;; prompt length 302, ceil(302/4) = 76. Output is
+  ;; ceil("Fixed plain response.".length/4) = 6. Same session and
+  ;; cacheRetention short writes the whole prompt on the first call.
+  ;; Empty content is 57; the prompt without constrainedSampling is 60.
+  (let* ((handle (cadr-ai:make-faux-provider))
+         (tool
+           (cadr-ai:make-tool
+            :name "read"
+            :description "Read file"
+            :parameters
+            (cadr-ai::json-object
+             "type" "object"
+             "properties"
+             (cadr-ai::json-object
+              "path" (cadr-ai::json-object "type" "string"))
+             "required" (cadr-ai::json-array "path"))
+            :constrained-sampling
+            '(:type :json-schema :strict :prefer)))
+         (prompt
+           (format nil "Render differential fixed system prompt.~%~%<cwd>~%/tmp/pi00/workspace~%</cwd>"))
+         (context
+           (cadr-ai:make-context
+            :messages
+            (list
+             (cadr-ai:make-system-message
+              :content prompt
+              :tools-added (list tool)
+              :timestamp 1)
+             (cadr-ai:make-user-message
+              :content "plain prompt" :timestamp 2)))))
+    (cadr-ai:faux-set-responses
+     handle
+     (list (cadr-ai:faux-assistant-message "Fixed plain response.")))
+    (let* ((message
+             (cadr-ai:faux-complete
+              handle (cadr-ai:faux-get-model handle) context
+              :session-id "render-diff"
+              :cache-retention :short))
+           (usage (cadr-ai:assistant-message-usage message))
+           (encoded
+             (cadr-ai::stringify-json
+              (cadr-ai::faux-tool-json-object tool))))
+      (is (search "\"constrainedSampling\":{" encoded))
+      (is (search "\"type\":\"json_schema\"" encoded))
+      (is (search "\"strict\":\"prefer\"" encoded))
+      (is (= 76 (cadr-ai:usage-input usage)))
+      (is (= 6 (cadr-ai:usage-output usage)))
+      (is (= 0 (cadr-ai:usage-cache-read usage)))
+      (is (= 76 (cadr-ai:usage-cache-write usage))))))

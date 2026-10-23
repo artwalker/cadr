@@ -1049,13 +1049,22 @@
      (multiple-value-bind (description parameters)
          (render-baseline-tool-contract
           (cadr-ai:tool-name tool))
-       (cadr-ai:make-tool
-        :name (cadr-ai:tool-name tool)
-        :description description
-        :parameters parameters
-        :execution-mode
-        (cadr-ai::tool-execution-mode tool)
-        :executor (cadr-ai::tool-executor tool))))
+       (let ((rebuilt
+               (cadr-ai:make-tool
+                :name (cadr-ai:tool-name tool)
+                :description description
+                :parameters parameters
+                :execution-mode
+                (cadr-ai::tool-execution-mode tool)
+                :executor (cadr-ai::tool-executor tool))))
+         ;; v1.4.0 read/bash/edit/write hardcode constrainedSampling.
+         ;; JSON.stringify of that field is part of the faux prompt.
+         (when (member (cadr-ai:tool-name rebuilt)
+                       '("read" "bash" "edit" "write")
+                       :test #'string=)
+           (setf (cadr-ai:tool-constrained-sampling rebuilt)
+                 '(:type :json-schema :strict :prefer)))
+         rebuilt)))
    (append
     (cadr-cli::make-baseline-coding-tools cwd)
     (list
@@ -1488,9 +1497,11 @@ render loopback login received
               :provider :faux
               :model (cadr-ai:faux-get-model handle)
               :system-prompt
+              ;; v1.4.0 getSystemMessageText of the render driver prompt:
+              ;; custom preamble, then the <cwd> section, no extra line.
               (format
                nil
-               "Render differential fixed system prompt.~%Current working directory: ~A~%"
+               "Render differential fixed system prompt.~%~%<cwd>~%~A~%</cwd>"
                (render-baseline-cwd cwd))
               :tools tools
               :session session

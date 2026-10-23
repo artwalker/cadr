@@ -107,15 +107,8 @@
                 :initial-value 0))))
 
 (defun declared-tool-json (tool)
-  (let ((object
-          (cadr-ai::json-object
-           "description" (cadr-ai:tool-description tool)
-           "name" (cadr-ai:tool-name tool)
-           "parameters" (cadr-ai:tool-parameters tool))))
-    (when (cadr-ai:tool-constrained-sampling tool)
-      (setf (gethash "constrainedSampling" object)
-            (cadr-ai:tool-constrained-sampling tool)))
-    object))
+  ;; Same JSON as v1.4.0 toToolDeclaration, including constrainedSampling.
+  (cadr-ai::faux-tool-json-object tool))
 
 (defun declared-tools-estimated-tokens (tools)
   (if (null tools)

@@ -127,20 +127,36 @@ current tools. The structured section trail stays in the transcript."
       (collapse-system-messages context)))
 
 (defun %tool-declaration-json (tool)
-  (let ((object
-          (json-object
-           "name" (tool-name tool)
-           "description" (tool-description tool)
-           "parameters" (copy-json-value (tool-parameters tool))))
-        (cs (tool-constrained-sampling tool)))
-    (cond
-      ((null cs) object)
-      ((eq cs :false)
-       (json-put object "constrainedSampling" nil)
-       object)
-      (t
-       (json-put object "constrainedSampling" (copy-tree cs))
-       object))))
+  ;; v1.4.0 toToolDeclaration. constrainedSampling is a plist such as
+  ;; (:type :json-schema :strict :prefer); JSON.stringify writes
+  ;; {"type":"json_schema","strict":"prefer"}.
+  (labels ((json-name (value)
+             (substitute #\_ #\-
+                         (string-downcase (symbol-name value))))
+           (as-json (value)
+             (cond
+               ((and (consp value) (keywordp (car value)))
+                (let ((nested (json-object)))
+                  (loop for (key item) on value by #'cddr
+                        do (setf (gethash (json-name key) nested)
+                                 (as-json item)))
+                  nested))
+               ((keywordp value) (json-name value))
+               (t value))))
+    (let ((object
+            (json-object
+             "name" (tool-name tool)
+             "description" (tool-description tool)
+             "parameters" (copy-json-value (tool-parameters tool))))
+          (cs (tool-constrained-sampling tool)))
+      (cond
+        ((null cs) object)
+        ((eq cs :false)
+         (json-put object "constrainedSampling" nil)
+         object)
+        (t
+         (json-put object "constrainedSampling" (as-json cs))
+         object)))))
 
 (defun to-tool-declaration (tool)
   (make-tool

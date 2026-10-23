@@ -264,15 +264,8 @@
     (t "")))
 
 (defun faux-tool-json-object (tool)
-  (let ((object
-          (json-object
-           "description" (tool-description tool)
-           "name" (tool-name tool)
-           "parameters" (tool-parameters tool))))
-    (when (tool-constrained-sampling tool)
-      (setf (gethash "constrainedSampling" object)
-            (tool-constrained-sampling tool)))
-    object))
+  ;; v1.4.0 toToolDeclaration JSON, including constrainedSampling.
+  (%tool-declaration-json tool))
 
 (defun faux-system-line (message)
   (let ((parts nil)
