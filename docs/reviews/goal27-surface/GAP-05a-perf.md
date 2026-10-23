@@ -91,3 +91,45 @@ cadr 的 JSON 脚本用 `var`，Node 用 `const`。两边结果都是 1048578。
 | 不含 cadr-wasm | 23015056 | 477882、429179、422526 |
 
 差值 3347168 字节。两边都在 425–478ms，750ms 以内。AOT 没有把冷启动拉过线。
+
+## 5''''' 这一轮
+
+五处改动一次落在翻译器里，然后整份 quickjs wasm 重做了一次 AOT。没有按项各编一份镜像，所以下面的 quickjs 数字是合并后的，对照是上面那一节。
+
+翻译器现在的热路径：
+
+- 进入 `invoke` 时屏蔽一次浮点陷阱。生成的函数体里没有逐条 `with-float-traps-masked`。
+- f32/f64 的局部变量、操作数栈和全局用 `single-float` / `double-float`。加减乘除和比较在类型化的值上内联，NaN 仍收成规范 NaN。位型转换只在函数边界、load/store 和 reinterpret，用 `sb-kernel:make-double-float` 和高低位读取。
+- 线性内存在函数入口取进一个 `(simple-array (unsigned-byte 8) (*))` 局部变量，`memory.grow` 和调用之后再取。没有用 sap。
+- 实例的函数、内存、表、全局是 `simple-vector`。AOT 里模块函数互相按名字调用，不走 `apply`。间接调用做一次签名检查，然后按已知参数个数 `funcall`。
+- 局部变量加参数超过 64，或函数体超过 400 条指令的冷函数，不展开成几千条 `aref`。`skip-stack-guard-page` 走一个小循环解释器，默认堆能译完。
+
+AOT：`scripts/aot-quickjs-wasm.sh`，SBCL 2.6.7，`--dynamic-space-size 8192`。墙钟 4:33.98，峰值 RSS 2432324 kB，fasl 12113280 字节。上一轮是 6:44.89、2346916 kB、13873765 字节。
+
+吞吐仍是已经 `qjs_init` 的实例上只计 `qjs_eval`。每次求值用新实例，和 Node 每次 `QuickJS.create` 再计 `evalCode` 一样。`internal-time-units-per-second` 这次是 1000000。Node 对照同一天重跑了 `/tmp/qjs-bench/bench.mjs`。
+
+| 脚本 | cadr | Node 22.22.0 | 倍数 |
+|---|---|---|---|
+| `let s=0; for (let i=0;i<1000000;i++) s+=i; s` | 708ms、696ms，值 499999500000 | 第一次 100.3ms，第二次 65.3ms，值相同 | 10.7 |
+| 1MB `"x"` 的 `JSON.stringify(JSON.parse(JSON.stringify(s))).length` | 304ms，值 1048578 | 31.7ms，值 1048578 | 9.6 |
+
+`qjs_eval` 的 `1+1` 不到 1ms，值 2。上一轮 1e6 循环是 1584ms（20.2 倍），JSON 是 540ms（16.3 倍）。这一轮短了，仍超过 5 倍。
+
+1e6 循环的 `sb-ext:get-bytes-consed` 差值是 794657984 字节。热循环还在分配。f64 的绝对值不小于 1 时，位型的第 62 位是 1，跨函数传递的 `(unsigned-byte 64)` 是大整数。
+
+sb-sprof，174 个样本，0.174s。自身时间靠前的是：
+
+| 自身 | 函数 |
+|---|---|
+| 53.4% | `QJS-AOT-80` |
+| 11.5% | `QJS-AOT-87` |
+| 8.0% | `pthread_sigmask` |
+| 4.6% | `QJS-AOT-27` |
+| 4.6% | `QJS-AOT-28` |
+| 4.6% | `QJS-AOT-81` |
+| 2.9% | `QJS-AOT-97` |
+| 1.1% | `ALLOC-UNSIGNED-BIGNUM-IN-RDI` |
+
+`arch_set_fp_modes` 和 `arch_get_fp_modes` 不在采样里。`VECTOR-HAIRY-DATA-VECTOR-REF` 和 `(OPTIMIZED-DATA-VECTOR-REF T)` 也不在。`pthread_sigmask` 的总时间挂在 `interrupt_handle_pending` / `maybe_gc` 下面，不是每条浮点运算各屏蔽一次。`lisp_alloc` 的总时间是 8.6%。生成的 quickjs 源里没有 `with-float-traps-masked`。
+
+热函数自身占一半以上，剩下的大头是别的已编译 quickjs 函数。再去掉陷阱屏蔽和泛型向量读，补不上到 5 倍以内的那一截。

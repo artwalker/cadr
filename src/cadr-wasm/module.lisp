@@ -53,17 +53,27 @@
   codes
   datas)
 
-(defstruct wasm-memory bytes min max)
-(defstruct wasm-table elements type min max)
-(defstruct wasm-gcell value)
+(defstruct wasm-memory
+  (bytes (make-array 0 :element-type '(unsigned-byte 8))
+         :type (simple-array (unsigned-byte 8) (*)))
+  min
+  max)
+(defstruct wasm-table
+  (elements #() :type simple-vector)
+  type min max)
+(defstruct wasm-gcell
+  (value 0)
+  (bits 0 :type (unsigned-byte 64))
+  (f64 0d0 :type double-float)
+  (f32 0f0 :type single-float))
 
 (defstruct wasm-instance
   module
-  funcs
+  (funcs #() :type simple-vector)
   func-types
-  memories
-  tables
-  globals
+  (memories #() :type simple-vector)
+  (tables #() :type simple-vector)
+  (globals #() :type simple-vector)
   elems
   datas)
 

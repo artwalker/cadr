@@ -120,9 +120,11 @@
               (setf (wasm-seg-items elem) (make-array 0))))))
 
 (defun indirect-callee (instance table-index type-index raw-index)
+  "One signature check. The caller funcalls the function with a known arity."
   (let* ((index (i32 raw-index))
          (table (aref (wasm-instance-tables instance) table-index))
          (elements (wasm-table-elements table)))
+    (declare (type simple-vector elements))
     (unless (< index (length elements))
       (wasm-trap (format nil "undefined element ~A" index)))
     (let ((value (aref elements index)))
@@ -134,9 +136,7 @@
              (expected (aref (wasm-module-types (wasm-instance-module instance)) type-index)))
         (unless (sig-equal actual expected)
           (wasm-trap "indirect call type mismatch"))
-        (lambda (&rest args)
-          (let ((*wasm-instance* owner))
-            (apply (aref (wasm-instance-funcs owner) func-index) args)))))))
+        (values (aref (wasm-instance-funcs owner) func-index) owner)))))
 
 (defun compile-module (input)
   (let ((module (if (wasm-module-p input) input (parse-module input))))
@@ -165,7 +165,10 @@
           (:func (setf func-imports (nconc func-imports (list provided))))
           (:table (setf table-imports (nconc table-imports (list provided))))
           (:memory (setf memory-imports (nconc memory-imports (list provided))))
-          (:global (setf global-imports (nconc global-imports (list provided)))))))
+          (:global (setf global-imports
+                         (nconc global-imports
+                                (list (cons provided
+                                            (car (wasm-import-type item))))))))))
     (let* ((funcs (make-array (+ (length func-imports) (length (compiled-module-funcs compiled)))))
            (func-types (collect-sigs module))
            (tables (make-array (+ (length table-imports) (length (wasm-module-tables module)))))
@@ -199,12 +202,17 @@
       (loop for type across (wasm-module-memories module)
             for index from (length memory-imports)
             do (setf (aref memories index) (make-memory type)))
-      (loop for provided in global-imports for index from 0 do
-        (setf (aref globals index) (wasm-extern-value provided)))
+      (loop for (provided . type) in global-imports for index from 0 do
+        (let ((cell (wasm-extern-value provided)))
+          (gcell-store cell type (wasm-gcell-value cell))
+          (setf (aref globals index) cell)))
       (loop for def across (wasm-module-globals module)
             for index from (length global-imports)
             do (setf (aref globals index)
-                     (make-wasm-gcell :value (eval-const instance (wasm-global-def-init def)))))
+                     (let ((cell (make-wasm-gcell)))
+                       (gcell-store cell (wasm-global-def-type def)
+                                    (eval-const instance (wasm-global-def-init def)))
+                       cell)))
       (loop for def across (wasm-module-elems module)
             for index from 0
             do (setf (aref elems index)

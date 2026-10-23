@@ -61,8 +61,9 @@
   (if (f64-nan-p bits) +f64-canon+ (i64 bits)))
 
 (defmacro with-wasm-floats (&body body)
-  `(sb-int:with-float-traps-masked (:invalid :overflow :divide-by-zero :underflow :inexact)
-     ,@body))
+  "invoke and the start function mask traps for the whole call.
+A mask on every f64 operation is arch_set_fp_modes in the profile."
+  `(progn ,@body))
 
 (defun f32-unop (bits op)
   (with-wasm-floats
@@ -314,9 +315,19 @@
   (let* ((sum (+ (i32 address) (i32 offset)))
          (bytes (wasm-memory-bytes memory))
          (len (length bytes)))
+    (declare (type (simple-array (unsigned-byte 8) (*)) bytes))
     (unless (and (< sum #x100000000) (<= size (- len sum)))
       (wasm-trap "out of bounds memory access"))
     (values bytes sum)))
+
+(defun gcell-store (cell type value)
+  (setf (wasm-gcell-value cell) value)
+  (when (member type '(:i32 :i64 :f32 :f64))
+    (setf (wasm-gcell-bits cell) (i64 value))
+    (case type
+      (:f32 (setf (wasm-gcell-f32 cell) (bits-to-f32 value)))
+      (:f64 (setf (wasm-gcell-f64 cell) (bits-to-f64 value)))))
+  value)
 
 (defun load-le (memory address offset size)
   (multiple-value-bind (bytes ea) (mem-range memory address offset size)
