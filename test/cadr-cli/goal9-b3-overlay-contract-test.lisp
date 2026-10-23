@@ -1578,7 +1578,7 @@
       ("scoped-models" "Enable/disable models for Ctrl+P cycling" nil)
       ("export" "Export session (HTML default, or specify path: .html/.jsonl)" nil)
       ("import" "Import and resume a session from a JSONL file" nil)
-      ("share" "Share session as a secret GitHub gist" nil)
+      ("share" "Share session via a Radius artifact or a GitHub gist" nil)
       ("bug" "Report a bug to the developers" "<description>")
       ("copy" "Copy last agent message to clipboard" nil)
       ("name" "Set session display name" nil)
