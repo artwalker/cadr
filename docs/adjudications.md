@@ -2434,3 +2434,43 @@ The gray `Working` status rule is canonicalized in
   say so in the status cell.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05b. The status
   cell starts with `open：顾问裁决 2026-10-23 第三次返修，条件 S 见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-23 — GAP-05a 第二次性能裁决
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):** the
+  implementer recommended B (switch to a native Wasm runtime). The
+  advisor adopts neither A nor B. One more round optimizes the profile
+  hotspots. The 5× target stays. Condition 5''''' is quoted in full
+  below.
+- **Measured (2026-10-23, GAP-05a status cell):** a later
+  `return 1 + 1` is 128ms (128ms, then 128ms; the first call is 264ms),
+  under 200ms. 1e6 integer additions are 20.2× Node 22 (1584ms against
+  78.5ms on Node 22.22.0 quickjs-wasi 3.6.2). A 1MB string JSON round
+  trip is 16.3× (540ms against 33.2ms). One instance adds 5.8MB RSS
+  (5832 kB). This AOT build took 6:45 (6:44.89) and 2.35GB peak RSS
+  (2346916 kB); the fasl is 13873765 bytes.
+- **Options:**
+  - A. Tiered execution (interpret the cold path, compile hot loops).
+  - B. Switch to a native Wasm runtime.
+- **Choice:** neither A nor B. Optimize the profile hotspots for one
+  more round. The 5× target does not move.
+- **Why:** `docs/reviews/goal27-surface/GAP-05a-perf.md` still shows
+  cost a pure Lisp runtime can remove, so that runtime is not at its
+  ceiling. `arch_set_fp_modes` + `pthread_sigmask` + `arch_get_fp_modes`
+  are about 15% (each f64 operation switches the float-trap mask).
+  `VECTOR-HAIRY-DATA-VECTOR-REF` + `(OPTIMIZED-DATA-VECTOR-REF T)` are
+  about 22% (generated code still indexes vectors whose element type
+  is undeclared). f64 values sit in a u64 bit pattern and convert on
+  every operation (`F64-TO-BITS` is a function call). Dropping plan D,
+  which the user discussed and settled, and bringing a native library
+  back, is not justified until those costs are gone.
+- **条件 5'''''（全文）:** 每一项改完都要重新剖析并在 perf 文档里记下前后数字。
+  1. 浮点陷阱：只在进入 wasm 导出函数时屏蔽/设置一次 FP 模式（包住整次调用），生成的函数体内不再出现逐运算的 `with-float-traps-masked` 或等价物；剖析里 `arch_set_fp_modes`、`pthread_sigmask` 不再出现在热点里。NaN 规范化和 trap 语义仍按规范，spec testsuite 全过。
+  2. 泛型向量访问：找出生成代码里每一处落到 `VECTOR-HAIRY-DATA-VECTOR-REF` / T 向量的访问（全局变量、表、操作数栈溢出、内存重绑定等），全部改成声明了元素类型的 simple-array 或专用结构槽；剖析里这两项降到 2% 以下。
+  3. 浮点值：f32/f64 局部变量、操作数栈和全局用 `single-float` / `double-float` 带类型的词法变量，只在 load/store/reinterpret 时做位转换，位转换用内联的 `sb-kernel:make-double-float` / `double-float-bits` 之类而不是函数调用；避免装箱（用 `disassemble` 查看热函数，并用 `time` 的 bytes consed 或 `sb-aprof` 证明热循环不再分配）。
+  4. 线性内存：在函数入口把内存数组取进带类型的局部变量，仅在 `memory.grow` 或调用其他可能 grow 的函数后重新取；不用 sap。
+  5. 函数间调用：直接调用目标函数（已知元数，不经可变长参数或 `apply`）；间接调用经表时只做一次类型签名检查。
+  6. 重新测：后续 `return 1 + 1`（≤ 200ms）、1e6 累加和 1MB JSON 往返对 Node 22 的倍数（目标 ≤ 5），以及 bytes consed。
+  7. 若做完 1–5 后倍数仍 > 5，状态写 blocked，附每一步前后的剖析和倍数，交顾问做最终裁决（届时在：接受实测倍数并记为有意差异、或改用原生运行时之间选）。不得自行放宽数字，也不得自行引入原生库。
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. The status
+  cell starts with `open：顾问裁决 2026-10-23 第二次性能裁决：暂不采纳分层执行或原生运行时，按剖析热点再优化一轮，条件 5''''' 见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
