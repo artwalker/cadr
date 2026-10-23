@@ -455,8 +455,31 @@
             (cadr-ai::copy-json-value arguments)))
     copy))
 
+(defun tool-exposure-callable-from-execute-p (exposure active-p)
+  ;; pi@4a080252f agent-session.ts _getCallableTools. Active direct
+  ;; tools, plus every codemode or deferred tool. model-only and
+  ;; hidden stay out, even when the model can see the tool.
+  (or (eq exposure :codemode)
+      (eq exposure :deferred)
+      (and (eq exposure :direct) active-p)))
+
+(defun agent-callable-tools (agent)
+  (let* ((host (agent-extension-host agent))
+         (active-names
+           (mapcar #'cadr-ai:tool-name
+                   (registry-tools (agent-tool-registry agent)))))
+    (remove-if-not
+     (lambda (tool)
+       (tool-exposure-callable-from-execute-p
+        (extension-tool-exposure host (cadr-ai:tool-name tool))
+        (member (cadr-ai:tool-name tool)
+                active-names
+                :test #'string=)))
+     (merged-agent-tools agent))))
+
 (defun prepare-tool-execution
-    (agent call &key turn-index on-effective-call)
+    (agent call &key turn-index on-effective-call
+                  (tools nil tools-supplied-p))
   (let ((effective-call call)
         (appended-messages nil))
     (when (agent-extension-host agent)
@@ -490,9 +513,14 @@
        on-effective-call
        effective-call appended-messages))
     (let ((tool
-            (find-tool
-             (agent-tool-registry agent)
-             (cadr-ai:tool-call-name effective-call))))
+            (if tools-supplied-p
+                (find (cadr-ai:tool-call-name effective-call)
+                      tools
+                      :key #'cadr-ai:tool-name
+                      :test #'string=)
+                (find-tool
+                 (agent-tool-registry agent)
+                 (cadr-ai:tool-call-name effective-call)))))
     (unless tool
       (return-from prepare-tool-execution
         (make-error-tool-result
@@ -635,7 +663,9 @@
   (let* ((*nested-tool-caller-id* (cadr-ai:tool-call-id tool-call))
          (prepared
            (handler-case
-               (prepare-tool-execution agent tool-call)
+               (prepare-tool-execution
+                agent tool-call
+                :tools (agent-callable-tools agent))
              (error (condition)
                (make-error-tool-result
                 tool-call (princ-to-string condition))))))
@@ -671,7 +701,7 @@
   (make-nested-tool-call-runner
    :tools-function
    (lambda ()
-     (registry-tools (agent-tool-registry agent)))
+     (agent-callable-tools agent))
    :emit-function
    (lambda (type tool-call parent-id outcome)
      (emit-nested-tool-event

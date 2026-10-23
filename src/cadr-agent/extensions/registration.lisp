@@ -44,6 +44,10 @@
   render-result
   (exposure :direct
             :type (member :direct :model-only :codemode :deferred :hidden))
+  ;; pi@4a080252f ToolDefinition.reachesTools. Nil means this tool
+  ;; does not declare a reach. A function returns "all" or a list of
+  ;; tool names for one call's input.
+  reaches-tools
   ;; pi@4a080252f extensions/types.ts defaultActive. Nil keeps the tool
   ;; registered without activating it. Naming it still activates it.
   (default-active t :type boolean)
@@ -269,6 +273,7 @@
             prepare-arguments (execution-mode :parallel)
             handler render-call render-result
             (exposure :direct)
+            reaches-tools
             (default-active t))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
@@ -310,6 +315,10 @@
              :message
              (format nil "Tool ~A exposure must be direct, model-only, codemode, deferred, or hidden"
                      name)))
+    (unless (or (null reaches-tools) (functionp reaches-tools))
+      (error 'extension-registration-error
+             :message
+             (format nil "Tool ~A reaches-tools must be a function or NIL" name)))
     (ensure-unique-extension-definition
      (extension-bundle-tools bundle) name
      #'extension-tool-definition-name "Tool")
@@ -329,6 +338,7 @@
         :execution-mode execution-mode :full-handler-p t
         :handler handler :render-call render-call :render-result render-result
         :exposure exposure
+        :reaches-tools reaches-tools
         :default-active (not (null default-active))
         :bundle bundle)))))
   name)

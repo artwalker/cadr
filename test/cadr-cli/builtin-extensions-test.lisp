@@ -61,6 +61,66 @@
       (is (every #'cadr-agent::extension-bundle-replaceable-p
                  (rest bundles))))))
 
+(test builtin-global-minus-wins-over-an-earlier-plus
+  (with-test-directory (root)
+    (let ((manager
+            (cadr-cli::make-cli-extension-manager
+             :cwd root
+             :global-directory (merge-pathnames "global/" root)
+             :global-extension-entries '("-builtin:mcp" "+builtin:mcp")
+             :output (make-string-output-stream))))
+      (cadr-cli::reload-cli-extensions manager)
+      (is (equal
+           '("builtin:llama.cpp" "builtin:codemode"
+             "builtin:tool-search")
+           (builtin-extension-paths manager))))))
+
+(test builtin-bang-cpp-pattern-disables-llama
+  (with-test-directory (root)
+    (let ((manager
+            (cadr-cli::make-cli-extension-manager
+             :cwd root
+             :global-directory (merge-pathnames "global/" root)
+             :global-extension-entries '("!*.cpp")
+             :output (make-string-output-stream))))
+      (cadr-cli::reload-cli-extensions manager)
+      (is (equal
+           '("builtin:codemode" "builtin:tool-search" "builtin:mcp")
+           (builtin-extension-paths manager))))))
+
+(test builtin-cli-builtin-precedes-a-settings-file
+  (with-test-directory (root)
+    (let* ((file (merge-pathnames "from-settings.lisp" root))
+           (manager
+             (cadr-cli::make-cli-extension-manager
+              :cwd root
+              :global-directory (merge-pathnames "global/" root)
+              :explicit-paths '("builtin:mcp")
+              :global-extension-entries
+              (list (namestring file))
+              :output (make-string-output-stream))))
+      (write-text
+       file
+       "(define-command \"from-settings\" :description \"settings file\" :handler (lambda (arguments context) (declare (ignore arguments context))))")
+      (cadr-cli::reload-cli-extensions manager)
+      (is (equal
+           (list "builtin:mcp"
+                 (namestring (truename file))
+                 "builtin:llama.cpp" "builtin:codemode"
+                 "builtin:tool-search")
+           (builtin-extension-paths manager))))))
+
+(test builtin-extension-help-names-builtin-and-discovery
+  (is (search
+       "Load an extension file or builtin:<name>"
+       cadr-cli::+cli-usage-prefix+))
+  (is (search
+       "Disable extension discovery and built-in extensions (explicit -e paths still work)"
+       cadr-cli::+cli-usage-prefix+))
+  (is (search
+       "Disable built-in MCP support: no servers connect and no MCP tools"
+       cadr-cli::+cli-usage-prefix+)))
+
 (test builtin-global-exclude-skips-mcp-and-keeps-llama
   (with-test-directory (root)
     (let ((manager
@@ -117,7 +177,14 @@
       (is (equal '("builtin:mcp") (builtin-extension-paths manager)))
       (is (equal
            '("Unknown built-in extension: builtin:missing")
-           (getf report :errors))))))
+           (getf report :errors)))
+      (let ((output (make-string-output-stream)))
+        (is (cadr-cli::report-startup-extension-failure manager output))
+        (is (string=
+             (format nil
+                     "Error: Failed to load extension \"builtin:missing\": Unknown built-in extension: builtin:missing~%~
+                      Hint: Start without extensions using \"cadr -ne\".~%")
+             (get-output-stream-string output)))))))
 
 (test builtin-settings-file-path-still-loads
   (with-test-directory (root)
@@ -161,12 +228,18 @@
              "third party mcp"
              (cadr-agent::extension-command-definition-description
               (builtin-extension-command manager "mcp"))))
-        (is (member
-             (format nil
-                     "Extension ~A registers command `/mcp`, so built-in extension `mcp` was not loaded. To use `mcp`, run `cadr config` and make sure it is enabled under Built-in extensions, then disable or remove the existing extension. We recommend only having one or the other loaded at a time."
-                     winner)
-             (builtin-startup-messages manager)
-             :test #'string=))))))
+        (let ((output (make-string-output-stream))
+              (body
+                (format nil
+                        "Extension ~A registers command `/mcp`, so built-in extension `mcp` was not loaded. To use `mcp`, run `cadr config` and make sure it is enabled under Built-in extensions, then disable or remove the existing extension. We recommend only having one or the other loaded at a time."
+                        winner)))
+          (cadr-cli::report-startup-extension-issues manager output)
+          (is (member body (builtin-startup-messages manager) :test #'string=))
+          (is (search
+               (format nil
+                       "Warning: Extension package \"builtin:mcp\": ~A"
+                       body)
+               (get-output-stream-string output))))))))
 
 (test replaceable-inline-sharing-a-command-is-omitted-quietly
   (with-test-directory (root)
@@ -284,9 +357,33 @@
         (is (null
              (cadr-agent::extension-tool-definition-default-active
               tool)))
-        (is (eq :direct
+        (is (eq :model-only
                 (cadr-agent::extension-tool-definition-exposure
-                 tool)))))))
+                 tool)))
+        (is (string=
+             "Search for tools that are not loaded yet and load the matches"
+             (cadr-agent::extension-tool-definition-prompt-snippet
+              tool)))
+        (is (string=
+             "all"
+             (funcall
+              (cadr-agent::extension-tool-definition-reaches-tools tool)
+              (cadr-ai::json-object))))
+        (is (not
+             (cadr-agent::tool-exposure-callable-from-execute-p
+              :model-only t)))
+        (is (cadr-agent::tool-exposure-callable-from-execute-p
+             :direct t))
+        (is (not
+             (cadr-agent::tool-exposure-callable-from-execute-p
+              :direct nil)))
+        (is (cadr-agent::tool-exposure-callable-from-execute-p
+             :codemode nil))
+        (is (cadr-agent::tool-exposure-callable-from-execute-p
+             :deferred nil))
+        (is (not
+             (cadr-agent::tool-exposure-callable-from-execute-p
+              :hidden t)))))))
 
 (test codemode-extension-registers-the-inactive-model-only-tool
   (with-test-directory (root)

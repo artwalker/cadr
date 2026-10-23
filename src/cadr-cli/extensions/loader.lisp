@@ -39,13 +39,18 @@ Returns (values any-error-p any-extension-load-failure-p)."
                (getf issue :message)
                (funcall
                 (cli-extension-manager-secret-function manager)))))
-        ;; Baseline main.ts:734-738 composes the load-failure
-        ;; diagnostic as `Failed to load extension "PATH": MSG`.
-        (when (and (getf issue :path)
-                   (search "Failed to load extension" message))
-          (setf message
-                (format nil "Failed to load extension \"~A\": ~A"
-                        (getf issue :path) message)))
+        ;; Baseline main.ts wraps every extension error and warning
+        ;; that carries a path. The load-failure hint keys off the
+        ;; composed sentence, which then contains this phrase.
+        (cond
+          ((and (eq type :error) (getf issue :path))
+           (setf message
+                 (format nil "Failed to load extension \"~A\": ~A"
+                         (getf issue :path) message)))
+          ((and (eq type :warning) (getf issue :path))
+           (setf message
+                 (format nil "Extension package \"~A\": ~A"
+                         (getf issue :path) message))))
         (format
          output
          "~A~%"
@@ -67,6 +72,27 @@ Returns (values any-error-p any-extension-load-failure-p)."
             (setf load-failure-p t)))))
     (finish-output output)
     (values any-error-p load-failure-p)))
+
+(defun write-extension-load-failure-hint
+    (&optional (output *error-output*))
+  ;; pi@4a080252f EXTENSION_LOAD_FAILURE_HINT. The product command is cadr.
+  (format
+   output
+   "~A~%"
+   (cli-warning-text
+    output
+    "Hint: Start without extensions using \"cadr -ne\"."))
+  (finish-output output))
+
+(defun report-startup-extension-failure
+    (manager &optional (output *error-output*))
+  "Print startup issues. A load failure adds the -ne hint.
+Returns T when startup must exit 1."
+  (multiple-value-bind (any-error-p load-failure-p)
+      (report-startup-extension-issues manager output)
+    (when (and any-error-p load-failure-p)
+      (write-extension-load-failure-hint output))
+    any-error-p))
 
 (defun extension-http-timeout-condition-p (condition)
   (or (typep condition 'cadr-ai:timeout-error)
@@ -623,50 +649,58 @@ Returns (values any-error-p any-extension-load-failure-p)."
           (loaded 0)
           (next-last-good
             (make-hash-table :test #'equal)))
-      (dolist (source sources)
-        (let* ((id (extension-source-record-id source))
-               (old
-                 (gethash
-                  id
-                  (cli-extension-manager-last-good
-                   manager)))
-               (bundle
-                 (handler-case
-                     (prog1
-                         (load-extension-source
-                          manager source)
-                       (incf loaded))
-                   (error (condition)
-                     (push (princ-to-string condition)
-                           errors)
-                     (push
-                      (list
-                       :type :error
-                       :path (extension-source-record-path source)
-                       :message (princ-to-string condition))
-                      startup-issues)
-                     (extension-manager-notify
-                      manager
-                      (princ-to-string condition)
-                      :error)
-                     (and
-                      (same-extension-source-p
-                       old source)
-                      old)))))
-          (when bundle
-            (setf (gethash id next-last-good)
-                  bundle)
-            (push bundle bundles))))
-      (multiple-value-bind (builtin-bundles builtin-issues)
-          (load-enabled-builtin-extensions manager)
-        (dolist (bundle builtin-bundles)
-          (push bundle bundles)
-          (incf loaded))
-        (dolist (issue builtin-issues)
-          (push (getf issue :message) errors)
-          (push issue startup-issues)
-          (extension-manager-notify
-           manager (getf issue :message) :error)))
+      (let ((builtin-order 0))
+        (dolist (step (cli-extension-load-steps manager sources))
+          (ecase (first step)
+            (:file
+             (let* ((source (second step))
+                    (id (extension-source-record-id source))
+                    (old
+                      (gethash
+                       id
+                       (cli-extension-manager-last-good
+                        manager)))
+                    (bundle
+                      (handler-case
+                          (prog1
+                              (load-extension-source
+                               manager source)
+                            (incf loaded))
+                        (error (condition)
+                          (push (princ-to-string condition)
+                                errors)
+                          (push
+                           (list
+                            :type :error
+                            :path (extension-source-record-path source)
+                            :message (princ-to-string condition))
+                           startup-issues)
+                          (extension-manager-notify
+                           manager
+                           (princ-to-string condition)
+                           :error)
+                          (and
+                           (same-extension-source-p
+                            old source)
+                           old)))))
+               (when bundle
+                 (setf (gethash id next-last-good)
+                       bundle)
+                 (push bundle bundles))))
+            (:builtin
+             (incf builtin-order)
+             (multiple-value-bind (bundle issue)
+                 (load-builtin-extension-path
+                  manager (second step) builtin-order)
+               (cond
+                 (bundle
+                  (push bundle bundles)
+                  (incf loaded))
+                 (issue
+                  (push (getf issue :message) errors)
+                  (push issue startup-issues)
+                  (extension-manager-notify
+                   manager (getf issue :message) :error))))))))
       (loop
         for input in
         (cli-extension-manager-extension-factories

@@ -78,7 +78,9 @@
                :source
                (extension-definition-origin definition)
                :exposure
-               (extension-tool-definition-exposure definition)))))
+               (extension-tool-definition-exposure definition)
+               :reaches-tools
+               (extension-tool-definition-reaches-tools definition)))))
 
 (defun extension-host-current-active-tools (host)
   (let ((agent (extension-host-agent host)))

@@ -63,32 +63,47 @@
         (coerce value 'list)
         nil)))
 
+(defun builtin-path-basename (path)
+  (let ((slash (position #\/ path :from-end t)))
+    (if slash
+        (subseq path (1+ slash))
+        path)))
+
 (defun builtin-pattern-matches-p (path pattern)
-  (or (string= path pattern)
-      (and (plusp (length pattern))
-           (char= (char pattern (1- (length pattern))) #\*)
-           (uiop:string-prefix-p
-            (subseq pattern 0 (1- (length pattern)))
-            path))))
+  ;; pi@4a080252f matchesAnyPattern. minimatch against the path and its
+  ;; basename, so !*.cpp matches builtin:llama.cpp. * does not cross /.
+  (let ((scanner (glob-scanner pattern)))
+    (or (cl-ppcre:scan scanner path)
+        (cl-ppcre:scan scanner (builtin-path-basename path)))))
 
 (defun builtin-enabled-by-overrides-p (path entries)
-  ;; pi@4a080252f isEnabledByOverrides. Default enabled. ! then + then
-  ;; - , applied in entry order.
-  (let ((enabled t))
-    (dolist (entry entries enabled)
+  ;; pi@4a080252f isEnabledByOverrides. Default enabled. Every !
+  ;; pattern, then every exact +, then every exact -. List order
+  ;; inside one phase does not matter, so - before + in the list
+  ;; still ends disabled.
+  (let ((enabled t)
+        (excludes nil)
+        (force-includes nil)
+        (force-excludes nil))
+    (dolist (entry entries)
       (when (extension-override-entry-p entry)
         (let ((prefix (char entry 0))
               (target (subseq entry 1)))
           (cond
-            ((and (char= prefix #\!)
-                  (builtin-pattern-matches-p path target))
-             (setf enabled nil))
-            ((and (char= prefix #\+)
-                  (string= path target))
-             (setf enabled t))
-            ((and (char= prefix #\-)
-                  (string= path target))
-             (setf enabled nil))))))))
+            ((char= prefix #\!) (push target excludes))
+            ((char= prefix #\+) (push target force-includes))
+            ((char= prefix #\-) (push target force-excludes))))))
+    (when (some (lambda (pattern)
+                  (builtin-pattern-matches-p path pattern))
+                excludes)
+      (setf enabled nil))
+    (when (some (lambda (target) (string= path target))
+                force-includes)
+      (setf enabled t))
+    (when (some (lambda (target) (string= path target))
+                force-excludes)
+      (setf enabled nil))
+    enabled))
 
 (defun builtin-project-override (path entries)
   ;; pi@4a080252f applyAutoloadDisabledPatterns. :unset when no
@@ -139,38 +154,73 @@
     (mapcar (lambda (name) (gethash name seen))
             (nreverse ordered))))
 
-(defun builtin-extensions-to-load (manager)
-  "Return (values paths unknown-paths). Paths are builtin:<name>."
-  (when (cli-extension-manager-defer-builtin-extensions-p manager)
-    (return-from builtin-extensions-to-load (values nil nil)))
-  (let* ((disabled
-           (cli-extension-manager-disabled-builtin-extensions manager))
-         (explicit
-           (remove-if-not
-            #'builtin-extension-path-p
-            (cli-extension-manager-explicit-paths manager)))
-         (defaults
-           (unless (cli-extension-manager-no-discovery-p manager)
-             (loop for entry in
-                   (cli-extension-manager-builtin-extensions manager)
-                   for path = (builtin-extension-path (getf entry :name))
-                   when (builtin-extension-enabled-p manager path)
-                   collect path)))
-         (seen (make-hash-table :test #'equal))
-         (paths nil)
-         (unknown nil))
-    (dolist (path (append explicit defaults))
-      (unless (gethash path seen)
-        (setf (gethash path seen) t)
-        (let ((name (builtin-extension-name path)))
-          (unless (member name disabled :test #'string-equal)
-            (if (find name
-                      (cli-extension-manager-builtin-extensions manager)
-                      :key (lambda (entry) (getf entry :name))
-                      :test #'string=)
-                (push path paths)
-                (push path unknown))))))
-    (values (nreverse paths) (nreverse unknown))))
+(defun builtin-path-disabled-p (manager path)
+  (member (builtin-extension-name path)
+          (cli-extension-manager-disabled-builtin-extensions manager)
+          :test #'string-equal))
+
+(defun default-builtin-paths (manager)
+  ;; Settings-enabled built-ins. --no-extensions and the pre-trust
+  ;; pass omit them. --no-mcp drops builtin:mcp here and on -e.
+  (unless (or (cli-extension-manager-no-discovery-p manager)
+              (cli-extension-manager-defer-builtin-extensions-p manager))
+    (loop for entry in (cli-extension-manager-builtin-extensions manager)
+          for path = (builtin-extension-path (getf entry :name))
+          when (and (builtin-extension-enabled-p manager path)
+                    (not (builtin-path-disabled-p manager path)))
+          collect path)))
+
+(defun cli-extension-resolved-entry (manager path)
+  (let ((resolved
+          (merge-pathnames
+           (pathname path)
+           (cli-extension-manager-cwd manager))))
+    (unless (probe-file resolved)
+      (return-from cli-extension-resolved-entry nil))
+    (let ((entry (truename resolved)))
+      (if (uiop:directory-pathname-p entry)
+          (let ((file (merge-pathnames "extension.lisp" entry)))
+            (when (probe-file file)
+              (namestring (truename file))))
+          (namestring entry)))))
+
+(defun cli-extension-load-steps (manager file-sources)
+  ;; pi@4a080252f mergePaths(cliPaths, resolvedPaths). CLI paths,
+  ;; files and builtin: names in the order given, come first. Other
+  ;; files follow. The remaining built-ins stay in llama.cpp,
+  ;; codemode, tool-search, mcp order.
+  (let ((seen-files (make-hash-table :test #'equal))
+        (seen-builtins (make-hash-table :test #'equal))
+        (steps nil)
+        (defer (cli-extension-manager-defer-builtin-extensions-p manager)))
+    (dolist (path (cli-extension-manager-explicit-paths manager))
+      (cond
+        ((builtin-extension-path-p path)
+         (unless (or defer (gethash path seen-builtins))
+           (setf (gethash path seen-builtins) t)
+           (unless (builtin-path-disabled-p manager path)
+             (push (list :builtin path) steps))))
+        ((extension-file-path-p path)
+         (let* ((namestring (cli-extension-resolved-entry manager path))
+                (source
+                  (and namestring
+                       (find namestring file-sources
+                             :key #'extension-source-record-path
+                             :test #'string=))))
+           (when (and source (not (gethash namestring seen-files)))
+             (setf (gethash namestring seen-files) t)
+             (push (list :file source) steps))))))
+    (dolist (source file-sources)
+      (let ((namestring (extension-source-record-path source)))
+        (unless (gethash namestring seen-files)
+          (setf (gethash namestring seen-files) t)
+          (push (list :file source) steps))))
+    (unless defer
+      (dolist (path (default-builtin-paths manager))
+        (unless (gethash path seen-builtins)
+          (setf (gethash path seen-builtins) t)
+          (push (list :builtin path) steps))))
+    (nreverse steps)))
 
 (defun find-builtin-extension-entry (manager name)
   (find name
@@ -201,35 +251,28 @@
                    (cadr-agent:current-extension-api))))))
     bundle))
 
-(defun load-enabled-builtin-extensions (manager)
-  "Return (values bundles error-issues)."
-  (multiple-value-bind (paths unknown)
-      (builtin-extensions-to-load manager)
-    (let ((bundles nil)
-          (issues nil))
-      (dolist (path unknown)
-        (push (list :type :error
-                    :path path
-                    :message
-                    (format nil "Unknown built-in extension: ~A" path))
-              issues))
-      (loop for path in paths
-            for order from 1
-            for entry = (find-builtin-extension-entry
-                         manager (builtin-extension-name path))
-            do (handler-case
-                   (push (load-one-builtin-extension
-                          manager entry order)
-                         bundles)
-                 (error (condition)
-                   (push (list :type :error
-                               :path path
-                               :message
-                               (format nil
-                                       "Failed to load extension: ~A"
-                                       condition))
-                         issues))))
-      (values (nreverse bundles) (nreverse issues)))))
+(defun load-builtin-extension-path (manager path order)
+  "Return (values bundle issue). Unknown names keep the loader sentence."
+  (let ((entry
+          (find-builtin-extension-entry
+           manager (builtin-extension-name path))))
+    (unless entry
+      (return-from load-builtin-extension-path
+        (values nil
+                (list :type :error
+                      :path path
+                      :message
+                      (format nil "Unknown built-in extension: ~A" path)))))
+    (handler-case
+        (values (load-one-builtin-extension manager entry order) nil)
+      (error (condition)
+        (values nil
+                (list :type :error
+                      :path path
+                      :message
+                      (format nil
+                              "Failed to load extension: ~A"
+                              condition)))))))
 
 (defun extension-registration-names (bundle)
   (append
@@ -311,18 +354,28 @@
                          warnings)))))))
       (values (nreverse kept) (nreverse warnings)))))
 
+(defun tool-search-reaches-tools (input)
+  ;; pi@4a080252f createToolSearchToolDefinition reachesTools.
+  (declare (ignore input))
+  "all")
+
 (defun tool-search-extension-factory (api)
   (declare (ignore api))
   (let ((tool (cadr-agent:make-tool-search-tool)))
-    (cadr-agent::register-extension-tool
+    (cadr-agent::register-rich-extension-tool
      "tool_search"
+     :label "tool_search"
      :description (cadr-ai:tool-description tool)
+     :prompt-snippet
+     "Search for tools that are not loaded yet and load the matches"
      :parameters (cadr-ai:tool-parameters tool)
      :execution-mode :parallel
+     :exposure :model-only
      :default-active nil
+     :reaches-tools #'tool-search-reaches-tools
      :handler
-     (lambda (call-id arguments context)
-       (declare (ignore context))
+     (lambda (call-id arguments signal update context)
+       (declare (ignore signal update context))
        (funcall (cadr-ai:tool-executor tool) call-id arguments)))))
 
 (defun codemode-empty-description ()

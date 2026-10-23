@@ -1042,20 +1042,10 @@
       ;; Baseline main.ts:837-839 — deprecated-directory warnings are
       ;; shown before the TUI takes over, interactive mode only.
       (show-deprecation-warnings *pending-deprecation-warnings*))
-    (multiple-value-bind (startup-error-p load-failure-p)
-        (report-startup-extension-issues extension-manager)
-      (when startup-error-p
-        ;; Baseline main.ts:843-849 — any runtime error diagnostic is
-        ;; fatal; an extension load failure adds the -ne hint.
-        (when load-failure-p
-          (format
-           *error-output*
-           "~A~%"
-           (cli-warning-text
-            *error-output*
-            "Hint: Start without extensions using \"cadr -ne\"."))
-          (finish-output *error-output*))
-        (return-from cli-handler 1)))
+    (when (report-startup-extension-failure extension-manager)
+      ;; Baseline main.ts:843-849 — any runtime error diagnostic is
+      ;; fatal; an extension load failure adds the -ne hint.
+      (return-from cli-handler 1))
     (cadr-agent::replace-agent-prompt-catalogs
      agent
      (resource-snapshot-skills resources)
@@ -2281,16 +2271,21 @@
                    for metadata =
                      (cadr-agent::extension-host-tool-metadata host name)
                    collect
-                   (list
-                    :name name
-                    :description (cadr-ai:tool-description tool)
-                    :parameters (cadr-ai:tool-parameters tool)
-                    :label (or (getf metadata :label) name)
-                    :prompt-snippet (getf metadata :prompt-snippet)
-                    :prompt-guidelines
-                    (copy-list (getf metadata :prompt-guidelines))
-                    :source (or (getf metadata :source) :builtin)
-                    :exposure (or (getf metadata :exposure) :direct)))))
+                   (let ((reaches
+                           (getf metadata :reaches-tools)))
+                     (append
+                      (list
+                       :name name
+                       :description (cadr-ai:tool-description tool)
+                       :parameters (cadr-ai:tool-parameters tool)
+                       :label (or (getf metadata :label) name)
+                       :prompt-snippet (getf metadata :prompt-snippet)
+                       :prompt-guidelines
+                       (copy-list (getf metadata :prompt-guidelines))
+                       :source (or (getf metadata :source) :builtin)
+                       :exposure (or (getf metadata :exposure) :direct))
+                      (when reaches
+                        (list :reaches-tools reaches)))))))
          (extension-context-usage ()
            (let* ((model (cadr-agent:agent-model agent))
                   (window
