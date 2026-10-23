@@ -430,15 +430,79 @@ pipeline lives.")
 
 (defun execute-tool-batch
     (agent calls &key turn-index)
+  ;; pi@4a080252f agent-loop.ts executeToolCallsSequential: one
+  ;; sequential tool (including the same tool twice) runs the batch
+  ;; one call at a time. Start, prepare (beforeToolCall), execute,
+  ;; end, and that call's tool result all finish before the next
+  ;; call starts. An abort after the current result stops the rest.
+  ;; The parallel path still emits every start and before hook
+  ;; before any executor, then tool_execution_end in completion
+  ;; order and tool results in assistant order.
+  (labels
+      ((sequential-call-p (call)
+         (let ((tool
+                 (find-tool
+                  (agent-tool-registry agent)
+                  (cadr-ai:tool-call-name call))))
+           (and tool
+                (eq :sequential
+                    (cadr-ai:tool-execution-mode tool)))))
+       (emit-start (call)
+         (run-agent-lifecycle
+          agent :tool-execution-start
+          (list
+           :tool-call-id (cadr-ai:tool-call-id call)
+           :tool-name (cadr-ai:tool-call-name call)
+           :arguments (cadr-ai:tool-call-arguments call)))
+         (emit-agent-event
+          agent :tool-execution-start
+          :tool-call call))
+       (run-sequential ()
+         (let ((results nil)
+               (appended nil)
+               (states nil)
+               (completed nil)
+               (*nested-tool-call-runner*
+                 (or *nested-tool-call-runner*
+                     (make-agent-nested-tool-runner agent))))
+           (dolist (call calls)
+             (emit-start call)
+             (let* ((state
+                      (make-tool-restart-state-for-call
+                       agent call))
+                    (entry
+                      (prepare-tool-restart-state
+                       state turn-index))
+                    (outcome
+                      (complete-tool-outcome
+                       agent
+                       (if (typep entry 'tool-outcome)
+                           (finish-tool-restart-outcome
+                            state entry)
+                           (execute-tool-restart-state
+                            state entry turn-index))
+                       turn-index)))
+               (push state states)
+               (push outcome completed)
+               (multiple-value-bind (one-results one-appended)
+                   (tool-outcomes-values
+                    agent (vector outcome))
+                 (setf results (nconc results one-results)
+                       appended
+                       (nconc appended one-appended))))
+             (when (agent-aborted-p agent)
+               (return)))
+           (values
+            results
+            appended
+            (some #'tool-restart-state-abort-p states)
+            (tool-outcomes-terminate-p
+             (coerce (nreverse completed) 'vector))))))
+    (if (some #'sequential-call-p calls)
+        (run-sequential)
+        (progn
   (dolist (call calls)
-    (run-agent-lifecycle
-     agent :tool-execution-start
-     (list
-      :tool-call-id (cadr-ai:tool-call-id call)
-      :tool-name (cadr-ai:tool-call-name call)
-      :arguments (cadr-ai:tool-call-arguments call)))
-    (emit-agent-event agent :tool-execution-start
-                      :tool-call call))
+    (emit-start call))
   (let* ((states
            (mapcar
             (lambda (call)
@@ -535,7 +599,7 @@ pipeline lives.")
        results appended
        (some #'tool-restart-state-abort-p
              states)
-       (tool-outcomes-terminate-p outcomes)))))
+       (tool-outcomes-terminate-p outcomes))))))))
 
 (defun execute-truncated-tool-batch
     (agent calls &key turn-index)

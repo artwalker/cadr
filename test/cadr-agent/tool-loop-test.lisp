@@ -240,14 +240,33 @@
                       collect
                       (tool-result-message-tool-call-id message))))
         (is (equal '("slow_1" "fast_1") result-ids)))
-      (let ((end-ids
+      ;; pi@4a080252f executeToolCallsParallel: every start before any
+      ;; end, ends in completion order, tool results after both ends
+      ;; in assistant source order.
+      (let ((kinds
               (loop for event in (nreverse events)
-                    when (eq :tool-execution-end
-                             (agent-event-type event))
+                    for type = (agent-event-type event)
+                    when (eq type :tool-execution-start)
                       collect
-                      (cadr-ai:tool-call-id
-                       (agent-event-tool-call event)))))
-        (is (equal '("fast_1" "slow_1") end-ids))))))
+                      (list :start
+                            (cadr-ai:tool-call-id
+                             (agent-event-tool-call event)))
+                    when (eq type :tool-execution-end)
+                      collect
+                      (list :end
+                            (cadr-ai:tool-call-id
+                             (agent-event-tool-call event)))
+                    when (and (eq type :message-end)
+                              (typep (agent-event-message event)
+                                     'tool-result-message))
+                      collect
+                      (list :result
+                            (tool-result-message-tool-call-id
+                             (agent-event-message event))))))
+        (is (equal '((:start "slow_1") (:start "fast_1")
+                     (:end "fast_1") (:end "slow_1")
+                     (:result "slow_1") (:result "fast_1"))
+                   kinds))))))
 
 (test one-sequential-tool-forces-the-whole-batch-sequential
   (let ((first-done nil)
@@ -371,14 +390,33 @@
                       collect
                       (tool-result-message-tool-call-id message))))
         (is (equal '("slow_1" "fast_1") result-ids)))
-      (let ((end-ids
+      ;; pi@4a080252f executeToolCallsParallel: every start before any
+      ;; end, ends in completion order, tool results after both ends
+      ;; in assistant source order.
+      (let ((kinds
               (loop for event in (nreverse events)
-                    when (eq :tool-execution-end
-                             (agent-event-type event))
+                    for type = (agent-event-type event)
+                    when (eq type :tool-execution-start)
                       collect
-                      (cadr-ai:tool-call-id
-                       (agent-event-tool-call event)))))
-        (is (equal '("fast_1" "slow_1") end-ids))))))
+                      (list :start
+                            (cadr-ai:tool-call-id
+                             (agent-event-tool-call event)))
+                    when (eq type :tool-execution-end)
+                      collect
+                      (list :end
+                            (cadr-ai:tool-call-id
+                             (agent-event-tool-call event)))
+                    when (and (eq type :message-end)
+                              (typep (agent-event-message event)
+                                     'tool-result-message))
+                      collect
+                      (list :result
+                            (tool-result-message-tool-call-id
+                             (agent-event-message event))))))
+        (is (equal '((:start "slow_1") (:start "fast_1")
+                     (:end "fast_1") (:end "slow_1")
+                     (:result "slow_1") (:result "fast_1"))
+                   kinds))))))
 
 (test sequential-tool-holds-every-other-call-in-the-batch
   ;; pi@4a080252f agent-loop.test.ts: one executionMode sequential forces
@@ -522,6 +560,185 @@
                         collect
                         (tool-result-message-tool-call-id message))))
           (is (equal '("tool-1" "tool-2") result-ids)))))))
+
+(test sequential-batch-finishes-each-call-before-the-next
+  ;; pi@4a080252f agent-loop.ts executeToolCallsSequential (540-588):
+  ;; start, prepare (beforeToolCall), execute, tool_execution_end,
+  ;; then that tool result, then the next call. The same sequential
+  ;; tool twice, and one sequential tool beside a tool that omits
+  ;; executionMode, both follow this order.
+  (labels
+      ((call (id name)
+         (make-tool-call
+          :id id :name name
+          :arguments (cadr-ai::json-object)))
+       (trace-batch (specs calls bundle-id)
+         (let ((trace nil))
+           (labels ((note (text)
+                      (push text trace))
+                    (make-spec (spec)
+                      (destructuring-bind (name &optional (mode :parallel))
+                          spec
+                        (make-tool
+                         :name name
+                         :description name
+                         :parameters (object-schema)
+                         :execution-mode mode
+                         :executor
+                         (lambda (call-id arguments)
+                           (declare (ignore arguments))
+                           (note (format nil "execute:~A" call-id))
+                           (list
+                            (make-text-content :text call-id)))))))
+             (let* ((*responses*
+                      (list
+                       (assistant calls :tool-use)
+                       (assistant
+                        (list (make-text-content :text "done")))))
+                    (*contexts* nil)
+                    (bundle
+                      (make-test-extension-bundle
+                       bundle-id
+                       (lambda ()
+                         (cadr-agent:define-event-hook
+                          :tool-call-before
+                          :handler
+                          (lambda (event context)
+                            (declare (ignore context))
+                            (note
+                             (format
+                              nil "before:~A"
+                              (cadr-ai:tool-call-id
+                               (cadr-agent:extension-event-tool-call
+                                event)))))))))
+                    (agent
+                      (make-agent
+                       :provider :mock
+                       :model (mock-model)
+                       :tools (mapcar #'make-spec specs)
+                       :extension-host
+                       (make-test-extension-host (list bundle))
+                       :stream-function
+                       (faux-stream '*responses* '*contexts*)
+                       :on-event
+                       (lambda (event)
+                         (case (agent-event-type event)
+                           (:tool-execution-start
+                            (note
+                             (format
+                              nil "start:~A"
+                              (cadr-ai:tool-call-id
+                               (agent-event-tool-call event)))))
+                           (:tool-execution-end
+                            (note
+                             (format
+                              nil "end:~A"
+                              (cadr-ai:tool-call-id
+                               (agent-event-tool-call event)))))
+                           (:message-end
+                            (let ((message
+                                    (agent-event-message event)))
+                              (when (typep message
+                                           'tool-result-message)
+                                (note
+                                 (format
+                                  nil "result:~A"
+                                  (tool-result-message-tool-call-id
+                                   message)))))))))))
+               (declare (special *responses* *contexts*))
+               (agent-prompt agent "run")
+               (nreverse trace))))))
+    (let ((expected
+            '("start:tool-1" "before:tool-1" "execute:tool-1"
+              "end:tool-1" "result:tool-1"
+              "start:tool-2" "before:tool-2" "execute:tool-2"
+              "end:tool-2" "result:tool-2")))
+      (is (equal
+           expected
+           (trace-batch
+            '(("slow" :sequential))
+            (list (call "tool-1" "slow")
+                  (call "tool-2" "slow"))
+            "gap48-sequential-twice")))
+      (is (equal
+           expected
+           (trace-batch
+            '(("slow" :sequential) ("fast"))
+            (list (call "tool-1" "slow")
+                  (call "tool-2" "fast"))
+            "gap48-sequential-mixed"))))))
+
+(test sequential-batch-stops-after-the-current-result-when-aborted
+  ;; pi@4a080252f executeToolCallsSequential breaks after the current
+  ;; result when the signal is already aborted. The next call does
+  ;; not start.
+  (let ((agent nil)
+        (second-entered nil)
+        (trace nil))
+    (let* ((tool
+             (make-tool
+              :name "slow"
+              :description "Slow"
+              :parameters (object-schema)
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore arguments))
+                (push (format nil "execute:~A" call-id) trace)
+                (if (string= call-id "tool-1")
+                    (cadr-agent:agent-abort agent)
+                    (setf second-entered t))
+                (list (make-text-content :text call-id)))))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "tool-1" :name "slow"
+                 :arguments (cadr-ai::json-object))
+                (make-tool-call
+                 :id "tool-2" :name "slow"
+                 :arguments (cadr-ai::json-object)))
+               :tool-use)
+              (assistant
+               (list (make-text-content :text "must not stream")))))
+           (*contexts* nil))
+      (declare (special *responses* *contexts*))
+      (setf agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :tools (list tool)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :on-event
+             (lambda (event)
+               (case (agent-event-type event)
+                 (:tool-execution-start
+                  (push
+                   (format nil "start:~A"
+                           (cadr-ai:tool-call-id
+                            (agent-event-tool-call event)))
+                   trace))
+                 (:tool-execution-end
+                  (push
+                   (format nil "end:~A"
+                           (cadr-ai:tool-call-id
+                            (agent-event-tool-call event)))
+                   trace))
+                 (:message-end
+                  (let ((message (agent-event-message event)))
+                    (when (typep message 'tool-result-message)
+                      (push
+                       (format nil "result:~A"
+                               (tool-result-message-tool-call-id
+                                message))
+                       trace))))))))
+      (agent-prompt agent "run")
+      (is (not second-entered))
+      (is (equal '("start:tool-1" "execute:tool-1"
+                   "end:tool-1" "result:tool-1")
+                 (nreverse trace))))))
 
 (test goal10-busy-parallel-tool-abort-reaches-all-running-executors
   (let ((started
