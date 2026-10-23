@@ -335,7 +335,9 @@
                      (setf status code)
                      (return)))
                  (sleep 0.02))
-            (mapc #'sb-thread:join-thread readers)
+            (dolist (reader readers)
+              (cadr-core:join-active-thread
+               reader :reason "env exec output drain"))
             (ignore-errors (%c-close out-fd))
             (ignore-errors (%c-close err-fd)))
           (let* ((spill (json-get request "spill"))

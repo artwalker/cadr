@@ -379,3 +379,15 @@
                      (env-failure (condition) condition))))
       (is (equal "not_supported" (env-failure-code failure)))
       (is (equal (cadr-env::wire-literal :list-unsupported) (env-failure-message failure))))))
+
+(test production-env-joins-go-through-cadr-core
+  (let ((root (asdf:system-source-directory "cadr-env")))
+    (dolist (relative '("src/cadr-env/client.lisp"
+                        "src/cadr-env/daemon.lisp"
+                        "src/cadr-env/process.lisp"))
+      (let ((source (uiop:read-file-string (merge-pathnames relative root))))
+        (is (not (search "sb-thread:join-thread" source))
+            "~A calls sb-thread:join-thread directly" relative)
+        (is (or (search "cadr-core:join-active-thread" source)
+                (search "cadr-core:stop-thread-for-cleanup" source))
+            "~A does not join through cadr-core" relative)))))
