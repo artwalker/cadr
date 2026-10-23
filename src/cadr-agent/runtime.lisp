@@ -114,6 +114,10 @@
   (tool-allowlist-p nil :type boolean)
   (tool-allowlist-filters-mcp-p nil :type boolean)
   (excluded-tool-names nil :type list)
+  ;; pi@4a080252f agent.ts toolExecution. "sequential" runs a batch
+  ;; one call at a time. A tool with execution-mode :sequential does
+  ;; the same even when this stays :parallel.
+  (tool-execution :parallel :type (member :parallel :sequential))
   ;; pi@4a080252f prepareLoadout hiddenDeclarations. These stay callable.
   (codemode-hidden-declarations nil :type list))
 

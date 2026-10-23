@@ -160,14 +160,23 @@
                                    (copy-list
                                     tool-result-entry-ids))))
                                context)))))
-                     (when result
-                       (unless
-                           (typep
-                            result
-                            'extension-hook-result)
-                         (error
-                          "Hook returned ~S instead of EXTENSION-HOOK-RESULT or NIL"
-                          result))
+                     ;; pi@4a080252f runner.ts emitToolCall keeps a
+                     ;; truthy return and blocks only when `.block`
+                     ;; is set. A list has no block. Signaling here
+                     ;; becomes an isError result: prepareToolCall's
+                     ;; catch (GAP-20) skips the executor. A condition
+                     ;; the handler actually throws still takes that
+                     ;; path. Other events keep the strict result type.
+                     (when
+                         (and
+                          result
+                          (not
+                           (typep result 'extension-hook-result))
+                          (not (eq event-type :tool-call-before)))
+                       (error
+                        "Hook returned ~S instead of EXTENSION-HOOK-RESULT or NIL"
+                        result))
+                     (when (typep result 'extension-hook-result)
                        (let* ((replacement-p
                                 (extension-hook-result-replacement-p
                                  result))

@@ -430,14 +430,15 @@ pipeline lives.")
 
 (defun execute-tool-batch
     (agent calls &key turn-index)
-  ;; pi@4a080252f agent-loop.ts executeToolCallsSequential: one
-  ;; sequential tool (including the same tool twice) runs the batch
-  ;; one call at a time. Start, prepare (beforeToolCall), execute,
-  ;; end, and that call's tool result all finish before the next
-  ;; call starts. An abort after the current result stops the rest.
-  ;; The parallel path still emits every start and before hook
-  ;; before any executor, then tool_execution_end in completion
-  ;; order and tool results in assistant order.
+  ;; pi@4a080252f agent-loop.ts: toolExecution "sequential", or any
+  ;; call whose tool has executionMode sequential, runs the batch one
+  ;; call at a time. Start, prepare (beforeToolCall), execute, end,
+  ;; and that call's tool result all finish before the next call
+  ;; starts. An abort after the current result stops the rest.
+  ;; The parallel path preflights one call at a time (start, then
+  ;; prepare, and an immediate end before the next start), then runs
+  ;; the executors together. tool_execution_end follows completion.
+  ;; Tool results stay in assistant order.
   (labels
       ((sequential-call-p (call)
          (let ((tool
@@ -498,108 +499,105 @@ pipeline lives.")
             (some #'tool-restart-state-abort-p states)
             (tool-outcomes-terminate-p
              (coerce (nreverse completed) 'vector))))))
-    (if (some #'sequential-call-p calls)
+    (if (or (eq :sequential (agent-tool-execution agent))
+            (some #'sequential-call-p calls))
         (run-sequential)
-        (progn
-  (dolist (call calls)
-    (emit-start call))
-  (let* ((states
-           (mapcar
-            (lambda (call)
-              (make-tool-restart-state-for-call
-               agent call))
-            calls))
-         (prepared
-           (mapcar
-            (lambda (state)
-              (prepare-tool-restart-state
-               state turn-index))
-            states))
-         (parallel-p
-           (every
-            (lambda (entry)
-              (or (typep entry 'tool-outcome)
-                  (eq :parallel
-                      (cadr-ai:tool-execution-mode
-                       (prepared-tool-call-tool entry)))))
-            prepared))
-         (runnable
-           (count-if
-            (lambda (entry)
-              (not (typep entry 'tool-outcome)))
-            prepared))
-         (outcomes
-           (make-array (length prepared)
-                       :initial-element nil))
-         (*nested-tool-call-runner*
-           (or *nested-tool-call-runner*
-               (make-agent-nested-tool-runner agent))))
-    ;; pi executeToolCallsParallel is Promise.all on the same
-    ;; event loop. One parallel tool still paid pthread_create
-    ;; (sprof pthread_sigmask 53% of agent_tool_loop). Spawn
-    ;; threads only when two or more calls actually run.
-    (if (and parallel-p (> runnable 1))
-        (let ((threads nil))
-          (loop for entry in prepared
+        (let* ((states
+                 (mapcar
+                  (lambda (call)
+                    (make-tool-restart-state-for-call
+                     agent call))
+                  calls))
+               (prepared (make-list (length calls)))
+               (outcomes
+                 (make-array (length calls) :initial-element nil))
+               (*nested-tool-call-runner*
+                 (or *nested-tool-call-runner*
+                     (make-agent-nested-tool-runner agent))))
+          ;; pi executeToolCallsParallel preflights each call before
+          ;; the next start. Immediate outcomes emit tool_execution_end
+          ;; here. Executors run after that loop. One parallel tool
+          ;; still paid pthread_create (sprof pthread_sigmask 53% of
+          ;; agent_tool_loop). Spawn threads only when two or more
+          ;; calls actually run.
+          (loop for call in calls
                 for state in states
                 for index from 0
                 do
-                (if (typep entry 'tool-outcome)
-                    (progn
-                      (setf
-                       (aref outcomes index)
-                      (complete-tool-outcome
-                        agent
-                        (finish-tool-restart-outcome
-                         state entry)
-                        turn-index)))
-                    (let ((thread-entry entry)
-                          (thread-state state)
-                          (thread-index index))
-                      (push
-                       (sb-thread:make-thread
-                        (lambda ()
-                          (let ((outcome
-                                  (complete-tool-outcome
-                                   agent
-                                   (execute-tool-restart-state
-                                    thread-state
-                                    thread-entry
-                                    turn-index)
-                                   turn-index)))
-                            (setf (aref outcomes thread-index)
-                                  outcome)))
-                        :name
-                        (format nil "cadr-tool-~A"
-                                (cadr-ai:tool-call-name
-                                 (prepared-tool-call-call
-                                  thread-entry))))
-                       threads))))
-          (dolist (thread threads)
-            (cadr-core:join-active-thread
-             thread
-             :reason
-             "collect every parallel tool result before committing the turn")))
-        (map-into
-         outcomes
-         (lambda (entry state)
-           (complete-tool-outcome
-            agent
-            (if (typep entry 'tool-outcome)
-                (finish-tool-restart-outcome
-                 state entry)
-                (execute-tool-restart-state
-                 state entry turn-index))
-            turn-index))
-         prepared
-         states))
-    (multiple-value-bind (results appended)
-        (tool-outcomes-values agent outcomes)
-      (values
-       results appended
-       (some #'tool-restart-state-abort-p
-             states)
-       (tool-outcomes-terminate-p outcomes))))))))
+                (emit-start call)
+                (let ((entry
+                        (prepare-tool-restart-state
+                         state turn-index)))
+                  (setf (nth index prepared) entry)
+                  (when (typep entry 'tool-outcome)
+                    (setf
+                     (aref outcomes index)
+                     (complete-tool-outcome
+                      agent
+                      (finish-tool-restart-outcome state entry)
+                      turn-index)))))
+          (let* ((parallel-p
+                   (every
+                    (lambda (entry)
+                      (or (typep entry 'tool-outcome)
+                          (eq :parallel
+                              (cadr-ai:tool-execution-mode
+                               (prepared-tool-call-tool entry)))))
+                    prepared))
+                 (runnable
+                   (count-if
+                    (lambda (entry)
+                      (not (typep entry 'tool-outcome)))
+                    prepared)))
+            (labels ((run-one (entry state index)
+                       (setf
+                        (aref outcomes index)
+                        (complete-tool-outcome
+                         agent
+                         (execute-tool-restart-state
+                          state entry turn-index)
+                         turn-index))))
+              (if (and parallel-p (> runnable 1))
+                  (let ((threads nil))
+                    (loop for entry in prepared
+                          for state in states
+                          for index from 0
+                          do
+                          (unless (typep entry 'tool-outcome)
+                            (let ((thread-entry entry)
+                                  (thread-state state)
+                                  (thread-index index))
+                              (push
+                               (sb-thread:make-thread
+                                (lambda ()
+                                  (run-one
+                                   thread-entry
+                                   thread-state
+                                   thread-index))
+                                :name
+                                (format
+                                 nil "cadr-tool-~A"
+                                 (cadr-ai:tool-call-name
+                                  (prepared-tool-call-call
+                                   thread-entry))))
+                               threads))))
+                    (dolist (thread threads)
+                      (cadr-core:join-active-thread
+                       thread
+                       :reason
+                       "collect every parallel tool result before committing the turn")))
+                  (loop for entry in prepared
+                        for state in states
+                        for index from 0
+                        do
+                        (unless (typep entry 'tool-outcome)
+                          (run-one entry state index))))))
+          (multiple-value-bind (results appended)
+              (tool-outcomes-values agent outcomes)
+            (values
+             results appended
+             (some #'tool-restart-state-abort-p states)
+             (tool-outcomes-terminate-p outcomes)))))))
 
 (defun execute-truncated-tool-batch
     (agent calls &key turn-index)

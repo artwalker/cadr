@@ -303,7 +303,8 @@
                          tool-allowlist
                          tool-allowlist-p
                          tool-allowlist-filters-mcp-p
-                         excluded-tool-names)
+                         excluded-tool-names
+                         (tool-execution :parallel))
   (let* ((initial-messages
            (copy-list
             (or messages
@@ -349,7 +350,11 @@
            :tool-allowlist-p (not (null tool-allowlist-p))
            :tool-allowlist-filters-mcp-p
            (not (null tool-allowlist-filters-mcp-p))
-           :excluded-tool-names (copy-list excluded-tool-names))))
+           :excluded-tool-names (copy-list excluded-tool-names)
+           :tool-execution
+           (if (eq tool-execution :sequential)
+               :sequential
+               :parallel))))
     (when extension-host
       (attach-extension-host extension-host agent))
     (unless
@@ -793,4 +798,7 @@
    :run-function
    (lambda (tool-call parent-id signal on-update)
      (run-agent-nested-tool
-      agent tool-call parent-id signal on-update))))
+      agent tool-call parent-id signal on-update))
+   :sequential-p
+   (lambda ()
+     (eq (agent-tool-execution agent) :sequential))))

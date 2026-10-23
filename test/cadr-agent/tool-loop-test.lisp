@@ -572,7 +572,7 @@
          (make-tool-call
           :id id :name name
           :arguments (cadr-ai::json-object)))
-       (trace-batch (specs calls bundle-id)
+       (trace-batch (specs calls bundle-id &key (tool-execution :parallel))
          (let ((trace nil))
            (labels ((note (text)
                       (push text trace))
@@ -605,6 +605,9 @@
                           :handler
                           (lambda (event context)
                             (declare (ignore context))
+                            ;; The value is the list PUSH consed.
+                            ;; v1.4.0 emitToolCall blocks only when
+                            ;; the result's block property is set.
                             (note
                              (format
                               nil "before:~A"
@@ -616,6 +619,7 @@
                        :provider :mock
                        :model (mock-model)
                        :tools (mapcar #'make-spec specs)
+                       :tool-execution tool-execution
                        :extension-host
                        (make-test-extension-host (list bundle))
                        :stream-function
@@ -666,7 +670,172 @@
             '(("slow" :sequential) ("fast"))
             (list (call "tool-1" "slow")
                   (call "tool-2" "fast"))
-            "gap48-sequential-mixed"))))))
+            "gap48-sequential-mixed")))
+      ;; pi@4a080252f agent.ts toolExecution "sequential" forces the
+      ;; batch even when every tool omits executionMode.
+      (is (equal
+           expected
+           (trace-batch
+            '(("slow") ("fast"))
+            (list (call "tool-1" "slow")
+                  (call "tool-2" "fast"))
+            "gap48-global-sequential"
+            :tool-execution :sequential))))))
+
+(test parallel-preflight-prepares-one-call-before-the-next-start
+  ;; pi@4a080252f executeToolCallsParallel: start, then prepare, and
+  ;; an immediate tool_execution_end, before the next call's start.
+  ;; Executors run after that preflight. Tool results stay in
+  ;; assistant order, after every end.
+  (labels ((run-batch (calls tools bundle-id)
+             (let ((trace nil))
+               (labels ((note (text)
+                          (push text trace)))
+                 (let* ((*responses*
+                          (list
+                           (assistant calls :tool-use)
+                           (assistant
+                            (list (make-text-content :text "done")))))
+                        (*contexts* nil)
+                        (bundle
+                          (make-test-extension-bundle
+                           bundle-id
+                           (lambda ()
+                             (cadr-agent:define-event-hook
+                              :tool-call-before
+                              :handler
+                              (lambda (event context)
+                                (declare (ignore context))
+                                (note
+                                 (format
+                                  nil "before:~A"
+                                  (cadr-ai:tool-call-id
+                                   (cadr-agent:extension-event-tool-call
+                                    event)))))))))
+                      (agent
+                        (make-agent
+                         :provider :mock
+                         :model (mock-model)
+                         :tools tools
+                         :extension-host
+                         (make-test-extension-host (list bundle))
+                         :stream-function
+                         (faux-stream '*responses* '*contexts*)
+                         :on-event
+                         (lambda (event)
+                           (case (agent-event-type event)
+                             (:tool-execution-start
+                              (push
+                               (format
+                                nil "start:~A"
+                                (cadr-ai:tool-call-id
+                                 (agent-event-tool-call event)))
+                               trace))
+                             (:tool-execution-end
+                              (push
+                               (format
+                                nil "end:~A"
+                                (cadr-ai:tool-call-id
+                                 (agent-event-tool-call event)))
+                               trace))
+                             (:message-end
+                              (let ((message
+                                      (agent-event-message event)))
+                                (when (typep message
+                                             'tool-result-message)
+                                  (push
+                                   (format
+                                    nil "result:~A"
+                                    (tool-result-message-tool-call-id
+                                     message))
+                                   trace)))))))))
+                (declare (special *responses* *contexts*))
+                (agent-prompt agent "run")
+                (nreverse trace))))))
+    (let ((executed nil))
+      (let* ((echo
+               (make-tool
+                :name "echo"
+                :description "Echo"
+                :parameters (object-schema)
+                :executor
+                (lambda (call-id arguments)
+                  (declare (ignore arguments))
+                  (push call-id executed)
+                  (list (make-text-content :text call-id)))))
+             (missing
+               (run-batch
+                (list
+                 (make-tool-call
+                  :id "missing" :name "missing"
+                  :arguments (cadr-ai::json-object))
+                 (make-tool-call
+                  :id "tool-2" :name "echo"
+                  :arguments (cadr-ai::json-object)))
+                (list echo)
+                "gap48-parallel-immediate")))
+        (is (equal '("tool-2") executed))
+        (is (equal
+             '("start:missing" "end:missing"
+               "start:tool-2" "before:tool-2"
+               "end:tool-2"
+               "result:missing" "result:tool-2")
+             missing))
+        (is (not (find "before:missing" missing :test #'string=)))))))
+
+(test global-tool-execution-serializes-nested-calls
+  ;; pi@4a080252f nested-tool-calls.ts: the agent toolExecution flag
+  ;; or the tool's executionMode, either one, serializes concurrent
+  ;; ctx.executeTool calls. Three parallel calls overlap. Three calls
+  ;; under the agent flag do not.
+  (labels ((entered-count (sequential-p tool)
+             (let* ((entered (list 0))
+                    (release (sb-thread:make-semaphore :count 0))
+                    (runner
+                     (cadr-agent::make-nested-tool-call-runner
+                      :tools-function (lambda () (and tool (list tool)))
+                      :sequential-p (lambda () sequential-p)
+                      :emit-function (lambda (&rest ignored)
+                                       (declare (ignore ignored)))
+                      :run-function
+                      (lambda (tool-call parent-id signal on-update)
+                        (declare (ignore tool-call parent-id signal
+                                         on-update))
+                        (sb-ext:atomic-incf (car entered))
+                        (sb-thread:wait-on-semaphore release)
+                        (cadr-agent::make-nested-tool-call-outcome)))))
+               (let ((threads
+                       (loop repeat 3
+                             collect
+                             (sb-thread:make-thread
+                              (lambda ()
+                                (cadr-agent::nested-tool-call-runner-execute
+                                 runner "parent" "echo"
+                                 (cadr-ai::json-object)))))))
+                 (loop repeat 50
+                       until (= (car entered) 3)
+                       do (sleep 0.01))
+                 (let ((seen (car entered)))
+                   (loop repeat 3
+                         do (sb-thread:signal-semaphore release))
+                   (mapc #'sb-thread:join-thread threads)
+                   seen)))))
+    (let ((parallel-tool
+            (make-tool
+             :name "echo"
+             :description "Echo"
+             :parameters (object-schema)
+             :execution-mode :parallel)))
+      (is (= 3 (entered-count nil parallel-tool)))
+      (is (= 1 (entered-count t parallel-tool)))
+      (is (= 1
+             (entered-count
+              nil
+              (make-tool
+               :name "echo"
+               :description "Echo"
+               :parameters (object-schema)
+               :execution-mode :sequential)))))))
 
 (test sequential-batch-stops-after-the-current-result-when-aborted
   ;; pi@4a080252f executeToolCallsSequential breaks after the current

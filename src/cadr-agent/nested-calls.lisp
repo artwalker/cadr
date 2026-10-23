@@ -39,7 +39,10 @@
   (queue (sb-thread:make-mutex :name "nested-tool-call-queue"))
   tools-function
   run-function
-  emit-function)
+  emit-function
+  ;; pi@4a080252f agent-session.ts isSequential: the agent
+  ;; toolExecution flag, read at call time.
+  sequential-p)
 
 (defstruct nested-call-scope
   records
@@ -238,14 +241,20 @@
     :is-error t)))
 
 (defun nested-tool-exclusive-p (runner name)
+  ;; pi@4a080252f nested-tool-calls.ts: the agent toolExecution flag
+  ;; or this tool's executionMode sequential, either one, serializes.
   (and (not *nested-tool-holds-queue*)
-       (let ((tool
-               (find name
-                     (funcall (nested-tool-call-runner-tools-function runner))
-                     :key #'cadr-ai:tool-name
-                     :test #'string=)))
-         (and tool
-              (eq (cadr-ai:tool-execution-mode tool) :sequential)))))
+       (or (and (functionp (nested-tool-call-runner-sequential-p runner))
+                (funcall (nested-tool-call-runner-sequential-p runner)))
+           (let ((tool
+                   (find name
+                         (funcall
+                          (nested-tool-call-runner-tools-function runner))
+                         :key #'cadr-ai:tool-name
+                         :test #'string=)))
+             (and tool
+                  (eq (cadr-ai:tool-execution-mode tool)
+                      :sequential))))))
 
 (defun nested-tool-call-runner-execute
     (runner caller-id name arguments &key signal on-update)
