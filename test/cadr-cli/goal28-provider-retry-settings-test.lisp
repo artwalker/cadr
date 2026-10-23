@@ -8,7 +8,10 @@
 
 (defun goal28-assert-absent-retry-defaults (manager &key sdk-p)
   (let ((settings (goal28-retry-plist manager sdk-p)))
+    ;; v1.4.0 getRetrySettings defaults maxRetries to 3.
+    ;; getProviderRetrySettings leaves provider maxRetries unset.
     (is (= 3 (getf settings :max-retries)))
+    (is (null (getf settings :provider-max-retries)))
     (is (= 60000 (getf settings :max-retry-delay-ms)))
     (is (null (getf settings :timeout-ms)))))
 
@@ -52,7 +55,8 @@
             (lambda ()
               (cadr-cli::settings-retry-settings manager)))))
     (funcall stream nil nil nil nil)
-    (is (= 3 (getf seen :max-retries)))
+    ;; provider-retry.ts: options.maxRetries ?? 0. One attempt.
+    (is (= 0 (getf seen :max-retries)))
     (is (= 60000 (getf seen :max-retry-delay-ms)))
     (is (null (getf seen :timeout-ms))))
   (with-test-directory (root)
@@ -73,10 +77,16 @@
               (lambda ()
                 (cadr-cli::settings-retry-settings manager)))))
       (declare (ignore _))
-      (is (= 2
+      ;; Project provider.maxRetries does not replace agent maxRetries.
+      ;; v1.4.0 getRetrySettings still reads top-level retry.maxRetries.
+      (is (= 3
              (getf
               (cadr-cli::settings-retry-settings manager)
               :max-retries)))
+      (is (= 2
+             (getf
+              (cadr-cli::settings-retry-settings manager)
+              :provider-max-retries)))
       (is (= 60000
              (getf
               (cadr-cli::settings-retry-settings manager)
@@ -104,10 +114,14 @@
               (setf seen options))
             (lambda ()
               (cadr-cli:sdk-settings-retry-settings manager)))))
-    (is (= 2
+    (is (= 3
            (getf
             (cadr-cli:sdk-settings-retry-settings manager)
             :max-retries)))
+    (is (= 2
+           (getf
+            (cadr-cli:sdk-settings-retry-settings manager)
+            :provider-max-retries)))
     (funcall stream nil nil nil nil)
     (is (= 2 (getf seen :max-retries)))
     (is (= 60000 (getf seen :max-retry-delay-ms)))
@@ -239,7 +253,8 @@
       (dolist (plist (list (goal28-retry-plist manager nil)
                            (goal28-retry-plist sdk t)))
         (is (= 30000 (getf plist :timeout-ms)))
-        (is (= 2 (getf plist :max-retries)))
+        (is (= 3 (getf plist :max-retries)))
+        (is (= 2 (getf plist :provider-max-retries)))
         (is (= 45000 (getf plist :max-retry-delay-ms))))))
   (let* ((seen nil)
          (manager
@@ -260,6 +275,7 @@
             (lambda ()
               (cadr-cli::settings-retry-settings manager)))))
     (funcall stream nil nil nil nil)
+    (is (= 0 (getf seen :max-retries)))
     (is (= 30000 (getf seen :timeout-ms)))
     (is (= 30 (getf seen :read-timeout)))
     (is (= 45000 (getf seen :max-retry-delay-ms)))
@@ -402,3 +418,201 @@
                                 (declare (ignore ignored)))))
     (is (= 0 (getf captured :connect-timeout)))
     (is (= 0 (getf captured :read-timeout)))))
+
+(defun goal45-retry-chat-model ()
+  (cadr-ai:make-model
+   :id "gpt-test"
+   :provider :openai
+   :api :openai-responses
+   :base-url "https://api.openai.com"
+   :max-tokens 4096))
+
+(defun goal45-retry-chat-context ()
+  (cadr-ai:make-context
+   :messages
+   (list
+    (cadr-ai:make-user-message
+     :content "hi"
+     :timestamp 1))))
+
+(defun goal45-wrapped-complete (manager)
+  (cadr-cli::stream-function-with-provider-retry
+   (cadr-cli::stream-function-with-http-idle-timeout
+    (lambda (provider model context on-event &rest options)
+      (declare (ignore on-event))
+      (apply #'cadr-ai:complete-chat
+             provider model context options))
+    (lambda ()
+      (cadr-cli::settings-http-idle-timeout-ms manager)))
+   (lambda ()
+     (cadr-cli::settings-retry-settings manager))))
+
+(defun goal45-count-retryable-timeouts
+    (manager &key (request-max-retries nil request-max-retries-p))
+  (let ((calls 0)
+        (slept nil))
+    (let ((cadr-ai:*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url arguments))
+              (incf calls)
+              (error 'cadr-ai:timeout-error
+                     :message
+                     "HTTP request timed out: Condition CADR-AI::NATIVE-HTTP-TIMEOUT was signalled."
+                     :retryable-p t)))
+          (cadr-ai::*retry-sleep-function*
+            (lambda (seconds)
+              (declare (ignore seconds))
+              (setf slept t))))
+      (declare (special cadr-ai::*retry-sleep-function*))
+      (let ((message
+              (apply (goal45-wrapped-complete manager)
+                     (cadr-ai:make-openai-provider
+                      :api-key "retry-count")
+                     (goal45-retry-chat-model)
+                     (goal45-retry-chat-context)
+                     nil
+                     (when request-max-retries-p
+                       (list :max-retries request-max-retries)))))
+        (values calls slept message)))))
+
+(test goal45-provider-max-retries-does-not-change-agent-retries
+  ;; v1.4.0 settings-manager.ts getRetrySettings reads
+  ;; retry.maxRetries (default 3). getProviderRetrySettings reads
+  ;; retry.provider.maxRetries and leaves it undefined.
+  ;; provider-retry.ts uses options.maxRetries ?? 0.
+  (let ((split
+          (cadr-cli::make-memory-settings-manager
+           (args "retry"
+                 (args "maxRetries" 4
+                       "provider"
+                       (args "maxRetries" 1)))))
+        (sdk
+          (cadr-cli::make-memory-sdk-settings-manager
+           (args "retry"
+                 (args "maxRetries" 4
+                       "provider"
+                       (args "maxRetries" 1))))))
+    (dolist (plist (list (goal28-retry-plist split nil)
+                         (goal28-retry-plist sdk t)))
+      (is (= 4 (getf plist :max-retries)))
+      (is (= 1 (getf plist :provider-max-retries)))))
+  (multiple-value-bind (calls slept message)
+      (goal45-count-retryable-timeouts
+       (cadr-cli::make-memory-settings-manager
+        (args "retry"
+              (args "maxRetries" 5
+                    "provider"
+                    (args "timeoutMs" 0
+                          "maxRetryDelayMs" 0)))))
+    (is (= 1 calls))
+    (is (null slept))
+    (is (eq :error (cadr-ai:assistant-message-stop-reason message)))
+    (is (search "timed out"
+                (cadr-ai:assistant-message-error-message message))))
+  (multiple-value-bind (calls slept message)
+      (goal45-count-retryable-timeouts
+       (cadr-cli::make-memory-settings-manager
+        (args "retry"
+              (args "provider" (args "maxRetries" 2)))))
+    (declare (ignore message))
+    (is (= 3 calls))
+    (is (eq t slept)))
+  (multiple-value-bind (calls slept)
+      (goal45-count-retryable-timeouts
+       (cadr-cli::make-memory-settings-manager
+        (args "retry"
+              (args "maxRetries" 4
+                    "provider" (args "maxRetries" 1)))))
+    (declare (ignore slept))
+    (is (= 2 calls)))
+  (multiple-value-bind (calls slept)
+      (goal45-count-retryable-timeouts
+       (cadr-cli::make-memory-settings-manager
+        (args "retry"
+              (args "provider" (args "maxRetries" 2))))
+       :request-max-retries 0)
+    (declare (ignore slept))
+    (is (= 1 calls))))
+
+(test goal45-timeout-zero-sends-one-request-to-a-blackhole
+  ;; Advisor repro: timeoutMs 0 and maxRetryDelayMs 0, no provider
+  ;; maxRetries. A listener that never accepts must fail one connection
+  ;; and must not take the 0.25+0.5+1 backoff of three retries.
+  (let* ((listener
+           (usocket:socket-listen
+            "127.0.0.1" 0
+            :reuse-address t
+            :element-type '(unsigned-byte 8)))
+         (port (usocket:get-local-port listener))
+         (calls 0)
+         (slept nil)
+         (message nil)
+         (caught nil)
+         (manager
+           (cadr-cli::make-memory-settings-manager
+            (args "httpIdleTimeoutMs" 300000
+                  "retry"
+                  (args "maxRetries" 3
+                        "provider"
+                        (args "timeoutMs" 0
+                              "maxRetryDelayMs" 0)))))
+         (model
+           (cadr-ai:make-model
+            :id "gpt-test"
+            :provider :openai
+            :api :openai-responses
+            :base-url (format nil "http://127.0.0.1:~D" port)
+            :max-tokens 4096))
+         (started (get-internal-real-time))
+         (worker
+           (sb-thread:make-thread
+            (lambda ()
+              (let ((cadr-ai:*http-request-function*
+                      (lambda (&rest arguments)
+                        (incf calls)
+                        (apply #'cadr-ai::native-http-request
+                               arguments)))
+                    (cadr-ai::*retry-sleep-function*
+                      (lambda (seconds)
+                        (declare (ignore seconds))
+                        (setf slept t))))
+                (declare (special cadr-ai::*retry-sleep-function*))
+                (handler-case
+                    (setf message
+                          (funcall
+                           (goal45-wrapped-complete manager)
+                           (cadr-ai:make-openai-provider
+                            :api-key "blackhole")
+                           model
+                           (goal45-retry-chat-context)
+                           nil))
+                  (error (condition)
+                    (setf caught condition)))))
+            :name "cadr-test-gap45-blackhole")))
+    (unwind-protect
+         (progn
+           (sb-thread:join-thread worker :timeout 2)
+           (is (not (sb-thread:thread-alive-p worker)))
+           (is (null caught))
+           (is (= 1 calls))
+           (is (null slept))
+           (is (= 3
+                  (getf
+                   (cadr-cli::settings-retry-settings manager)
+                   :max-retries)))
+           (is (null
+                (getf
+                 (cadr-cli::settings-retry-settings manager)
+                 :provider-max-retries)))
+           (is (eq :error
+                   (cadr-ai:assistant-message-stop-reason message)))
+           (is (search "timed out"
+                       (cadr-ai:assistant-message-error-message
+                        message)))
+           (is (< (/ (- (get-internal-real-time) started)
+                     internal-time-units-per-second)
+                  1)))
+      (when (sb-thread:thread-alive-p worker)
+        (ignore-errors (sb-thread:terminate-thread worker))
+        (ignore-errors (sb-thread:join-thread worker :timeout 1)))
+      (ignore-errors (usocket:socket-close listener)))))

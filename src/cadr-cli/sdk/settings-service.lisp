@@ -256,6 +256,8 @@
       (t nil))))
 
 (defun sdk-settings-retry-settings (manager)
+  ;; Same split as settings-retry-settings. Top-level maxRetries is
+  ;; the agent count. Provider maxRetries stays unset until written.
   (let* ((retry
            (sdk-settings-value
             manager "retry" (empty-json-object)))
@@ -264,27 +266,29 @@
                 (cadr-ai::json-get
                  retry "provider"
                  (empty-json-object))))
-         (source
-           (if (hash-table-p provider)
-               (merge-json-objects retry provider)
-               retry)))
-    (flet ((field (key default)
-             (if (hash-table-p source)
-                 (cadr-ai::json-get source key default)
-                 default)))
-      (list
-       :enabled-p
-       (eq t (field "enabled" t))
-       :max-retries (field "maxRetries" 3)
-       :base-delay-ms (field "baseDelayMs" 2000)
-       :max-agent-delay-ms
-       (retry-provider-number
-        retry "maxAgentDelayMs" 60000)
-       :max-retry-delay-ms
-       (retry-provider-number
-        provider "maxRetryDelayMs" 60000)
-       :timeout-ms
-       (retry-provider-number provider "timeoutMs" nil)))))
+         (retry-table-p (hash-table-p retry)))
+    (list
+     :enabled-p
+     (eq t
+         (if retry-table-p
+             (cadr-ai::json-get retry "enabled" t)
+             t))
+     :max-retries
+     (retry-provider-number retry "maxRetries" 3)
+     :base-delay-ms
+     (if retry-table-p
+         (cadr-ai::json-get retry "baseDelayMs" 2000)
+         2000)
+     :max-agent-delay-ms
+     (retry-provider-number
+      retry "maxAgentDelayMs" 60000)
+     :provider-max-retries
+     (retry-provider-number provider "maxRetries" nil)
+     :max-retry-delay-ms
+     (retry-provider-number
+      provider "maxRetryDelayMs" 60000)
+     :timeout-ms
+     (retry-provider-number provider "timeoutMs" nil))))
 
 (defun sdk-settings-http-idle-timeout-ms
     (manager)

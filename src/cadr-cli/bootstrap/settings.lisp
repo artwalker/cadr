@@ -281,6 +281,10 @@
              provider model context on-event request-options))))
 
 (defun settings-retry-settings (manager)
+  ;; pi@4a080252f getRetrySettings reads the top-level retry object.
+  ;; getProviderRetrySettings reads retry.provider and does not fill
+  ;; maxRetries. Merging the two objects made provider.maxRetries
+  ;; replace the agent count, and the missing provider count became 3.
   (let* ((retry
            (settings-value
             manager "retry" (empty-json-object)))
@@ -289,36 +293,43 @@
                 (cadr-ai::json-get
                  retry "provider"
                  (empty-json-object))))
-         (source
-           (if (hash-table-p provider)
-               (merge-json-objects retry provider)
-               retry)))
-    (flet ((field (key default)
-             (if (hash-table-p source)
-                 (cadr-ai::json-get source key default)
-                 default)))
-      (list
-       :enabled-p
-       (eq t (field "enabled" t))
-       :max-retries (field "maxRetries" 3)
-       :base-delay-ms (field "baseDelayMs" 2000)
-       :max-agent-delay-ms
-       (retry-provider-number
-        retry "maxAgentDelayMs" 60000)
-       :max-retry-delay-ms
-       (retry-provider-number
-        provider "maxRetryDelayMs" 60000)
-       :timeout-ms
-       (retry-provider-number provider "timeoutMs" nil)))))
+         (retry-table-p (hash-table-p retry)))
+    (list
+     :enabled-p
+     (eq t
+         (if retry-table-p
+             (cadr-ai::json-get retry "enabled" t)
+             t))
+     :max-retries
+     (retry-provider-number retry "maxRetries" 3)
+     :base-delay-ms
+     (if retry-table-p
+         (cadr-ai::json-get retry "baseDelayMs" 2000)
+         2000)
+     :max-agent-delay-ms
+     (retry-provider-number
+      retry "maxAgentDelayMs" 60000)
+     :provider-max-retries
+     (retry-provider-number provider "maxRetries" nil)
+     :max-retry-delay-ms
+     (retry-provider-number
+      provider "maxRetryDelayMs" 60000)
+     :timeout-ms
+     (retry-provider-number provider "timeoutMs" nil))))
 
 (defun stream-function-with-provider-retry
     (stream-function retry-settings-function)
   (lambda (provider model context on-event &rest options)
     (let ((request-options (copy-list options))
           (settings (funcall retry-settings-function)))
+      ;; pi@4a080252f sdk.ts buildRequestOptions passes
+      ;; provider maxRetries through. provider-retry.ts then uses
+      ;; options.maxRetries ?? 0, so an unset field is one attempt.
+      ;; Agent retries stay on the top-level :max-retries.
       (unless (member :max-retries request-options :test #'eq)
-        (setf (getf request-options :max-retries)
-              (getf settings :max-retries)))
+        (let ((retries (getf settings :provider-max-retries)))
+          (setf (getf request-options :max-retries)
+                (if (realp retries) retries 0))))
       (unless (member :max-retry-delay-ms request-options :test #'eq)
         (setf (getf request-options :max-retry-delay-ms)
               (getf settings :max-retry-delay-ms)))
