@@ -1987,7 +1987,7 @@
            (cadr-ai::json-get properties "command"))
          (timeout
            (cadr-ai::json-get properties "timeout")))
-    (is (string= "Bash command to execute"
+    (is (string= "Shell command to execute"
                  (cadr-ai::json-get command "description")))
     (is (string=
          "Timeout in seconds (optional, no default timeout)"

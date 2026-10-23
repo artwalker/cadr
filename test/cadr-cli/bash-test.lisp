@@ -567,3 +567,30 @@
                 (assoc "CADR_SESSION_ID" seen :test #'string=)))
            (is (null
                 (assoc "CADR_MODEL" seen :test #'string=)))))))))
+
+(test shell-command-parameter-description-matches-v140
+  ;; v1.4.0 packages/coding-agent/src/core/tools/bash.ts bashSchema
+  ;; (80e62761f): both shells share "Shell command to execute".
+  ;; createShellToolDefinition substitutes shellName into one sentence.
+  ;; truncate.ts DEFAULT_MAX_LINES is 2000 and DEFAULT_MAX_BYTES is 50 KiB.
+  (flet ((parameter-description (tool name)
+           (cadr-ai::json-get
+            (cadr-ai::json-get
+             (cadr-ai::json-get
+              (cadr-ai:tool-parameters tool) "properties")
+             name)
+            "description")))
+    (let ((bash (make-bash-tool #P"/tmp/"))
+          (powershell (make-powershell-tool #P"/tmp/")))
+      (dolist (tool (list bash powershell))
+        (is (string= "Shell command to execute"
+                     (parameter-description tool "command")))
+        (is (string=
+             "Timeout in seconds (optional, no default timeout)"
+             (parameter-description tool "timeout"))))
+      (is (string=
+           "Execute a bash command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds."
+           (cadr-ai:tool-description bash)))
+      (is (string=
+           "Execute a PowerShell command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds."
+           (cadr-ai:tool-description powershell))))))

@@ -103,7 +103,7 @@
    :parameters
    (object-schema
     (cadr-ai::json-object
-     "command" (string-property "PowerShell command to execute")
+     "command" (string-property "Shell command to execute")
      "timeout"
      (number-property
       "Timeout in seconds (optional, no default timeout)"))
