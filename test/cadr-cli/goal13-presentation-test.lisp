@@ -1275,11 +1275,12 @@
              ("cadr-protocol" 5)
              ("cadr-evals" 8)
              ("cadr-chord" 11)
-             ("cadr-telemetry" 6)))
+             ("cadr-telemetry" 6)
+             ("cadr-durable" 9)))
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=348 systems=11 axes=6 rewrite=1 keep=10"
+      "GOAL13_LISP_IDIOM_AUDIT files=357 systems=12 axes=6 rewrite=1 keep=11"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1297,7 +1298,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 348 total))
+    (is (= 357 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1329,7 +1330,8 @@
            "src/cadr-tui/threads.lisp"
            "src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time,paths}.lisp"
            "src/cadr-chord/{package,errors,json,schema,contract,delta,link,host,manager,sqlite,child-entry}.lisp"
-           "src/cadr-telemetry/{package,clock,noop,memory,render,schema}.lisp"))
+           "src/cadr-telemetry/{package,clock,noop,memory,render,schema}.lisp"
+           "src/cadr-durable/{package,errors,state,backends,session,harness,tools,codemode,telemetry}.lisp"))
       (is (search path audit)
           "Post-audit source addition has no disposition: ~A"
           path))))

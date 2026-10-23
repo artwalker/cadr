@@ -8,9 +8,9 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=348 systems=11 axes=6 rewrite=1 keep=10 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=357 systems=12 axes=6 rewrite=1 keep=11 -->
 
-The audited tree contains 348 Lisp files.  The form inventory below is
+The audited tree contains 357 Lisp files.  The form inventory below is
 syntactic evidence, not a quality score.  Line totals below are the last
 measured audit snapshot; only the file counts are suite-locked.
 
@@ -27,6 +27,7 @@ measured audit snapshot; only the file counts are suite-locked.
 | `cadr-evals` | 8 | 3,031 | 17 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
 | `cadr-chord` | 11 | 2,814 | 34 | 0 | 5 | 15 | 1 | 13 | 0 | 0 |
 | `cadr-telemetry` | 6 | 1,248 | 24 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |
+| `cadr-durable` | 9 | 2,241 | 24 | 0 | 0 | 0 | 0 | 7 | 0 | 0 |
 
 The audit distinguishes three kinds of dispatch that are easy to conflate:
 
@@ -52,6 +53,7 @@ Only the first category is a CLOS candidate.
 | `cadr-evals` | Observations, summaries, diagnostics, and artifacts are immutable report values assembled by pure grouping/sorting passes. | Structs fit value records; there is no interchangeable runtime behavior.  Harness selection is a closed declared table. | Summary formatting is verbose but each field is distinct and reviewable; no duplicated block clears the significant-reduction bar. | Four handlers convert candidate/source execution failures into scored/unscored observations.  Continuing inside the failed candidate would falsify the evaluation. | **Keep.** |
 | `cadr-chord` | Contract fingerprints, protocol version 4, object activation, and SQLite schema versions are each one function of their inputs. | Frames, ops, and contracts are closed data. Link kinds use a small generic protocol because memory and pipe links already substitute for each other. | Canonical JSON and the delta codec stay explicit so the fingerprint and wire bytes remain reviewable. | Chord failures are one condition with a code and a reason. Callers do not choose a restart at a contract or migration boundary. | **Keep.** The library is new Lisp for the v1.4.0 host runtime, not a transcription that needs a second rewrite pass. |
 | `cadr-telemetry` | One shared no-op span is the default. An in-memory store records only while the caller passes that store's span. Attribute order is the alist order. | Spans, metrics, and carriers are closed records. Dispatch is a function slot on the span, not an open class protocol. | Schema definitions are data. A macro would hide the required-attribute check. | A thrown condition is recorded, then the same condition propagates. There is no restart at the span boundary. | **Keep.** The library is new Lisp for the v1.4.0 span contract. The no-op object and the alist order are the checks; another class hierarchy would not add one. |
+| `cadr-durable` | One state value is the commit. Memory, JSONL, and SQLite persist that value. A document draft publishes through chord, and a task moves only by a checkpoint. | Records are structs. Entry kinds, task status, and storage backends are closed sets. | The coding-tool diagnostics and the telemetry schema are data. A macro would hide the sentences the tests lock. | A storage error fails the session. The next call reports that failure. There is no restart that continues the broken commit. | **Keep.** The library is new Lisp for the v1.4.0 conversation, document, and task contract. Another class per record would not change the commit. |
 
 ## Six required audit axes
 
@@ -164,12 +166,13 @@ as permanent:
 | `src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time,paths}.lisp` | one bottom-layer owner for the repeated failure-safety decisions and the user-level path layout | keep as the dependency-free internal leaf approved in Goal 14 B3; product packages retain only compatibility delegation where required |
 | `src/cadr-chord/{package,errors,json,schema,contract,delta,link,host,manager,sqlite,child-entry}.lisp` | host contracts, protocol version 4 links, reload, child processes, JSON deltas, and SQLite migrations from pi v1.4.0 | keep structs, explicit ops, and one condition; link generics exist only where memory and pipe links substitute |
 | `src/cadr-telemetry/{package,clock,noop,memory,render,schema}.lisp` | span, metric, and carrier contracts from pi v1.4.0, with a no-op default and an in-memory store | keep one shared no-op span and alist attribute order; the mutex covers recorder mutations only |
+| `src/cadr-durable/{package,errors,state,backends,session,harness,tools,codemode,telemetry}.lisp` | conversations, documents, tasks, JSONL and SQLite storage, coding tools, and code-mode replay from pi v1.4.0 | keep one state value, struct records, and chord drafts; the sandbox and the model are injected |
 
 The module rows above apply to every Lisp file below each listed `src/`
 system, not a sampled subset.  The executable gate recounts that source set,
-requires all eleven per-system file counts and all six audit axes, and fails
+requires all twelve per-system file counts and all six audit axes, and fails
 when a new production file lacks an explicit disposition.  The rewrite count
-therefore remains one and the ten non-rewrite system decisions remain keep.
+therefore remains one and the eleven non-rewrite system decisions remain keep.
 
 ## Rewrite register
 

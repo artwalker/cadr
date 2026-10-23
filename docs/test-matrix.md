@@ -60,7 +60,7 @@ interrupt a stream mid-flight.
 Maps every `test/**/*.lisp` and `test/**/*.py` file to a theme.
 Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
-above are unchanged. Measured 2026-10-23: 210 listed files
+above are unchanged. Measured 2026-10-23: 214 listed files
 (`rg -c '^\|[^|]*\| \x60test/.*\.(lisp|py)\x60 \|$' docs/test-matrix.md`).
 `cadr-wasm/tests` is a tenth system and is not in the `GOAL20_TEST_CHECKS`
 nine-system denominator.
@@ -71,6 +71,7 @@ nine-system denominator.
 |---|---|
 | core | `test/cadr-core/core-test.lisp` |
 | chord | `test/cadr-core/chord-test.lisp` |
+| durable | `test/cadr-core/durable-test.lisp` |
 | support (package) | `test/cadr-core/package.lisp` |
 
 ### cadr-ai

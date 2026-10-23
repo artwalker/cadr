@@ -131,7 +131,7 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-41 Durable | `packages/durable/README.md` → none | open |
+| GAP-41 Durable | `packages/durable/README.md` → `src/cadr-durable/` | done：内存、JSONL 和 SQLite 都能提交会话、条目、任务和文档；JSONL 丢掉残尾并拒绝完整坏行，SQLite 前缀给表加命名空间且非法前缀不建目录。文档与记录同一次提交，任务从检查点恢复并在重启上限 5 次后停住（restart_limit），读改写和 bash 的诊断、codemode 日志重放与分叉时的文档拷贝都对齐 v1.4.0。 |
 
 ### P12. pi-env
 

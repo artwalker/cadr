@@ -17,13 +17,14 @@
 
 (asdf:defsystem "cadr-core/tests"
   :description "Tests for internal cadr-core primitives"
-  :depends-on ("fiveam" "cadr-core" "cadr-chord")
+  :depends-on ("fiveam" "cadr-core" "cadr-chord" "cadr-durable")
   :serial t
   :components ((:module "test/cadr-core"
                 :serial t
                 :components ((:file "package")
                              (:file "core-test")
-                             (:file "chord-test"))))
+                             (:file "chord-test")
+                             (:file "durable-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-core/tests :run-tests)

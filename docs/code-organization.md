@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=330 lines=145919 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=168 in-progress=0 done=157 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=339 lines=148160 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=177 in-progress=0 done=157 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -463,6 +463,20 @@ unified requirements 7–9.
 | `src/cadr-telemetry/package.lisp` | 125 | 1 | Declare the public telemetry package surface. | pass | no-rewrite | defpackage is the boundary. The export list is the library's public surface. | 27 |
 | `src/cadr-telemetry/render.lisp` | 84 | 4 | Render a trace forest from stored spans. | pass | no-rewrite | An explicit stack prints a deep forest. The input list is not modified. | 27 |
 | `src/cadr-telemetry/schema.lisp` | 84 | 11 | Attach metric and span definitions without changing the values. | pass | no-rewrite | The schema is identity data. Typed children close over the same definitions. | 27 |
+
+### 2.11 `cadr-durable`
+
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
+|---|---:|---:|---|---|---|---|---|
+| `src/cadr-durable/package.lisp` | 114 | 1 | Declare the public durable package surface. | pass | no-rewrite | defpackage is the boundary. The export list is the library's public surface. | 27 |
+| `src/cadr-durable/errors.lisp` | 25 | 8 | Signal storage, session, and busy-conversation failures with the upstream sentences. | pass | no-rewrite | One condition family carries the exact text. A restart at a failed commit would hide the session failure. | 27 |
+| `src/cadr-durable/state.lisp` | 419 | 65 | Own conversations, entries, tasks, submissions, documents, and id allocation. | pass | no-rewrite | Records are structs. Scan order and ancestry are functions of those records, not an open protocol. | 27 |
+| `src/cadr-durable/backends.lisp` | 524 | 54 | Commit the same records through memory, JSONL, and prefixed SQLite. | pass | no-rewrite | The three backends share one state value. A class per table would not change the commit. | 27 |
+| `src/cadr-durable/session.lisp` | 291 | 33 | Publish document drafts and fork copies in the same commit as the transcript. | pass | no-rewrite | A draft is a chord tracker plus a splice log. Unchanged subtrees stay the published value. | 27 |
+| `src/cadr-durable/harness.lisp` | 396 | 44 | Run tasks from checkpoints, park them at the restart limit, and submit one conversation. | pass | no-rewrite | Task status is a closed state machine. The graph is a projection of the live records. | 27 |
+| `src/cadr-durable/tools.lisp` | 351 | 28 | Read, write, edit, and run bash with the upstream diagnostics. | pass | no-rewrite | Each tool is a function over an injected directory. The diagnostics are data, not a new condition hierarchy. | 27 |
+| `src/cadr-durable/codemode.lisp` | 76 | 10 | Replay a code-mode journal and refuse a divergent path or a changed sandbox. | pass | no-rewrite | The journal is a document. The sandbox is an injected function, so the runner does not own an engine. | 27 |
+| `src/cadr-durable/telemetry.lisp` | 45 | 4 | Name the durable spans, events, and metrics from v1.4.0. | pass | no-rewrite | The schema is identity data. Emitting an event is one function of the span the caller passed. | 27 |
 
 ## 3. Verdict summary and expected distribution
 
