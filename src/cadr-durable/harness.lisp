@@ -12,8 +12,13 @@
            telemetry reports-counter active-counter duration-histogram
            (resumed (make-hash-table :test #'eql))
            (live-tasks (make-hash-table :test #'eql))
-           (clock-reported nil))
+           (clock-reported nil)
+           (failed nil))
 (defstruct task-runtime harness task (decision nil) (settled nil) (committed-phase nil))
+
+(defun assert-usable-harness (harness)
+  (when (harness-failed harness)
+    (fail-session)))
 
 (defun define-task (name &key (version 1) initial phases abort
                            (restart-limit +default-restart-limit+))
@@ -389,6 +394,7 @@
       (t nil))))
 
 (defun harness-resume (harness)
+  (assert-usable-harness harness)
   (each-task (harness-storage harness)
              (lambda (task)
                (when (task-due-p harness task)
@@ -406,6 +412,7 @@
 
 (defun harness-create-task (harness kind input &key conversation-id owner background
                                                    context-telemetry trace)
+  (assert-usable-harness harness)
   (let* ((definition (gethash kind (registry-tasks (harness-registry harness))))
          (id (storage-mint-id (harness-storage harness)))
          (conversation (or conversation-id (harness-root harness)))
@@ -422,6 +429,7 @@
     (invoke-task harness task)))
 
 (defun harness-retry-task (harness id)
+  (assert-usable-harness harness)
   (remhash id (harness-parked harness))
   (let ((task (storage-task (harness-storage harness) id)))
     (setf task (save-task (harness-storage harness) task
@@ -430,6 +438,7 @@
     (invoke-task harness task)))
 
 (defun harness-abort-task (harness id)
+  (assert-usable-harness harness)
   (let* ((task (storage-task (harness-storage harness) id))
          (definition (gethash (task-record-kind task)
                               (registry-tasks (harness-registry harness))))
@@ -576,21 +585,88 @@
                 (cons "result" "done")))
     submission))
 
-(defun finish-harness-input (harness storage conversation submission)
+(defun generation-span-parent (harness carrier)
+  (let* ((root (or (harness-telemetry harness)
+                   cadr-telemetry:*noop-telemetry-context*))
+         (propagation (cadr-telemetry:telemetry-span-propagation root)))
+    (if (or (null carrier) (null propagation))
+        root
+        (or (cadr-telemetry:telemetry-extract propagation carrier) root))))
+
+(defun record-generation-duration (harness span started outcome)
+  (when (harness-duration-histogram harness)
+    (cadr-telemetry:telemetry-histogram-record
+     (harness-duration-histogram harness)
+     (- (cadr-telemetry:telemetry-monotonic-milliseconds) started)
+     (list (cons "task" "pi.generation")
+           (cons "phase" "request")
+           (cons "outcome" outcome))
+     span)))
+
+(defun finish-harness-input (harness storage conversation submission task-id trace)
   (let* ((reply (funcall (harness-model harness)
                          (conversation-messages storage conversation)))
          (assistant-id (storage-mint-id storage))
          (assistant (make-entry :id assistant-id :conversation-id conversation
                                 :kind (assistant-entry-kind)
                                 :model (assistant-message reply (harness-now harness))))
-         (done (copy-submission-record submission)))
+         (done (copy-submission-record submission))
+         (task (make-task-record
+                :id task-id :kind "pi.generation" :conversation-id conversation
+                :trace trace
+                :state (cadr-chord:json-object
+                        "status" "terminal"
+                        "phase" "request"
+                        "outcome" (cadr-chord:json-object
+                                   "status" "completed"
+                                   "result" (cadr-chord:json-object
+                                             "entryId" assistant-id))))))
     (setf (submission-record-status done) "done"
           (submission-record-answer done) assistant-id)
-    (storage-commit storage (list (cons :entry assistant) (cons :submission done)))
+    (storage-commit storage (list (cons :entry assistant)
+                                  (cons :submission done)
+                                  (cons :task task)))
+    done))
+
+(defun run-placed-input (harness storage conversation submission carrier)
+  (let ((task-id (storage-mint-id storage))
+        (started (cadr-telemetry:telemetry-monotonic-milliseconds))
+        (done nil))
+    (push conversation (harness-busy harness))
+    (unwind-protect
+         (cadr-telemetry:telemetry-start-span
+          (generation-span-parent harness carrier)
+          *durable-phase-span*
+          (lambda (span)
+            (let ((*durable-span* span)
+                  (failed nil))
+              (unwind-protect
+                   (handler-case
+                       (setf done (finish-harness-input
+                                   harness storage conversation submission
+                                   task-id carrier))
+                     (error (condition)
+                       (setf failed t)
+                       (cadr-telemetry:telemetry-set-status span :kind :error)
+                       (error condition)))
+                (let ((outcome (if failed "faulted" "done")))
+                  (cadr-telemetry:telemetry-set-attributes
+                   span (list (cons "outcome" outcome)))
+                  (record-generation-duration harness span started outcome))))
+            done)
+          :attributes (list (cons "task.id" task-id)
+                            (cons "task.name" "pi.generation")
+                            (cons "phase" "request")
+                            (cons "kind" "run")
+                            (cons "attempt" 1)
+                            (cons "resumed" nil)))
+      (setf (harness-busy harness)
+            (remove conversation (harness-busy harness) :count 1)))
     done))
 
 (defun harness-submit (harness content &key conversation-id request-id (when-busy "queue")
                                          context-telemetry (type "input") entry)
+  (assert-usable-harness harness)
   (let* ((conversation (or conversation-id (harness-root-id harness)))
          (storage (harness-storage harness))
          (input (string= type "input"))
@@ -598,40 +674,32 @@
                      (or (harness-telemetry harness)
                          cadr-telemetry:*noop-telemetry-context*)
                      (or context-telemetry cadr-telemetry:*noop-telemetry-context*)))
-         (caller (or context-telemetry cadr-telemetry:*noop-telemetry-context*)))
+         (caller (or context-telemetry cadr-telemetry:*noop-telemetry-context*))
+         (submit-span nil)
+         (admitted nil))
     (cadr-telemetry:telemetry-start-span
      parent *durable-submit-span*
      (lambda (span)
+       (setf submit-span span)
        (when input
          (cadr-telemetry:telemetry-add-link span caller))
-       (let ((*durable-span* span)
-             (added nil))
+       (let ((*durable-span* span))
          (handler-case
-             (if input
-                 (let ((admitted (admit-harness-input
-                                  harness storage conversation content
-                                  request-id when-busy span)))
-                   (if (cdr admitted)
-                       (unwind-protect
-                            (progn
-                              (push conversation (harness-busy harness))
-                              (setf added t)
-                              (finish-harness-input harness storage conversation
-                                                    (car admitted)))
-                         (when added
-                           (setf (harness-busy harness)
-                                 (remove conversation (harness-busy harness) :count 1))
-                           (setf added nil)))
-                       (car admitted)))
-                 (admit-harness-write storage conversation entry request-id span))
+             (setf admitted
+                   (if input
+                       (admit-harness-input harness storage conversation content
+                                            request-id when-busy span)
+                       (admit-harness-write storage conversation entry
+                                            request-id span)))
            (error (condition)
-             (when added
-               (setf (harness-busy harness)
-                     (remove conversation (harness-busy harness) :count 1)))
              (cadr-telemetry:telemetry-set-status span :kind :error)
              (error condition)))))
      :attributes (list (cons "submission.type" type)
-                       (cons "conversation.id" conversation)))))
+                       (cons "conversation.id" conversation)))
+    (if (and input (cdr admitted))
+        (run-placed-input harness storage conversation (car admitted)
+                          (span-carrier submit-span))
+        (if input (car admitted) admitted))))
 
 (defun owned-conversation-ids (storage task-id)
   (let ((page (storage-scan-conversations storage :owner-kind "task" :owner-id task-id
@@ -656,6 +724,7 @@
     view))
 
 (defun harness-task-graph (harness)
+  (assert-usable-harness harness)
   (let ((tasks (cadr-chord:json-object))
         (storage (harness-storage harness)))
     (each-task storage
@@ -679,6 +748,7 @@
     (cadr-chord:json-object "tasks" tasks)))
 
 (defun harness-active-count (harness)
+  (assert-usable-harness harness)
   (let ((count 0))
     (each-task (harness-storage harness)
                (lambda (task)
@@ -688,18 +758,25 @@
     count))
 
 (defun harness-close (harness)
-  (each-task (harness-storage harness)
-             (lambda (task)
-               (when (string= (task-status task) "running")
-                 (save-task (harness-storage harness) task
-                            (pending-state (task-record-state task))
-                            :restarts (task-record-restarts task)))
-               (note-task-inactive harness task)))
-  (storage-close (harness-storage harness)))
+  (let ((storage (harness-storage harness)))
+    (when (storage-closed-p storage)
+      (return-from harness-close nil))
+    (unless (harness-failed harness)
+      (each-task storage
+                 (lambda (task)
+                   (when (string= (task-status task) "running")
+                     (save-task storage task
+                                (pending-state (task-record-state task))
+                                :restarts (task-record-restarts task)))
+                   (note-task-inactive harness task))))
+    (storage-close storage)))
 
 (defun notify-session-failure (session condition)
   (let ((harness (session-harness session)))
-    (when harness
+    (when (and harness (not (harness-failed harness)))
+      (setf (harness-failed harness) t)
+      (handler-case (harness-close harness)
+        (error () nil))
       (report harness "session_failed"
               :message (princ-to-string condition)
               :context *durable-span*))))

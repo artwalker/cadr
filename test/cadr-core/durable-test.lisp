@@ -1121,24 +1121,87 @@
                      (cdr (assoc "entry.kind"
                                  (cadr-telemetry:recorded-telemetry-event-attributes entry)
                                  :test #'string=))))
-        (is (equal '("pi.durable.entry" "pi.durable.entry" "pi.durable.submission")
+        (is (equal '("pi.durable.entry")
                    (mapcar #'cadr-telemetry:recorded-telemetry-event-name
                            (cadr-telemetry:recorded-telemetry-span-events fresh))))
-        (is (string= "pi.assistant"
-                     (cdr (assoc "entry.kind"
-                                 (cadr-telemetry:recorded-telemetry-event-attributes
-                                  (second (cadr-telemetry:recorded-telemetry-span-events fresh)))
-                                 :test #'string=))))
-        (let ((settled (durable-event-named fresh "pi.durable.submission")))
+        (let* ((phases (durable-recorded-spans telemetry "pi.durable.phase"))
+               (phase (first phases))
+               (events (cadr-telemetry:recorded-telemetry-span-events phase))
+               (settled (durable-event-named phase "pi.durable.submission"))
+               (answer (cadr-durable:submission-answer
+                        (cadr-durable:storage-submission-by-request storage 1 "dedupe")))
+               (generation (cadr-durable:storage-task
+                            storage (durable-span-attr phase "task.id"))))
+          (is (= 1 (length phases)))
+          (is (eql (cadr-telemetry:recorded-telemetry-span-id fresh)
+                   (cadr-telemetry:recorded-telemetry-span-parent-id phase)))
+          (is (equal (cadr-telemetry:recorded-telemetry-span-context fresh)
+                     (cadr-telemetry:recorded-telemetry-span-parent-context phase)))
+          (is (string= "pi.generation" (durable-span-attr phase "task.name")))
+          (is (string= "request" (durable-span-attr phase "phase")))
+          (is (string= "run" (durable-span-attr phase "kind")))
+          (is (string= "done" (durable-span-attr phase "outcome")))
+          (is (= 1 (durable-span-attr phase "attempt")))
+          (is (null (durable-span-attr phase "resumed")))
+          (is (assoc "resumed"
+                     (cadr-telemetry:recorded-telemetry-span-attributes phase)
+                     :test #'string=))
+          (is (equal '("pi.durable.entry" "pi.durable.submission")
+                     (mapcar #'cadr-telemetry:recorded-telemetry-event-name events)))
+          (is (string= "pi.assistant"
+                       (cdr (assoc "entry.kind"
+                                   (cadr-telemetry:recorded-telemetry-event-attributes
+                                    (first events))
+                                   :test #'string=))))
+          (is (eql answer
+                   (cdr (assoc "entry.id"
+                               (cadr-telemetry:recorded-telemetry-event-attributes
+                                (first events))
+                               :test #'string=))))
           (is (equal "done"
                      (cdr (assoc "status"
                                  (cadr-telemetry:recorded-telemetry-event-attributes settled)
                                  :test #'string=))))
-          (is (eql (cadr-durable:submission-answer
-                    (cadr-durable:storage-submission-by-request storage 1 "dedupe"))
+          (is (eql answer
                    (cdr (assoc "answer.entry_id"
                                (cadr-telemetry:recorded-telemetry-event-attributes settled)
-                               :test #'string=)))))
+                               :test #'string=))))
+          (is (eql (cadr-durable:submission-id
+                    (cadr-durable:storage-submission-by-request storage 1 "dedupe"))
+                   (cdr (assoc "submission.id"
+                               (cadr-telemetry:recorded-telemetry-event-attributes settled)
+                               :test #'string=))))
+          (is (string= "pi.generation" (cadr-durable:task-record-kind generation)))
+          (is (string= "terminal"
+                       (cadr-chord:json-get (cadr-durable:task-record-state generation)
+                                            "status")))
+          (is (string= "completed"
+                       (cadr-chord:json-get
+                        (cadr-chord:json-get (cadr-durable:task-record-state generation)
+                                             "outcome")
+                        "status")))
+          (is (equal (cadr-telemetry:recorded-telemetry-span-context fresh)
+                     (cadr-durable::task-record-trace generation)))
+          (is (= 1 (length (remove-if-not
+                            (lambda (metric)
+                              (and (string= "pi.durable.phase.duration"
+                                            (cadr-telemetry:recorded-measurement-name metric))
+                                   (string= "pi.generation"
+                                            (cdr (assoc "task"
+                                                        (cadr-telemetry:recorded-measurement-attributes
+                                                         metric)
+                                                        :test #'string=)))
+                                   (string= "request"
+                                            (cdr (assoc "phase"
+                                                        (cadr-telemetry:recorded-measurement-attributes
+                                                         metric)
+                                                        :test #'string=)))
+                                   (string= "done"
+                                            (cdr (assoc "outcome"
+                                                        (cadr-telemetry:recorded-measurement-attributes
+                                                         metric)
+                                                        :test #'string=)))))
+                            (cadr-telemetry:in-memory-measurements telemetry))))))
         (is (equal (cadr-telemetry:recorded-telemetry-span-context fresh)
                    (cadr-durable::submission-record-trace
                     (cadr-durable:storage-submission-by-request storage 1 "dedupe"))))
@@ -1784,10 +1847,14 @@
 (test durable-session-failure-counts-without-starting-a-span
   (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
          (reports nil)
+         (closed-before-report nil)
          (storage (cadr-durable:make-memory-storage))
          (harness (cadr-durable:open-harness
                    storage :telemetry telemetry
-                   :on-report (lambda (event) (push event reports))))
+                   :on-report (lambda (event)
+                                (setf closed-before-report
+                                      (cadr-durable:storage-closed-p storage))
+                                (push event reports))))
          (session (cadr-durable:open-session storage :harness harness)))
     (is (search "Unknown conversation"
                 (durable-error-text
@@ -1798,10 +1865,25 @@
                       (cadr-durable:tx-append-entry
                        tx :conversation-id 999 :kind "app.failed")))))))
     (is (cadr-durable:session-failed-p session))
+    (is (eq t closed-before-report))
+    (is (cadr-durable:storage-closed-p storage))
     (is (null (cadr-telemetry:in-memory-telemetry-spans telemetry)))
     (is (equal '("session_failed") (durable-report-types telemetry)))
     (is (search "Unknown conversation"
                 (cadr-chord:json-get (first reports) "message")))
+    (is (search "Session failed after a storage error; close and reopen it"
+                (durable-error-text
+                 (lambda () (cadr-durable:harness-submit harness "later")))))
+    (is (search "Session failed after a storage error; close and reopen it"
+                (durable-error-text
+                 (lambda ()
+                   (cadr-durable:session-commit
+                    session
+                    (lambda (tx)
+                      (declare (ignore tx))
+                      nil))))))
+    (is (null (cadr-telemetry:in-memory-telemetry-spans telemetry)))
+    (is (equal '("session_failed") (durable-report-types telemetry)))
     (is (null (search "Unknown conversation"
                       (format nil "~A" (cadr-telemetry:in-memory-measurements telemetry)))))
     (is (null (search "app.failed"
