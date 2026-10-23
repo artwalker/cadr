@@ -10,7 +10,7 @@
 > **依据：** `docs/reviews/2026-10-23-pi-parity-gap-inventory.md`（50 个 GAP，13 个 Part）。
 > 站立约束：`docs/development-policy.md`。
 >
-> **裁决（顾问 Claude，2026-10-23；用户保留否决权）：** 清单第 3 节写 Still exclude 的各项继续排除。写 Reopen 的各项重开，照清单执行。P1–P8 和 P13 现在开工。GAP-06 作为一行放在 P6，覆盖 mcp、codemode、tool-search 三个内置扩展工厂。P9–P12（GAP-40 Chord、GAP-41 Durable、GAP-42 pi-env、GAP-43 telemetry span）是 pi CLI 不依赖的库，等用户裁决，先不做。
+> **裁决（顾问 Claude，2026-10-23；用户保留否决权）：** 清单第 3 节写 Still exclude 的各项继续排除。写 Reopen 的各项重开，照清单执行。P1–P8 和 P13 现在开工。GAP-06 作为一行放在 P6，覆盖 mcp、codemode、tool-search 三个内置扩展工厂。用户 2026-10-23 裁决：pi 仓库里 pi CLI 不依赖的四个库也用 Lisp 实现，顺序 Chord（GAP-40）→ telemetry（GAP-43）→ Durable（GAP-41）→ pi-env（GAP-42）。pi-env 的守护进程在上游是 Rust，cadr 用 Lisp 实现守护进程，线协议和可观察行为对齐上游。
 >
 > **对齐：** 对齐指可观察行为，结构可以不同；测试断言对着上游 v1.4.0 锁死。
 
@@ -19,12 +19,12 @@
 1. **范围。** 清单第 2 节的全部 GAP，从 GAP-01 到 GAP-50，每个 GAP 在下面的队列里正好一行。
 2. **排除。** 只认清单第 3 节写 Still exclude 的项。那些项不进队列。新增排除需要顾问裁决。第 3 节写 Reopen 的项由对应 GAP 行承接。
 3. **开工。** P1–P8 与 P13 的行状态是 `open`。GAP-06 不拆行，只出现在 P6，覆盖 mcp、codemode、tool-search 三个内置扩展工厂。清单第 4 节把 mcp 工厂写在 P5，本裁决把它并进 P6 的这一行。
-4. **先不做。** P9–P12 的 GAP-40、GAP-41、GAP-42、GAP-43 状态是 `proposal：待用户裁决（pi CLI 不依赖的库）`。
+4. **库。** 用户 2026-10-23 裁决：P9–P12 纳入 Goal 27，状态是 `open`，实现顺序 Chord（GAP-40）→ telemetry（GAP-43）→ Durable（GAP-41）→ pi-env（GAP-42）。pi-env 的守护进程在上游是 Rust，cadr 用 Lisp 实现守护进程，线协议和可观察行为对齐上游。
 5. **断言。** 每行落地时，测试锁的是上游 `v1.4.0`（`4a080252`）的可观察行为。结构可以跟 pi 不同。断言不从当前 cadr 输出反推。
 
 ## 队列
 
-50 行。`open` 44 行。`done` 2 行。`proposal` 4 行（GAP-40、GAP-41、GAP-42、GAP-43）。出处取清单第 2 节的 pi 文件和 cadr 文件。清单里的 `same` 和短文件名按上一行或同目录展开。
+50 行。`open` 48 行。`done` 2 行。出处取清单第 2 节的 pi 文件和 cadr 文件。清单里的 `same` 和短文件名按上一行或同目录展开。
 
 ### P1. Lock what already runs
 
@@ -117,25 +117,25 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-40 Chord | `packages/chord/README.md`，`packages/chord/src/index.ts` → none | proposal：待用户裁决（pi CLI 不依赖的库） |
+| GAP-40 Chord | `packages/chord/README.md`，`packages/chord/src/index.ts` → none | open |
 
 ### P10. Telemetry contracts
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-43 Telemetry spans | `packages/telemetry/src/index.ts`，`packages/ai/README.md` → none | proposal：待用户裁决（pi CLI 不依赖的库） |
+| GAP-43 Telemetry spans | `packages/telemetry/src/index.ts`，`packages/ai/README.md` → none | open |
 
 ### P11. Durable
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-41 Durable | `packages/durable/README.md` → none | proposal：待用户裁决（pi CLI 不依赖的库） |
+| GAP-41 Durable | `packages/durable/README.md` → none | open |
 
 ### P12. pi-env
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-42 pi-env | `packages/env/README.md`，`packages/env/daemon/src/main.rs` → `src/cadr-agent/execution-env.lisp` | proposal：待用户裁决（pi CLI 不依赖的库） |
+| GAP-42 pi-env | `packages/env/README.md`，`packages/env/daemon/src/main.rs` → `src/cadr-agent/execution-env.lisp` | open。守护进程在上游是 Rust。cadr 用 Lisp 实现守护进程，线协议和可观察行为对齐上游。 |
 
 ### P13. Ledger status
 

@@ -1974,3 +1974,15 @@ The gray `Working` status rule is canonicalized in
   unreviewed or red code must not land.
 - **Where:** `AGENTS.md`, `.cursor/skills/cadr-mode/SKILL.md`,
   `.cursor/rules/cadr-mode.mdc`.
+
+## 2026-10-23 — Four pi libraries are in Goal 27
+
+- **Ruling (user, 2026-10-23):** the four libraries the pi CLI does not
+  depend on are in Goal 27 scope. Implement them in Lisp, in this order:
+  Chord (GAP-40), telemetry (GAP-43), Durable (GAP-41), pi-env (GAP-42).
+  The pi-env daemon is Rust upstream. cadr implements that daemon in
+  Lisp. The wire protocol and observable behavior match upstream.
+- **Why:** `docs/reviews/2026-10-23-pi-parity-gap-inventory.md` lists
+  GAP-40 through GAP-43. The same-day advisor note left P9–P12 waiting
+  on a user ruling because the `pi` CLI does not depend on them.
+- **Where:** `docs/acceptance/goal27-pi-parity.md`.
