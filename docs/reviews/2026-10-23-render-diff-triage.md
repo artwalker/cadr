@@ -1293,3 +1293,52 @@ GAP-83 思考级别选择器的勾和循环热键。共 2 屏。窄屏 `overlays
 
 - `overlays-core/wide/overlay-session`
 - `overlays-core/narrow/overlay-session`
+
+## 2026-10-24 规范化之后
+
+干净检出重跑 core（`scripts/render-diff.py capture`，上游 `/root/projects/pi-v1.4.0`，再跑同一脚本的 `analyze`）。成对检查点 465。`screenEqual` 171。相等或已被账本 / 类规则承认的是 203。缺 disposition、门禁算失败的是 262。203/465。
+
+没有成对原始流的仍是复查一节那 7 个维度，不计入 465：`commands-informational` 宽窄、`update-notifications` 窄、`update-notifications-no-hyperlinks` 窄、`selector-scoped-state-sweep` 窄、`example-snake` 窄、`example-tic-tac-toe-agent` 窄。上游等待的句子没有出现在画面上。
+
+规范化做了三件事。比较前两边都去掉每行行尾空白，包括落在收尾 SGR 前面的空格。状态指示行 `──` 后面、已知状态短语前面的旋转字符收成 `<SPIN>`。`docs/adjudications.md` 2026-08-14 已经接受的身份对（配置目录、`pi-debug.log`、changelog 地址、`Run pi update`、固定时钟的导出会话文件名、`Restart pi`、恢复命令）按场景写进 `lineRules`，只替换那一个字面量。
+
+失败屏归属：
+
+- GAP-65：127 屏。复查清单 129 里，`fatal-crash/wide/process-exit` 与 `fatal-crash/narrow/process-exit` 这一档的原始增量相等，门禁不要求 disposition。
+- GAP-66：127 屏。
+- GAP-81：2 屏。
+- GAP-82：14 屏。
+- GAP-83：2 屏。
+
+上面几组有屏同时算进 GAP-65 和 GAP-66。去掉交集之后，GAP 失败是 245 屏。
+
+交顾问裁决的有 4 种，17 屏。`docs/parity-map.md` 和 `docs/adjudications.md` 里没有对应记录，所以没有加 disposition。
+
+会话列表次序，2 屏。`other session question` 在 `overlay question` 上面。
+
+- `overlays-core/wide/overlay-session`
+- `overlays-core/narrow/overlay-session`
+
+窄屏工作目录省略号，2 屏。一边是 `<CWD>...`，另一边是 `<CWD>`。已接受的身份对不包括省略号。
+
+- `example-tic-tac-toe/narrow/ttt-initial`
+- `example-tic-tac-toe/narrow/ttt-cursor`
+
+窄屏项目设置行丢掉字形，4 屏。路径换成占位符之后，一边停在 `resources a`，另一边停在 `resources`。已接受的身份对不覆盖被截掉的字。
+
+- `config-selector-state-sweep/narrow/config-project-initial`
+- `config-selector-state-sweep/narrow/config-project-unload`
+- `config-selector-state-sweep/narrow/config-project-load`
+- `config-selector-state-sweep/narrow/process-exit`
+
+退出时光标行号差 1，9 屏。行尾空白去掉之后，可见文字相同，只剩 `<CURSOR>` 的行号。光标坐标不在这次规范化里。
+
+- `startup-first/wide/process-exit`
+- `startup-first/narrow/process-exit`
+- `commands-empty-lifecycle/wide/process-exit`
+- `compaction-status-manual/wide/process-exit`
+- `compaction-status-manual/narrow/process-exit`
+- `compaction-status-threshold/wide/process-exit`
+- `compaction-status-threshold/narrow/process-exit`
+- `compaction-status-overflow/wide/process-exit`
+- `compaction-status-overflow/narrow/process-exit`

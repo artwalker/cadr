@@ -1814,6 +1814,199 @@ class RenderDiffGateTest(unittest.TestCase):
         self.assertEqual(len(inventory["entries"]), len({entry["id"] for entry in inventory["entries"]}))
 
 
+
+    def test_trailing_line_whitespace_is_stripped_and_bounded(self) -> None:
+        pi = b"logo <PRODUCT> v<VERSION>   \nfooter\n"
+        cadr = b"logo <PRODUCT> v<VERSION>\nfooter\n"
+        self.assertEqual(
+            RENDER_DIFF.strip_trailing_line_whitespace(pi),
+            RENDER_DIFF.strip_trailing_line_whitespace(cadr),
+        )
+        changed = b"logo <PRODUCT> v<VERSION>\nfooter extra\n"
+        self.assertNotEqual(
+            RENDER_DIFF.strip_trailing_line_whitespace(pi),
+            RENDER_DIFF.strip_trailing_line_whitespace(changed),
+        )
+        interior = b"two  spaces stay\n"
+        self.assertEqual(
+            RENDER_DIFF.strip_trailing_line_whitespace(interior), interior
+        )
+        colored_pad = b"Trust parent folder   \x1b[0m\n"
+        colored_bare = b"Trust parent folder\x1b[0m\n"
+        self.assertEqual(
+            RENDER_DIFF.strip_trailing_line_whitespace(colored_pad),
+            RENDER_DIFF.strip_trailing_line_whitespace(colored_bare),
+        )
+        colored_word = b"Trust parent folder extra\x1b[0m\n"
+        self.assertNotEqual(
+            RENDER_DIFF.strip_trailing_line_whitespace(colored_pad),
+            RENDER_DIFF.strip_trailing_line_whitespace(colored_word),
+        )
+        space_cell = b"row\x1b[7m \x1b[0m\n"
+        self.assertEqual(
+            RENDER_DIFF.strip_trailing_line_whitespace(space_cell),
+            b"row\x1b[7m\x1b[0m\n",
+        )
+        split_pad = b"\x1b[7m\x1b[39m \x1b[0m           \n"
+        self.assertEqual(
+            RENDER_DIFF.strip_trailing_line_whitespace(split_pad),
+            b"\x1b[7m\x1b[39m\x1b[0m\n",
+        )
+
+    def test_status_indicator_spinner_is_normalized_only_on_the_status_line(self) -> None:
+        phrase = b"Compacting context... (escape to cancel)"
+        pi = (
+            b"\x1b[38;2;108;118;123m\xe2\x94\x80\xe2\x94\x80 \xe2\xa0\x99"
+            b"\x1b[39m \x1b[38;2;108;118;123m" + phrase
+        )
+        cadr = (
+            b"\x1b[38;2;108;118;123m\xe2\x94\x80\xe2\x94\x80 \xe2\xa0\x8b"
+            b"\x1b[39m \x1b[38;2;108;118;123m" + phrase
+        )
+        self.assertEqual(
+            RENDER_DIFF.normalize_status_indicator_spinner(pi),
+            RENDER_DIFF.normalize_status_indicator_spinner(cadr),
+        )
+        self.assertIn(b"<SPIN>", RENDER_DIFF.normalize_status_indicator_spinner(pi))
+        cadr_split = (
+            b"\x1b[38;2;108;118;123m\xe2\x94\x80\xe2\x94\x80\x1b[39m "
+            b"\x1b[38;2;108;118;123m\xe2\xa0\x8b\x1b[39m "
+            b"\x1b[38;2;108;118;123m" + phrase
+        )
+        self.assertEqual(
+            RENDER_DIFF.normalize_status_indicator_spinner(pi),
+            RENDER_DIFF.normalize_status_indicator_spinner(cadr_split),
+        )
+        unrelated = b"The model said \xe2\xa0\x99 while Compacting context elsewhere"
+        self.assertEqual(
+            RENDER_DIFF.normalize_status_indicator_spinner(unrelated), unrelated
+        )
+        other_phrase = (
+            b"\x1b[38;2;108;118;123m\xe2\x94\x80\xe2\x94\x80 \xe2\xa0\x99 "
+            b"not a status phrase"
+        )
+        self.assertEqual(
+            RENDER_DIFF.normalize_status_indicator_spinner(other_phrase),
+            other_phrase,
+        )
+
+    def test_config_path_line_rule_clears_only_the_recorded_pair(self) -> None:
+        rules = RENDER_DIFF.load_dispositions(
+            ROOT / "test/fixtures/render-diff/dispositions.json",
+            "4a080252f06caf63a525d7873c5d94d3c23887e0",
+        )["lineRules"]
+        key = "config-selector-empty/wide/config-empty"
+        pi = b"~/.pi/agent/settings.json\n  User (~/.pi/agent/)\n"
+        cadr = b"~/.cadr/agent/settings.json\n  User (~/.cadr/agent/)\n"
+        self.assertEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi, key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(cadr, key, rules),
+        )
+        other = b"~/.cadr/agent/settings.json\n  Owner (~/.cadr/agent/)\n"
+        self.assertNotEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi, key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(other, key, rules),
+        )
+        untouched_key = "example-hello/wide/hello-result"
+        self.assertEqual(
+            RENDER_DIFF.apply_recorded_line_rules(cadr, untouched_key, rules),
+            cadr,
+        )
+
+    def test_resume_wrap_line_rule_keeps_a_different_word(self) -> None:
+        rules = RENDER_DIFF.load_dispositions(
+            ROOT / "test/fixtures/render-diff/dispositions.json",
+            "4a080252f06caf63a525d7873c5d94d3c23887e0",
+        )["lineRules"]
+        key = "startup-existing/wide/post-exit-resume"
+        pi = (
+            b"footer\n"
+            b"\n"
+            b"To resume this session: <PRODUCT> --session-dir <SESSION_DIR> --sessi\n"
+            b"on render-session\n"
+            b"\n"
+            b"BORDER\n"
+        )
+        cadr = (
+            b"footer\n"
+            b"To resume this session: <PRODUCT> --session-dir <SESSION_DIR> --ses\n"
+            b"sion render-session\n"
+            b"\n"
+            b"\n"
+            b"BORDER\n"
+        )
+        self.assertEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi, key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(cadr, key, rules),
+        )
+        changed = cadr.replace(b"BORDER", b"OTHER")
+        self.assertNotEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi, key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(changed, key, rules),
+        )
+
+    def test_colored_and_wrapped_identity_literals_stay_narrow(self) -> None:
+        rules = RENDER_DIFF.load_dispositions(
+            ROOT / "test/fixtures/render-diff/dispositions.json",
+            "4a080252f06caf63a525d7873c5d94d3c23887e0",
+        )["lineRules"]
+        color = b"\x1b[38;2;167;152;215m"
+        update_key = "update-notifications/wide/version-and-package-updates"
+        pi = (
+            b" \x1b[38;2;157;165;169mNew version 9.9.9 is available. Run "
+            + color + b"pi update\x1b[39m\n"
+            b" Changelog: " + color + b"https://pi.dev/changelog\x1b[39m\n"
+            b"other line\n"
+        )
+        cadr = (
+            b" \x1b[38;2;157;165;169mNew version 9.9.9 is available. Run "
+            + color + b"cadr update\x1b[39m\n"
+            b" Changelog: " + color
+            + b"https://github.com/artwalker/cadr/blob/main/CHANGELOG.md\x1b[39m\n"
+            b"other line\n"
+        )
+        self.assertEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi, update_key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(cadr, update_key, rules),
+        )
+        changed = cadr.replace(b"other line", b"different line")
+        self.assertNotEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi, update_key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(changed, update_key, rules),
+        )
+        auth_key = "overlays-auth-manual-code-complete/narrow/login-manual-completed"
+        dim = b"\x1b[39m \x1b[38;2;126;136;142m"
+        pi_auth = (
+            b"saved\n" + dim + b"<HOME>/.pi/a\n" + dim + b"gent/auth.json\x1b[39m\nkeep\n"
+        )
+        cadr_auth = (
+            b"saved\n" + dim + b"<HOME>/.cadr\n" + dim + b"/agent/auth.json\x1b[39m\nkeep\n"
+        )
+        self.assertEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi_auth, auth_key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(cadr_auth, auth_key, rules),
+        )
+        self.assertNotEqual(
+            RENDER_DIFF.apply_recorded_line_rules(pi_auth, auth_key, rules),
+            RENDER_DIFF.apply_recorded_line_rules(
+                cadr_auth.replace(b"keep", b"drop"), auth_key, rules
+            ),
+        )
+
+    def test_line_rule_without_a_ledger_record_is_rejected(self) -> None:
+        with self.assertRaisesRegex(RENDER_DIFF.HarnessFailure, "adjudications"):
+            RENDER_DIFF.validate_line_rules(
+                [
+                    {
+                        "id": "invented",
+                        "record": "today's diff looked like a rename",
+                        "keys": ["startup-first/wide/startup"],
+                        "replacements": [{"from": "abcdef", "to": "xxxxxx"}],
+                    }
+                ]
+            )
+
+
 class RenderResourceSweepTest(unittest.TestCase):
     def socket_dir(self) -> Path:
         return Path(tempfile.gettempdir()) / f"tmux-{os.getuid()}"
@@ -2040,7 +2233,5 @@ class ReleaseVerificationContractTest(unittest.TestCase):
         )
         self.assertIn("daily:0", result.stdout)
         self.assertIn("release:1", result.stdout)
-
-
 if __name__ == "__main__":
     unittest.main()

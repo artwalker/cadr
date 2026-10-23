@@ -1042,6 +1042,7 @@ def load_dispositions(path: Path, baseline_commit: str) -> dict[str, Any]:
             raise HarnessFailure(
                 f"disposition class {class_id} must declare textCovering"
             )
+    validate_line_rules(data.get("lineRules") or [])
     return data
 
 
@@ -2809,6 +2810,77 @@ def normalize_product_versions(data: bytes) -> bytes:
     return _PRODUCT_VERSION_RE.sub(b"v<VERSION>", data)
 
 
+_STATUS_BRAILLE = rb"\xe2[\xa0-\xa3][\x80-\xbf]"
+_STATUS_INDICATOR_PHRASES = (
+    rb"Working"
+    rb"|Compacting context"
+    rb"|Auto-compacting"
+    rb"|Context overflow detected,"
+    rb"|Running\.\.\. \(escape/ctrl\+c to cancel\)"
+)
+# Border form from status-indicator renderInBorder: two box-drawing
+# dashes, a space, one braille frame, then a known status phrase.
+# Accent-colored loaders above this function already rewrite their own
+# frame. Other braille (model text, a phrase that is not a status line)
+# does not match.
+# The two emitters split the border color on different sides of the
+# spinner cell. The slot from the two dashes through the braille frame,
+# including the SGR that belongs to that cell, becomes `` <SPIN> ``.
+# The status phrase that follows stays in the comparison.
+_BORDER_STATUS_SPINNER = re.compile(
+    rb"("
+    rb"(?:\x1b\[[0-9;]*m)*"
+    rb"\xe2\x94\x80\xe2\x94\x80"
+    rb")"
+    rb"(?:(?:\x1b\[[0-9;]*m)| )*"
+    + _STATUS_BRAILLE
+    + rb"(?:(?:\x1b\[[0-9;]*m)| )*"
+    + rb"(?=(?:" + _STATUS_INDICATOR_PHRASES + rb"))"
+)
+
+
+def normalize_status_indicator_spinner(data: bytes) -> bytes:
+    """Map the status-indicator border spinner frame to ``<SPIN>``.
+
+    Only the braille cell on a ``──`` status line, in front of a known
+    status phrase, is rewritten. A braille character anywhere else stays,
+    and so does the phrase.
+    """
+    return _BORDER_STATUS_SPINNER.sub(
+        lambda match: match.group(1) + b" <SPIN> ", data
+    )
+
+
+# Padding after a product-name substitution often sits in front of a
+# closing SGR, and a second run of spaces can follow that SGR. Each pass
+# removes spaces that have only SGR after them; the SGR stays.
+_TRAILING_VISIBLE_PAD = re.compile(rb"[ \t]+(?=(?:\x1b\[[0-9;]*m)*$)")
+
+
+def strip_trailing_line_whitespace(data: bytes) -> bytes:
+    """Drop trailing spaces and tabs on each line. Interior spaces stay."""
+    lines: list[bytes] = []
+    for line in data.splitlines(keepends=True):
+        if line.endswith(b"\r\n"):
+            ending = b"\r\n"
+            body = line[:-2]
+        elif line.endswith(b"\n"):
+            ending = b"\n"
+            body = line[:-1]
+        elif line.endswith(b"\r"):
+            ending = b"\r"
+            body = line[:-1]
+        else:
+            ending = b""
+            body = line
+        previous = None
+        while body != previous:
+            previous = body
+            body = _TRAILING_VISIBLE_PAD.sub(b"", body)
+        lines.append(body + ending)
+    return b"".join(lines)
+
+
 def canonicalize_working_status(data: bytes) -> bytes:
     def replace(match: re.Match[bytes]) -> bytes:
         visible = re.sub(rb"\x1b\[[0-9;]*m", b"", match.group(0))
@@ -3005,7 +3077,8 @@ def normalize_fixed_values(data: bytes) -> bytes:
         b"/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log",
         result,
     )
-    return canonicalize_working_status(result)
+    result = canonicalize_working_status(result)
+    return normalize_status_indicator_spinner(result)
 
 
 def render_side_session_directory(sandbox: Path, side: str) -> Path:
@@ -3323,11 +3396,12 @@ def normalized_screen(data: bytes, side: str) -> bytes:
     # those coordinates are not terminal-visible state.  Preserve every
     # visible cursor coordinate and reduce only an explicitly hidden cursor to
     # its observable state.
-    return re.sub(
+    result = re.sub(
         rb"<CURSOR [0-9]+,[0-9]+,0>",
         b"<CURSOR hidden>",
         result,
     )
+    return strip_trailing_line_whitespace(result)
 
 
 def write_capture(output_dir: Path, scenario_id: str, dimension_id: str, side: str, data: bytes) -> None:
@@ -3825,6 +3899,206 @@ def validate_result_adjudications(
             )
 
 
+_LINE_RULE_CSI = re.compile(rb"\x1b\[[0-9;]*m")
+
+
+def _folded_line_text(line: bytes) -> str:
+    visible = _LINE_RULE_CSI.sub(b"", line)
+    return "".join(visible.decode("utf-8", "replace").rstrip(" \t").split())
+
+
+def _is_blank_screen_line(line: bytes) -> bool:
+    if line.startswith(b"<CURSOR"):
+        return False
+    visible = _LINE_RULE_CSI.sub(b"", line)
+    return visible.strip(b" \t") == b""
+
+
+def validate_line_rules(rules: Any) -> None:
+    """Fail closed on a line rule that is not a recorded, narrow pair."""
+    if not isinstance(rules, list):
+        raise HarnessFailure("render-diff lineRules must be a list")
+    seen: set[str] = set()
+    for rule in rules:
+        if not isinstance(rule, dict):
+            raise HarnessFailure("render-diff line rule must be an object")
+        rule_id = rule.get("id")
+        if not isinstance(rule_id, str) or not rule_id or rule_id in seen:
+            raise HarnessFailure("render-diff line rule id missing or duplicated")
+        seen.add(rule_id)
+        record = rule.get("record")
+        if not isinstance(record, str) or not record.strip():
+            raise HarnessFailure(f"line rule {rule_id} lacks a record citation")
+        if (
+            "docs/adjudications.md" not in record
+            and "docs/parity-map.md" not in record
+        ):
+            raise HarnessFailure(
+                f"line rule {rule_id} must cite docs/parity-map.md "
+                "or docs/adjudications.md"
+            )
+        keys = rule.get("keys")
+        if (
+            not isinstance(keys, list)
+            or not keys
+            or any(not isinstance(key, str) or key.count("/") != 2 for key in keys)
+        ):
+            raise HarnessFailure(
+                f"line rule {rule_id} must list scenario/dimension/checkpoint keys"
+            )
+        replacements = rule.get("replacements") or []
+        sentences = rule.get("sentences") or []
+        if not isinstance(replacements, list) or not isinstance(sentences, list):
+            raise HarnessFailure(f"line rule {rule_id} replacements malformed")
+        if not replacements and not sentences:
+            raise HarnessFailure(f"line rule {rule_id} matches nothing")
+        for spec in replacements:
+            if not isinstance(spec, dict):
+                raise HarnessFailure(f"line rule {rule_id} replacement malformed")
+            source = spec.get("from")
+            target = spec.get("to")
+            if (
+                not isinstance(source, str)
+                or not isinstance(target, str)
+                or len(source) < 6
+                or source == target
+            ):
+                raise HarnessFailure(
+                    f"line rule {rule_id} replacement must be one "
+                    "recorded literal of at least 6 characters"
+                )
+        for sentence in sentences:
+            if not isinstance(sentence, str) or len(sentence) < 12:
+                raise HarnessFailure(
+                    f"line rule {rule_id} sentence is too short to be one difference"
+                )
+        rule["keySet"] = set(keys)
+
+
+# SGR may sit between the glyphs of one recorded phrase (the command word
+# is a different color). A hard wrap, when the rule asks for it, is a
+# newline plus the indent spaces and the SGR that reopens the next row.
+_LITERAL_CSI = rb"(?:\x1b\[[0-9;]*m)*"
+# A wrap is SGR, a newline, then the indent and the SGR that reopens the
+# next row, in either order around the newline. Spaces are only legal as
+# that indent, not as a substitute for a missing glyph.
+_LITERAL_WRAP = (
+    rb"(?:"
+    rb"(?:\x1b\[[0-9;]*m)*\r?\n(?:\x1b\[[0-9;]*m|[ ]){0,12}"
+    rb"|"
+    rb"(?:\x1b\[[0-9;]*m)+"
+    rb")?"
+)
+
+
+def replace_recorded_literal(
+    data: bytes, literal: bytes, token: bytes, *, wrapped: bool = False
+) -> bytes:
+    """Replace one recorded literal.
+
+    SGR sequences may occur between its bytes. ``wrapped`` also allows one
+    hard wrap plus indent. Other characters, including a different word,
+    stay in the screen and still fail the comparison.
+    """
+    if not literal:
+        return data
+    separator = _LITERAL_WRAP if wrapped else _LITERAL_CSI
+    pattern = separator.join(re.escape(bytes([byte])) for byte in literal)
+
+    def replace(match: re.Match[bytes]) -> bytes:
+        if match.group(0).count(b"\n") > 2:
+            return match.group(0)
+        return token
+
+    return re.sub(pattern, replace, data)
+
+
+def collapse_identity_sentence(data: bytes, sentence: str) -> bytes:
+    """Collapse one wrapped recorded sentence, including the blank lines the wrap shifts.
+
+    A window matches only when its non-blank lines are an exact cover of
+    ``sentence`` after whitespace is removed. Neighboring words stay.
+    Blank lines immediately before and after that window are part of the
+    wrap shift and are removed with it. Both sides then keep the same
+    following row.
+    """
+    target = "".join(sentence.split())
+    if not target:
+        return data
+    trailing_newline = data.endswith(b"\n")
+    lines = data.splitlines()
+    output: list[bytes] = []
+    pending: list[bytes] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if line.startswith(b"<CURSOR"):
+            output.extend(pending)
+            pending = []
+            output.append(line)
+            index += 1
+            continue
+        if _is_blank_screen_line(line):
+            pending.append(line)
+            index += 1
+            continue
+        end = index
+        covered = ""
+        while end < len(lines) and end - index < 6:
+            fragment_line = lines[end]
+            if fragment_line.startswith(b"<CURSOR") or _is_blank_screen_line(
+                fragment_line
+            ):
+                break
+            fragment = _folded_line_text(fragment_line)
+            if not fragment or not target.startswith(covered + fragment):
+                break
+            covered += fragment
+            end += 1
+            if covered == target:
+                break
+        if covered != target:
+            output.extend(pending)
+            pending = []
+            output.append(line)
+            index += 1
+            continue
+        pending = []
+        while end < len(lines) and _is_blank_screen_line(lines[end]):
+            end += 1
+        output.append(sentence.encode("utf-8"))
+        index = end
+    output.extend(pending)
+    rendered = b"\n".join(output)
+    if trailing_newline and not rendered.endswith(b"\n"):
+        rendered += b"\n"
+    return rendered
+
+
+def apply_recorded_line_rules(
+    data: bytes, key: str, rules: list[dict[str, Any]]
+) -> bytes:
+    """Apply disposition line rules whose key list contains this checkpoint."""
+    result = data
+    for rule in rules:
+        key_set = rule.get("keySet")
+        if key_set is None:
+            key_set = set(rule.get("keys") or [])
+        if key not in key_set:
+            continue
+        specs = list(rule.get("replacements") or [])
+        specs.sort(key=lambda spec: len(spec["from"]), reverse=True)
+        for spec in specs:
+            source = spec["from"].encode("utf-8")
+            target = spec["to"].encode("utf-8")
+            result = replace_recorded_literal(
+                result, source, target, wrapped=bool(spec.get("wrapped"))
+            )
+        for sentence in rule.get("sentences") or []:
+            result = collapse_identity_sentence(result, sentence)
+    return result
+
+
 def analyze(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest.resolve())
     baseline = ensure_baseline(
@@ -3963,6 +4237,11 @@ def analyze(args: argparse.Namespace) -> int:
                         for side in ("pi", "cadr")
                     }
                 key = f"{scenario_id}/{dimension_id}/{checkpoint_id}"
+                line_rules = disposition_data.get("lineRules") or []
+                for side in ("pi", "cadr"):
+                    screens[side] = apply_recorded_line_rules(
+                        screens[side], key, line_rules
+                    )
                 pi_screens[key] = screens["pi"]
                 for side in ("pi", "cadr"):
                     path = analysis_root / f"{scenario_id}.{dimension_id}.{checkpoint_id}.{side}.screen"

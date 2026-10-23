@@ -288,6 +288,8 @@ the authority.
 | Export filename | Exact fixed-clock `pi-session-2023-11-14T22-13-20-000Z_render-session.html` / Cadr counterpart to `<PRODUCT>-session-<FIXED_TIME>_<SESSION_ID>.html` | Prefix and ID spellings differ only by the approved brand and fixed driver identity. |
 | Tool elapsed time | Digits only between the exact `Took ` and `s` delimiters to `<ELAPSED>` | Process scheduling makes wall time nondeterministic; wording, unit, placement, styling, and all other numbers remain checked. |
 | Agent status spinner frame | One UTF-8 braille code point only between the exact accent SGR and the exact dim `Working...`, `Compacting context...`, `Auto-compacting... (escape to cancel)`, or `Context overflow detected, Auto-compacting... (escape to cancel)` suffix to `⠋` | Frame phase is scheduler-dependent; color and surrounding text remain checked. |
+| Status-indicator border spinner | On a line that contains the `──` border, the braille cell in front of `Working`, `Compacting context`, `Auto-compacting`, `Context overflow detected,`, or `Running... (escape/ctrl+c to cancel)` becomes the token `<SPIN>`. The SGR that belongs to that cell is part of the slot. The phrase that follows stays. A braille character anywhere else, including beside `──` without one of those phrases, stays. Applied in `normalize_status_indicator_spinner` after the accent-SGR rule above. | Advisor ruling 2026-10-24: compaction-in-progress frames differ only by the braille spinner. The two emitters split the border color on different sides of the same cell. |
+| Trailing line whitespace | On both sides, after every other screen normalization, each line loses trailing spaces and tabs. Spaces that sit in front of a trailing run of SGR, and a second run of spaces after that SGR, are trailing too. The SGR itself stays. Interior spaces stay. Applied by `strip_trailing_line_whitespace` at the end of `normalized_screen`. | Advisor ruling 2026-10-24: after the product-name placeholder, the only difference on those screens is padding. This is normalization, not a disposition. |
 | Hidden hardware cursor | Exact tmux cursor record `<CURSOR X,Y,0>` to `<CURSOR hidden>` | Both products hide the hardware cursor and draw the editor cursor as a screen cell. Its retained internal coordinates are not observable; coordinates remain exact whenever `cursor_flag=1`. |
 | Crash-log ID | Digits only between exact `cadr-crash-` and `.log` delimiters to `<CRASH_ID>` | PID/time/counter identity is intentionally unique; directory, filename grammar, and mode are tested elsewhere. |
 | Bash full-output file | Exact `/tmp/pi-bash-<hex>.log` or `/tmp/cadr-bash-<decimal>-<decimal>.log` grammar to `/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log` | The suffix is process-generated; the full warning copy, punctuation, color and replay geometry remain checked. |
@@ -331,13 +333,66 @@ print("FORCE_COLOR forced     ->", env.get("FORCE_COLOR"))          # 3
 EOF
 ```
 
-No rule removes or folds whitespace, ANSI sequences, colors, visible cursor positions,
-line endings, punctuation, ordering, whole lines, UUID-shaped arbitrary text, or
-unscoped numbers.  The raw `.raw` and SHA-256 files remain the authority.
-The single exception is the Node inspect stack-frame rule above: applied
-inside `normalized_screen` (after tmux replay, never to the retained raw
-bytes), it removes exactly those two gray wrappers from the semantic screen
-and is listed with its boundary for that reason.
+No rule removes or folds interior whitespace, ANSI sequences, colors, visible
+cursor positions, line endings, punctuation, ordering, whole lines,
+UUID-shaped arbitrary text, or unscoped numbers.  The raw `.raw` and SHA-256
+files remain the authority.  Three semantic-screen exceptions are listed
+above and applied inside `normalized_screen` (after tmux replay, never to
+the retained raw bytes): the Node inspect stack-frame gray wrappers, the
+status-indicator border spinner slot, and trailing line whitespace.
+
+## Recorded line rules and disposition maintenance
+
+`test/fixtures/render-diff/dispositions.json` may contain a `lineRules`
+array.  A line rule rewrites one already-recorded identity pair on the
+semantic screen before the hash is taken.  It is not a place to park a
+difference that the behavior or adjudication ledgers do not already accept.
+
+A rule is loaded only when all of the following hold.  `load_dispositions`
+rejects the file otherwise.
+
+- `record` names `docs/adjudications.md` or `docs/parity-map.md` and points
+  at the entry that already accepts that pair.  A rule with no such citation
+  is rejected.  Do not add a rule for a difference that is only visible in
+  today's diff.
+- `keys` lists the exact `scenario/dimension/checkpoint` screens the pair
+  appears on.  A rule does not apply to any other screen.
+- Each replacement is one literal of at least six characters.  SGR may sit
+  between its bytes.  `wrapped: true` also allows one hard wrap and the
+  indent spaces on the next row.  A different word on the same screen is not
+  part of the literal and still fails the comparison.
+- A `sentences` entry is one full sentence of at least twelve characters.
+  The replayer collapses a wrapped copy of that sentence, including the
+  blank lines the wrap moves, to the sentence itself.  Neighboring lines
+  stay.
+
+The current rules are the 2026-08-14 I04 pairs (config directories,
+`pi-debug.log`, the changelog URL, `Run pi update`, the fixed-clock export
+filename, `Restart pi`, and the resume command).  Session-list order,
+narrow `<CWD>...`, and a narrow project-settings line that drops glyphs are
+not those pairs.  They stay undispositioned until an advisor records them.
+
+Maintenance when a normalization or a line rule changes a hash:
+
+- A dimension whose two semantic screens are now byte-equal loses that
+  dimension in the ledger.  Deleting it is required: a non-I01 class on a
+  screen-equal result is a stale semantic claim.  Residual raw ANSI is
+  covered by the class rule `I01-terminal-protocol`.
+- A dimension whose visible text and cursor now match, with only SGR left,
+  also loses its ledger row.  The class rule `I01-I04-text-geometry-equal`
+  admits that shape.  Do not refresh the stored SHA onto that row.
+- A dimension whose visible text still differs, and whose difference is a
+  product bug or an unrecorded pair, loses its ledger row as well.  Refreshing
+  the SHA would admit the bug.  The gate then reports
+  `differences lack dispositions`.
+- A dimension whose remaining difference is still the one the note describes
+  keeps its classes and note, and its SHA pair is updated to the new
+  screens.
+
+Every normalization and every line rule has a test in
+`test/render-diff-gate-test.py` with one positive case (the recorded
+difference compares equal) and one negative case (a different word on the
+same screen still compares unequal).
 
 ## Determinism boundary and blind spots
 
