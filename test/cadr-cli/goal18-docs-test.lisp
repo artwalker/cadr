@@ -44,16 +44,40 @@
      "README")))
 
 (test goal18-eleven-promised-docs-exist
-  ;; The system prompt names these eleven documents explicitly.
+  ;; pi@4a080252f system-prompt.ts names these documents in the docs
+  ;; section. Product name in the surrounding sentence is cadr.
   (let ((root (asdf:system-source-directory "cadr-cli")))
     (dolist (name '("extensions" "themes" "skills" "prompt-templates"
                     "tui" "keybindings" "sdk" "custom-provider" "models"
-                    "packages" "environment-variables"))
+                    "packages" "environment-variables" "mcp" "codemode"))
       (is (not (null
                 (probe-file
                  (merge-pathnames
                   (format nil "docs/~A.md" name) root))))
           "docs/~A.md missing" name))))
+
+(test system-prompt-docs-tail-matches-v140
+  ;; pi@4a080252f packages/coding-agent/src/core/system-prompt.ts
+  ;; the "When asked about" line. "pi packages" is "cadr packages",
+  ;; the same product-name substitution as the rest of that sentence.
+  (let ((asked
+          "- When asked about: extensions (docs/extensions.md, examples/extensions/), themes (docs/themes.md), skills (docs/skills.md), prompt templates (docs/prompt-templates.md), TUI components (docs/tui.md), keybindings (docs/keybindings.md), SDK integrations (docs/sdk.md), custom providers (docs/custom-provider.md), adding models (docs/models.md), cadr packages (docs/packages.md), environment variables (docs/environment-variables.md), MCP servers (docs/mcp.md), codemode scripts and non-LLM models such as classifiers and image models (docs/codemode.md)"))
+    (is (search asked
+                (cadr-cli:build-system-prompt :cwd "/tmp")))
+    (is (search asked
+                (cdr (assoc "docs"
+                            (cadr-cli:build-system-prompt-sections
+                             :cwd "/tmp")
+                            :test #'string=))))
+    (is (not (search "docs/codemode.md"
+                     (cadr-cli:build-system-prompt
+                      :custom-prompt "You are A."
+                      :cwd "/tmp"))))
+    (is (null (assoc "docs"
+                     (cadr-cli:build-system-prompt-sections
+                      :custom-prompt "You are A."
+                      :cwd "/tmp")
+                     :test #'string=)))))
 
 (test goal18-release-identity-derives-from-the-baseline-anchor
   ;; Goal 18 L2.1: the BASELINE file is the single owner of the fixed
