@@ -323,6 +323,8 @@ Adjudicated and implemented:
   user-visible redacted summary plus an owner-readable-only `0600` private
   crash log. This item is an intentional addition relative to the baseline,
   not a difference the language migration makes inevitable;
+  Revised 2026-10-24 by the GAP-72 ruling (advisor Claude; the user keeps
+  the veto; see `docs/adjudications.md`). The summary is now: 终端栈帧不带参数值与局部变量；完整栈只进 0600 私有日志.
 - `OQ-G10-D1-TOOL-RESTARTS`: on 2026-08-01 the condition/restart at the site of
   a tool failure and the 34th extension event `:tool-call-error` were approved;
   after implementation it was re-frozen at 34 events, and any further addition

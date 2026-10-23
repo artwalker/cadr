@@ -2531,3 +2531,62 @@ The gray `Working` status rule is canonicalized in
 - **Scope:** 第三次返修，范围只限第二次验收的两条（主题不写 scrollbarThumb 时按上游落到 text 而不是 selectedBg；多余字段诊断的空行与上游逐字节一致），测试对着 v1.4.0 theme.ts 与对应测试锁死。第三次返修仍按已记录的条件 S。第三次验收不通过直接 blocked 交顾问。
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-63. The status
   cell starts with `open：顾问裁决 2026-10-24 第三次返修，范围只限第二次验收的两条（主题不写 scrollbarThumb 时按上游落到 text 而不是 selectedBg；多余字段诊断的空行与上游逐字节一致），测试对着 v1.4.0 theme.ts 与对应测试锁死；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-24 — GAP-72 崩溃页：C
+
+- **Ruling (advisor Claude, 2026-10-24; the user keeps the veto):** the
+  implementer offered A and B for the crash page. The advisor selects
+  neither. The ruling is C.
+- **Options:**
+  - A. Revoke the Goal 13 redaction recorded as OQ-G15-I02, and print
+    the real SBCL stack on the terminal.
+  - B. Keep the redaction and change only the title.
+  - C. Align the terminal crash page with the upstream observable
+    structure, and print no parameter values or local variables. The
+    full backtrace, parameters included, still goes only to the
+    mode-0600 private crash log. Stack-frame text is a new
+    intentional-difference class.
+- **Why:** the substantive risk in OQ-G15-I02 is that an SBCL backtrace
+  prints each frame's argument values by default, and those values can
+  hold an API key or message content. A Node stack has the function
+  name and the source location, and does not carry that risk. Aligning
+  the upstream observable structure and omitting argument values meets
+  both aims.
+- **What C requires:**
+  1. Terminal lines match v1.4.0 `uncaughtCrash`
+     (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`
+     lines 4339–4346) and the `/bug` hint (around line 2166). The title
+     line is `<product name> exiting due to uncaughtException:`. The
+     next line is `Error: <condition message>`. Write down the rule
+     that maps an upstream Error subclass name to the cadr condition
+     type. The default name is `Error`. Each frame is one line,
+     `    at <function name> (<source file>:<line>)`, or
+     `    at <function name>` when the frame has no source
+     location. No frame prints parameter values or local variables.
+     The extension hint line and the `/bug` explanation line follow
+     the upstream wording, with the product name substituted. The
+     terminal no longer prints a `Crash log:` path.
+  2. The full backtrace, including parameter values, is still written
+     to the mode-0600 private crash log. `/bug` must attach the crash
+     details automatically, as upstream does. If cadr's `/bug` cannot
+     do that yet, closing the gap is part of this row, locked to the
+     upstream `/bug` implementation and its tests.
+  3. New intentional-difference class 栈帧文本 (stack-frame text). SBCL
+     frame text and Node frame text differ by nature. Render-diff
+     normalization replaces crash-page lines that begin with
+     `    at ` with `<FRAME>`, collapses those lines to one
+     line, and then compares. The normalization is written into the
+     script's documentation and has a test. `docs/parity-map.md`
+     records the class. This entry is the written ruling for that
+     class. It does not change the gate and does not claim the crash
+     page is already aligned.
+  4. The OQ-G15-I02 summary is now 终端栈帧不带参数值与局部变量；完整栈只进 0600 私有日志.
+     The `docs/open-questions.md` entry notes the 2026-10-24 revision
+     by this GAP-72 ruling. The original wording stays.
+  5. Tests lock the crash output to the upstream structure line by
+     line (title, `Error` line, frame-line format, hint lines). One
+     test shows that a parameter holding a sensitive string (for
+     example `sk-test-SECRET`) is absent from the terminal output and
+     present only in the mode-0600 log.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-72. The status
+  cell starts with `open：顾问裁决 2026-10-24 选 C（对齐上游崩溃页结构，栈帧不带参数值，完整栈进 0600 日志，栈帧文本为新差异类），见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
