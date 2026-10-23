@@ -68,12 +68,12 @@
       ((equal op "pread") (op-pread request server))
       ((equal op "fstat") (op-fstat request server))
       ((equal op "scanLines")
-       (op-scan-lines request server (lambda () (and control (control-aborted control)))))
+       (op-scan-lines request server (lambda () (control-aborted-p control))))
       ((equal op "opendir") (op-opendir request server))
       ((equal op "readdir") (op-readdir request server))
       ((equal op "close") (op-close request server))
       ((equal op "listFiles")
-       (op-list-files request (lambda () (and control (control-aborted control)))))
+       (op-list-files request (lambda () (control-aborted-p control))))
       ((equal op "exec")
        (run-exec request (lambda (json bytes) (funcall emit json bytes)) control))
       ((equal op "pty")
@@ -97,7 +97,21 @@
                                  :message (princ-to-string condition))))))
 
 (defun long-op-p (op)
-  (member op '("exec" "pty" "watch") :test #'equal))
+  ;; listFiles and scanLines leave the reader. A cancel written behind the
+  ;; request is registered before the walk, then applied between entries or chunks.
+  (member op '("exec" "pty" "watch" "listFiles" "scanLines") :test #'equal))
+
+(defun remember-control (server id control)
+  (sb-thread:with-mutex ((server-controls-lock server))
+    (setf (gethash id (server-controls server)) control)))
+
+(defun forget-control (server id)
+  (sb-thread:with-mutex ((server-controls-lock server))
+    (remhash id (server-controls server))))
+
+(defun find-control (server id)
+  (sb-thread:with-mutex ((server-controls-lock server))
+    (gethash id (server-controls server))))
 
 (defun handle-request (server frame)
   (let* ((id (frame-id frame))
@@ -109,7 +123,7 @@
       ((member (json-string request "op") '("ptyWrite" "ptyResize" "ptyForeground") :test #'equal)
        (finish-op server id (lambda () (dispatch-op server id request (frame-payload frame) nil nil))))
       (t
-       (setf (gethash id (server-controls server)) control)
+       (remember-control server id control)
        (flet ((emit (json bytes) (send-event server id json bytes)))
          (if (long-op-p (json-string request "op"))
              (sb-thread:make-thread
@@ -118,16 +132,16 @@
                      (finish-op server id
                                 (lambda ()
                                   (dispatch-op server id request (frame-payload frame) #'emit control)))
-                  (remhash id (server-controls server))))
+                  (forget-control server id)))
               :name "env-operation")
              (unwind-protect
                   (finish-op server id
                              (lambda ()
                                (dispatch-op server id request (frame-payload frame) #'emit control)))
-               (remhash id (server-controls server)))))))))
+               (forget-control server id))))))))
 
 (defun handle-cancel (server frame)
-  (let ((control (gethash (frame-id frame) (server-controls server))))
+  (let ((control (find-control server (frame-id frame))))
     (when control
       (control-cancel control (equal (json-string (frame-json frame) "mode") "kill")))))
 

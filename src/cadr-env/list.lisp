@@ -92,7 +92,17 @@
       (= (logand (sb-posix:stat-mode (sb-posix:lstat path)) #o170000) #o040000)
     (sb-posix:syscall-error () nil)))
 
-(defun glob-segment (pattern text)
+(defun glob-pattern (pattern)
+  (if (and (plusp (length pattern)) (char= (char pattern 0) #\/))
+      (subseq pattern 1)
+      pattern))
+
+(defun glob-parts (text)
+  (if (equal text "")
+      #()
+      (coerce (uiop:split-string text :separator '(#\/)) 'vector)))
+
+(defun match-part (pattern text)
   (let ((pattern-index 0) (text-index 0) (star nil) (mark 0))
     (loop
       (cond
@@ -105,9 +115,31 @@
               (or (char= (char pattern pattern-index) #\?)
                   (char= (char pattern pattern-index) (char text text-index))))
          (incf pattern-index) (incf text-index))
-        ((and star (< mark (length text)))
-         (setf pattern-index (1+ star) mark (1+ mark) text-index mark))
+        (star
+         (incf mark)
+         (when (> mark (length text)) (return nil))
+         (setf pattern-index (1+ star) text-index mark))
         (t (return nil))))))
+
+(defun match-parts (patterns texts)
+  (labels ((rec (pattern-index text-index)
+             (cond
+               ((and (= pattern-index (length patterns))
+                     (= text-index (length texts)))
+                t)
+               ((= pattern-index (length patterns)) nil)
+               ((equal (aref patterns pattern-index) "**")
+                (or (rec (1+ pattern-index) text-index)
+                    (and (< text-index (length texts))
+                         (rec pattern-index (1+ text-index)))))
+               ((= text-index (length texts)) nil)
+               ((match-part (aref patterns pattern-index) (aref texts text-index))
+                (rec (1+ pattern-index) (1+ text-index)))
+               (t nil))))
+    (rec 0 0)))
+
+(defun glob-segment (pattern text)
+  (match-parts (glob-parts (glob-pattern pattern)) (glob-parts text)))
 
 (defun relative-under (directory path)
   (let ((base (strip-slash directory)))
@@ -169,7 +201,7 @@
 (defun op-list-files (request aborted)
   (let* ((root (require-string request "path"))
          (options (list-options request))
-         (stat (call-posix "lstat" root (lambda () (sb-posix:lstat root))))
+         (stat (call-posix "stat" root (lambda () (sb-posix:stat root))))
          (kind (logand (sb-posix:stat-mode stat) #o170000)))
     (unless (= kind #o040000)
       (env-failure "ENOTDIR"
@@ -204,9 +236,9 @@
                      (and (not (json-get options "hidden")) (hidden-name-p name))
                      (and rules (ignored-p rules full directory-p))))
                (walk (directory relative)
-                 (when (and aborted (funcall aborted))
-                   (env-failure "aborted" "aborted"))
                  (dolist (name (raw-sort (directory-entries directory)))
+                   (when (and aborted (funcall aborted))
+                     (env-failure "aborted" "aborted"))
                    (when truncated (return))
                    (let* ((full (concatenate 'string (strip-slash directory) "/" name))
                           (rel (if (equal relative "") name

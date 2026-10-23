@@ -20,6 +20,7 @@
   (handles (make-hash-table :test #'eql))
   (next-handle 0)
   (controls (make-hash-table :test #'eql))
+  (controls-lock (sb-thread:make-mutex :name "env-controls"))
   (groups (make-hash-table :test #'eql))
   (terminals (make-hash-table :test #'eql))
   (output-lock (sb-thread:make-mutex :name "env-output"))

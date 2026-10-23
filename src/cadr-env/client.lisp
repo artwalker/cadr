@@ -159,7 +159,19 @@
     (sb-thread:with-mutex ((connection-lock connection))
       (write-frame (connection-output connection) (make-frame +cancel+ id json)))))
 
+(defconstant +js-max-safe-integer+ #.(1- (expt 2 53)))
+
+(defun list-files-bound-p (value)
+  (and (integerp value) (<= 0 value +js-max-safe-integer+)))
+
 (defun list-files-over (connection request)
+  (dolist (key '("maxEntries" "maxBytes" "timeoutMs"))
+    (let ((value (json-get request key)))
+      (unless (or (eq value +absent+) (list-files-bound-p value))
+        (env-failure "invalid"
+                     (format nil "~A must be a non-negative safe integer" key)
+                     :path (let ((path (json-get request "path")))
+                             (when (stringp path) path))))))
   (let ((features (json-get (connection-info connection) "features")))
     (unless (and (json-array-p features) (find "listFiles" features :test #'equal))
       (env-failure "not_supported" (wire-literal :list-unsupported))))

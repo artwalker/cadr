@@ -146,6 +146,9 @@
   (let ((cols (cell-size request "cols"))
         (rows (cell-size request "rows")))
     (multiple-value-bind (master slave) (open-pty cols rows)
+      (sb-posix:fcntl master sb-posix:f-setfl
+                      (logior (sb-posix:fcntl master sb-posix:f-getfl)
+                              sb-posix:o-nonblock))
       (let* ((slave-name (%ptsname master))
              (pid (spawn-pty request slave-name)))
         (%c-close slave)

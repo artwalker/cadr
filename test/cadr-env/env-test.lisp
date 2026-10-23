@@ -107,6 +107,41 @@
       (is (equal 5 (cadr-env::json-get result "start")))
       (is (equal 8 (cadr-env::json-get result "end"))))))
 
+(test output-window-keeps-the-tail-after-a-skip
+  (let* ((window (cadr-env::make-output-window :max-bytes 10 :max-lines 2
+                                               :min-interval-ms 0 :bytes-per-second 1d12))
+         (pending (cadr-env::make-pending window))
+         (full "")
+         (events nil))
+    (dotimes (index 500)
+      (let ((text (format nil "line ~D é😀~%" index)))
+        (setf full (concatenate 'string full text))
+        (cadr-env::pending-push pending
+                                (if (zerop (mod index 7)) "stderr" "stdout")
+                                text)
+        (when (= (mod index 50) 49)
+          (setf events (append events (cadr-env::pending-take pending))))))
+    (setf events (append events (cadr-env::pending-take pending)))
+    (let ((bytes 0)
+          (newlines 0)
+          (after ""))
+      (dolist (event events)
+        (let ((skipped (cadr-env::output-event-skipped event)))
+          (when skipped
+            (incf bytes (cadr-env::json-get skipped "bytes"))
+            (incf newlines (cadr-env::json-get skipped "newlines"))
+            (setf after "")))
+        (incf bytes (length (cadr-env::utf8-bytes (cadr-env::output-event-text event))))
+        (incf newlines (count #\Newline (cadr-env::output-event-text event)))
+        (setf after (concatenate 'string after (cadr-env::output-event-text event))))
+      (is (equal (length (cadr-env::utf8-bytes full)) bytes))
+      (is (equal (count #\Newline full) newlines))
+      (is (and (>= (length full) (length after))
+               (string= full after :start1 (- (length full) (length after)))))
+      (is (or (> (length (cadr-env::utf8-bytes after)) 10)
+              (> (count #\Newline after) 2)))
+      (is (some #'cadr-env::output-event-skipped events)))))
+
 (test silence-constants
   (is (equal 5 cadr-env::+ping-seconds+))
   (is (equal 30 cadr-env::+silence-seconds+))
@@ -273,6 +308,10 @@
                (is (not (cadr-env::json-get json "truncated")))
                (is (equal '("f a" "f b" "f c") (decode-records payload))))
              (multiple-value-bind (json payload)
+                 (request connection "listFiles" "path" bounded "maxEntries" 0 "hidden" nil)
+               (is (cadr-env::json-get json "truncated"))
+               (is (equal nil (decode-records payload))))
+             (multiple-value-bind (json payload)
                  (request connection "listFiles" "path" bounded "maxBytes" 6 "hidden" nil)
                (is (cadr-env::json-get json "truncated"))
                (is (equal '("f a" "f b") (decode-records payload))))
@@ -327,9 +366,34 @@
                       (is (equal "Terminals are not supported on this system yet"
                                  (env-failure-message refused)))))
                (setf cadr-env::*host-os* saved)))
+           (let ((missing (handler-case
+                              (request connection "pty" "cwd" (concatenate 'string root "/no-pty")
+                                       "cols" 80 "rows" 24
+                                       "argv" (cadr-env::json-array "/bin/sh" "-c" "exit 0"))
+                            (env-failure (condition) condition))))
+             (is (search "Working directory does not exist" (env-failure-message missing))))
+           (let ((missing-terminal (handler-case
+                                       (request connection "ptyWrite" "target" 999)
+                                     (env-failure (condition) condition))))
+             (is (equal "EBADF" (env-failure-code missing-terminal))))
            (let ((result (request connection "pty" "cwd" root "cols" 80 "rows" 24
                                   "argv" (cadr-env::json-array "/bin/sh" "-c" "exit 3"))))
              (is (equal 3 (cadr-env::json-get result "exitCode"))))
+           (let* ((box (list nil))
+                  (worker (sb-thread:make-thread
+                           (lambda ()
+                             (loop until (car box) do (sleep 0.01))
+                             (sleep 0.2)
+                             (connection-cancel connection (car box))))))
+             (let ((closed (handler-case
+                               (cadr-env::connection-request
+                                connection "pty"
+                                (cadr-env::json-object "cwd" root "cols" 80 "rows" 24
+                                                       "argv" (cadr-env::json-array "sleep" "100"))
+                                #() box)
+                             (env-failure (condition) condition))))
+               (is (equal "aborted" (env-failure-code closed))))
+             (sb-thread:join-thread worker))
            (multiple-value-bind (result payload events)
                (cadr-env::connection-request
                 connection "pty"
@@ -379,6 +443,122 @@
                      (env-failure (condition) condition))))
       (is (equal "not_supported" (env-failure-code failure)))
       (is (equal (cadr-env::wire-literal :list-unsupported) (env-failure-message failure))))))
+
+(defun request-then-cancel (connection op json)
+  (let ((box (cadr-env::make-mailbox))
+        (id (incf (cadr-env::connection-next-id connection))))
+    (cadr-env::json-put json "op" op)
+    (setf (gethash id (cadr-env::connection-pending connection)) box)
+    (sb-thread:with-mutex ((cadr-env::connection-lock connection))
+      (cadr-env::write-frame (cadr-env::connection-output connection)
+                             (cadr-env::make-frame cadr-env::+request+ id json))
+      (cadr-env::write-frame (cadr-env::connection-output connection)
+                             (cadr-env::make-frame cadr-env::+cancel+ id
+                                                   (cadr-env::json-object))))
+    (sb-thread:with-mutex ((cadr-env::mailbox-lock box))
+      (loop until (cadr-env::mailbox-done box)
+            do (sb-thread:condition-wait (cadr-env::mailbox-wait box)
+                                         (cadr-env::mailbox-lock box))))
+    (remhash id (cadr-env::connection-pending connection))
+    (cadr-env::mailbox-failure box)))
+
+(test list-files-cancel-star-and-symlink-root
+  (is (cadr-env::glob-segment "sub/*.log" "sub/y.log"))
+  (is (not (cadr-env::glob-segment "sub/*.log" "sub/a/x.log")))
+  (is (not (cadr-env::glob-segment "sub/*.log" "other.log")))
+  (is (cadr-env::glob-segment "sub/*" "sub/a"))
+  (is (not (cadr-env::glob-segment "sub/*" "sub/a/x.log")))
+  (is (cadr-env::glob-segment "sub/**/x.log" "sub/x.log"))
+  (is (cadr-env::glob-segment "sub/**/x.log" "sub/a/x.log"))
+  (is (cadr-env::glob-segment "sub/**/x.log" "sub/a/b/x.log"))
+  (is (not (cadr-env::glob-segment "sub/**/x.log" "sub/y.log")))
+  (is (cadr-env::glob-segment "/*.log" "other.log"))
+  (is (not (cadr-env::glob-segment "/*.log" "sub/y.log")))
+  (is (cadr-env::glob-segment "sub/?.log" "sub/y.log"))
+  (is (not (cadr-env::glob-segment "sub/?.log" "sub/yy.log")))
+  (let ((connection (make-pipe-connection))
+        (root (temp-dir "star-")))
+    (unwind-protect
+         (progn
+           (write-text (concatenate 'string root "/.git/HEAD") "ref: refs/heads/main")
+           (write-text (concatenate 'string root "/.gitignore") "sub/*.log")
+           (write-text (concatenate 'string root "/sub/y.log") "y")
+           (write-text (concatenate 'string root "/sub/a/x.log") "x")
+           (write-text (concatenate 'string root "/sub/a/keep.txt") "k")
+           (multiple-value-bind (json payload)
+               (request connection "listFiles" "path" root "gitignore" t)
+             (declare (ignore json))
+             (let ((records (decode-records payload)))
+               (is (find "f sub/a/x.log" records :test #'equal))
+               (is (find "f sub/a/keep.txt" records :test #'equal))
+               (is (not (find "f sub/y.log" records :test #'equal)))))
+           (let* ((linked (temp-dir "rootlink-"))
+                  (link (concatenate 'string linked "/link"))
+                  (file-link (concatenate 'string linked "/file")))
+             (write-text (concatenate 'string linked "/dir/inner.txt") "i")
+             (sb-posix:symlink ".." (concatenate 'string linked "/dir/loop"))
+             (sb-posix:symlink "dir" link)
+             (sb-posix:symlink "dir/inner.txt" file-link)
+             (multiple-value-bind (json payload)
+                 (request connection "listFiles" "path" link "hidden" nil "gitignore" nil)
+               (declare (ignore json))
+               (is (equal '("f inner.txt" "l loop") (decode-records payload))))
+             (let ((file (handler-case (request connection "listFiles" "path" file-link)
+                           (env-failure (condition) condition))))
+               (is (equal "ENOTDIR" (env-failure-code file)))
+               (is (search "scandir" (env-failure-message file)))))
+           (let ((wide (temp-dir "cancel-")))
+             (dotimes (dir 40)
+               (dotimes (file 30)
+                 (write-text (format nil "~A/d~D/f~D" wide dir file) "")))
+             (let ((failure (request-then-cancel connection "listFiles"
+                                                 (cadr-env::json-object "path" wide))))
+               (is (equal "aborted" (cadr-env::json-get failure "code")))
+               (is (equal "aborted" (cadr-env::json-get failure "message"))))
+             (multiple-value-bind (json payload)
+                 (request connection "listFiles" "path" wide "hidden" nil "gitignore" nil)
+               (is (not (cadr-env::json-get json "truncated")))
+               (is (equal 1240 (length (decode-records payload))))))
+           (let* ((scanned (concatenate 'string root "/lines.txt"))
+                  (opened nil))
+             (with-open-file (stream scanned :direction :output :if-exists :supersede
+                                              :if-does-not-exist :create
+                                              :element-type '(unsigned-byte 8))
+               (let ((line (make-array 64 :element-type '(unsigned-byte 8) :initial-element 120)))
+                 (setf (aref line 63) 10)
+                 (dotimes (i 20000)
+                   (write-sequence line stream))))
+             (setf opened (request connection "open" "path" scanned "mode" "read"))
+             (let ((failure (request-then-cancel
+                             connection "scanLines"
+                             (cadr-env::json-object "handle" (cadr-env::json-get opened "handle")
+                                                    "startLine" 0))))
+               (is (equal "aborted" (cadr-env::json-get failure "code")))
+               (is (equal "aborted" (cadr-env::json-get failure "message"))))))
+      (connection-close connection)))
+  (let ((connection (make-pipe-connection)))
+    (unwind-protect
+         (progn
+           (dolist (pair '(("maxEntries" -1)
+                           ("maxBytes" 3/2)
+                           ("timeoutMs" 9007199254740992)))
+             (let ((failure (handler-case
+                                (list-files-over connection
+                                                 (cadr-env::json-object "path" "/tmp"
+                                                                        (first pair) (second pair)))
+                              (env-failure (condition) condition))))
+               (is (equal "invalid" (env-failure-code failure)))
+               (is (equal (format nil "~A must be a non-negative safe integer" (first pair))
+                          (env-failure-message failure)))
+               (is (equal "/tmp" (env-failure-path failure)))))
+           (setf (connection-info connection)
+                 (cadr-env::json-object "features" (cadr-env::json-array)))
+           (let ((failure (handler-case
+                              (list-files-over connection
+                                               (cadr-env::json-object "path" "/tmp" "maxEntries" -1))
+                            (env-failure (condition) condition))))
+             (is (equal "invalid" (env-failure-code failure)))))
+      (connection-close connection))))
 
 (test production-env-joins-go-through-cadr-core
   (let ((root (asdf:system-source-directory "cadr-env")))

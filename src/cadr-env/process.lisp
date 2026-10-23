@@ -68,6 +68,10 @@
       (setf (control-killed control) t)
       (setf (control-aborted control) t)))
 
+(defun control-aborted-p (control)
+  (sb-thread:barrier (:read))
+  (and control (control-aborted control)))
+
 (defun c-string (text)
   (let* ((octets (sb-ext:string-to-octets text :external-format :utf-8 :null-terminate t))
          (alien (sb-alien:make-alien sb-alien:char (length octets))))
