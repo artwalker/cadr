@@ -430,7 +430,7 @@
                      :key key
                      :token (car exchanged)
                      :expires-at (+ now (cdr exchanged))
-                     :force-refresh-p nil
+                     :force-refresh-p (anthropic-federation-client-force-refresh-p cached)
                      :pending-refresh nil
                      :last-advisory-error
                      (anthropic-federation-client-last-advisory-error
