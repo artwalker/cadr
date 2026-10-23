@@ -4235,11 +4235,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "aa91b176ddd9ecb858664d11d71965f8d8e82c607508a06a6e7720b5d8c21ecf",
-          "cadr": "8af49cacd934bca2626395f4eb3040460380a44b6d3f9b893dc2f1a1242e6d43"
+          "pi": "1e2c4a4d32a4b45d5599c89b5e4cada4a688312b1e6b917747939c1abf410a84",
+          "cadr": "9f716801ed7505c75387271f46b204eaa50e90dd4d22af93cbf5613826a96c60"
         }
       },
-      "note": "At example-space-invaders/invaders-initial both sides render a frozen 60-column board (narrow is excluded: baseline pi aborts when a line exceeds 48 columns). Remaining deltas are uncolored cadr glyphs vs pi SGR, I04 identity wrapping, and I01 ANSI segmentation. invaders-left/right stay as checkpoints: their incremental PTY slices are aligned (no Kitty key-release), so they must not carry dispositions."
+      "note": "At example-space-invaders/invaders-initial both sides render a frozen 60-column board (narrow is excluded: baseline pi aborts when a line exceeds 48 columns). Alien rows are ◄☆►, ╱◆╲, and ╲▼╱; the header is SPACE INVADERS │ Score: 0 │ Hi: 0 │ Lv: 1 │ ♥♥♥ and the footer is ←→ or AD to move, SPACE/F to fire, ESC pause, Q quit. The remaining semantic delta is one overlay row: pi leaves the top row blank and clips the bottom border, while cadr paints that border on the last board row. I04 covers the sandbox path token; I01 is raw ANSI segmentation. invaders-left/right stay as checkpoints: their incremental PTY slices are aligned (no Kitty key-release), so they must not carry dispositions."
     },
     {
       "scenario": "example-snake",

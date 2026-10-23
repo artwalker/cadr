@@ -371,6 +371,7 @@ check total) as thickness:
 The behavior tier added for the three games (construct → mutate → render
 → assert: `goal20-snake-behavior-render-reflects-state`,
 `goal20-invaders-behavior-render-reflects-state`,
+`goal27-invaders-glyphs-and-title-match-baseline`,
 `goal20-ttt-agent-action-repaints-the-live-overlay`) closes the
 construct-and-render gap for those files only; the remaining examples
 keep the loader-suite tier as their strongest behavioral evidence.

@@ -316,6 +316,41 @@ tui-dispatch-event request-renders those (root.lisp:207-208)."
   (setf (space-invaders-thread component) nil)
   component)
 
+(defun invaders-dim (text)
+  (format nil "~C[2m~A~C[22m" #\Escape text #\Escape))
+
+(defun invaders-color (code text)
+  (format nil "~C[~Am~A~C[0m" #\Escape code text #\Escape))
+
+(defun invaders-bold (text)
+  (format nil "~C[1m~A~C[22m" #\Escape text #\Escape))
+
+(defun invaders-alien-sprite (type x alien-x)
+  "Baseline sprites (space-invaders.ts render): type 0 ▼ with ╲╱,
+type 1 ◆ with ╱╲, type 2 ☆ with ◄►, colored green, cyan, magenta."
+  (multiple-value-bind (center left right code)
+      (ecase type
+        (0 (values "▼" "╲" "╱" "32"))
+        (1 (values "◆" "╱" "╲" "36"))
+        (2 (values "☆" "◄" "►" "35")))
+    (invaders-color code
+                    (cond ((= x alien-x) center)
+                          ((< x alien-x) left)
+                          (t right)))))
+
+(defun invaders-shield-cell (state x y)
+  "Nil outside every shield. :hit is a live segment. :miss is a
+destroyed segment, which still masks the player and bullets the way
+the baseline shield loop breaks inside the 4×3 bounds."
+  (dolist (shield (invaders-state-shields state) nil)
+    (let ((relative-x (- x (invader-shield-x shield)))
+          (relative-y (- y (- +invaders-player-y+ 5))))
+      (when (and (<= 0 relative-x 3) (<= 0 relative-y 2))
+        (return (if (aref (aref (invader-shield-segments shield) relative-y)
+                          relative-x)
+                    :hit
+                    :miss))))))
+
 (defun invaders-cell (state x y)
   (let ((alien
           (find-if
@@ -323,57 +358,132 @@ tui-dispatch-event request-renders those (root.lisp:207-208)."
              (and (invader-alive-p candidate)
                   (= y (invader-y candidate))
                   (<= (abs (- x (invader-x candidate))) 1)))
-           (invaders-state-aliens state))))
+           (invaders-state-aliens state)))
+        (shield (invaders-shield-cell state x y)))
     (cond
-      (alien (if (= x (invader-x alien)) "◆" (if (< x (invader-x alien)) "╱" "╲")))
+      (alien (invaders-alien-sprite (invader-type alien) x (invader-x alien)))
+      ((eq shield :hit) (invaders-dim "█"))
+      ((eq shield :miss) " ")
       ((and (= y +invaders-player-y+)
             (<= (abs (- x (invaders-state-player-x state))) 1))
-       (if (= x (invaders-state-player-x state)) "▲" "═"))
-      ((find-if (lambda (bullet)
-                  (and (= x (invader-bullet-x bullet))
-                       (= y (invader-bullet-y bullet))))
-                (invaders-state-bullets state)) "│")
-      ((some
-        (lambda (shield)
-          (let ((relative-x (- x (invader-shield-x shield)))
-                (relative-y (- y (- +invaders-player-y+ 5))))
-            (and (<= 0 relative-x 3) (<= 0 relative-y 2)
-                 (aref (aref (invader-shield-segments shield) relative-y)
-                       relative-x))))
-        (invaders-state-shields state)) "█")
-      (t " "))))
+       (invaders-color "97"
+                       (if (= x (invaders-state-player-x state)) "▲" "═")))
+      (t
+       (let ((bullet
+               (find-if (lambda (candidate)
+                          (and (= x (invader-bullet-x candidate))
+                               (= y (invader-bullet-y candidate))))
+                        (invaders-state-bullets state))))
+         (if bullet
+             (invaders-color
+              (if (= (invader-bullet-direction bullet) -1) "33" "31")
+              "│")
+             " "))))))
+
+(defun invaders-column-width (text)
+  "One column per character after CSI is removed. The baseline's
+visibleWidth and padLine do that for this board. U+2665 is one cell
+there and in the terminal; cadr-tui:visible-width counts it as two,
+which shortens the header padding and moves the right border."
+  (loop with index = 0
+        with width = 0
+        while (< index (length text))
+        do (if (and (char= (char text index) #\Escape)
+                    (< (1+ index) (length text))
+                    (char= (char text (1+ index)) #\[))
+               (let ((end (position #\m text :start index)))
+                 (setf index (if end (1+ end) (length text))))
+               (progn
+                 (incf width)
+                 (incf index)))
+        finally (return width)))
+
+(defun invaders-box-line (content)
+  (format nil "~A~A~A~A"
+          (invaders-dim " │")
+          content
+          (make-string (max 0 (- +invaders-width+
+                                 (invaders-column-width content)))
+                       :initial-element #\Space)
+          (invaders-dim "│")))
+
+(defun invaders-pad-line (line width)
+  (let ((padding (max 0 (- width (invaders-column-width line)))))
+    (if (zerop padding)
+        line
+        (concatenate 'string
+                     line
+                     (make-string padding :initial-element #\Space)))))
+
+(defun invaders-header (state)
+  (format nil "~A │ Score: ~A │ Hi: ~A │ Lv: ~A │ ~A"
+          (invaders-bold (invaders-color "32" "SPACE INVADERS"))
+          (invaders-bold
+           (invaders-color "33"
+                           (princ-to-string (invaders-state-score state))))
+          (invaders-bold
+           (invaders-color "33"
+                           (princ-to-string (invaders-state-high-score state))))
+          (invaders-bold
+           (invaders-color "36"
+                           (princ-to-string (invaders-state-level state))))
+          (invaders-color "31"
+                          (make-string (max 0 (invaders-state-lives state))
+                                       :initial-element #\♥))))
+
+(defun invaders-footer (component state)
+  (cond
+    ((space-invaders-paused-p component)
+     (format nil "~A Press any key to continue, ~A to quit"
+             (invaders-color "33" (invaders-bold "PAUSED"))
+             (invaders-bold "Q")))
+    ((invaders-state-game-over-p state)
+     (format nil "~A Press ~A to restart, ~A to quit"
+             (invaders-color "31" (invaders-bold "GAME OVER!"))
+             (invaders-bold "R")
+             (invaders-bold "Q")))
+    ((invaders-state-victory-p state)
+     (format nil "~A Press ~A for level ~D, ~A to quit"
+             (invaders-color "32" (invaders-bold "VICTORY!"))
+             (invaders-bold "R")
+             (1+ (invaders-state-level state))
+             (invaders-bold "Q")))
+    (t
+     (format nil "←→ or AD to move, ~A/F to fire, ~A pause, ~A quit"
+             (invaders-bold "SPACE")
+             (invaders-bold "ESC")
+             (invaders-bold "Q")))))
+
+(defun invaders-border (left right)
+  (invaders-dim
+   (format nil "~A~A~A"
+           left
+           (make-string +invaders-width+ :initial-element #\─)
+           right)))
+
+(defun invaders-board-line (state y)
+  (with-output-to-string (output)
+    (write-string (invaders-dim " │") output)
+    (loop for x below +invaders-width+
+          do (write-string (invaders-cell state x y) output))
+    (write-string (invaders-dim "│") output)))
 
 (defmethod cadr-tui:component-render
     ((component space-invaders-component) width &key focused-p)
-  (declare (ignore width focused-p))
+  (declare (ignore focused-p))
   (sb-thread:with-mutex ((space-invaders-lock component))
     (let* ((state (space-invaders-live-state component))
-           (footer
-             (cond
-               ((space-invaders-paused-p component) "PAUSED · any key resumes · Q quits")
-               ((invaders-state-game-over-p state) "GAME OVER · R restarts · Q quits")
-               ((invaders-state-victory-p state)
-                (format nil "VICTORY · R starts level ~D · Q quits"
-                        (1+ (invaders-state-level state))))
-               (t "←→/AD move · SPACE/F fire · ESC saves · Q quits"))))
-      (append
-       (list (format nil " ╭~A╮" (make-string +invaders-width+ :initial-element #\─))
-             (format nil " │SPACE INVADERS · Score ~D · Hi ~D · Lv ~D · Lives ~D│"
-                     (invaders-state-score state)
-                     (invaders-state-high-score state)
-                     (invaders-state-level state)
-                     (invaders-state-lives state))
-             (format nil " ├~A┤" (make-string +invaders-width+ :initial-element #\─)))
-       (loop for y below +invaders-height+
-             collect
-             (with-output-to-string (output)
-               (write-string " │" output)
-               (loop for x below +invaders-width+
-                     do (write-string (invaders-cell state x y) output))
-               (write-string "│" output)))
-       (list (format nil " ├~A┤" (make-string +invaders-width+ :initial-element #\─))
-             (format nil " │~VA│" +invaders-width+ footer)
-             (format nil " ╰~A╯" (make-string +invaders-width+ :initial-element #\─)))))))
+           (footer (invaders-footer component state)))
+      (mapcar (lambda (line) (invaders-pad-line line width))
+              (append
+               (list (invaders-border " ╭" "╮")
+                     (invaders-box-line (invaders-header state))
+                     (invaders-border " ├" "┤"))
+               (loop for y below +invaders-height+
+                     collect (invaders-board-line state y))
+               (list (invaders-border " ├" "┤")
+                     (invaders-box-line footer)
+                     (invaders-border " ╰" "╯")))))))
 
 (defun invaders-event-key-p (event key-id)
   (let ((text (or (cadr-tui:input-event-text event) "")))

@@ -152,6 +152,177 @@
           (is (plusp renders)
               "timer tick did not request a repaint"))))))
 
+(defun goal27-count-substring (needle haystack)
+  (loop with start = 0
+        with count = 0
+        for found = (search needle haystack :start2 start)
+        while found
+        do (incf count)
+           (setf start (+ found (length needle)))
+        finally (return count)))
+
+(defun goal27-strip-ansi (text)
+  (with-output-to-string (output)
+    (loop with index = 0
+          while (< index (length text))
+          do (if (and (char= (char text index) #\Escape)
+                      (< (1+ index) (length text))
+                      (char= (char text (1+ index)) #\[))
+                 (let ((end (position #\m text :start index)))
+                   (setf index (if end (1+ end) (length text))))
+                 (progn
+                   (write-char (char text index) output)
+                   (incf index))))))
+
+(test goal27-invaders-glyphs-and-title-match-baseline
+  ;; Locked to v1.4.0 space-invaders.ts render: row 0 is type 2 (☆, ◄►,
+  ;; magenta 35), rows 1-2 are type 1 (◆, ╱╲, cyan 36), rows 3-4 are
+  ;; type 0 (▼, ╲╱, green 32). Header separators are │ with Score:/Hi:/Lv:
+  ;; and one ♥ per life. Footer is the playing copy, not the old middle-dot line.
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target
+               (merge-pathnames "examples/extensions/space-invaders.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "invaders"
+                          (cadr-agent::extension-bundle-commands candidate)
+                          :key #'cadr-agent::extension-command-definition-name
+                          :test #'string=))
+                  bundles))
+               (package (cadr-agent::extension-bundle-package bundle))
+               (state
+                 (funcall
+                  (find-symbol "MAKE-INITIAL-INVADERS-STATE" package)))
+               (state-var (find-symbol "*SPACE-INVADERS-STATE*" package))
+               (previous (symbol-value state-var))
+               (tui
+                 (cadr-tui:make-tui-root
+                  :render-function (lambda (lines)
+                                     (declare (ignore lines)))))
+               (component
+                 (make-instance
+                  (find-symbol "SPACE-INVADERS-COMPONENT" package)
+                  :state state
+                  :tui tui
+                  :done (lambda (value) value)
+                  :save (lambda (value) value)
+                  :paused-p nil)))
+          (unwind-protect
+               (progn
+                 (setf (symbol-value state-var) state)
+                 (let* ((frame (cadr-tui:component-render component 100))
+                        (plain (mapcar #'goal27-strip-ansi frame))
+                        (joined (format nil "~{~A~%~}" plain))
+                        (magenta (format nil "~C[35m◄~C[0m~C[35m☆~C[0m~C[35m►~C[0m"
+                                         #\Escape #\Escape #\Escape
+                                         #\Escape #\Escape #\Escape))
+                        (cyan (format nil "~C[36m╱~C[0m~C[36m◆~C[0m~C[36m╲~C[0m"
+                                      #\Escape #\Escape #\Escape
+                                      #\Escape #\Escape #\Escape))
+                        (green (format nil "~C[32m╲~C[0m~C[32m▼~C[0m~C[32m╱~C[0m"
+                                       #\Escape #\Escape #\Escape
+                                       #\Escape #\Escape #\Escape))
+                        (raw (format nil "~{~A~%~}" frame)))
+                   (is (= 11 (count #\☆ joined)))
+                   (is (= 22 (count #\◆ joined)))
+                   (is (= 22 (count #\▼ joined)))
+                   (is (= 11 (goal27-count-substring "◄☆►" joined)))
+                   (is (= 22 (goal27-count-substring "╱◆╲" joined)))
+                   (is (= 22 (goal27-count-substring "╲▼╱" joined)))
+                   (is (= 11 (goal27-count-substring magenta raw)))
+                   (is (= 22 (goal27-count-substring cyan raw)))
+                   (is (= 22 (goal27-count-substring green raw)))
+                   (is (find-if
+                        (lambda (line)
+                          (search "│SPACE INVADERS │ Score: 0 │ Hi: 0 │ Lv: 1 │ ♥♥♥             │"
+                                  line))
+                        plain)
+                       "header interior must pad to 60 columns with one-cell hearts")
+                   (is (find-if
+                        (lambda (line)
+                          (search (format nil "~C[1m~C[32mSPACE INVADERS~C[0m~C[22m"
+                                          #\Escape #\Escape #\Escape #\Escape)
+                                  line))
+                        frame))
+                   (is (find-if
+                        (lambda (line)
+                          (search (format nil "Score: ~C[1m~C[33m0~C[0m~C[22m"
+                                          #\Escape #\Escape #\Escape #\Escape)
+                                  line))
+                        frame))
+                   (is (find-if
+                        (lambda (line)
+                          (search (format nil "~C[31m♥♥♥~C[0m" #\Escape #\Escape)
+                                  line))
+                        frame))
+                   (is (null (find-if (lambda (line) (search "Lives" line)) plain)))
+                   (is (null (find-if (lambda (line) (search "·" line)) plain)))
+                   (is (find-if
+                        (lambda (line)
+                          (search "←→ or AD to move, SPACE/F to fire, ESC pause, Q quit"
+                                  line))
+                        plain))
+                   (funcall
+                    (fdefinition
+                     (list 'setf
+                           (find-symbol "SPACE-INVADERS-PAUSED-P" package)))
+                    t component)
+                   (let ((paused (mapcar #'goal27-strip-ansi
+                                         (cadr-tui:component-render component 100))))
+                     (is (find-if
+                          (lambda (line)
+                            (search "PAUSED Press any key to continue, Q to quit"
+                                    line))
+                          paused)))
+                   (funcall
+                    (fdefinition
+                     (list 'setf
+                           (find-symbol "SPACE-INVADERS-PAUSED-P" package)))
+                    nil component)
+                   (funcall
+                    (fdefinition
+                     (list 'setf
+                           (find-symbol "INVADERS-STATE-GAME-OVER-P" package)))
+                    t state)
+                   (let ((over (mapcar #'goal27-strip-ansi
+                                       (cadr-tui:component-render component 100))))
+                     (is (find-if
+                          (lambda (line)
+                            (search "GAME OVER! Press R to restart, Q to quit"
+                                    line))
+                          over)))
+                   (funcall
+                    (fdefinition
+                     (list 'setf
+                           (find-symbol "INVADERS-STATE-GAME-OVER-P" package)))
+                    nil state)
+                   (funcall
+                    (fdefinition
+                     (list 'setf
+                           (find-symbol "INVADERS-STATE-VICTORY-P" package)))
+                    t state)
+                   (let ((victory (mapcar #'goal27-strip-ansi
+                                          (cadr-tui:component-render component 100))))
+                     (is (find-if
+                          (lambda (line)
+                            (search "VICTORY! Press R for level 2, Q to quit"
+                                    line))
+                          victory)))))
+            (setf (symbol-value state-var) previous)))))))
+
 (test goal20-snake-overlay-reads-live-global
   ;; P.8: after reconstruct/restart the overlay must paint *snake-state*,
   ;; not a slot captured when the component was built.
