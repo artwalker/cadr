@@ -706,3 +706,131 @@ stack trace")
       (is (eq t
               (cadr-cli::tui-state-bug-report-hint-shown-p
                state))))))
+
+(defun bug-report-url-failure (function)
+  (handler-case
+      (progn (funcall function) nil)
+    (error (condition)
+      (princ-to-string condition))))
+
+(defun bug-report-origin-pair (gateway)
+  (let ((base (cadr-cli::bug-report-gateway-url gateway)))
+    (list (cadr-cli::bug-report-upload-url base)
+          (cadr-cli::bug-report-gateway-host base))))
+
+(test bug-report-origin-follows-cadr-radius-gateway
+  ;; v1.4.0 getRadiusGatewayUrl, normalizeRadiusGatewayUrl, and
+  ;; new URL("/v1/bug-reports", base) / new URL(base).host.
+  ;; Node 22 on those functions, 2026-10-23. The env name is
+  ;; CADR_RADIUS_GATEWAY. PI_RADIUS_GATEWAY is not a fallback.
+  (call-with-restored-env
+   '(("CADR_RADIUS_GATEWAY" . nil)
+     ("PI_RADIUS_GATEWAY" . "https://pi-ignored.example")
+     ("RADIUS_GATEWAY_URL" . "https://provider-ignored.example"))
+   (lambda ()
+     (is (equal '("https://radius.pi.dev/v1/bug-reports"
+                  "radius.pi.dev")
+                (bug-report-origin-pair nil)))))
+  (dolist (pair
+           '(("https://gw.example"
+              "https://gw.example/v1/bug-reports" "gw.example")
+             ("https://gw.example///"
+              "https://gw.example/v1/bug-reports" "gw.example")
+             ("gw.example"
+              "https://gw.example/v1/bug-reports" "gw.example")
+             ("http://127.0.0.1:8788///"
+              "http://127.0.0.1:8788/v1/bug-reports" "127.0.0.1:8788")
+             ("https://GW.Example:8443/prefix"
+              "https://gw.example:8443/v1/bug-reports" "gw.example:8443")
+             ("https://GW.Example:443/prefix/"
+              "https://gw.example/v1/bug-reports" "gw.example")
+             ("http://GW.Example:80/prefix?x=1#h"
+              "http://gw.example/v1/bug-reports" "gw.example")
+             ("https://user:secret@GW.Example:8443/x/"
+              "https://user:secret@gw.example:8443/v1/bug-reports"
+              "gw.example:8443")
+             ("https://[::1]:8443/x"
+              "https://[::1]:8443/v1/bug-reports" "[::1]:8443")
+             ("localhost:8788"
+              "https://localhost:8788/v1/bug-reports" "localhost:8788")
+             ("HTTPS://Example.COM/prefix/"
+              "https://example.com/v1/bug-reports" "example.com")
+             ("https:"
+              "https://https/v1/bug-reports" "https")
+             ("override.example"
+              "https://override.example/v1/bug-reports"
+              "override.example")))
+    (call-with-restored-env
+     `(("CADR_RADIUS_GATEWAY" . ,(first pair))
+       ("PI_RADIUS_GATEWAY" . "https://pi-ignored.example")
+       ("RADIUS_GATEWAY_URL" . "https://provider-ignored.example"))
+     (lambda ()
+       (is (equal (list (second pair) (third pair))
+                  (bug-report-origin-pair nil))
+           "~A" (first pair)))))
+  (dolist (raw
+           (list
+            (concatenate 'string "https://example.com" (string #\Tab) "/a")
+            (concatenate 'string "https://example.com" (string #\\) "a")))
+    (call-with-restored-env
+     `(("CADR_RADIUS_GATEWAY" . ,raw))
+     (lambda ()
+       (is (equal '("https://example.com/v1/bug-reports" "example.com")
+                  (bug-report-origin-pair nil))))))
+  (dolist (raw '("" " " "not a url"))
+    (call-with-restored-env
+     `(("CADR_RADIUS_GATEWAY" . ,raw))
+     (lambda ()
+       (is (string= "Invalid URL"
+                    (bug-report-url-failure
+                     (lambda ()
+                       (bug-report-origin-pair nil))))
+           "~S" raw))))
+  (call-with-restored-env
+   '(("CADR_RADIUS_GATEWAY" . "https://from-env.example"))
+   (lambda ()
+     (is (equal '("https://override.example/v1/bug-reports"
+                  "override.example")
+                (bug-report-origin-pair
+                 "https://override.example/prefix/")))
+     (is (string= "Invalid URL"
+                  (bug-report-url-failure
+                   (lambda ()
+                     (bug-report-origin-pair "")))))
+     (is (string= "Invalid URL"
+                  (bug-report-url-failure
+                   (lambda ()
+                     (bug-report-origin-pair "override.example")))))
+     (let* ((seen nil)
+            (bundle
+              (list :metadata (list :schema-version 1 :id "origin")
+                    :diagnostics (list :schema-version 1)
+                    :session-jsonl nil
+                    :summary nil)))
+       (cadr-cli::upload-bug-report
+        bundle
+        :gateway-url "https://override.example/prefix/"
+        :http
+        (lambda (request)
+          (setf seen (cadr-ai::request-spec-url request))
+          (let ((report (make-hash-table :test #'equal))
+                (table (make-hash-table :test #'equal)))
+            (setf (gethash "id" report) "remote")
+            (setf (gethash "ok" table) t)
+            (setf (gethash "bug_report" table) report)
+            table)))
+       (is (string= "https://override.example/v1/bug-reports" seen)))
+     (let ((descriptions nil))
+       (cadr-cli::prompt-bug-report-options
+        (lambda (method arguments)
+          (ecase method
+            (:input "crashed")
+            (:select
+             (push (getf arguments :description) descriptions)
+             (if (string= (getf arguments :title) "Bug report")
+                 "Cancel"
+                 "No"))))
+        nil)
+       (is (find "Upload sends the report to from-env.example."
+                 descriptions
+                 :test #'search))))))

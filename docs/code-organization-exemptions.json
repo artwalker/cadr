@@ -144,6 +144,10 @@
      "reason": "Single interactive-entry mutation owner whose append, replacement, invalidation, startup help, and status entries share TUI state and cache invariants."
    },
    {
+     "path": "src/cadr-cli/support/bug-report.lisp",
+     "reason": "Single /bug owner. Redaction, the local zip, the summary, and the Radius upload share one bundle. The gateway origin stays on that upload so CADR_RADIUS_GATEWAY is not a second decision."
+   },
+   {
      "path": "src/cadr-tui/terminal.lisp",
      "reason": "Single real-terminal owner whose raw-mode lifecycle, keyboard protocol, Apple normalization, terminal queries, and progress reporting share process-terminal state."
    }

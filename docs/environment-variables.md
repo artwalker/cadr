@@ -18,6 +18,7 @@ Legacy `PI_CL_*` names are not read.
 | `CADR_CODING_AGENT_DIR` | Override the agent directory (default `~/.cadr/agent/`); a leading `~` is expanded. |
 | `CADR_CODING_AGENT_SESSION_DIR` | Override the session storage directory. |
 | `CADR_SHARE_VIEWER_URL` | Override the viewer base URL used by `/share`. |
+| `CADR_RADIUS_GATEWAY` | Override the Radius gateway origin used by `/bug` uploads. |
 | `CADR_PACKAGE_DIR` | Override package asset resolution (install/layout tooling). |
 
 ## Behavior switches

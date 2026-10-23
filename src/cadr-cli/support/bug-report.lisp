@@ -464,18 +464,136 @@ Do not include file contents, secrets, or credentials from the transcript; refer
           (bug-report-session-jsonl session :agent agent))
      :summary summary)))
 
+(defun bug-report-invalid-url ()
+  (error "Invalid URL"))
+
+(defun bug-report-default-port (scheme)
+  (cond ((string= scheme "ftp") 21)
+        ((or (string= scheme "http") (string= scheme "ws")) 80)
+        ((or (string= scheme "https") (string= scheme "wss")) 443)))
+
+(defun bug-report-userinfo-prefix (userinfo)
+  (unless userinfo
+    (return-from bug-report-userinfo-prefix ""))
+  (let* ((colon (position #\: userinfo))
+         (user (if colon (subseq userinfo 0 colon) userinfo))
+         (password (and colon (subseq userinfo (1+ colon)))))
+    (cond
+      ((and (zerop (length user))
+            (or (null password) (zerop (length password))))
+       "")
+      ((or (null password) (zerop (length password)))
+       (format nil "~A@" user))
+      ((zerop (length user))
+       (format nil ":~A@" password))
+      (t (format nil "~A:~A@" user password)))))
+
+(defun bug-report-url-parts (text)
+  ;; new URL(text) for the /bug origin. Tabs and newlines are removed
+  ;; first; http(s) and the other special schemes treat "\\" as "/".
+  (unless (stringp text)
+    (bug-report-invalid-url))
+  (let* ((raw
+           (remove-if
+            (lambda (character)
+              (member character '(#\Tab #\Return #\Newline)))
+            text))
+         (mark (search "://" raw :test #'char-equal)))
+    (unless (and mark (plusp mark))
+      (bug-report-invalid-url))
+    (let* ((scheme (string-downcase (subseq raw 0 mark)))
+           (special
+             (member scheme
+                     '("http" "https" "ws" "wss" "ftp" "file")
+                     :test #'string=))
+           (rest (subseq raw (+ mark 3)))
+           (rest (if special (substitute #\/ #\\ rest) rest))
+           (cut
+             (or (position-if
+                  (lambda (character)
+                    (member character '(#\/ #\? #\#)))
+                  rest)
+                 (length rest)))
+           (authority (subseq rest 0 cut))
+           (at (position #\@ authority :from-end t))
+           (userinfo (and at (subseq authority 0 at)))
+           (hostport (if at (subseq authority (1+ at)) authority))
+           (hostname nil)
+           (port-text nil))
+      (unless (and (plusp (length scheme))
+                   (alpha-char-p (char scheme 0))
+                   (every (lambda (character)
+                            (or (alphanumericp character)
+                                (member character '(#\+ #\- #\.))))
+                          scheme))
+        (bug-report-invalid-url))
+      (cond
+        ((and (plusp (length hostport))
+              (char= (char hostport 0) #\[))
+         (let ((close (position #\] hostport)))
+           (unless (and close
+                        (or (= (1+ close) (length hostport))
+                            (char= (char hostport (1+ close)) #\:)))
+             (bug-report-invalid-url))
+           (setf hostname
+                 (string-downcase (subseq hostport 0 (1+ close))))
+           (when (< (1+ close) (length hostport))
+             (setf port-text (subseq hostport (+ close 2))))))
+        (t
+         (let ((colon (position #\: hostport :from-end t)))
+           (if colon
+               (setf hostname (string-downcase (subseq hostport 0 colon))
+                     port-text (subseq hostport (1+ colon)))
+               (setf hostname (string-downcase hostport))))))
+      (unless (or (plusp (length hostname)) (string= scheme "file"))
+        (bug-report-invalid-url))
+      (when (find-if
+             (lambda (character)
+               (let ((code (char-code character)))
+                 (or (< code 33) (> code 126))))
+             hostname)
+        (bug-report-invalid-url))
+      (let ((port
+              (when (and port-text (plusp (length port-text)))
+                (let ((value
+                        (handler-case
+                            (parse-integer port-text :junk-allowed nil)
+                          (error ()
+                            (bug-report-invalid-url)))))
+                  (unless (<= 0 value 65535)
+                    (bug-report-invalid-url))
+                  (let ((default (bug-report-default-port scheme)))
+                    (unless (and default (= value default))
+                      value))))))
+        (values scheme
+                (bug-report-userinfo-prefix userinfo)
+                hostname
+                port)))))
+
 (defun bug-report-gateway-url (&optional gateway)
-  (or (and gateway (plusp (length gateway)) gateway)
-      (let ((configured (uiop:getenv "RADIUS_GATEWAY_URL")))
-        (and configured (plusp (length configured)) configured))
-      (default-radius-gateway)))
+  ;; A string, including "", is options.gatewayUrl and is not normalized.
+  ;; NIL reads CADR_RADIUS_GATEWAY. An empty value is set, so it is not
+  ;; the default. The upstream name and RADIUS_GATEWAY_URL are not read.
+  (if gateway
+      gateway
+      (cadr-ai:normalize-radius-gateway
+       (or (uiop:getenv "CADR_RADIUS_GATEWAY")
+           (default-radius-gateway)))))
 
 (defun bug-report-gateway-host (gateway)
-  (or
-   (cl-ppcre:register-groups-bind (host)
-       ("(?i)^[a-z][a-z0-9+.-]*://([^/?#:]+)" gateway)
-     host)
-   gateway))
+  (multiple-value-bind (scheme prefix hostname port)
+      (bug-report-url-parts gateway)
+    (declare (ignore scheme prefix))
+    (format nil "~A~@[~A~]"
+            hostname
+            (and port (format nil ":~D" port)))))
+
+(defun bug-report-upload-url (base)
+  (multiple-value-bind (scheme prefix hostname port)
+      (bug-report-url-parts base)
+    (format nil "~A://~A~A~@[~A~]/v1/bug-reports"
+            scheme prefix hostname
+            (and port (format nil ":~D" port)))))
 
 (defun bug-report-multipart-octets (files boundary)
   (let ((chunks nil))
@@ -535,9 +653,7 @@ Do not include file contents, secrets, or credentials from the transcript; refer
          (request
            (cadr-ai::make-request-spec
             :method :post
-            :url
-            (format nil "~A/v1/bug-reports"
-                    (string-right-trim "/" gateway))
+            :url (bug-report-upload-url gateway)
             :headers
             (if bearer
                 (cons
