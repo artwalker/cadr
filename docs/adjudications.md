@@ -2137,3 +2137,20 @@ The gray `Working` status rule is canonicalized in
   that row still has to fix the five review-fail items already listed
   there. GAP-05b cites condition 5 of the re-ruling. That citation is
   this replacement.
+
+## 2026-10-23 — GAP-43 gets a third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-43 is open for a third repair. Keep the row whole. If the third
+  acceptance fails, write the status `blocked` and hand the row to the
+  advisor.
+- **Defects:** the two failed acceptances name fixable defects. The
+  `complete` span omits `pi.ai.first_chunk` and `pi.ai.block`. The
+  unknown-provider error sentence has the wrong case. The approach
+  stands.
+- **Test lock:** `test/cadr-ai/telemetry-test.lisp` asserts that the
+  complete event list is empty. That assertion was taken from cadr's
+  current output. The repair locks it to upstream
+  `packages/ai/test/telemetry.test.ts`.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-43. The status
+  cell keeps the previous blocked text after the new open prefix.
