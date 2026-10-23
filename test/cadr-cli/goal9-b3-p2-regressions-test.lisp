@@ -49,7 +49,7 @@
        ""
        (goal9-b3-full-width-input-line "" width)
        ""
-       (goal9-b3-full-width-line "→ faux-model [faux] ✓" width)
+       (goal9-b3-full-width-line "→ ✓ faux-model [faux]" width)
        ""
        (goal9-b3-full-width-line "  Model Name: Faux Model" width)
        ""

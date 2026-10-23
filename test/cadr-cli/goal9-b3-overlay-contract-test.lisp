@@ -264,11 +264,11 @@
   '(("model"
      "components/model-selector.ts:91-130,162-185,248-307"
      ("Only showing models from configured providers. Use /login to add providers."
-      ">" "→ one [faux] ✓" "two [other]" "Model Name: One Model"))
+      ">" "→ ✓ one [faux]" "    two [other]" "Model Name: One Model"))
     ("model-scoped"
      "components/model-selector.ts:91-130,162-185,248-307"
      ("Scope: all | scoped" "tab scope (all/scoped)" ">"
-      "two [other]" "→ one [faux] ✓"
+      "    two [other]" "→ ✓ one [faux]"
       "Model Name: One Model" "Model catalogs refreshed."))
     ("settings"
      "components/settings-selector.ts:472-751; packages/tui/src/components/settings-list.ts:80-165,237-249"
@@ -296,12 +296,12 @@
     ("scoped-models"
      "components/scoped-models-selector.ts:91-180,202-252"
      ("Model Configuration" "Session-only. ctrl+s to save to settings."
-      ">" "→ one [faux] ✓" "two [other] ✗" "Model Name: One Model"
+      ">" "→ ✓ one [faux]" "    two [other]" "Model Name: One Model"
       "enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider"))
     ("trust"
      "components/trust-selector.ts:32-115"
      ("Project trust" "/tmp/project" "Saved decision: none"
-      "Current session: untrusted" "→ Trust" "Trust parent folder (/tmp)"
+      "Current session: untrusted" "→   Trust" "    Trust parent folder (/tmp)"
       "Do not trust" "↑↓ navigate  enter save  escape/ctrl+c cancel"))
     ("login-method"
      "interactive-mode.ts:5014-5039; components/extension-selector.ts:18-78"
@@ -398,14 +398,14 @@
 
 (test goal9-b3-every-overlay-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected
-          '(            ("model" . "EC38393C54D8BCF85F2B6C43D29C28BD2B587C00D7CE674D04A29763FD3D7A4C")
-            ("model-scoped" . "36A1D3104EDAA3B46E2A1E930125148A641118756FD2E4C2B0C6F621687025C1")
+          '(            ("model" . "8AA5296B206A717A03F827EA80F5E09FB43FF22B4515C11FA0F72E9327238823")
+            ("model-scoped" . "4999438F917027DE7C34CB9C52101B582C7CF958BB9156BACF5ADE7E65094C60")
             ("settings" . "CE5F8656D49383947C171C7076916911E7B93762D551ACD7DC80D6B873A38CF2")
             ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
             ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
             ("tree" . "B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117")
-            ("scoped-models" . "02E5671BF390A2AF5F0DFCC6ED75A2ACC410A45D642197715148793D9CD51D46")
-            ("trust" . "3D484AC3838FAE5ADA7A490D6274C6BD1C78FCC2F0BD196026F33EA1A4631A7E")
+            ("scoped-models" . "F5D45117A832230605FB46BBB017179D967A6BD23CEF1D4D80C22929B71A2ACA")
+            ("trust" . "583EB92A3BE3FA6C778141866D54FF7299822442F68A2B519565C428FB4D0842")
             ("login-method" . "305B0BB2D1C67D71D7851B1EF450E992212C08F8A680CC6DF00AA23CE3B033C0")
             ("login-provider" . "5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20")
             ("logout-provider" . "5B88F48EC8368B4395CC5CDCBEE9CBF86B564CD0924F48282ED8E9DE81308212")
@@ -443,8 +443,8 @@
              "Only showing models from configured providers. Use /login to add providers."
              width)
             "" (goal9-b3-overlay-input-line "" width) ""
-            (goal9-b3-overlay-text-line "→ one [faux] ✓" width)
-            (goal9-b3-overlay-text-line "  two [other]" width) ""
+            (goal9-b3-overlay-text-line "→ ✓ one [faux]" width)
+            (goal9-b3-overlay-text-line "    two [other]" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width)
             ""
             (goal9-b3-overlay-text-line
@@ -462,8 +462,8 @@
             (goal9-b3-overlay-text-line "Scope: all | scoped" width)
             (goal9-b3-overlay-text-line "tab scope (all/scoped)" width) ""
             (goal9-b3-overlay-input-line "" width) ""
-            (goal9-b3-overlay-text-line "  two [other]" width)
-            (goal9-b3-overlay-text-line "→ one [faux] ✓" width) ""
+            (goal9-b3-overlay-text-line "    two [other]" width)
+            (goal9-b3-overlay-text-line "→ ✓ one [faux]" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
             (goal9-b3-overlay-text-line "  Model catalogs refreshed." width)
             ""
@@ -496,10 +496,10 @@
             (goal9-b3-overlay-text-line
              "Session-only. ctrl+s to save to settings." width) ""
             (goal9-b3-overlay-input-line "" width) ""
-            (goal9-b3-overlay-text-line "→ one [faux] ✓" width)
+            (goal9-b3-overlay-text-line "→ ✓ one [faux]" width)
             (goal9-b3-overlay-text-line
-             "  missing/ghost [unavailable] ✗" width)
-            (goal9-b3-overlay-text-line "  two [other] ✗" width) ""
+             "    missing/ghost [unavailable]" width)
+            (goal9-b3-overlay-text-line "    two [other]" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
             (goal9-b3-overlay-text-line
              "  enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider · alt+up/alt+down  "
@@ -664,9 +664,9 @@
             (goal9-b3-overlay-text-line " /tmp/project" 80) ""
             (goal9-b3-overlay-text-line " Saved decision: none" 80)
             (goal9-b3-overlay-text-line " Current session: untrusted" 80) ""
-            (goal9-b3-overlay-text-line " → Trust" 80)
-            (goal9-b3-overlay-text-line "   Trust parent folder (/tmp)" 80)
-            (goal9-b3-overlay-text-line "   Do not trust" 80) ""
+            (goal9-b3-overlay-text-line " →   Trust" 80)
+            (goal9-b3-overlay-text-line "     Trust parent folder (/tmp)" 80)
+            (goal9-b3-overlay-text-line "     Do not trust" 80) ""
             (goal9-b3-overlay-text-line
              " ↑↓ navigate  enter save  escape/ctrl+c cancel" 80)
             "" border)

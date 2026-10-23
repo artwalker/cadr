@@ -2914,14 +2914,14 @@ user question"
              (remove-if-not
               (lambda (line)
                 (cl-ppcre:scan
-                 "^(?:→ |  )model-[0-9][0-9] \\["
+                 "^(?:→ |  )(?:✓ |  )model-[0-9][0-9] \\["
                  line))
               plain))
            (selected-line
              (let ((position
                      (position-if
                       (lambda (line)
-                        (search "→ model-00" line))
+                        (search "→ ✓ model-00" line))
                       plain)))
                (and position
                     (nth position lines)))))
@@ -2953,9 +2953,12 @@ user question"
                    #\Escape)
            selected-line))
       (is (search
-           (format nil "~C[38;2;104;183;141m ✓"
-                   #\Escape)
+           (cadr-tui:theme-foreground :accent "✓ ")
            selected-line))
+      (is (null
+           (search
+            (cadr-tui:theme-foreground :success " ✓")
+            selected-line)))
       (is (every
            (lambda (line)
              (<= (cadr-tui:visible-width line)
@@ -3128,13 +3131,19 @@ user question"
             :persist-callback
             (lambda (ids)
               (push ids persisted)))))
-    (is (search
-         "faux/unavailable [unavailable] ✗"
-         (cadr-tui:strip-terminal-sequences
-          (format
-           nil "~{~A~^~%~}"
-           (cadr-cli::render-scoped-models-selector
-            state 120)))))
+    (let ((rendered
+            (format
+             nil "~{~A~^~%~}"
+             (cadr-cli::render-scoped-models-selector
+              state 120))))
+      (is (search
+           "faux/unavailable [unavailable]"
+           (cadr-tui:strip-terminal-sequences rendered)))
+      (is (null (search "✗" rendered)))
+      (is (search
+           (format nil "~C[9mfaux/unavailable~C[29m"
+                   #\Escape #\Escape)
+           rendered)))
     (cadr-cli::scoped-models-selector-handle-event
      state
      (cadr-tui:make-input-event :kind :enter))
@@ -3210,6 +3219,117 @@ user question"
       (is (eq :changed action))
       (is (eq t handled-p)))
     (is (eq :all (first changes)))))
+
+(test selector-status-markers-lead-the-label
+  ;; v1.4.0 model-selector.ts updateList, scoped-models-selector.ts:256,
+  ;; and trust-selector.ts:110-113 put accent "✓ " or two spaces before
+  ;; the id or label. Disabled and unavailable scoped rows do not draw
+  ;; a cross. Unavailable ids are chalk strikethrough (SGR 9 / 29).
+  (with-selector-truecolor-theme
+    (let* ((one (selector-test-model :faux "one" "One"))
+           (two (selector-test-model :other "two" "Two"))
+           (model-state
+             (cadr-cli::make-model-selector-state
+              :all-models (list one two)
+              :current-model one))
+           (model-lines
+             (cadr-cli::render-model-selector model-state 80))
+           (model-plain
+             (mapcar #'cadr-tui:strip-terminal-sequences model-lines))
+           (all-scoped
+             (cadr-cli::make-scoped-models-selector-state
+              :all-models (list one two)))
+           (partial-scoped
+             (cadr-cli::make-scoped-models-selector-state
+              :all-models (list one two)
+              :enabled-ids '("faux/one" "missing/ghost")))
+           (partial-rendered
+             (format
+              nil "~{~A~^~%~}"
+              (cadr-cli::render-scoped-models-selector
+               partial-scoped 80)))
+           (trust
+             (cadr-cli::make-trust-selector-state
+              :cwd "/tmp/project/"
+              :saved-entry
+              '(:path "/tmp/project/" :decision t)
+              :project-trusted-p t)))
+      (is (find "→ ✓ one [faux]" model-plain
+                :test (lambda (needle line)
+                        (search needle (string-right-trim " " line)))))
+      (is (find "    two [other]" model-plain
+                :test (lambda (needle line)
+                        (search needle (string-right-trim " " line)))))
+      (is (search
+           (cadr-tui:theme-foreground :accent "✓ ")
+           (format nil "~{~A~^~%~}" model-lines)))
+      (is (null
+           (search
+            (cadr-tui:theme-foreground :success " ✓")
+            (format nil "~{~A~^~%~}" model-lines))))
+      (let ((plain
+              (mapcar
+               #'cadr-tui:strip-terminal-sequences
+               (cadr-cli::render-scoped-models-selector
+                all-scoped 80))))
+        (is (find "→ ✓ one [faux]" plain
+                  :test (lambda (needle line)
+                          (search needle
+                                  (string-right-trim " " line)))))
+        (is (find "  ✓ two [other]" plain
+                  :test (lambda (needle line)
+                          (search needle
+                                  (string-right-trim " " line))))))
+      (is (search "→ ✓ one [faux]"
+                  (cadr-tui:strip-terminal-sequences
+                   partial-rendered)))
+      (is (search "    missing/ghost [unavailable]"
+                  (cadr-tui:strip-terminal-sequences
+                   partial-rendered)))
+      (is (search "    two [other]"
+                  (cadr-tui:strip-terminal-sequences
+                   partial-rendered)))
+      (is (null (search "✗" partial-rendered)))
+      (is (search
+           (format nil "~C[9mmissing/ghost~C[29m"
+                   #\Escape #\Escape)
+           partial-rendered))
+      (is (search
+           (cadr-tui:theme-foreground :accent "✓ ")
+           partial-rendered))
+      (let ((plain
+              (mapcar
+               (lambda (line)
+                 (string-right-trim
+                  " "
+                  (cadr-tui:strip-terminal-sequences line)))
+               (cadr-cli::render-trust-selector trust 80))))
+        (is (find " → ✓ Trust" plain :test #'string=))
+        (is (find "     Trust parent folder (/tmp)" plain
+                  :test #'string=))
+        (is (find "     Do not trust" plain :test #'string=)))
+      (cadr-cli::trust-selector-move trust 1)
+      (let ((plain
+              (mapcar
+               (lambda (line)
+                 (string-right-trim
+                  " "
+                  (cadr-tui:strip-terminal-sequences line)))
+               (cadr-cli::render-trust-selector trust 80)))
+            (raw
+              (format
+               nil "~{~A~^~%~}"
+               (cadr-cli::render-trust-selector trust 80))))
+        (is (find "   ✓ Trust" plain :test #'string=))
+        (is (find " →   Trust parent folder (/tmp)" plain
+                  :test #'string=))
+        (is (search
+             (cadr-tui:theme-foreground :accent "✓ ")
+             raw))
+        (is (null
+             (search
+              (cadr-tui:theme-foreground :success " ✓")
+              raw)))))))
 
 (test trust-selector-marks-inherited-decisions-and-returns-atomic-updates
   (with-test-directory (root)

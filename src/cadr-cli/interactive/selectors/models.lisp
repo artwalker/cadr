@@ -527,15 +527,17 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
                       (if selected-p
                           (cadr-tui:theme-foreground :accent "→ ")
                           "  ")
+                      ;; v1.4.0 model-selector.ts updateList: accent "✓ "
+                      ;; or two spaces before the id.
+                      (if current-p
+                          (cadr-tui:theme-foreground :accent "✓ ")
+                          "  ")
                       (if selected-p
                           (cadr-tui:theme-foreground
                            :accent (cadr-ai:model-id model))
                           (cadr-ai:model-id model))
                       " "
-                      (cadr-tui:theme-foreground :muted provider-badge)
-                      (if current-p
-                          (cadr-tui:theme-foreground :success " ✓")
-                          ""))
+                      (cadr-tui:theme-foreground :muted provider-badge))
                      width :padding-x 0))
                   (list
                    (selector-component-text-line
@@ -1386,23 +1388,21 @@ shows the terminal message with the given style."
 (defparameter *scoped-models-footer-by-key*
   (make-hash-table :test #'equal))
 (defparameter *scoped-models-arrow-accent* nil)
-(defparameter *scoped-models-check-success* nil)
-(defparameter *scoped-models-cross-dim* nil)
+(defparameter *scoped-models-check-accent* nil)
 
 (defun scoped-models-arrow-accent ()
   (or *scoped-models-arrow-accent*
       (setf *scoped-models-arrow-accent*
             (cadr-tui:theme-foreground :accent "→ "))))
 
-(defun scoped-models-check-success ()
-  (or *scoped-models-check-success*
-      (setf *scoped-models-check-success*
-            (cadr-tui:theme-foreground :success " ✓"))))
+(defun scoped-models-check-accent ()
+  (or *scoped-models-check-accent*
+      (setf *scoped-models-check-accent*
+            (cadr-tui:theme-foreground :accent "✓ "))))
 
-(defun scoped-models-cross-dim ()
-  (or *scoped-models-cross-dim*
-      (setf *scoped-models-cross-dim*
-            (cadr-tui:theme-foreground :dim " ✗"))))
+(defun scoped-models-strikethrough (text)
+  ;; chalk.strikethrough, used by theme.strikethrough in v1.4.0.
+  (format nil "~C[9m~A~C[29m" #\Escape text #\Escape))
 
 (defun scoped-models-border-line (width)
   (or (gethash width *scoped-models-border-by-width*)
@@ -1473,24 +1473,28 @@ shows the terminal message with the given style."
   (let ((key (list identifier provider selected-p status-tag width)))
     (or (gethash key *scoped-models-row-by-key*)
         (setf (gethash key *scoped-models-row-by-key*)
-              (selector-component-text-line
-               (concatenate
-                'string
-                (if selected-p
-                    (scoped-models-arrow-accent)
-                    "  ")
-                (if selected-p
-                    (cadr-tui:theme-foreground :accent identifier)
-                    identifier)
-                (cadr-tui:theme-foreground
-                 :muted
-                 (format nil " [~A]" provider))
-                (ecase status-tag
-                  (:missing (scoped-models-cross-dim))
-                  (:on (scoped-models-check-success))
-                  (:off (scoped-models-cross-dim))
-                  (:all "")))
-               width :padding-x 0)))))
+              (let ((body
+                      (if (eq status-tag :missing)
+                          (scoped-models-strikethrough identifier)
+                          identifier)))
+                (selector-component-text-line
+                 (concatenate
+                  'string
+                  (if selected-p
+                      (scoped-models-arrow-accent)
+                      "  ")
+                  ;; v1.4.0 scoped-models-selector.ts updateList: accent
+                  ;; "✓ " only when the id resolves and is enabled.
+                  (if (member status-tag '(:on :all))
+                      (scoped-models-check-accent)
+                      "  ")
+                  (if selected-p
+                      (cadr-tui:theme-foreground :accent body)
+                      body)
+                  (cadr-tui:theme-foreground
+                   :muted
+                   (format nil " [~A]" provider)))
+                 width :padding-x 0))))))
 
 (defun scoped-models-footer-lines
     (state width enabled unavailable all-p)

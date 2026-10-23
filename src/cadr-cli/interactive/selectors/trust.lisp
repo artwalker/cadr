@@ -211,7 +211,7 @@
 
 ;; Width-keyed chrome for trust paint; interned pointer/check.
 (defparameter *trust-selector-arrow-accent* nil)
-(defparameter *trust-selector-check-success* nil)
+(defparameter *trust-selector-check-accent* nil)
 (defparameter *trust-selector-session-by-key*
   (make-hash-table :test #'equal))
 (defparameter *trust-selector-footer-by-key*
@@ -230,10 +230,10 @@
       (setf *trust-selector-arrow-accent*
             (cadr-tui:theme-foreground :accent "→ "))))
 
-(defun trust-selector-check-success ()
-  (or *trust-selector-check-success*
-      (setf *trust-selector-check-success*
-            (cadr-tui:theme-foreground :success " ✓"))))
+(defun trust-selector-check-accent ()
+  (or *trust-selector-check-accent*
+      (setf *trust-selector-check-accent*
+            (cadr-tui:theme-foreground :accent "✓ "))))
 
 (defun trust-selector-accent (text)
   (or (gethash text *trust-selector-accent-by-text*)
@@ -337,11 +337,13 @@
           (if selected-p
               (trust-selector-arrow-accent)
               "  ")
+          ;; v1.4.0 trust-selector.ts updateList: accent "✓ " or two
+          ;; spaces before the label, including unsaved rows.
+          (if saved-p
+              (trust-selector-check-accent)
+              "  ")
           (if selected-p
               (trust-selector-accent label)
-              (trust-selector-text label))
-          (if saved-p
-              (trust-selector-check-success)
-              ""))
+              (trust-selector-text label)))
          item-width))))
    width))

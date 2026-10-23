@@ -518,8 +518,10 @@
             80))))
     (is (find (goal15-fixed-text-row " /tmp/project" 80)
               lines :test #'string=))
+    (is (find (goal15-fixed-text-row " →   Trust" 80)
+              lines :test #'string=))
     (is (find (goal15-fixed-text-row
-               "   Trust parent folder (/tmp)" 80)
+               "     Trust parent folder (/tmp)" 80)
               lines :test #'string=))
     (is
      (find
