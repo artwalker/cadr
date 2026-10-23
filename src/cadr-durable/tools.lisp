@@ -44,6 +44,12 @@
             line-number (format-size bytes) (format-size +default-max-bytes+)
             (format-size shown) line-number (file-namestring path) (1+ shown))))
 
+(defun tool-diagnostic (severity message &key code)
+  (let ((diagnostic (cadr-chord:json-object "severity" severity "message" message)))
+    (when code
+      (cadr-chord:json-put diagnostic "code" code))
+    diagnostic))
+
 (defun read-text-page (path text &key (offset 1) limit)
   (let* ((lines (text-lines text))
          (total (length lines))
@@ -64,15 +70,23 @@
                    (progn
                      (multiple-value-bind (prefix) (utf8-prefix line +default-max-bytes+)
                        (loop for character across prefix do (vector-push-extend character output)))
-                     (push (line-too-long path number line) diagnostics))
+                     (push (tool-diagnostic
+                            "warn" (line-too-long path number line)
+                            :code "truncated")
+                           diagnostics))
                    (loop for character across line do (vector-push-extend character output))))
       (cond
         ((< next (1+ total))
          (push (if (= offset 1)
-                   (format nil "Showing lines 1-~A of ~A. Use offset=~A to continue."
-                           (length slice) total next)
-                   (format nil "~A more lines in file. Use offset=~A to continue."
-                           (- total (1- next)) next))
+                   (tool-diagnostic
+                    "info"
+                    (format nil "Showing lines 1-~A of ~A. Use offset=~A to continue."
+                            (length slice) total next)
+                    :code "truncated")
+                   (tool-diagnostic
+                    "info"
+                    (format nil "~A more lines in file. Use offset=~A to continue."
+                            (- total (1- next)) next)))
                diagnostics)
          (setf truncated (cadr-chord:json-object
                           "truncated" t "truncatedBy" "lines"
@@ -166,7 +180,10 @@
                   :output (cadr-chord:json-array
                            (cadr-chord:json-object "type" "image" "data" encoded
                                                    "mimeType" mime))
-                  :diagnostics (list (format nil "Read image file [~A]." mime))))))
+                  :diagnostics (list (tool-diagnostic
+                                      "info"
+                                      (format nil "Read image file [~A]." mime)
+                                      :code "image"))))))
           (let ((text (sb-ext:octets-to-string bytes :external-format :utf-8)))
             (multiple-value-bind (page diagnostics truncated) 
                 (read-text-page path text :offset offset :limit limit)
@@ -242,20 +259,330 @@
                path))
       new-text)))
 
-(defun unified-diff (path before after)
-  (uiop:with-temporary-file (:stream old-stream :pathname old-path)
-    (write-string before old-stream)
-    (finish-output old-stream)
-    (uiop:with-temporary-file (:stream new-stream :pathname new-path)
-      (write-string after new-stream)
-      (finish-output new-stream)
-      (let* ((raw (uiop:run-program
-                   (list "diff" "-u" "-U" "4" (namestring old-path) (namestring new-path))
-                   :output :string :ignore-error-status t))
-             (body (subseq raw (or (search (string #\Newline) raw) 0))))
-        (when (plusp (length body))
-          (setf body (subseq body (1+ (or (search (string #\Newline) body) 0)))))
-        (format nil "--- ~A~%+++ ~A~%~A" path path body)))))
+(defstruct diff-component count added removed previous value)
+
+(defun diff-line-parts (value)
+  (let ((parts nil)
+        (start 0)
+        (length (length value)))
+    (loop for index from 0 below length
+          do (cond
+               ((and (char= (char value index) #\Return)
+                     (< (1+ index) length)
+                     (char= (char value (1+ index)) #\Newline))
+                (push (subseq value start index) parts)
+                (push (subseq value index (+ index 2)) parts)
+                (setf start (+ index 2))
+                (incf index))
+               ((char= (char value index) #\Newline)
+                (push (subseq value start index) parts)
+                (push (string #\Newline) parts)
+                (setf start (1+ index)))))
+    (push (subseq value start) parts)
+    (nreverse parts)))
+
+(defun diff-line-tokens (value)
+  (let ((parts (diff-line-parts value))
+        (tokens nil))
+    (when (and parts (string= (car (last parts)) ""))
+      (setf parts (butlast parts)))
+    (loop for part in parts
+          for index from 0
+          do (if (oddp index)
+                 (setf (car tokens) (concatenate 'string (car tokens) part))
+                 (push part tokens)))
+    (nreverse (remove "" tokens :test #'string=))))
+
+(defun diff-join (tokens start count)
+  (with-output-to-string (output)
+    (loop for index from start below (+ start count)
+          do (write-string (aref tokens index) output))))
+
+(defun diff-build-values (last new-tokens old-tokens)
+  (let ((components nil)
+        (new-pos 0)
+        (old-pos 0))
+    (loop for component = last then (diff-component-previous component)
+          while component
+          do (push component components))
+    (dolist (component components)
+      (cond
+        ((diff-component-removed component)
+         (setf (diff-component-value component)
+               (diff-join old-tokens old-pos (diff-component-count component)))
+         (incf old-pos (diff-component-count component)))
+        (t
+         (setf (diff-component-value component)
+               (diff-join new-tokens new-pos (diff-component-count component)))
+         (incf new-pos (diff-component-count component))
+         (unless (diff-component-added component)
+           (incf old-pos (diff-component-count component))))))
+    components))
+
+(defun diff-extract-common (path new-tokens old-tokens diagonal)
+  (let ((old-pos (getf path :old-pos))
+        (new-pos (- (getf path :old-pos) diagonal))
+        (common 0))
+    (loop while (and (< (1+ new-pos) (length new-tokens))
+                     (< (1+ old-pos) (length old-tokens))
+                     (string= (aref old-tokens (1+ old-pos))
+                              (aref new-tokens (1+ new-pos))))
+          do (incf new-pos)
+             (incf old-pos)
+             (incf common))
+    (when (plusp common)
+      (setf (getf path :last)
+            (make-diff-component :count common
+                                 :previous (getf path :last)
+                                 :added nil :removed nil)))
+    (setf (getf path :old-pos) old-pos)
+    new-pos))
+
+(defun diff-add-to-path (path added removed old-pos-inc)
+  (let ((last (getf path :last)))
+    (if (and last
+             (eq (diff-component-added last) added)
+             (eq (diff-component-removed last) removed))
+        (list :old-pos (+ (getf path :old-pos) old-pos-inc)
+              :last (make-diff-component
+                     :count (1+ (diff-component-count last))
+                     :added added :removed removed
+                     :previous (diff-component-previous last)))
+        (list :old-pos (+ (getf path :old-pos) old-pos-inc)
+              :last (make-diff-component
+                     :count 1 :added added :removed removed :previous last)))))
+
+(defun diff-lines (old new)
+  (let* ((old-tokens (coerce (diff-line-tokens old) 'vector))
+         (new-tokens (coerce (diff-line-tokens new) 'vector))
+         (old-len (length old-tokens))
+         (new-len (length new-tokens))
+         (best (make-hash-table :test #'eql))
+         (min-diagonal most-negative-fixnum)
+         (max-diagonal most-positive-fixnum))
+    (setf (gethash 0 best) (list :old-pos -1 :last nil))
+    (let ((new-pos (diff-extract-common (gethash 0 best) new-tokens old-tokens 0)))
+      (when (and (>= (1+ (getf (gethash 0 best) :old-pos)) old-len)
+                 (>= (1+ new-pos) new-len))
+        (return-from diff-lines
+          (diff-build-values (getf (gethash 0 best) :last) new-tokens old-tokens))))
+    (loop for edit-length from 1 to (+ old-len new-len)
+          do (loop for diagonal from (max min-diagonal (- edit-length))
+                     to (min max-diagonal edit-length) by 2
+                   for remove-path = (gethash (1- diagonal) best)
+                   for add-path = (gethash (1+ diagonal) best)
+                   do (when remove-path
+                        (remhash (1- diagonal) best))
+                      (let ((can-add nil)
+                            (can-remove (and remove-path
+                                             (< (1+ (getf remove-path :old-pos)) old-len))))
+                        (when add-path
+                          (let ((add-new (- (getf add-path :old-pos) diagonal)))
+                            (setf can-add (and (<= 0 add-new) (< add-new new-len)))))
+                        (cond
+                          ((not (or can-add can-remove))
+                           (remhash diagonal best))
+                          (t
+                           (let* ((base (if (or (not can-remove)
+                                                (and can-add
+                                                     (< (getf remove-path :old-pos)
+                                                        (getf add-path :old-pos))))
+                                            (diff-add-to-path add-path t nil 0)
+                                            (diff-add-to-path remove-path nil t 1)))
+                                  (reached (diff-extract-common base new-tokens old-tokens diagonal)))
+                             (cond
+                               ((and (>= (1+ (getf base :old-pos)) old-len)
+                                     (>= (1+ reached) new-len))
+                                (return-from diff-lines
+                                  (diff-build-values (getf base :last)
+                                                     new-tokens old-tokens)))
+                               (t
+                                (setf (gethash diagonal best) base)
+                                (when (>= (1+ (getf base :old-pos)) old-len)
+                                  (setf max-diagonal (min max-diagonal (1- diagonal))))
+                                (when (>= (1+ reached) new-len)
+                                  (setf min-diagonal (max min-diagonal (1+ diagonal))))))))))))))
+
+(defun pad-line-number (number width)
+  (format nil "~vD" width number))
+
+(defun diff-raw-lines (value)
+  (let ((raw (uiop:split-string value :separator '(#\Newline))))
+    (when (and raw (string= (car (last raw)) ""))
+      (setf raw (butlast raw)))
+    raw))
+
+(defun generate-diff-string (old new &key (context-lines 4))
+  (let* ((parts (diff-lines old new))
+         (old-lines (uiop:split-string old :separator '(#\Newline)))
+         (new-lines (uiop:split-string new :separator '(#\Newline)))
+         (width (length (write-to-string (max (length old-lines) (length new-lines)))))
+         (output nil)
+         (old-line 1)
+         (new-line 1)
+         (last-change nil)
+         (first-changed nil))
+    (loop for part in parts
+          for index from 0
+          for raw = (diff-raw-lines (diff-component-value part))
+          do (if (or (diff-component-added part) (diff-component-removed part))
+                 (progn
+                   (unless first-changed
+                     (setf first-changed new-line))
+                   (dolist (line raw)
+                     (if (diff-component-added part)
+                         (progn
+                           (push (format nil "+~A ~A" (pad-line-number new-line width) line)
+                                 output)
+                           (incf new-line))
+                         (progn
+                           (push (format nil "-~A ~A" (pad-line-number old-line width) line)
+                                 output)
+                           (incf old-line))))
+                   (setf last-change t))
+                 (let* ((next (nth (1+ index) parts))
+                        (trailing (and next
+                                       (or (diff-component-added next)
+                                           (diff-component-removed next))))
+                        (leading last-change))
+                   (cond
+                     ((and leading trailing)
+                      (if (<= (length raw) (* context-lines 2))
+                          (dolist (line raw)
+                            (push (format nil " ~A ~A" (pad-line-number old-line width) line)
+                                  output)
+                            (incf old-line)
+                            (incf new-line))
+                          (let* ((leading-lines (subseq raw 0 context-lines))
+                                 (trailing-lines (subseq raw (- (length raw) context-lines)))
+                                 (skipped (- (length raw) (length leading-lines)
+                                             (length trailing-lines))))
+                            (dolist (line leading-lines)
+                              (push (format nil " ~A ~A" (pad-line-number old-line width) line)
+                                    output)
+                              (incf old-line)
+                              (incf new-line))
+                            (push (format nil " ~A ..." (make-string width :initial-element #\Space))
+                                  output)
+                            (incf old-line skipped)
+                            (incf new-line skipped)
+                            (dolist (line trailing-lines)
+                              (push (format nil " ~A ~A" (pad-line-number old-line width) line)
+                                    output)
+                              (incf old-line)
+                              (incf new-line)))))
+                     (leading
+                      (let* ((shown (subseq raw 0 (min context-lines (length raw))))
+                             (skipped (- (length raw) (length shown))))
+                        (dolist (line shown)
+                          (push (format nil " ~A ~A" (pad-line-number old-line width) line)
+                                output)
+                          (incf old-line)
+                          (incf new-line))
+                        (when (plusp skipped)
+                          (push (format nil " ~A ..." (make-string width :initial-element #\Space))
+                                output)
+                          (incf old-line skipped)
+                          (incf new-line skipped))))
+                     (trailing
+                      (let ((skipped (max 0 (- (length raw) context-lines))))
+                        (when (plusp skipped)
+                          (push (format nil " ~A ..." (make-string width :initial-element #\Space))
+                                output)
+                          (incf old-line skipped)
+                          (incf new-line skipped))
+                        (dolist (line (subseq raw skipped))
+                          (push (format nil " ~A ~A" (pad-line-number old-line width) line)
+                                output)
+                          (incf old-line)
+                          (incf new-line))))
+                     (t
+                      (incf old-line (length raw))
+                      (incf new-line (length raw))))
+                   (setf last-change nil))))
+    (values (format nil "~{~A~^~%~}" (nreverse output)) first-changed)))
+
+(defun patch-split-lines (text)
+  (let* ((trailing (and (plusp (length text)) (char= (char text (1- (length text))) #\Newline)))
+         (lines (mapcar (lambda (line) (concatenate 'string line (string #\Newline)))
+                        (uiop:split-string text :separator '(#\Newline)))))
+    (if trailing
+        (butlast lines)
+        (append (butlast lines)
+                (list (subseq (car (last lines)) 0 (max 0 (1- (length (car (last lines)))))))))))
+
+(defun generate-unified-patch (path old new &key (context-lines 4))
+  (let* ((parts (append (diff-lines old new) (list nil)))
+         (hunks nil)
+         (old-range 0)
+         (new-range 0)
+         (current nil)
+         (old-line 1)
+         (new-line 1))
+    (loop for part in parts
+          for index from 0
+          for lines = (if part
+                          (patch-split-lines (or (diff-component-value part) ""))
+                          nil)
+          do (cond
+               ((and part
+                     (or (diff-component-added part) (diff-component-removed part)))
+                (unless (plusp old-range)
+                  (let ((previous (when (plusp index) (nth (1- index) parts))))
+                    (setf old-range old-line
+                          new-range new-line
+                          current nil)
+                    (when previous
+                      (let* ((previous-lines (patch-split-lines
+                                              (diff-component-value previous)))
+                             (prefix (subseq previous-lines
+                                             (max 0 (- (length previous-lines)
+                                                       context-lines)))))
+                        (dolist (line prefix)
+                          (push (concatenate 'string " " line) current))
+                        (decf old-range (length prefix))
+                        (decf new-range (length prefix))))))
+                (dolist (line lines)
+                  (push (concatenate 'string
+                                     (if (diff-component-added part) "+" "-")
+                                     line)
+                        current))
+                (if (diff-component-added part)
+                    (incf new-line (length lines))
+                    (incf old-line (length lines))))
+               (t
+                (when (plusp old-range)
+                  (if (and (<= (length lines) (* context-lines 2))
+                           (< index (- (length parts) 2)))
+                      (dolist (line lines)
+                        (push (concatenate 'string " " line) current))
+                      (let ((size (min (length lines) context-lines)))
+                        (dolist (line (subseq lines 0 size))
+                          (push (concatenate 'string " " line) current))
+                        (push (list :hunk old-range
+                                    (+ (- old-line old-range) size)
+                                    new-range
+                                    (+ (- new-line new-range) size)
+                                    (nreverse current))
+                              hunks)
+                        (setf old-range 0 new-range 0 current nil))))
+                (incf old-line (length lines))
+                (incf new-line (length lines)))))
+    (with-output-to-string (output)
+      (format output "--- ~A~%+++ ~A~%" path path)
+      (dolist (hunk (nreverse hunks))
+        (destructuring-bind (old-start old-count new-start new-count lines) (rest hunk)
+          (when (zerop old-count) (decf old-start))
+          (when (zerop new-count) (decf new-start))
+          (format output "@@ -~A,~A +~A,~A @@~%" old-start old-count new-start new-count)
+          (dolist (line lines)
+            (if (and (plusp (length line)) (char= (char line (1- (length line))) #\Newline))
+                (write-string (subseq line 0 (1- (length line))) output)
+                (progn
+                  (write-string line output)
+                  (terpri output)
+                  (write-string "\\ No newline at end of file" output)))
+            (terpri output)))))))
 
 (defun execute-edit (env path edits)
   (require-env env)
@@ -265,14 +592,19 @@
     (with-open-file (stream absolute :direction :output :if-exists :supersede
                                      :external-format :utf-8)
       (write-string after stream))
-    (let ((patch (unified-diff path before after)))
-      (make-tool-result
-       :output (cadr-chord:json-array
-                (cadr-chord:json-object
-                 "type" "text"
-                 "text" (format nil "Successfully replaced ~A block(s) in ~A."
-                                (length edits) path)))
-       :details (cadr-chord:json-object "diff" patch "patch" patch)))))
+    (multiple-value-bind (diff first-changed) (generate-diff-string before after)
+      (let ((details (cadr-chord:json-object
+                      "diff" diff
+                      "patch" (generate-unified-patch path before after))))
+        (when first-changed
+          (cadr-chord:json-put details "firstChangedLine" first-changed))
+        (make-tool-result
+         :output (cadr-chord:json-array
+                  (cadr-chord:json-object
+                   "type" "text"
+                   "text" (format nil "Successfully replaced ~A block(s) in ~A."
+                                  (length edits) path)))
+         :details details)))))
 
 (defun edit-object (old new)
   (cadr-chord:json-object "oldText" old "newText" new))

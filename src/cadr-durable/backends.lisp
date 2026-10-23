@@ -218,6 +218,7 @@
                  "scopeKind" (document-record-scope-kind document)
                  "version" (document-record-version document)
                  "history" (document-record-history document)
+                 "fork" (or (document-record-fork document) cadr-chord:+json-null+)
                  "revisions" (apply #'cadr-chord:json-array
                                     (mapcar #'encode-revision
                                             (document-record-revisions document))))))
@@ -279,6 +280,7 @@
                         :key (present-json (hash-get object "key"))
                         :version (or (hash-get object "version") 1)
                         :history (or (hash-get object "history") "latest")
+                        :fork (present-json (hash-get object "fork"))
                         :created-at (present-json (hash-get object "createdAt"))
                         :retired-at (present-json (hash-get object "retiredAt"))
                         :revisions (map 'list #'decode-revision (hash-get object "revisions"))))
@@ -347,9 +349,6 @@
     (cadr-chord:sqlite-close (durable-storage-database storage)))
   nil)
 
-(defun jsonl-file (directory)
-  (merge-pathnames "main.jsonl" (uiop:ensure-directory-pathname directory)))
-
 (defun read-bytes (path)
   (with-open-file (stream path :direction :input :element-type '(unsigned-byte 8)
                                :if-does-not-exist nil)
@@ -372,23 +371,64 @@
           (let ((end (position (char-code #\Newline) bytes :from-end t)))
             (if end (subseq bytes 0 (1+ end)) (make-array 0 :element-type '(unsigned-byte 8)))))))
 
-(defun open-jsonl-storage (directory &key fsync)
-  (ensure-directories-exist (uiop:ensure-directory-pathname directory))
-  (let* ((path (jsonl-file directory))
-         (raw (read-bytes path))
-         (trimmed (trim-torn-tail raw))
-         (state (make-durable-state)))
+(defun jsonl-sidecar-name-p (name)
+  (let ((length (length name)))
+    (flet ((match (prefix)
+             (let ((prefix-length (length prefix)))
+               (and (> length (+ prefix-length 6))
+                    (string= name prefix :end1 prefix-length)
+                    (string= name ".jsonl" :start1 (- length 6))
+                    (let ((id (subseq name prefix-length (- length 6))))
+                      (and (plusp (length id))
+                           (every #'digit-char-p id)
+                           (or (= (length id) 1)
+                               (char/= (char id 0) #\0))))))))
+      (or (match "doc-") (match "task-")))))
+
+(defun jsonl-visit-lines (path name visitor)
+  (let* ((raw (read-bytes path))
+         (trimmed (trim-torn-tail raw)))
     (when (and raw (not (equalp raw trimmed)))
       (write-bytes path trimmed))
     (when (and trimmed (plusp (length trimmed)))
-      (let ((text (sb-ext:octets-to-string trimmed :external-format :utf-8)))
-        (dolist (line (uiop:split-string text :separator '(#\Newline)))
-          (unless (zerop (length line))
-            (handler-case (setf state (decode-state (text-json line)))
-              (error (condition)
-                (declare (ignore condition))
-                (error "Malformed complete main.jsonl")))))))
-    (make-durable-storage :kind :jsonl :state state :path path :fsync fsync)))
+      (let ((start 0)
+            (number 1))
+        (loop for end from 0 below (length trimmed)
+              when (= (aref trimmed end) 10)
+                do (let ((text (handler-case
+                                   (sb-ext:octets-to-string
+                                    trimmed :start start :end end
+                                    :external-format :utf-8)
+                                 (error ()
+                                   (error "Invalid UTF-8 in complete ~A line ~A"
+                                          name number)))))
+                     (funcall visitor text number))
+                   (setf start (1+ end))
+                   (incf number))))))
+
+(defun open-jsonl-storage (directory &key fsync)
+  (let ((directory (uiop:ensure-directory-pathname directory)))
+    (ensure-directories-exist directory)
+    (let ((state (make-durable-state))
+          (path (merge-pathnames "main.jsonl" directory)))
+      (jsonl-visit-lines
+       path "main.jsonl"
+       (lambda (text number)
+         (unless (zerop (length text))
+           (handler-case (setf state (decode-state (text-json text)))
+             (error ()
+               (error "Malformed complete main.jsonl line ~A" number))))))
+      (dolist (name (sort (remove-if-not
+                           #'jsonl-sidecar-name-p
+                           (mapcar #'file-namestring (uiop:directory-files directory)))
+                          #'string<))
+        (jsonl-visit-lines
+         (merge-pathnames name directory) name
+         (lambda (text number)
+           (handler-case (text-json text)
+             (error ()
+               (error "Malformed complete ~A line ~A" name number))))))
+      (make-durable-storage :kind :jsonl :state state :path path :fsync fsync))))
 
 (defun persist-jsonl (storage state)
   (let ((line (concatenate 'string (json-text (encode-state state)) #(#\Newline))))

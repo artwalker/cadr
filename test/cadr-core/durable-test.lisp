@@ -95,12 +95,40 @@
            (with-open-file (stream (merge-pathnames "broken.jsonl" directory)
                                    :direction :output :if-exists :supersede)
              (write-line "{bad}" stream))
-           (with-open-file (stream (merge-pathnames "main.jsonl" directory)
-                                   :direction :output :if-exists :append)
+           (with-open-file (stream (merge-pathnames "doc-01.jsonl" directory)
+                                   :direction :output :if-exists :supersede)
              (write-line "{bad}" stream))
-           (is (string= "Malformed complete main.jsonl"
-                        (durable-error-text
-                         (lambda () (cadr-durable:open-jsonl-storage directory))))))
+           (let ((storage (cadr-durable:open-jsonl-storage directory)))
+             (is (= 1 (cadr-durable:conversation-id
+                       (cadr-durable:storage-conversation storage 1))))
+             (cadr-durable:storage-close storage))
+           (let* ((path (merge-pathnames "main.jsonl" directory))
+                  (line (1+ (count #\Newline (uiop:read-file-string path)))))
+             (with-open-file (stream path :direction :output :if-exists :append)
+               (write-line "{bad}" stream))
+             (is (string= (format nil "Malformed complete main.jsonl line ~A" line)
+                          (durable-error-text
+                           (lambda () (cadr-durable:open-jsonl-storage directory))))))
+           (let ((sidecar (merge-pathnames (format nil "cadr-durable-side-~A/" (random 1000000))
+                                           (uiop:temporary-directory))))
+             (unwind-protect
+                  (progn
+                    (cadr-durable:storage-close
+                     (cadr-durable:open-jsonl-storage sidecar))
+                    (with-open-file (stream (merge-pathnames "doc-99.jsonl" sidecar)
+                                            :direction :output :if-exists :supersede)
+                      (write-line "{bad}" stream))
+                    (is (string= "Malformed complete doc-99.jsonl line 1"
+                                 (durable-error-text
+                                  (lambda () (cadr-durable:open-jsonl-storage sidecar)))))
+                    (delete-file (merge-pathnames "doc-99.jsonl" sidecar))
+                    (with-open-file (stream (merge-pathnames "task-7.jsonl" sidecar)
+                                            :direction :output :if-exists :supersede)
+                      (write-line "{bad}" stream))
+                    (is (string= "Malformed complete task-7.jsonl line 1"
+                                 (durable-error-text
+                                  (lambda () (cadr-durable:open-jsonl-storage sidecar))))))
+               (uiop:delete-directory-tree sidecar :validate t))))
       (uiop:delete-directory-tree directory :validate t))))
 
 (test durable-sqlite-reopens-and-namespaces-its-tables
@@ -260,6 +288,102 @@
         (is (string= "first" (cadr-durable:codemode-load session child "token")))
         (is (string= "later" (cadr-durable:codemode-load session 1 "token")))))))
 
+(defun durable-policy-doc (name history fork &key family)
+  (cadr-durable:define-doc name :scope "conversation" :history history :fork fork
+                           :family family
+                           :initial (cadr-chord:json-object "value" "initial")))
+
+(defun durable-set-doc (session definition scope value &optional key)
+  (cadr-durable:session-commit
+   session
+   (lambda (tx)
+     (setf (gethash "value" (cadr-durable:tx-doc tx definition scope key)) value))))
+
+(defun durable-doc-value (session definition scope &optional key)
+  (let ((snapshot (cadr-durable:session-snapshot session definition scope key)))
+    (when snapshot (gethash "value" snapshot))))
+
+(test durable-fork-copies-as-of-and-current-and-leaves-initial
+  (let* ((storage (cadr-durable:make-memory-storage))
+         (session (cadr-durable:open-session storage))
+         (as-of (durable-policy-doc "fork.policies.as-of" "rewindable" "asOf"))
+         (current (durable-policy-doc "fork.policies.current" "latest" "current"))
+         (initial (durable-policy-doc "fork.policies.initial" "latest" "initial"))
+         (as-family (durable-policy-doc "fork.policies.as-of-family" "rewindable" "asOf"
+                                        :family t))
+         (current-family (durable-policy-doc "fork.policies.current-family" "latest" "current"
+                                             :family t)))
+    (cadr-durable:storage-commit
+     storage (list (cons :conversation (cadr-durable:make-conversation))))
+    (cadr-durable:session-commit
+     session
+     (lambda (tx)
+       (setf (gethash "value" (cadr-durable:tx-doc tx as-of 1)) "as-at-fork")
+       (setf (gethash "value" (cadr-durable:tx-doc tx current 1)) "current-at-fork")
+       (setf (gethash "value" (cadr-durable:tx-doc tx initial 1)) "parent-only")
+       (setf (gethash "value" (cadr-durable:tx-doc tx as-family 1 "a")) "family-as-a")
+       (setf (gethash "value" (cadr-durable:tx-doc tx as-family 1 "b")) "family-as-b")
+       (setf (gethash "value" (cadr-durable:tx-doc tx current-family 1 "a")) "family-current-a")
+       (cadr-durable:tx-append-entry tx :conversation-id 1 :kind "fork-point")))
+    (durable-set-doc session as-of 1 "as-after-fork")
+    (durable-set-doc session current 1 "current-when-copied")
+    (durable-set-doc session as-family 1 "family-as-after" "a")
+    (durable-set-doc session current-family 1 "family-current-when-copied" "a")
+    (let* ((entry (find "fork-point" (cadr-durable:page-items
+                                      (cadr-durable:storage-scan-entries
+                                       storage 1 :order "ascending" :limit 10))
+                        :key #'cadr-durable:entry-kind :test #'string=))
+           (child (cadr-durable:session-fork session 1 (cadr-durable:entry-id entry))))
+      (is (string= "as-at-fork" (durable-doc-value session as-of child)))
+      (is (string= "current-when-copied" (durable-doc-value session current child)))
+      (is (null (cadr-durable:session-snapshot session initial child)))
+      (is (string= "family-as-a" (durable-doc-value session as-family child "a")))
+      (is (string= "family-as-b" (durable-doc-value session as-family child "b")))
+      (is (string= "family-current-when-copied"
+                   (durable-doc-value session current-family child "a")))
+      (durable-set-doc session as-of child "child-independent")
+      (is (string= "as-after-fork" (durable-doc-value session as-of 1)))
+      (is (string= "child-independent" (durable-doc-value session as-of child)))
+      (durable-set-doc session initial child "child-created")
+      (is (string= "child-created" (durable-doc-value session initial child))))))
+
+(test durable-fork-uses-the-entry-owner-for-as-of-and-the-parent-for-current
+  (let* ((storage (cadr-durable:make-memory-storage))
+         (session (cadr-durable:open-session storage))
+         (as-of (durable-policy-doc "fork.ancestry.as-of" "rewindable" "asOf"))
+         (current (durable-policy-doc "fork.ancestry.current" "latest" "current")))
+    (cadr-durable:storage-commit
+     storage (list (cons :conversation (cadr-durable:make-conversation))))
+    (cadr-durable:session-commit
+     session
+     (lambda (tx)
+       (setf (gethash "value" (cadr-durable:tx-doc tx as-of 1)) "root-at-entry")
+       (setf (gethash "value" (cadr-durable:tx-doc tx current 1)) "root-current")
+       (cadr-durable:tx-append-entry tx :conversation-id 1 :kind "root")))
+    (let* ((inherited (find "root" (cadr-durable:page-items
+                                    (cadr-durable:storage-scan-entries
+                                     storage 1 :order "ascending" :limit 10))
+                            :key #'cadr-durable:entry-kind :test #'string=))
+           (parent (cadr-durable:session-fork session 1 (cadr-durable:entry-id inherited))))
+      (cadr-durable:session-commit
+       session
+       (lambda (tx)
+         (setf (gethash "value" (cadr-durable:tx-doc tx as-of parent)) "parent-at-own-entry")
+         (setf (gethash "value" (cadr-durable:tx-doc tx current parent)) "parent-current")
+         (cadr-durable:tx-append-entry tx :conversation-id parent :kind "parent")))
+      (let ((parent-entry (find "parent" (cadr-durable:page-items
+                                          (cadr-durable:storage-scan-entries
+                                           storage parent :order "ascending" :limit 10))
+                                :key #'cadr-durable:entry-kind :test #'string=)))
+        (let ((inherited-fork (cadr-durable:session-fork
+                               session parent (cadr-durable:entry-id inherited))))
+          (is (string= "root-at-entry" (durable-doc-value session as-of inherited-fork)))
+          (is (string= "parent-current" (durable-doc-value session current inherited-fork))))
+        (let ((own-fork (cadr-durable:session-fork
+                         session parent (cadr-durable:entry-id parent-entry))))
+          (is (string= "parent-at-own-entry" (durable-doc-value session as-of own-fork)))
+          (is (string= "parent-current" (durable-doc-value session current own-fork))))))))
+
 (defun durable-job (&key abort)
   (let ((phases (make-hash-table :test #'equal)))
     (setf (gethash "a" phases)
@@ -317,6 +441,7 @@
                      (cadr-chord:json-get (cadr-durable:harness-task-graph harness) "tasks")
                      "2")))
           (is (string= "sleeping" (cadr-chord:json-get (cadr-chord:json-get node "state") "status")))
+          (is (string= "wait" (cadr-chord:json-get (cadr-chord:json-get node "state") "phase")))
           (is (= 5 (cadr-chord:json-get (cadr-chord:json-get node "state") "until"))))
         (setf clock 5)
         (cadr-durable:harness-resume harness)))
@@ -342,7 +467,35 @@
         (is (string= "terminal"
                      (cadr-chord:json-get
                       (cadr-durable:task-record-state (cadr-durable:storage-task park-storage 2))
-                      "status")))))))
+                      "status")))))
+    (let* ((wait-phases (make-hash-table :test #'equal))
+           (wait-registry (cadr-durable:make-registry)))
+      (setf (gethash "hold" wait-phases)
+            (lambda (task runtime)
+              (declare (ignore task))
+              (cadr-durable:runtime-commit
+               runtime
+               (lambda ()
+                 (cadr-chord:json-object
+                  "status" "waiting" "phase" "hold"
+                  "on" (cadr-chord:json-array 9) "policy" "any")))))
+      (cadr-durable:registry-install
+       wait-registry
+       (cadr-durable:define-task "waiter"
+         :initial (lambda (input) (declare (ignore input))
+                    (cadr-chord:json-object "phase" "hold"))
+         :phases wait-phases))
+      (let* ((wait-storage (cadr-durable:make-memory-storage))
+             (harness (cadr-durable:open-harness wait-storage :registry wait-registry)))
+        (cadr-durable:harness-create-task harness "waiter" (cadr-chord:json-object))
+        (let* ((node (cadr-chord:json-get
+                      (cadr-chord:json-get (cadr-durable:harness-task-graph harness) "tasks")
+                      "2"))
+               (state (cadr-chord:json-get node "state")))
+        (is (string= "waiting" (cadr-chord:json-get state "status")))
+        (is (string= "hold" (cadr-chord:json-get state "phase")))
+        (is (string= "any" (cadr-chord:json-get state "policy")))
+        (is (= 9 (aref (cadr-chord:json-get state "on") 0))))))))
 
 (test durable-a-phase-without-progress-and-an-abort-without-a-terminal-outcome-fault
   (let* ((phases (make-hash-table :test #'equal))
@@ -413,16 +566,22 @@
            (let ((lines (with-output-to-string (stream)
                           (loop repeat 100 do (write-line "line" stream)))))
              (cadr-durable:execute-write env "sample.txt" lines)
-             (let ((result (cadr-durable:execute-read env "sample.txt" :offset 41 :limit 20)))
-               (is (search "40 more lines in file. Use offset=61 to continue."
-                           (first (cadr-durable:tool-result-diagnostics result))))))
+             (let* ((result (cadr-durable:execute-read env "sample.txt" :offset 41 :limit 20))
+                    (diagnostic (first (cadr-durable:tool-result-diagnostics result))))
+               (is (string= "info" (cadr-chord:json-get diagnostic "severity")))
+               (is (null (cadr-chord:json-get diagnostic "code")))
+               (is (string= "40 more lines in file. Use offset=61 to continue."
+                            (cadr-chord:json-get diagnostic "message")))))
            (cadr-durable:execute-write
             env "long.txt"
             (concatenate 'string (make-string 40000 :initial-element #\é) #(#\Newline) "next" #(#\Newline)))
-           (let ((result (cadr-durable:execute-read env "long.txt")))
+           (let* ((result (cadr-durable:execute-read env "long.txt"))
+                  (diagnostic (first (cadr-durable:tool-result-diagnostics result))))
+             (is (string= "warn" (cadr-chord:json-get diagnostic "severity")))
+             (is (string= "truncated" (cadr-chord:json-get diagnostic "code")))
              (is (search "Line 1 is 78.1KB, exceeds the 50.0KB limit"
-                         (first (cadr-durable:tool-result-diagnostics result))))
-             (is (search "tail -c +51201" (first (cadr-durable:tool-result-diagnostics result)))))
+                         (cadr-chord:json-get diagnostic "message")))
+             (is (search "tail -c +51201" (cadr-chord:json-get diagnostic "message"))))
              (let ((png #(137 80 78 71 13 10 26 10 0 0 0 13 73 72 68 82 0 0 0 1
                           0 0 0 1 8 6 0 0 0 31 21 196 137 0 0 0 13 73 68 65 84
                           120 156 99 96 96 96 248 15 0 1 4 1 0 95 229 195 75 0
@@ -431,9 +590,12 @@
                                      :direction :output :element-type '(unsigned-byte 8)
                                      :if-exists :supersede)
                (write-sequence png stream))
-             (let ((result (cadr-durable:execute-read env "dot.png")))
+             (let* ((result (cadr-durable:execute-read env "dot.png"))
+                    (diagnostic (first (cadr-durable:tool-result-diagnostics result))))
+               (is (string= "info" (cadr-chord:json-get diagnostic "severity")))
+               (is (string= "image" (cadr-chord:json-get diagnostic "code")))
                (is (string= "Read image file [image/png]."
-                            (first (cadr-durable:tool-result-diagnostics result))))
+                            (cadr-chord:json-get diagnostic "message")))
                (is (string= "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAX+XDSwAAAABJRU5ErkJggg=="
                             (cadr-chord:json-get
                              (aref (cadr-durable:tool-result-output result) 0) "data")))))
@@ -456,12 +618,30 @@
                           (cadr-durable:execute-edit
                            env "note.txt"
                            (list (cadr-chord:json-object "oldText" "missing" "newText" "x")))))))
-           (let ((result (cadr-durable:execute-edit
-                          env "note.txt"
-                          (list (cadr-chord:json-object "oldText" "alpha" "newText" "gamma")))))
+           (let* ((result (cadr-durable:execute-edit
+                           env "note.txt"
+                           (list (cadr-chord:json-object "oldText" "alpha" "newText" "gamma"))))
+                  (details (cadr-durable:tool-result-details result)))
              (is (search "Successfully replaced 1 block(s) in note.txt."
                          (cadr-chord:json-get (aref (cadr-durable:tool-result-output result) 0) "text")))
-             (is (search "gamma" (cadr-chord:json-get (cadr-durable:tool-result-details result) "patch"))))
+             (is (string= (format nil "-1 alpha beta~%+1 gamma beta")
+                          (cadr-chord:json-get details "diff")))
+             (is (= 1 (cadr-chord:json-get details "firstChangedLine")))
+             (is (string= (format nil "--- note.txt~%+++ note.txt~%@@ -1,1 +1,1 @@~%-alpha beta~%\\ No newline at end of file~%+gamma beta~%\\ No newline at end of file~%")
+                          (cadr-chord:json-get details "patch"))))
+           (cadr-durable:execute-write env "edit.txt" (format nil "alpha~%beta~%gamma~%delta~%"))
+           (let* ((result (cadr-durable:execute-edit
+                           env "edit.txt"
+                           (list (cadr-chord:json-object "oldText" (format nil "alpha~%")
+                                                        "newText" (format nil "ALPHA~%"))
+                                 (cadr-chord:json-object "oldText" (format nil "gamma~%")
+                                                        "newText" (format nil "GAMMA~%")))))
+                  (details (cadr-durable:tool-result-details result)))
+             (is (string= (format nil "-1 alpha~%+1 ALPHA~% 2 beta~%-3 gamma~%+3 GAMMA~% 4 delta")
+                          (cadr-chord:json-get details "diff")))
+             (is (= 1 (cadr-chord:json-get details "firstChangedLine")))
+             (is (string= (format nil "--- edit.txt~%+++ edit.txt~%@@ -1,4 +1,4 @@~%-alpha~%+ALPHA~% beta~%-gamma~%+GAMMA~% delta~%")
+                          (cadr-chord:json-get details "patch"))))
            (let* ((input (cadr-chord:json-object "path" "note.txt" "edits" "[{\"oldText\":\"a\",\"newText\":\"b\"}]"))
                   (before (cadr-chord:canonical-json input))
                   (prepared (cadr-durable:prepare-edit-arguments input)))
@@ -516,6 +696,33 @@
                    (cadr-durable:codemode-run
                     (cadr-durable:make-codemode-sandbox :fingerprint "two")
                     (list step) :journal saved :recorded-fingerprint "one"
+                    :invoke (lambda (call) (declare (ignore call)) "no"))))))
+    (is (search "it waits without making call 99, which it made before"
+                (durable-error-text
+                 (lambda ()
+                   (cadr-durable:codemode-run
+                    sandbox nil
+                    :journal (list (cadr-durable::make-journal-entry
+                                    :seq 1 :kind :tool :name "echo" :id 99))
+                    :acks '((0 . 1))
+                    :invoke (lambda (call) (declare (ignore call)) "no"))))))
+    (is (search "after result 1 it had made 2 calls, where it had made 7"
+                (durable-error-text
+                 (lambda ()
+                   (cadr-durable:codemode-run
+                    sandbox nil
+                    :journal (list (cadr-durable::make-journal-entry
+                                    :seq 1 :kind :tool :name "echo" :id 1
+                                    :issued-after 7))
+                    :acks '((1 . 2))
+                    :invoke (lambda (call) (declare (ignore call)) "no"))))))
+    (is (search "its first run made 3 calls, where it had made 2"
+                (durable-error-text
+                 (lambda ()
+                   (cadr-durable:codemode-run
+                    sandbox nil
+                    :first-issued 2
+                    :acks '((0 . 3))
                     :invoke (lambda (call) (declare (ignore call)) "no"))))))
     (setf (cadr-durable::codemode-sandbox-closed sandbox) t)
     (is (string= "The code mode sandbox was closed while the script ran"

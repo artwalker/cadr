@@ -43,7 +43,7 @@
   id conversation-id request-id type status entry answer reason)
 
 (defstruct document-record
-  id kind scope-kind scope-id key (version 1) (history "latest")
+  id kind scope-kind scope-id key (version 1) (history "latest") fork
   created-at retired-at revisions)
 
 (defstruct document-revision kind version value ops seq)
