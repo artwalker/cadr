@@ -1158,23 +1158,138 @@
   (write-char #\Newline stream)
   (loop repeat depth do (write-char #\Space stream)))
 
+(defun js-json-floor-log10 (rat float)
+  (let ((guess (floor (log float 10d0))))
+    (loop
+      (let ((power (expt 10 guess)))
+        (cond
+          ((< rat power) (decf guess))
+          ((>= rat (* power 10)) (incf guess))
+          (t (return guess)))))))
+
+(defun js-json-write-exponent (stream exponent)
+  (write-char #\e stream)
+  (write-char (if (minusp exponent) #\- #\+) stream)
+  (princ (abs exponent) stream))
+
+(defun js-json-positive-text (significand k n)
+  (let ((digits (write-to-string significand)))
+    (with-output-to-string (out)
+      (cond
+        ((<= k n 21)
+         (write-string digits out)
+         (loop repeat (- n k) do (write-char #\0 out)))
+        ((< 0 n 22)
+         (write-string digits out :end n)
+         (write-char #\. out)
+         (write-string digits out :start n))
+        ((< -6 n 1)
+         (write-string "0." out)
+         (loop repeat (- n) do (write-char #\0 out))
+         (write-string digits out))
+        ((= k 1)
+         (write-string digits out)
+         (js-json-write-exponent out (1- n)))
+        (t
+         (write-char (char digits 0) out)
+         (write-char #\. out)
+         (write-string digits out :start 1)
+         (js-json-write-exponent out (1- n)))))))
+
+(defun js-json-read-double (text)
+  ;; The d marker makes SBCL build an IEEE double.  A rational read of
+  ;; the same digits compares equal across a rounding boundary.
+  (let ((*read-base* 10)
+        (*read-eval* nil))
+    (handler-case
+        (read-from-string
+         (if (find #\e text)
+             (substitute #\d #\e text)
+             (concatenate 'string text "d0")))
+      (error () nil))))
+
+(defun js-json-k-digit-candidate (significand exponent k target rat)
+  (let ((limit (expt 10 k))
+        (floor-digits (expt 10 (1- k))))
+    (cond
+      ((>= significand limit)
+       (setf significand (truncate significand 10)
+             exponent (1+ exponent)))
+      ((or (not (plusp significand))
+           (< significand floor-digits))
+       (return-from js-json-k-digit-candidate nil)))
+    (when (= (length (write-to-string significand)) k)
+      (let* ((n (1+ exponent))
+             (approx (* significand (expt 10 (- n k))))
+             (text (js-json-positive-text significand k n))
+             (back (js-json-read-double text)))
+        (when (and (floatp back) (= back target))
+          (cons (abs (- rat approx)) text))))))
+
+(defun js-json-k-digit (rat k target)
+  (let* ((exponent (js-json-floor-log10 rat target))
+         (scale (- (1- k) exponent))
+         (scaled (if (minusp scale)
+                     (/ rat (expt 10 (- scale)))
+                     (* rat (expt 10 scale))))
+         (significand (round scaled))
+         (best nil))
+    (dolist (delta '(-1 0 1))
+      (let ((found
+              (js-json-k-digit-candidate
+               (+ significand delta) exponent k target rat)))
+        (when (and found
+                   (or (null best)
+                       (< (car found) (car best))
+                       (and (= (car found) (car best))
+                            (zerop delta))))
+          (setf best found))))
+    (cdr best)))
+
+(defun js-json-double-text (float)
+  (cond
+    ((or (sb-ext:float-nan-p float)
+         (sb-ext:float-infinity-p float))
+     "null")
+    ((zerop float) "0")
+    (t
+     (let* ((negative (minusp float))
+            (magnitude (abs float))
+            (rat (rational magnitude)))
+       (loop for digits from 1 to 17
+             for text = (js-json-k-digit rat digits magnitude)
+             when text
+               return (if negative
+                          (concatenate 'string "-" text)
+                          text)
+             finally
+             (error "Cannot encode ~S as JSON" float))))))
+
+(defun js-json-number-text (value)
+  ;; JSON.stringify(Number).  Printing a double with :readably yields
+  ;; 1.5d0, and swapping d for e leaves 1.5e0 in the llama prompt.
+  (let ((float (handler-case (coerce value 'double-float)
+                 (floating-point-overflow () nil))))
+    (cond
+      ((or (null float)
+           (sb-ext:float-nan-p float)
+           (sb-ext:float-infinity-p float))
+       "null")
+      ((zerop float) "0")
+      ((and (integerp value)
+            (<= (abs value) (1- (expt 10 21)))
+            (= (rational float) value))
+       (princ-to-string value))
+      (t (js-json-double-text float)))))
+
 (defun write-js-json (value stream depth)
   (cond
     ((eq value 'null) (write-string "null" stream))
     ((eq value t) (write-string "true" stream))
     ((null value) (write-string "false" stream))
     ((stringp value) (write-json-string value stream))
-    ((integerp value) (princ value stream))
-    ((or (floatp value) (rationalp value))
-     (let ((text
-             (substitute
-              #\e #\d
-              (substitute
-               #\e #\D
-               (write-to-string
-                (coerce value 'double-float)
-                :readably t)))))
-       (write-string text stream)))
+    ((or (rationalp value) (floatp value))
+     (write-string (js-json-number-text value) stream))
     ((vectorp value)
      (if (zerop (length value))
          (write-string "[]" stream)

@@ -731,6 +731,60 @@
            "Answer with one letter."))
          (cadr-ai::llama-labeled-question-content rendered)))))
 
+(test classifier-apis-llama-state-numbers-match-json-stringify
+  ;; Right-hand sides are Node JSON.stringify of the same literals.
+  ;; v1.4.0 renderState is `State:\n${JSON.stringify(state, null, 1)}`.
+  ;; parse-json reads 1.5 as 3/2 and 0.1 as 1/10.
+  (is (eql 3/2 (cadr-ai::parse-json "1.5")))
+  (is (eql 1/10 (cadr-ai::parse-json "0.1")))
+  (is (string= "1.5" (cadr-ai::js-json-text 3/2)))
+  (is (string= "0.1" (cadr-ai::js-json-text 1/10)))
+  (is (string= "1.5" (cadr-ai::js-json-text 1.5d0)))
+  (is (string= "0.1" (cadr-ai::js-json-text 0.1d0)))
+  (is (string= "0" (cadr-ai::js-json-text -0.0d0)))
+  (dolist (pair '(("1.5" . "1.5")
+                  ("0.1" . "0.1")
+                  ("-1.5" . "-1.5")
+                  ("0" . "0")
+                  ("1e-7" . "1e-7")
+                  ("0.000001" . "0.000001")
+                  ("1e20" . "100000000000000000000")
+                  ("1e21" . "1e+21")
+                  ("1e22" . "1e+22")
+                  ("9007199254740993" . "9007199254740992")
+                  ("5.9604644775390625e-8" . "5.960464477539063e-8")
+                  ("1.0000000000000002" . "1.0000000000000002")
+                  ("0.30000000000000004" . "0.30000000000000004")))
+    (is (string= (cdr pair)
+                 (cadr-ai::js-json-text
+                  (cadr-ai::parse-json (car pair))))))
+  (let* ((state
+           (cadr-ai::parse-json
+            "{\"n\":1.5,\"p\":0.1,\"tiny\":1e-7,\"big\":1e21}"))
+         (expected
+           (format nil "{~% \"n\": 1.5,~% \"p\": 0.1,~% \"tiny\": 1e-7,~% \"big\": 1e+21~%}"))
+         (rendered
+           (cadr-ai::llama-render-question
+            (cadr-ai:make-classifier-context
+             :state state
+             :questions
+             (cadr-ai::json-object
+              "urgent"
+              (cadr-ai::json-object
+               "type" "bool"
+               "instructions" "Does this convey urgency?"
+               "criteria" (cadr-ai::json-object
+                           "true" "soon"
+                           "false" "later"))))
+            "urgent"))
+         (content (cadr-ai::llama-labeled-question-content rendered)))
+    (is (string= expected (cadr-ai::js-json-text state)))
+    (is (string= (format nil "State:~%~A" expected)
+                 (cadr-ai::llama-render-state state)))
+    (is (search expected content))
+    (is (null (search "1.5e0" content)))
+    (is (null (search "0.1e0" content)))))
+
 (test classifier-apis-llama-shares-prompt-prefix
   (let* ((context (apis-llama-context))
          (prefix
