@@ -2474,3 +2474,17 @@ The gray `Working` status rule is canonicalized in
   7. 若做完 1–5 后倍数仍 > 5，状态写 blocked，附每一步前后的剖析和倍数，交顾问做最终裁决（届时在：接受实测倍数并记为有意差异、或改用原生运行时之间选）。不得自行放宽数字，也不得自行引入原生库。
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. The status
   cell starts with `open：顾问裁决 2026-10-23 第二次性能裁决：暂不采纳分层执行或原生运行时，按剖析热点再优化一轮，条件 5''''' 见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-23 — GAP-39 gets a fixed fourth repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-39's third acceptance failed. The root cause is that the easter
+  egg carries its own color table and does not use the shared theme
+  resolver. The row is open for a fourth repair whose approach is
+  fixed. The previous blocked text stays after the new prefix.
+- **Root cause:** 彩蛋自带颜色表而不走共用主题解析器。
+- **Scope:** 第四次返修，修法限定：删除彩蛋里自带的颜色表（包括 okhsl 替换表与十六进制常量），muted/dim/accent/text 一律经 TUI 其余部分共用的主题解析器取当前主题的值；测试的期望 RGB 在测试里从 `git show v1.4.0:` 取出的上游 dark.json / light.json（可原样 vendored 为夹具并钉 SHA-256）解析得出，light 应为 103,113,118 / 135,144,149 / 116,89,180 / 59,63,65；并核对共用主题解析器对这四个颜色的值是否等于上游，如不等，在 docs/acceptance/goal27-pi-parity.md 末尾新增一行 `| GAP-51 主题颜色解析 | v1.4.0 theme/*.json | open：……|` 记录差异，不在 GAP-39 里打补丁。
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-39. The status
+  cell starts with `open：顾问裁决 2026-10-23 第四次返修，修法限定：` and the
+  fixed approach in Scope, then `原 blocked 记录：`, and keeps the
+  previous blocked text.
