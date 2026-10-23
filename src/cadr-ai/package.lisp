@@ -191,7 +191,6 @@
    #:image-model-cache-read-price
    #:image-model-cache-write-price
    #:image-model-headers
-   #:image-model-input-limits
    #:images-context
    #:make-images-context
    #:images-context-input

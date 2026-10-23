@@ -107,7 +107,7 @@
              (:resize
               (:jpeg-quality 80 :max-bytes 4718592
                :max-height 2000 :max-width 2000)))
-           (cadr-ai:image-model-input-limits flux))))
+           (cadr-ai::image-model-input-limits flux))))
     (let ((gemini
             (cadr-ai:find-image-model
              :openrouter "google/gemini-2.5-flash-image")))
@@ -132,7 +132,22 @@
              :openrouter "recraft/recraft-v4.1-flash")))
       (is (equal '(:text) (cadr-ai:image-model-input flash)))
       (is (equal '(:image) (cadr-ai:image-model-output flash)))
-      (is (null (cadr-ai:image-model-input-limits flash))))
+      (is (null (cadr-ai::image-model-input-limits flash))))
+    (is (= 62
+           (count-if
+            (lambda (model)
+              (equal
+               '(:images
+                 (:resize
+                  (:jpeg-quality 80 :max-bytes 4718592
+                   :max-height 2000 :max-width 2000)))
+               (cadr-ai::image-model-input-limits model)))
+            models)))
+    (is (= 1
+           (count-if
+            (lambda (model)
+              (null (cadr-ai::image-model-input-limits model)))
+            models)))
     (let ((auto
             (cadr-ai:find-image-model
              :openrouter "openrouter/auto")))

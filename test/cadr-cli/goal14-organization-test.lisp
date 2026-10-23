@@ -1537,7 +1537,9 @@
               ;; OpenRouter image catalog exports already in package.lisp.
               ;; +2 Goal 27 GAP-43: *ai-telemetry-schema* and
               ;; call-with-observed-model-request.
-              "8b08581488db839adee0618fd25a93ddfc97527ac30f0278d00ddc0ed6ba343a"
+              ;; Goal 27 GAP-17: image inputLimits stay on the
+              ;; image-model object. No #:image-model-input-limits export.
+              "bc04de86f0d336becbdb76890937157596df24d3bf38c290d8b60e00de69079d"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
