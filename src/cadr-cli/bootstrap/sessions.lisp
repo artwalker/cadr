@@ -1884,24 +1884,29 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
 
 (defun export-session-jsonl
     (session output-path cwd &key trailing-entries)
-  ;; pi@4a080252f session-export.ts exportSessionToJsonl.
-  ;; The header timestamp is a new clock read. A missing output path
-  ;; takes a second clock read for the default filename. parentId is
-  ;; rewritten along getBranch without mutating the live entries.
+  ;; pi@4a080252f session-export.ts exportSessionToJsonl calls
+  ;; resolvePath(outputPath, process.cwd()). resolvePath does not
+  ;; follow symlinks. Its defaults leave a leading @ and unicode
+  ;; spaces in the name. cwd is the session directory other commands
+  ;; receive; this export does not use it.
+  (declare (ignore cwd))
   (let* ((header-timestamp
            (cadr-agent::session-timestamp-json
             (cadr-core:unix-milliseconds)))
+         (requested
+           (or output-path
+               (format
+                nil "session-~A.jsonl"
+                (cl-ppcre:regex-replace-all
+                 "[:.]"
+                 (cadr-agent::session-timestamp-json
+                  (cadr-core:unix-milliseconds))
+                 "-"))))
          (path
-           (resolve-general-path
-            (or output-path
-                (format
-                 nil "session-~A.jsonl"
-                 (cl-ppcre:regex-replace-all
-                  "[:.]"
-                  (cadr-agent::session-timestamp-json
-                   (cadr-core:unix-milliseconds))
-                  "-")))
-            cwd)))
+           (lexically-normalized-absolute-pathname
+            (uiop:ensure-absolute-pathname
+             (pathname (normalize-path-input requested))
+             (uiop:ensure-directory-pathname (uiop:getcwd))))))
     (ensure-directories-exist path)
     (with-open-file
         (stream path
