@@ -1986,3 +1986,49 @@ The gray `Working` status rule is canonicalized in
   GAP-40 through GAP-43. The same-day advisor note left P9–P12 waiting
   on a user ruling because the `pi` CLI does not depend on them.
 - **Where:** `docs/acceptance/goal27-pi-parity.md`.
+
+## 2026-10-23 — Codemode runs the upstream quickjs-wasi wasm
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):** GAP-05
+  is open. cadr runs the same `quickjs-wasi` 3.6.2 wasm as upstream, in
+  process, on a WASM runtime. The implementer must meet the five
+  conditions below. Acceptance checks them one by one.
+- **Options:**
+  - A. After the dependency review, execute the published
+    `quickjs-wasi` 3.6.2 wasm in process (wasmtime or an equally mature
+    runtime).
+  - B. After the dependency review, compile the same QuickJS as a C
+    library, drive it with CFFI, and recreate WASI clock, randomness,
+    and the heap limit in Lisp.
+  - C. Spawn a local Node (≥22.19) to run the upstream worker. The cadr
+    binary would depend on Node.
+- **Choice:** A.
+- **Why:** upstream interrupt behavior, the 256MB heap,
+  `InternalError: out of memory`, and the fingerprints are bound to
+  that wasm. Running the same bytes is the strongest evidence of
+  alignment. B would have to reproduce upstream's compile flags. C
+  would make cadr depend on Node.
+- **Conditions:**
+  1. Write the dependency review required by
+     `docs/development-policy.md` §3. The wasm comes from the published
+     npm package `quickjs-wasi@3.6.2`. The WASM runtime (wasmtime, or
+     an equally mature runtime) is an officially published prebuilt
+     library. Pin both by version and SHA-256, and record the licenses.
+  2. Lazy load. Load the runtime and the wasm only when the codemode
+     tool is enabled and first executes. A cadr that does not enable
+     codemode keeps the same cold start, and the cold-start gate still
+     passes.
+  3. If the runtime library is missing or fails to load, only the
+     codemode tool reports a clear error. The rest of cadr keeps
+     working.
+  4. Tests lock the behavior. The vendored wasm's SHA-256 equals the
+     copy in the upstream published package. Behavior is locked against
+     the upstream codemode tests: off by default, `--tools +codemode`,
+     `codemode.mode`, `codemode.inlineBudget`, `tools.*`, `store` /
+     `load`, `models.classify`, `models.generateImages`, interrupt, the
+     heap cap and the OOM text, and the worker cap
+     `CADR_CODEMODE_MAX_WORKERS` (default 2).
+  5. Test everything that can be tested on Linux. On macOS and Windows,
+     the build script must be able to fetch that platform's runtime
+     library, and the docs must say how far verification went.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05.
