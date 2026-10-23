@@ -120,8 +120,8 @@
           "id": "turn",
           "symbol": "cadr-agent::+turn-prefix-summarization-prompt+",
           "fixture": "baseline-turn-prefix-prompt.txt",
-          "validityNeedle": "Be concise. Focus on what's needed to understand the kept suffix.",
-          "validityReplacement": "Be concise. Focus on what's needed to understand the kept suffix!"
+          "validityNeedle": "Only summarize information explicitly present above. Do not infer or recreate later messages.",
+          "validityReplacement": "Only summarize information explicitly present above. Do not infer or recreate later messages!"
         }
       ]
     },

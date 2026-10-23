@@ -1640,6 +1640,9 @@
   ;; /compact instructions are still appended as "Additional focus".
   ;; They also reach the prefix when older history is summarized too.
   ;; An empty instruction does not add the line.
+  ;; #9652 / d192bd6dc: the prefix request uses # Conversation and
+  ;; # Instructions, not a <conversation> wrapper, and the instructions
+  ;; are the continuation checkpoint rather than PREFIX/SUFFIX wording.
   (flet ((summarize (history instructions)
            (let* ((contexts nil)
                   (max-tokens-seen nil)
@@ -1685,7 +1688,13 @@
            "Additional focus: keep migration decisions"))
       (is (context-contains-text-p
            (first contexts)
-           "PREFIX of a turn")))
+           (format nil "# Conversation~%[User]: migrate the schema")))
+      (is (context-contains-text-p
+           (first contexts)
+           (format nil "# Instructions~%The messages above are earlier context from an ongoing conversation.")))
+      (is (not (context-contains-text-p
+                (first contexts)
+                "<conversation>"))))
     (multiple-value-bind (contexts caps)
         (summarize
          (list (cadr-ai:make-user-message :content "older work"))
@@ -1702,8 +1711,32 @@
            (first contexts)
            "NEW conversation messages"))
       (is (context-contains-text-p
+           (first contexts)
+           "<conversation>"))
+      (is (context-contains-text-p
            (second contexts)
-           "PREFIX of a turn")))
+           (format nil "# Conversation~%[User]: migrate the schema")))
+      (is (context-contains-text-p
+           (second contexts)
+           "## Progress So Far"))
+      (is (context-contains-text-p
+           (second contexts)
+           "## Context Needed to Continue"))
+      (is (context-contains-text-p
+           (second contexts)
+           "Only summarize information explicitly present above. Do not infer or recreate later messages."))
+      (is (not (context-contains-text-p
+                (second contexts)
+                "<conversation>")))
+      (is (not (context-contains-text-p
+                (second contexts)
+                "PREFIX of a turn")))
+      (is (not (context-contains-text-p
+                (second contexts)
+                "## Early Progress")))
+      (is (not (context-contains-text-p
+                (second contexts)
+                "## Context for Suffix"))))
     (multiple-value-bind (contexts caps)
         (summarize nil "")
       (declare (ignore caps))
