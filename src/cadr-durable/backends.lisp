@@ -385,6 +385,55 @@
                                (char/= (char id 0) #\0))))))))
       (or (match "doc-") (match "task-")))))
 
+(defun jsonl-object-p (value)
+  (hash-table-p value))
+
+(defun jsonl-array-p (value)
+  (and (vectorp value) (not (stringp value))))
+
+(defun jsonl-safe-integer-p (value)
+  (and (integerp value)
+       (<= (- +max-safe-integer+) value +max-safe-integer+)))
+
+(defun jsonl-assert-document-content (content description)
+  (unless (and (jsonl-object-p content)
+               (jsonl-safe-integer-p (hash-get content "version"))
+               (>= (hash-get content "version") 1)
+               (or (and (equal (hash-get content "kind") "base")
+                        (jsonl-object-p (hash-get content "value")))
+                   (and (equal (hash-get content "kind") "delta")
+                        (jsonl-array-p (hash-get content "ops")))))
+    (error "Invalid document content in ~A" description)))
+
+(defun jsonl-assert-sidecar-record (value name number)
+  (let ((description (format nil "~A line ~A" name number)))
+    (unless (and (jsonl-object-p value)
+                 (eql (hash-get value "format") 1)
+                 (equal (hash-get value "type") "record")
+                 (jsonl-safe-integer-p (hash-get value "seq"))
+                 (>= (hash-get value "seq") 1)
+                 (jsonl-safe-integer-p (hash-get value "ordinal"))
+                 (>= (hash-get value "ordinal") 0)
+                 (jsonl-object-p (hash-get value "payload"))
+                 (stringp (hash-get (hash-get value "payload") "type")))
+      (error "Invalid sidecar record in ~A" description))
+    (let* ((payload (hash-get value "payload"))
+           (type (hash-get payload "type")))
+      (cond
+        ((string= type "task")
+         (let ((task (hash-get payload "value")))
+           (unless (and (jsonl-object-p task)
+                        (jsonl-safe-integer-p (hash-get task "id"))
+                        (jsonl-object-p (hash-get task "state"))
+                        (not (equal (hash-get (hash-get task "state") "status")
+                                    "terminal")))
+             (error "Invalid live task record in ~A" description))))
+        ((string= type "document")
+         (unless (jsonl-safe-integer-p (hash-get payload "id"))
+           (error "Invalid document record in ~A" description))
+         (jsonl-assert-document-content (hash-get payload "content") description))
+        (t (error "Unknown sidecar record type in ~A" description))))))
+
 (defun jsonl-visit-lines (path name visitor)
   (let* ((raw (read-bytes path))
          (trimmed (trim-torn-tail raw)))
@@ -414,10 +463,9 @@
       (jsonl-visit-lines
        path "main.jsonl"
        (lambda (text number)
-         (unless (zerop (length text))
-           (handler-case (setf state (decode-state (text-json text)))
-             (error ()
-               (error "Malformed complete main.jsonl line ~A" number))))))
+         (handler-case (setf state (decode-state (text-json text)))
+           (error ()
+             (error "Malformed complete main.jsonl line ~A" number)))))
       (dolist (name (sort (remove-if-not
                            #'jsonl-sidecar-name-p
                            (mapcar #'file-namestring (uiop:directory-files directory)))
@@ -425,9 +473,11 @@
         (jsonl-visit-lines
          (merge-pathnames name directory) name
          (lambda (text number)
-           (handler-case (text-json text)
-             (error ()
-               (error "Malformed complete ~A line ~A" name number))))))
+           (jsonl-assert-sidecar-record
+            (handler-case (text-json text)
+              (error ()
+                (error "Malformed complete ~A line ~A" name number)))
+            name number))))
       (make-durable-storage :kind :jsonl :state state :path path :fsync fsync))))
 
 (defun persist-jsonl (storage state)

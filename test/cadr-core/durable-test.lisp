@@ -127,8 +127,49 @@
                       (write-line "{bad}" stream))
                     (is (string= "Malformed complete task-7.jsonl line 1"
                                  (durable-error-text
+                                  (lambda () (cadr-durable:open-jsonl-storage sidecar)))))
+                    (delete-file (merge-pathnames "task-7.jsonl" sidecar))
+                    (with-open-file (stream (merge-pathnames "doc-99.jsonl" sidecar)
+                                            :direction :output :if-exists :supersede)
+                      (write-line "{}" stream))
+                    (is (string= "Invalid sidecar record in doc-99.jsonl line 1"
+                                 (durable-error-text
+                                  (lambda () (cadr-durable:open-jsonl-storage sidecar)))))
+                    (delete-file (merge-pathnames "doc-99.jsonl" sidecar))
+                    (with-open-file (stream (merge-pathnames "doc-99.jsonl" sidecar)
+                                            :direction :output :if-exists :supersede)
+                      (write-line "" stream))
+                    (is (string= "Malformed complete doc-99.jsonl line 1"
+                                 (durable-error-text
+                                  (lambda () (cadr-durable:open-jsonl-storage sidecar)))))
+                    (delete-file (merge-pathnames "doc-99.jsonl" sidecar))
+                    (with-open-file (stream (merge-pathnames "doc-99.jsonl" sidecar)
+                                            :direction :output :if-exists :supersede)
+                      (write-line "{\"format\":1,\"type\":\"record\",\"seq\":1,\"ordinal\":0,\"payload\":{\"type\":\"document\",\"id\":1,\"content\":{\"kind\":\"base\",\"version\":1,\"value\":{}}}}" stream))
+                    (is (null (durable-error-text
+                               (lambda ()
+                                 (cadr-durable:storage-close
+                                  (cadr-durable:open-jsonl-storage sidecar))))))
+                    (delete-file (merge-pathnames "doc-99.jsonl" sidecar))
+                    (with-open-file (stream (merge-pathnames "task-7.jsonl" sidecar)
+                                            :direction :output :if-exists :supersede)
+                      (write-line "{\"format\":1,\"type\":\"record\",\"seq\":1,\"ordinal\":0,\"payload\":{\"type\":\"task\",\"value\":{\"id\":7,\"state\":{\"status\":\"terminal\"}}}}" stream))
+                    (is (string= "Invalid live task record in task-7.jsonl line 1"
+                                 (durable-error-text
                                   (lambda () (cadr-durable:open-jsonl-storage sidecar))))))
-               (uiop:delete-directory-tree sidecar :validate t))))
+               (uiop:delete-directory-tree sidecar :validate t)))
+           (let ((blank (merge-pathnames (format nil "cadr-durable-blank-~A/" (random 1000000))
+                                         (uiop:temporary-directory))))
+             (unwind-protect
+                  (progn
+                    (ensure-directories-exist blank)
+                    (with-open-file (stream (merge-pathnames "main.jsonl" blank)
+                                            :direction :output :if-exists :supersede)
+                      (write-line "" stream))
+                    (is (string= "Malformed complete main.jsonl line 1"
+                                 (durable-error-text
+                                  (lambda () (cadr-durable:open-jsonl-storage blank))))))
+               (uiop:delete-directory-tree blank :validate t))))
       (uiop:delete-directory-tree directory :validate t))))
 
 (test durable-sqlite-reopens-and-namespaces-its-tables
@@ -567,21 +608,81 @@
                           (loop repeat 100 do (write-line "line" stream)))))
              (cadr-durable:execute-write env "sample.txt" lines)
              (let* ((result (cadr-durable:execute-read env "sample.txt" :offset 41 :limit 20))
-                    (diagnostic (first (cadr-durable:tool-result-diagnostics result))))
+                    (diagnostic (first (cadr-durable:tool-result-diagnostics result)))
+                    (text (cadr-chord:json-get
+                           (aref (cadr-durable:tool-result-output result) 0) "text")))
                (is (string= "info" (cadr-chord:json-get diagnostic "severity")))
                (is (null (cadr-chord:json-get diagnostic "code")))
+               (is (null (nth-value 1 (gethash "code" diagnostic))))
                (is (string= "40 more lines in file. Use offset=61 to continue."
-                            (cadr-chord:json-get diagnostic "message")))))
+                            (cadr-chord:json-get diagnostic "message")))
+               (is (null (cadr-durable:tool-result-details result)))
+               (is (string= (format nil "~{~A~^~%~}" (make-list 20 :initial-element "line")) text))
+               (is (= 1 (length (cadr-durable:tool-result-diagnostics result)))))
+             (let* ((from-start (cadr-durable:execute-read env "sample.txt" :limit 20))
+                    (diagnostic (first (cadr-durable:tool-result-diagnostics from-start))))
+               (is (string= "info" (cadr-chord:json-get diagnostic "severity")))
+               (is (null (nth-value 1 (gethash "code" diagnostic))))
+               (is (string= "80 more lines in file. Use offset=21 to continue."
+                            (cadr-chord:json-get diagnostic "message")))
+               (is (null (cadr-durable:tool-result-details from-start))))
            (cadr-durable:execute-write
             env "long.txt"
             (concatenate 'string (make-string 40000 :initial-element #\é) #(#\Newline) "next" #(#\Newline)))
            (let* ((result (cadr-durable:execute-read env "long.txt"))
-                  (diagnostic (first (cadr-durable:tool-result-diagnostics result))))
+                  (diagnostic (first (cadr-durable:tool-result-diagnostics result)))
+                  (text (cadr-chord:json-get
+                         (aref (cadr-durable:tool-result-output result) 0) "text"))
+                  (truncation (cadr-chord:json-get
+                               (cadr-durable:tool-result-details result) "truncation")))
+             (is (string= (make-string 25600 :initial-element #\é) text))
+             (is (null (search "next" text)))
              (is (string= "warn" (cadr-chord:json-get diagnostic "severity")))
              (is (string= "truncated" (cadr-chord:json-get diagnostic "code")))
-             (is (search "Line 1 is 78.1KB, exceeds the 50.0KB limit"
-                         (cadr-chord:json-get diagnostic "message")))
-             (is (search "tail -c +51201" (cadr-chord:json-get diagnostic "message"))))
+             (is (string= "Line 1 is 78.1KB, exceeds the 50.0KB limit; showing its first 50.0KB. Use bash: sed -n '1p' long.txt | tail -c +51201"
+                          (cadr-chord:json-get diagnostic "message")))
+             (is (eq t (cadr-chord:json-get truncation "truncated")))
+             (is (eq t (cadr-chord:json-get truncation "firstLineExceedsLimit")))
+             (is (= 51200 (cadr-chord:json-get truncation "outputBytes")))
+             (is (= 1 (cadr-chord:json-get truncation "outputLines")))
+             (is (string= "bytes" (cadr-chord:json-get truncation "truncatedBy")))
+             (is (= 2 (cadr-chord:json-get truncation "totalLines")))
+             (is (= 80006 (cadr-chord:json-get truncation "totalBytes")))
+             (is (null (cadr-chord:json-get truncation "lastLinePartial")))
+             (is (eq t (nth-value 1 (gethash "lastLinePartial" truncation))))
+             (is (null (nth-value 1 (gethash "content" truncation))))
+             (is (= 2000 (cadr-chord:json-get truncation "maxLines")))
+             (is (= 51200 (cadr-chord:json-get truncation "maxBytes")))
+             (is (= 1 (length (cadr-durable:tool-result-diagnostics result)))))
+           (cadr-durable:execute-write
+            env "large.txt"
+            (with-output-to-string (stream)
+              (loop for index from 1 to 2500
+                    do (unless (= index 1) (write-char #\Newline stream))
+                       (format stream "Line ~A" index))))
+           (let* ((result (cadr-durable:execute-read env "large.txt"))
+                  (diagnostic (first (cadr-durable:tool-result-diagnostics result)))
+                  (text (cadr-chord:json-get
+                         (aref (cadr-durable:tool-result-output result) 0) "text"))
+                  (truncation (cadr-chord:json-get
+                               (cadr-durable:tool-result-details result) "truncation")))
+             (is (string= "Showing lines 1-2000 of 2500. Use offset=2001 to continue."
+                          (cadr-chord:json-get diagnostic "message")))
+             (is (string= "truncated" (cadr-chord:json-get diagnostic "code")))
+             (is (eq t (cadr-chord:json-get truncation "truncated")))
+             (is (string= "lines" (cadr-chord:json-get truncation "truncatedBy")))
+             (is (= 2500 (cadr-chord:json-get truncation "totalLines")))
+             (is (= 2000 (cadr-chord:json-get truncation "outputLines")))
+             (is (null (cadr-chord:json-get truncation "firstLineExceedsLimit")))
+             (is (search "Line 2000" text))
+             (is (null (search "Line 2001" text))))
+           (cadr-durable:execute-write
+            env "exact.txt"
+            (with-output-to-string (stream)
+              (loop repeat 2000 do (write-line "x" stream))))
+           (let ((result (cadr-durable:execute-read env "exact.txt")))
+             (is (null (cadr-durable:tool-result-diagnostics result)))
+             (is (null (cadr-durable:tool-result-details result))))
              (let ((png #(137 80 78 71 13 10 26 10 0 0 0 13 73 72 68 82 0 0 0 1
                           0 0 0 1 8 6 0 0 0 31 21 196 137 0 0 0 13 73 68 65 84
                           120 156 99 96 96 96 248 15 0 1 4 1 0 95 229 195 75 0
@@ -658,7 +759,7 @@
            (is (search "Invalid timeout: maximum is 2147483.647 seconds"
                        (durable-error-text
                         (lambda () (cadr-durable:execute-bash env "true" :timeout 3000000))))))
-      (uiop:delete-directory-tree directory :validate t))))
+      (uiop:delete-directory-tree directory :validate t)))))
 
 (test durable-codemode-replays-the-journal-and-refuses-a-different-path
   (let ((sandbox (cadr-durable:make-codemode-sandbox :fingerprint "one"))

@@ -26,23 +26,38 @@
       (setf lines (butlast lines)))
     lines))
 
+(defun utf8-byte-length (text)
+  (length (sb-ext:string-to-octets text :external-format :utf-8)))
+
 (defun utf8-prefix (text byte-limit)
   (let ((count 0)
         (end 0))
     (loop for character across text
-          for octets = (length (sb-ext:string-to-octets (string character)
-                                                        :external-format :utf-8))
+          for octets = (utf8-byte-length (string character))
           while (<= (+ count octets) byte-limit)
           do (incf count octets)
              (incf end))
     (values (subseq text 0 end) count)))
 
-(defun line-too-long (path line-number line)
-  (let* ((bytes (length (sb-ext:string-to-octets line :external-format :utf-8)))
-         (shown (min bytes +default-max-bytes+)))
-    (format nil "Line ~A is ~A, exceeds the ~A limit; showing its first ~A. Use bash: sed -n '~Ap' ~A | tail -c +~A"
-            line-number (format-size bytes) (format-size +default-max-bytes+)
-            (format-size shown) line-number (file-namestring path) (1+ shown))))
+(defun line-too-long (path line-number line shown)
+  (format nil "Line ~A is ~A, exceeds the ~A limit; showing its first ~A. Use bash: sed -n '~Ap' ~A | tail -c +~A"
+          line-number (format-size (utf8-byte-length line))
+          (format-size +default-max-bytes+)
+          (format-size shown) line-number path (1+ shown)))
+
+(defun truncation-details (&key truncated truncated-by total-lines total-bytes
+                             output-lines output-bytes first-line-exceeds)
+  (cadr-chord:json-object
+   "truncated" truncated
+   "truncatedBy" truncated-by
+   "totalLines" total-lines
+   "totalBytes" total-bytes
+   "outputLines" output-lines
+   "outputBytes" output-bytes
+   "lastLinePartial" nil
+   "firstLineExceedsLimit" first-line-exceeds
+   "maxLines" +default-max-lines+
+   "maxBytes" +default-max-bytes+))
 
 (defun tool-diagnostic (severity message &key code)
   (let ((diagnostic (cadr-chord:json-object "severity" severity "message" message)))
@@ -53,45 +68,100 @@
 (defun read-text-page (path text &key (offset 1) limit)
   (let* ((lines (text-lines text))
          (total (length lines))
-         (limit (or limit +default-max-lines+))
          (start (1- offset)))
     (when (> offset total)
       (error "Offset ~A is beyond end of file (~A lines total)" offset total))
-    (let* ((slice (subseq lines start (min total (+ start limit))))
-           (next (+ offset (length slice)))
+    (let* ((window-end (if limit (min total (+ start limit)) total))
+           (selected (subseq lines start window-end))
+           (selected-lines (- window-end start))
+           (selected-bytes (if (and (zerop start) (= window-end total))
+                               (utf8-byte-length text)
+                               (utf8-byte-length
+                                (with-output-to-string (stream)
+                                  (loop for line in selected
+                                        for first = t then nil
+                                        do (unless first (write-char #\Newline stream))
+                                           (write-string line stream))))))
+           (output (make-array 0 :element-type 'character :fill-pointer 0 :adjustable t))
            (diagnostics nil)
-           (truncated nil)
-           (output (make-array 0 :element-type 'character :fill-pointer 0 :adjustable t)))
-      (loop for line in slice
+           (details nil)
+           (emitted 0)
+           (bytes-used 0)
+           (reason nil)
+           (shown-bytes 0))
+      (loop for line in selected
             for number from offset
-            for bytes = (length (sb-ext:string-to-octets line :external-format :utf-8))
-            do (when (plusp (length output)) (vector-push-extend #\Newline output))
-               (if (> bytes +default-max-bytes+)
-                   (progn
-                     (multiple-value-bind (prefix) (utf8-prefix line +default-max-bytes+)
-                       (loop for character across prefix do (vector-push-extend character output)))
-                     (push (tool-diagnostic
-                            "warn" (line-too-long path number line)
-                            :code "truncated")
-                           diagnostics))
-                   (loop for character across line do (vector-push-extend character output))))
+            for index from 0
+            for line-bytes = (utf8-byte-length line)
+            do (cond
+                 ((and (zerop index) (> line-bytes +default-max-bytes+))
+                  (multiple-value-bind (prefix prefix-bytes)
+                      (utf8-prefix line +default-max-bytes+)
+                    (loop for character across prefix
+                          do (vector-push-extend character output))
+                    (setf shown-bytes prefix-bytes)
+                    (push (tool-diagnostic
+                           "warn" (line-too-long path number line prefix-bytes)
+                           :code "truncated")
+                          diagnostics))
+                  (setf reason :first-line)
+                  (return))
+                 ((>= emitted +default-max-lines+)
+                  (setf reason :lines)
+                  (return))
+                 ((> (+ bytes-used line-bytes (if (plusp emitted) 1 0))
+                     +default-max-bytes+)
+                  (setf reason :bytes)
+                  (return))
+                 (t
+                  (when (plusp (length output))
+                    (vector-push-extend #\Newline output))
+                  (loop for character across line
+                        do (vector-push-extend character output))
+                  (incf emitted)
+                  (incf bytes-used line-bytes)
+                  (when (plusp index) (incf bytes-used)))))
       (cond
-        ((< next (1+ total))
-         (push (if (= offset 1)
-                   (tool-diagnostic
-                    "info"
-                    (format nil "Showing lines 1-~A of ~A. Use offset=~A to continue."
-                            (length slice) total next)
-                    :code "truncated")
-                   (tool-diagnostic
-                    "info"
-                    (format nil "~A more lines in file. Use offset=~A to continue."
-                            (- total (1- next)) next)))
-               diagnostics)
-         (setf truncated (cadr-chord:json-object
-                          "truncated" t "truncatedBy" "lines"
-                          "totalLines" total "outputLines" (length slice)))))
-      (values (coerce output 'string) (nreverse diagnostics) truncated total))))
+        ((eq reason :first-line)
+         (setf details (cadr-chord:json-object
+                        "truncation"
+                        (truncation-details
+                         :truncated t :truncated-by "bytes"
+                         :total-lines selected-lines :total-bytes selected-bytes
+                         :output-lines 1 :output-bytes shown-bytes
+                         :first-line-exceeds t))))
+        ((or (eq reason :lines) (eq reason :bytes))
+         (let* ((end-line (+ offset emitted -1))
+                (next (1+ end-line))
+                (page (coerce output 'string)))
+           (push (tool-diagnostic
+                  "info"
+                  (format nil "Showing lines ~A-~A of ~A~A. Use offset=~A to continue."
+                          offset end-line total
+                          (if (eq reason :lines)
+                              ""
+                              (format nil " (~A limit)"
+                                      (format-size +default-max-bytes+)))
+                          next)
+                  :code "truncated")
+                 diagnostics)
+           (setf details (cadr-chord:json-object
+                          "truncation"
+                          (truncation-details
+                           :truncated t
+                           :truncated-by (if (eq reason :lines) "lines" "bytes")
+                           :total-lines selected-lines :total-bytes selected-bytes
+                           :output-lines emitted
+                           :output-bytes (utf8-byte-length page)
+                           :first-line-exceeds nil)))))
+        ((and limit (< window-end total))
+         (let ((next (+ offset (length selected))))
+           (push (tool-diagnostic
+                  "info"
+                  (format nil "~A more lines in file. Use offset=~A to continue."
+                          (- total (1- next)) next))
+                 diagnostics))))
+      (values (coerce output 'string) (nreverse diagnostics) details))))
 
 (defparameter *base64-digits*
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
