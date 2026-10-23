@@ -1,6 +1,6 @@
 # Lisp 原生能力提案
 
-状态：未裁决。本文只提出设计，不授权写实现。新机制按 `docs/development-policy.md` 第 3 节，要等用户逐项裁决之后才能进 `docs/open-questions.md` 并开工。
+状态：已裁决（顾问 Claude，2026-10-23，用户授权，用户保留否决权）。
 
 2026-10-23 更正。上一版把 `get_state` 的字段写少了，把帮助文本的锁写成了不存在的排除名单，并把「换掉下一次工具调用」说成 Node 做不到。这三处下面已改。方向 4 补上了同用户子进程仍能读到父进程文件和环境。读入时拒绝 `#.` 和 `#,`，挡不住文件前半段改掉的读表，也挡不住 `in-package`。`--self-extend` 在没有 bash 时也是父进程里的代码执行。
 
@@ -405,3 +405,25 @@ FiveAM 锁不住「模型会不会写出恶意扩展」，也锁不住同一个�
 5. `/reload` 是否保持 pi 的 `session_shutdown` 加 `session_start`。建议保持。换函数槽只给 `/redef`，并且没有 `--redef` 时这个命令不存在。
 
 6. 这些旗标的有意差异是否沿用 `--slynk` 的记法，而不是新的差异类别。建议沿用。实现那个提交再改 `docs/parity-map.md` 和 README，本文不改账本。
+
+## 裁决
+
+顾问 Claude，2026-10-23。用户同日授权，并保留否决权。上文是提案，不删。和本节冲突时以本节为准。
+
+用户授权分成三类。会改变 pi 默认行为、又属于 Lisp 优势的新能力，由顾问决定是否默认开启。条件是记进 `docs/adjudications.md`，保留回到 pi 行为的兼容开关，新旧两种行为都有测试锁住。涉及安全的一律默认关闭，包括监听新端口，以及模型写的代码进入镜像。自我优化一类之后再说。
+
+1. 不新增监听端口或 socket。`--slynk` 仍是唯一监听，只绑 `127.0.0.1`。要 `cadr-cli::agent-live-snapshot`，不导出。按建议。
+
+2. 交互恢复（`--recover` 那一套）只在交互 TUI 里生效。`--print`、rpc、json 模式下永远不出现。改为默认开启。provider 重试预算用尽或工具报错时，交互 TUI 默认弹出恢复菜单。交互模式下用户就在终端前。原地选择重试、换模型或跳过，比 pi 直接留一条错误消息好用。这是 condition/restart 的优势。
+
+3. 新增一个全局兼容开关 `--pi-compat`。打开后，所有默认开启的有意差异一律关闭，行为回到 pi v1.4.0。不另设每个功能各自的关闭旗标。`--pi-compat` 不写进 `print-cli-usage`，帮助字节锁不变。写进 README 和 `docs/parity-map.md`。原来对着 pi 锁死的测试一律在 `--pi-compat` 下继续跑并保持通过。默认模式下的新行为另有测试锁住。
+
+4. 钩子可以多返回 `(:invoke-restart name)`。只在恢复菜单开启时校验通过，也就是非 `--pi-compat` 的交互 TUI。按建议。这是对 `docs/architecture.md` 第 28 节冻结返回值的一次明确改动。
+
+5. `/reload` 保持 pi 语义，`session_shutdown` 加 `session_start`。`/redef` 改为默认可用，不再需要 `--redef`。`--pi-compat` 下不存在。它出现在斜杠命令表和补全里。这是记录在案的有意差异。
+
+6. `--self-extend` 暂缓。模型写的代码经子进程编译测试后装进镜像，属于用户说之后再说的自我优化，不在本次排期。`OQ-G20-AGENT-EVAL-TOOL` 继续有效。子进程编译门照做，只给 `/redef` 用。
+
+7. 有意差异沿用 `--slynk` 的记法写进 `docs/parity-map.md`，不新造类别。注明哪些是默认开启、由 `--pi-compat` 关闭。
+
+8. Goal 27 合并进 `cadr-migration` 之后再开工。顺序是快照函数，交互恢复（含 `--pi-compat`），子进程编译门，`/redef`，`:invoke-restart`。
