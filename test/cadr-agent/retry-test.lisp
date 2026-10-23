@@ -391,14 +391,75 @@
                    (cadr-agent::agent-event-delay-ms
                     event)))))))
 
-(test summarization-retry-policy-keeps-the-agent-delay-cap
-  (let ((agent (make-agent :auto-retry-max-delay-ms 15
-                           :auto-retry-base-delay 1/100)))
+(defun summarization-policy-waits (base-delay-seconds max-delay-ms
+                                    retries)
+  ;; completeSummarization passes getRetrySettings() through
+  ;; summarization-retry-policy into retryAssistantCall.
+  (let ((agent
+          (make-agent
+           :auto-retry-p t
+           :auto-retry-max-attempts retries
+           :auto-retry-base-delay base-delay-seconds
+           :auto-retry-max-delay-ms max-delay-ms))
+        (calls 0)
+        (delays nil)
+        (sleeps nil))
     (let ((policy
             (cadr-agent::summarization-retry-policy agent)))
-      (is (= 10
-             (cadr-ai::retry-policy-base-delay-milliseconds
-              policy)))
-      (is (= 15
-             (cadr-ai::retry-policy-max-agent-delay-milliseconds
-              policy))))))
+      (cadr-ai:retry-assistant-call
+       (lambda ()
+         (incf calls)
+         (if (<= calls retries)
+             (retry-error-message "terminated")
+             (make-assistant-message
+              :content (list (make-text-content :text "ok"))
+              :api :test
+              :provider :test
+              :model "test"
+              :stop-reason :stop)))
+       policy
+       :sleep-function
+       (lambda (seconds) (push seconds sleeps))
+       :on-retry-scheduled
+       (lambda (attempt maximum delay error)
+         (declare (ignore attempt maximum error))
+         (push delay delays)))
+      (values
+       (cadr-ai::retry-policy-base-delay-milliseconds policy)
+       (nreverse delays)
+       (nreverse sleeps)))))
+
+(test summarization-retry-policy-keeps-the-agent-delay-cap
+  ;; packages/ai/src/utils/retry.ts retryDelayMs, reached from
+  ;; completeSummarization. Node 22.22.0:
+  ;; retryDelayMs({baseDelayMs:1.5}, 1) is 60000, attempt 2 is 3;
+  ;; baseDelayMs 2000.5 is 60000 then 4001. Settings store seconds,
+  ;; so 1.5 ms is 3/2000 and 2000.5 ms is 4001/2000.
+  (multiple-value-bind (base delays sleeps)
+      (summarization-policy-waits 1 15 1)
+    (is (= 1000 base))
+    (is (equal '(15) delays))
+    (is (= (/ 15 1000d0) (first sleeps))))
+  (multiple-value-bind (base delays sleeps)
+      (summarization-policy-waits 1/100 15 1)
+    (is (= 10 base))
+    (is (equal '(10) delays))
+    (is (= 0.01d0 (first sleeps)))
+    (is (= 1 (length sleeps))))
+  (multiple-value-bind (base delays sleeps)
+      (summarization-policy-waits 3/2000 60000 2)
+    (is (= 3/2 base))
+    (is (equal '(60000 3) delays))
+    (is (= 60d0 (first sleeps)))
+    (is (= (/ 3 1000d0) (second sleeps))))
+  (multiple-value-bind (base delays sleeps)
+      (summarization-policy-waits 4001/2000 60000 2)
+    (is (= 4001/2 base))
+    (is (equal '(60000 4001) delays))
+    (is (= 60d0 (first sleeps)))
+    (is (= (/ 4001 1000d0) (second sleeps))))
+  (multiple-value-bind (base delays sleeps)
+      (summarization-policy-waits 3/2000 0 1)
+    (is (= 3/2 base))
+    (is (equal '(0) delays))
+    (is (null sleeps))))

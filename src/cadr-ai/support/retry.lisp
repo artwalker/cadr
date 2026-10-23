@@ -199,8 +199,10 @@
 (defstruct retry-policy
   (enabled-p t :type boolean)
   (max-retries 3 :type (integer 0 *))
+  ;; A JSON number. 3/2 must stay 3/2 so retry-delay-ms sees
+  ;; the same product Node checks with Number.isSafeInteger.
   (base-delay-milliseconds 1000
-                           :type (integer 0 *))
+                           :type (real 0 *))
   ;; Nil matches an omitted cap. Zero is a configured delay.
   (max-agent-delay-milliseconds nil))
 

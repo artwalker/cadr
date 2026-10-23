@@ -5,7 +5,7 @@
    :enabled-p (agent-auto-retry-p agent)
    :max-retries (agent-auto-retry-max-attempts agent)
    :base-delay-milliseconds
-   (round (* 1000 (agent-auto-retry-base-delay agent)))
+   (* 1000 (agent-auto-retry-base-delay agent))
    :max-agent-delay-milliseconds
    (agent-auto-retry-max-delay-ms agent)))
 

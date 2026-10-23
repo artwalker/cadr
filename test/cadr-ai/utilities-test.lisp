@@ -618,6 +618,15 @@ second" (cadr-ai:content-text content)))
   (is (= 63999 (cadr-ai::retry-delay-ms 2000 6 63999)))
   (is (= -5 (cadr-ai::retry-delay-ms 2000 1 -5)))
   (is (= 100000 (cadr-ai::retry-delay-ms 1.5d0 1 100000)))
+  ;; Node 22.22.0 retryDelayMs: 1.5 and 2000.5 are not safe integers.
+  ;; The next power that lands on an integer is used as itself.
+  (is (= 60000 (cadr-ai::retry-delay-ms 3/2 1)))
+  (is (= 3 (cadr-ai::retry-delay-ms 3/2 2)))
+  (is (= 6 (cadr-ai::retry-delay-ms 3/2 3)))
+  (is (= 60000 (cadr-ai::retry-delay-ms 4001/2 1)))
+  (is (= 4001 (cadr-ai::retry-delay-ms 4001/2 2)))
+  (is (= 8002 (cadr-ai::retry-delay-ms 4001/2 3)))
+  (is (= 0 (cadr-ai::retry-delay-ms 3/2 1 0)))
   (is (= 9007199254740991
          (cadr-ai::retry-delay-ms 2000 44 1.0d16))))
 
