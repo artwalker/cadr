@@ -47,7 +47,8 @@
           (cadr-cli::egg-model-blocks model))))))
 
 (test egg-render-frames-match-v1.4.0-node-goldens
-  ;; SHA256 of lines.join("\n") from Node harness on tag v1.4.0 source.
+  ;; SHA256 of lines.join("\n") from Node on v1.4.0, dark-theme muted/dim,
+  ;; foreground 212,212,212, background 0,0,0, width 24, height 8.
   (let* ((screen
            (list "hello"
                  (format nil "~C[38;2;10;20;30mwide~C[0m" #\Escape #\Escape)
@@ -55,11 +56,13 @@
          (fg '(212d0 212d0 212d0))
          (bg '(0d0 0d0 0d0))
          (model (cadr-cli::pi-logo-model 1 1))
-         (theme (cadr-tui:current-theme))
-         (saved-mode (cadr-tui:terminal-theme-color-mode theme)))
+         (saved-theme (cadr-tui:current-theme)))
     (unwind-protect
          (progn
-           (setf (cadr-tui:terminal-theme-color-mode theme) :truecolor)
+           (cadr-tui:reset-current-theme)
+           (setf (cadr-tui:terminal-theme-color-mode
+                  (cadr-tui:current-theme))
+                 :truecolor)
            (dolist (pair '((0d0
                             "6a1bdc88a4f72b51e58253c0a97e30dda82384ad6d180c55df7ae25c41ffb0f2")
                            (0.1d0
@@ -67,11 +70,11 @@
                            (0.5d0
                             "72ea6ae17c6f24fe6177c007cd2a9b46cf08688e6e5e748ca2482d8dd62c0aab")
                            (1.5d0
-                            "67a2b05693f04c4ce07e5b5810af6f014eb6c832d3861bdd85bebce0da4554fe")
+                            "aea189f767659c2d84cfa053fc956caab5404f679d3fefefd7db984fe38602ca")
                            (4d0
-                            "0f56f1191bf211f1f24962affad3ea2be0d7df7e01ba02922f4a8f1e94ecae20")
+                            "dad790d59cd5846c90a5943a2affa2ac0c49a7258e7811b865f084f66dcc0ee4")
                            (7d0
-                            "f37002dc46372c21359f1239f439c679f9e333f2e9b5b161c3c544a75f9155d1")))
+                            "c51c013d429d2d9654269a47e996c275e1589bd888810b31b1ddfea9d5f6d023")))
              (destructuring-bind (elapsed expected) pair
                (let ((animation
                        (cadr-cli::make-easter-egg-3d-animation
@@ -82,7 +85,39 @@
                  (is (string= expected (egg-test-frame-hash animation 24))
                      "elapsed ~A expected ~A" elapsed expected)
                  (cadr-tui:component-dispose animation)))))
-      (setf (cadr-tui:terminal-theme-color-mode theme) saved-mode))))
+      (cadr-tui:set-current-theme saved-theme))))
+
+(test egg-theme-colors-match-v140-dark-and-follow-overrides
+  ;; initTheme("dark") on Node 22.22.0: muted 157,165,169 dim 126,136,142
+  ;; accent 167,152,215 text 222,224,225. A replaced token follows the theme.
+  (cadr-tui:reset-current-theme)
+  (unwind-protect
+       (progn
+         (is (equal '(157d0 165d0 169d0) (cadr-cli::egg-theme-rgb :muted)))
+         (is (equal '(126d0 136d0 142d0) (cadr-cli::egg-theme-rgb :dim)))
+         (is (equal '(167d0 152d0 215d0) (cadr-cli::egg-theme-rgb :accent)))
+         (is (equal '(222d0 224d0 225d0) (cadr-cli::egg-theme-rgb :text)))
+         (let ((model
+                 (cadr-cli::armin-egg-model
+                  (cadr-cli::egg-theme-rgb :accent))))
+           (is (equal '(167d0 152d0 215d0)
+                      (cadr-cli::egg-block-color
+                       (first (cadr-cli::egg-model-blocks model))))))
+         (multiple-value-bind (foreground background)
+             (cadr-cli::egg-resolved-colors
+              (cadr-tui:make-process-terminal))
+           (is (equal '(222d0 224d0 225d0) foreground))
+           (is (equal '(0d0 0d0 0d0) background)))
+         (cadr-tui:set-current-theme
+          :dark :overrides '((:accent . "#010203")))
+         (is (equal '(1d0 2d0 3d0) (cadr-cli::egg-theme-rgb :accent)))
+         (is (equal '(157d0 165d0 169d0) (cadr-cli::egg-theme-rgb :muted)))
+         (cadr-tui:set-current-theme :light)
+         (is (equal '(108d0 108d0 108d0) (cadr-cli::egg-theme-rgb :muted)))
+         (is (equal '(118d0 118d0 118d0) (cadr-cli::egg-theme-rgb :dim)))
+         (is (equal '(90d0 128d0 128d0) (cadr-cli::egg-theme-rgb :accent)))
+         (is (equal '(31d0 35d0 40d0) (cadr-cli::egg-theme-rgb :text))))
+    (cadr-tui:reset-current-theme)))
 
 (test egg-logo-click-origin-hits-half-block-mark
   (multiple-value-bind (top bottom)
