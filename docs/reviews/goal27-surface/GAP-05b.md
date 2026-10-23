@@ -194,7 +194,7 @@
 | `shows the guidelines of tools that do not fit the inline budget through describeTool()` | `codemode-description-lists-within-budget-and-skips-deferred` | 已覆盖超预算的工具不进描述 |
 | `runs nested calls in parallel and returns only the script result` | QuickJS 合约只返回脚本输出 | 已覆盖结果是脚本输出。没有锁嵌套调用并行 |
 | `routes nested calls through extension hooks` | 无 | 范围外：扩展 `tool_call` 钩子。那是别的行的会话循环 |
-| `adds the usage of nested results to the codemode result` | `codemode-classify-usage-and-per-script-limiter-match-v140`；QuickJS 合约的 usage 第五返回值 `input` 300、`cost.total` 0.001 | 新增。锁的是模型调用的 usage，不是普通工具结果上的 usage |
+| `adds the usage of nested results to the codemode result` | `codemode-classify-usage-and-per-script-limiter-match-v140` 里 6 路 `Promise.all` 的脚本结果 `input` 1800、`cost.total` 0.006；QuickJS 合约的单次 usage 第五返回值 `input` 300、`cost.total` 0.001 | 新增。锁的是模型调用的 usage，不是普通工具结果上的 usage |
 | `keeps structured content that tool_result handlers replace along with the content` | QuickJS 合约：带 schema 的失败仍返回 `{code:full}`，无 schema 的成功只返回文本 | 已覆盖 schema 决定交回的值。没有锁扩展替换 tool_result |
 | `attaches only the images the script passes to image()` | QuickJS 合约的 `image()` | 已覆盖 |
 | `marks where each text item starts and puts console lines last in one text block` | 无 | 范围外：`==> text N/M <==` 和 `<console_output>` 的样本没有进这次的合约 |
@@ -211,7 +211,7 @@
 | `loads the values written on the current branch` | 无 | 范围外：会话分支上的 store |
 | `folds store entries from the root, ignoring malformed data` | 无 | 范围外：从根折叠 store |
 | `declares models only for the session's own codemode tool` | 无 | 范围外：覆盖 codemode 工具后的描述不再提到 models |
-| `lists models and classifies with catalog auth, ignoring script-supplied fields` | `codemode-models-discovery-images-and-schema-match-v140` 锁 `jev-latest` 的 `type`、`cost`、`compat` 和没有 `headers`；`codemode-classify-usage-and-per-script-limiter-match-v140` 锁 `scorer/judge`、`ok`、`0.001` 和每个脚本 4 个并发；QuickJS 合约锁 `test/c` 和 `cost=0.001` | 新增 |
+| `lists models and classifies with catalog auth, ignoring script-supplied fields` | `codemode-models-discovery-images-and-schema-match-v140` 锁 `jev-latest` 的 `type`、`cost`、`compat` 和没有 `headers`；`codemode-classify-usage-and-per-script-limiter-match-v140` 经 `execute-codemode` 跑 6 路 `Promise.all` 的 `models.classify`，锁最多 4 个在飞、调用行 `scorer/judge`、`ok`、`0.001`，以及脚本结果 `input` 1800、`cost.total` 0.006；QuickJS 合约锁 `test/c` 和 `cost=0.001` | 新增 |
 | `generates images with catalog auth and attaches them through image()` | QuickJS 合约的 `generateImages` 未展示图片时的 Note | 已覆盖未展示图片的提示。目录鉴权忽略脚本里的 baseUrl 没有另锁 |
 | `notes generated images that the script did not show` | 同上 | 已覆盖 |
 | `reports provider errors as results and invalid arguments as exceptions` | `codemode-models-discovery-images-and-schema-match-v140` 锁未知模型、错误类型和缺 `state` / `input` 的异常文本 | 已覆盖 |

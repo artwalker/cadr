@@ -1593,10 +1593,19 @@
 
 (defun codemode-add-script-usage (usage)
   (when (and usage *codemode-collect-usage*)
-    (setf *codemode-script-usage*
-          (if *codemode-script-usage*
-              (codemode-combine-usage *codemode-script-usage* usage)
-              usage))))
+    (let ((place *codemode-script-usage*))
+      ;; A cons is the per-script cell (usage . mutex). setf of the special
+      ;; would stay in the worker thread, so concurrent calls mutate the car.
+      (if (consp place)
+          (sb-thread:with-mutex ((cdr place))
+            (setf (car place)
+                  (if (car place)
+                      (codemode-combine-usage (car place) usage)
+                      usage)))
+          (setf *codemode-script-usage*
+                (if place
+                    (codemode-combine-usage place usage)
+                    usage))))))
 
 (defun codemode-note-model-row (record value)
   (when (and record (hash-table-p value))
@@ -2196,9 +2205,11 @@
                (format nil "Script error:~%~A~%~%The script did not start." reason)
                nil))))
         (let ((calls nil)
+              (calls-lock (sb-thread:make-mutex :name "codemode-calls"))
               (generated (list 0))
               (*codemode-model-limiter* (make-codemode-call-limiter))
-              (*codemode-script-usage* nil)
+              (*codemode-script-usage*
+                (cons nil (sb-thread:make-mutex :name "codemode-script-usage")))
               (*codemode-collect-usage* t))
           (unwind-protect
                (handler-case
@@ -2224,7 +2235,8 @@
                                      (let ((record (cadr-ai::json-object
                                                     "name" (fourth call)
                                                     "status" "running")))
-                                       (push record calls)
+                                       (sb-thread:with-mutex (calls-lock)
+                                         (push record calls))
                                        (let ((result (codemode-handle-call
                                                       context (or tools nil) call generated
                                                       record)))
@@ -2239,7 +2251,7 @@
                         started ok value writes output error-text kind
                         (nreverse calls) (car generated) api
                         (or (getf options :max-output-tokens) 10000)
-                        *codemode-script-usage*)))
+                        (car *codemode-script-usage*))))
                  (error (condition)
                    (let ((loaded *codemode-wasm-ready*))
                      (codemode-failure

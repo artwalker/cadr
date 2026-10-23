@@ -597,7 +597,8 @@
 
 (test codemode-classify-usage-and-per-script-limiter-match-v140
   ;; packages/coding-agent/test/suite/agent-session-codemode.test.ts
-  ;; "lists models and classifies": call row and summed usage.
+  ;; "lists models and classifies with catalog auth, ignoring script-supplied fields":
+  ;; Promise.all of 6 models.classify calls, at most 4 in flight, usage summed.
   (let* ((usage (cadr-ai:make-usage
                  :input 300 :output 0 :cache-read 0 :cache-write 0 :total 300
                  :cost (cadr-ai:make-cost :input 0d0 :output 0d0 :cache-read 0d0
@@ -682,7 +683,73 @@
       (loop repeat 4 do (sb-thread:signal-semaphore release))
       (dolist (thread threads)
         (when (sb-thread:thread-alive-p thread)
-          (sb-thread:join-thread thread :timeout 2))))))
+          (sb-thread:join-thread thread :timeout 2)))))
+  ;; The batch has to cross codemode-run-calls. A same-thread limiter-call
+  ;; never sees the special-binding gap.
+  (let* ((active 0)
+         (max-active 0)
+         (lock (sb-thread:make-mutex :name "codemode-classify-inflight"))
+         (one (cadr-ai:make-usage
+               :input 300 :output 0 :cache-read 0 :cache-write 0 :total 300
+               :cost (cadr-ai:make-cost :input 0d0 :output 0d0 :cache-read 0d0
+                                        :cache-write 0d0 :total 0.001d0)))
+         (cadr-cli::*codemode-model-runtime*
+           (cadr-cli::make-codemode-model-backend
+            :models (list (cadr-cli::make-codemode-resolved-model
+                           :type "classifier" :provider "scorer" :id "judge"
+                           :name "Judge" :api "test-classifier" :input '("text")))
+            :classify-function
+            (lambda (model context)
+              (declare (ignore model context))
+              (sb-thread:with-mutex (lock)
+                (incf active)
+                (setf max-active (max max-active active)))
+              (sleep 0.05)
+              (sb-thread:with-mutex (lock)
+                (decf active))
+              (cadr-ai::make-classifier-result
+               :api :test-classifier :provider :scorer :model "judge"
+               :answers (cadr-ai::json-object)
+               :stop-reason :stop
+               :usage one)))))
+    (multiple-value-bind (content details terminate structured result-usage is-error)
+        (cadr-cli::execute-codemode
+         nil "script"
+         (cadr-ai::json-object
+          "code"
+          (concatenate
+           'string
+           "const questions = { approved: { type: \"bool\", instructions: \"Approval?\","
+           " criteria: { true: \"yes\", false: \"no\" } } };"
+           "const texts = [\"good\", \"bad\", \"good\", \"bad\", \"good\", \"bad\"];"
+           "const results = await Promise.all(texts.map((text) =>"
+           " models.classify({ provider: \"scorer\", id: \"judge\", baseUrl: \"https://evil.test\" },"
+           " { state: { text }, questions })));"
+           "return { cost: results[0].usage.cost.total, n: results.length };"))
+         nil nil nil)
+      (declare (ignore terminate structured))
+      (is (not is-error)
+          "parallel classify script failed:~%~A"
+          (codemode-result-text content))
+      (is (= 4 max-active))
+      (is (and result-usage (= 1800 (cadr-ai:usage-input result-usage))))
+      (is (and result-usage
+               (< (abs (- 0.006d0
+                          (cadr-ai:cost-total (cadr-ai:usage-cost result-usage))))
+                  1d-9)))
+      (let ((rows (and (hash-table-p details) (gethash "calls" details))))
+        (is (and (vectorp rows) (= 6 (length rows))))
+        (when (vectorp rows)
+          (loop for row across rows
+                do (is (string= "models.classify" (gethash "name" row)))
+                   (is (string= "scorer/judge" (gethash "args" row)))
+                   (is (string= "ok" (gethash "status" row)))
+                   (is (< (abs (- 0.001d0
+                                  (coerce (gethash "cost" row) 'double-float)))
+                          1d-12)))))
+      (let ((text (codemode-result-text content)))
+        (is (search "\"cost\":0.001" text))
+        (is (search "\"n\":6" text))))))
 
 (defun codemode-quickjs-contract ()
   (let ((cadr-cli::*codemode-script-tools*

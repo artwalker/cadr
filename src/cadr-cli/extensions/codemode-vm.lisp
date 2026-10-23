@@ -538,17 +538,40 @@
         (handler-case (sb-thread:terminate-thread timeout-thread)
           (error () nil))))))
 
+;;; These are defined in codemode.lisp, which loads after this file.
+;;; Without the proclamation the worker let binds them lexically.
+(declaim (special *codemode-model-limiter*
+                  *codemode-script-usage*
+                  *codemode-collect-usage*
+                  *codemode-model-runtime*
+                  *codemode-tool-namespaces*
+                  *codemode-settings-manager*
+                  *codemode-script-tools*))
+
 (defun codemode-run-calls (calls on-call)
   (if (< (length calls) 2)
       (mapcar (lambda (call) (funcall on-call call)) calls)
-      (let ((results (make-array (length calls) :initial-element nil)))
-        (mapc #'sb-thread:join-thread
-              (loop for call in calls
-                    for index from 0
-                    collect (let ((call call) (index index))
-                              (sb-thread:make-thread
-                               (lambda ()
-                                 (setf (aref results index)
-                                       (funcall on-call call)))
-                               :name "codemode-call"))))
-        (coerce results 'list))))
+      ;; SBCL threads start with the global values of specials. The parent
+      ;; script's limiter, usage cell, and model runtime have to be rebound
+      ;; here or a Promise.all batch runs unbounded and drops its usage.
+      (let ((limiter *codemode-model-limiter*)
+            (usage *codemode-script-usage*)
+            (collect *codemode-collect-usage*)
+            (runtime *codemode-model-runtime*)
+            (namespaces *codemode-tool-namespaces*)
+            (settings *codemode-settings-manager*)
+            (script-tools *codemode-script-tools*))
+        (mapcar #'sb-thread:join-thread
+                (mapcar (lambda (call)
+                          (sb-thread:make-thread
+                           (lambda ()
+                             (let ((*codemode-model-limiter* limiter)
+                                   (*codemode-script-usage* usage)
+                                   (*codemode-collect-usage* collect)
+                                   (*codemode-model-runtime* runtime)
+                                   (*codemode-tool-namespaces* namespaces)
+                                   (*codemode-settings-manager* settings)
+                                   (*codemode-script-tools* script-tools))
+                               (funcall on-call call)))
+                           :name "codemode-call"))
+                        calls)))))
