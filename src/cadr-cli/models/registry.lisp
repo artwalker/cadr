@@ -318,6 +318,9 @@
                        config))
                     (api
                       (cadr-ai::json-get config "api"))
+                    (compat
+                      (parse-model-compat
+                       (cadr-ai::json-get config "compat")))
                     (custom
                       (cadr-ai::json-get
                        config "models")))
@@ -333,7 +336,8 @@
                        (copy-model-with-overrides
                         model
                         :base-url base-url
-                        :headers headers)
+                        :headers headers
+                        :compat compat)
                        model))
                  models))
                (when custom
@@ -344,7 +348,7 @@
                         provider object
                         (or base-url
                             "http://localhost")
-                        api headers)
+                        api headers compat)
                        do
                        (setf models
                              (remove

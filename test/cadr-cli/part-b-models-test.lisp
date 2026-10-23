@@ -1230,3 +1230,137 @@
                  (cadr-ai:classifier-model-base-url
                   (cadr-ai:find-classifier-model
                    :openrouter "typesafe/jev-1.14"))))))
+
+(defun goal49-completions-payload (model &key (reasoning :high))
+  (cadr-ai:request-spec-payload
+   (cadr-ai:build-request
+    (cadr-ai:make-openai-completions-provider :api-key "test")
+    model
+    (cadr-ai:make-context
+     :messages (list (cadr-ai:make-user-message :content "Hi")))
+    :stream-p t
+    :reasoning reasoning)))
+
+(test models-json-compat-reaches-thinking-budgets-and-chat-templates
+  ;; pi@4a080252f compat-schema.ts and provider-composer.ts
+  ;; applyModelsJson / mergeCompat. Provider compat lands on each
+  ;; existing chat model. A custom model keeps its own compat and
+  ;; deep-merges the template records. A named budget field wins
+  ;; over supportsThinkingTokenBudget. chat-template and baseten
+  ;; both receive the clamped thinking.budget.
+  (with-test-directory (root)
+    (let ((models-path
+            (merge-pathnames "agent/models.json" root))
+          (auth-path
+            (merge-pathnames "agent/auth.json" root)))
+      (write-json
+       models-path
+       (args
+        "providers"
+        (args
+         "ant-ling"
+         (args
+          "compat"
+          (args
+           "supportsThinkingTokenBudget" t
+           "supportsStrictMode" nil
+           "chatTemplateKwargs"
+           (args "keep" (args "$var" "thinking.enabled"))
+           "chatTemplateArgs"
+           (args "keep" (args "$var" "thinking.enabled")))
+          "models"
+          (vector
+           (args
+            "id" "custom-template"
+            "reasoning" t
+            "api" "openai-completions"
+            "maxTokens" 4096
+            "compat"
+            (args
+             "thinkingFormat" "chat-template"
+             "thinkingTokenBudgetField" "thinking_budget"
+             "supportsThinkingTokenBudget" t
+             "chatTemplateKwargs"
+             (args "thinking_budget"
+                   (args "$var" "thinking.budget"))))
+           (args
+            "id" "custom-baseten"
+            "reasoning" t
+            "api" "openai-completions"
+            "maxTokens" 4096
+            "compat"
+            (args
+             "thinkingFormat" "baseten"
+             "chatTemplateArgs"
+             (args "thinking_budget"
+                   (args "$var" "thinking.budget")))))))))
+      (write-json
+       auth-path
+       (args "ant-ling" (args "type" "api_key" "key" "faux")))
+      (let* ((registry
+               (cadr-cli:make-model-registry
+                :path models-path
+                :credentials
+                (cadr-cli:make-file-auth-storage auth-path)))
+             (ring
+               (find-if
+                (lambda (model)
+                  (and (eq (cadr-ai:model-provider model) :ant-ling)
+                       (string= (cadr-ai:model-id model)
+                                "Ring-2.6-1T")))
+                (cadr-cli:model-registry-all registry)))
+             (template
+               (find "custom-template"
+                     (cadr-cli:model-registry-all registry)
+                     :key #'cadr-ai:model-id
+                     :test #'string=))
+             (baseten
+               (find "custom-baseten"
+                     (cadr-cli:model-registry-all registry)
+                     :key #'cadr-ai:model-id
+                     :test #'string=))
+             (ring-payload
+               (goal49-completions-payload ring))
+             (template-payload
+               (goal49-completions-payload template))
+             (baseten-payload
+               (goal49-completions-payload baseten))
+             (template-kwargs
+               (cadr-ai::json-get
+                template-payload "chat_template_kwargs"))
+             (baseten-args
+               (cadr-ai::json-get
+                baseten-payload "chat_template_args")))
+        (is (null (cadr-cli:model-registry-error registry)))
+        (is (eq t
+                (cadr-ai::model-compat-value
+                 ring :supports-thinking-token-budget nil)))
+        (is (null
+             (cadr-ai::model-compat-value
+              ring :supports-strict-mode t)))
+        (is (eq :ant-ling
+                (cadr-ai::model-compat-value
+                 ring :thinking-format nil)))
+        (is (= 16384
+               (cadr-ai::json-get
+                ring-payload "thinking_token_budget")))
+        (is (string= "thinking_budget"
+                     (cadr-ai::model-compat-value
+                      template :thinking-token-budget-field nil)))
+        (is (= 3072
+               (cadr-ai::json-get
+                template-payload "thinking_budget")))
+        (is (not (cadr-ai::json-present-p
+                  template-payload "thinking_token_budget")))
+        (is (eq t (cadr-ai::json-get template-kwargs "keep")))
+        (is (= 3072
+               (cadr-ai::json-get template-kwargs "thinking_budget")))
+        (is (eq t (cadr-ai::json-get baseten-args "keep")))
+        (is (= 3072
+               (cadr-ai::json-get baseten-args "thinking_budget")))
+        ;; The named field is independent of thinkingFormat. Provider
+        ;; supportsThinkingTokenBudget therefore still writes
+        ;; thinking_token_budget, clamped to this model's 4096.
+        (is (= 3072
+               (cadr-ai::json-get
+                baseten-payload "thinking_token_budget")))))))

@@ -339,7 +339,8 @@ interactive-mode.ts:5956-5960).")
        output-pad-function
        external-editor-command-function
        external-editor-runner-function
-       clipboard-file-path-getter
+       (clipboard-file-path-getter
+        #'native-clipboard-file-paths)
        extension-host
        fork-items-function
        session-items-function

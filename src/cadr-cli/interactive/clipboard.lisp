@@ -687,12 +687,152 @@
                      (write-char character output)))
         (write-char #\' output))))
 
+(defvar *clipboard-pasteboard-file-urls-function* nil)
+
+(defparameter +darwin-pasteboard-file-url-script+
+  "function main() {
+  ObjC.import('AppKit');
+  var pasteboard = $.NSPasteboard.generalPasteboard;
+  if (!pasteboard) return '';
+  var urls = pasteboard.readObjectsForClassesOptions(
+    [$.NSURL],
+    $.NSDictionary.dictionaryWithObjectForKey(
+      true, $.NSPasteboardURLReadingFileURLsOnlyKey));
+  if (!urls) return '';
+  var lines = [];
+  for (var i = 0; i < urls.count; i++) {
+    var item = urls.objectAtIndex(i);
+    var text = item && ObjC.unwrap(item.absoluteString);
+    if (text) lines.push(String(text));
+  }
+  return lines.join('\\n');
+}
+main();")
+
+(defun clipboard-encoded-separator-p (path)
+  (let ((lower (string-downcase path)))
+    (or (search "%2f" lower)
+        (search "%5c" lower))))
+
+(defun clipboard-percent-decode (text)
+  ;; file URL paths. '+' stays plus; a bad escape or non-UTF-8
+  ;; sequence is not a path.
+  (let ((octets
+          (make-array (length text)
+                      :element-type '(unsigned-byte 8)
+                      :adjustable t
+                      :fill-pointer 0)))
+    (loop for index from 0 below (length text)
+          for character = (char text index)
+          do (cond
+               ((char= character #\%)
+                (when (> (+ index 2) (1- (length text)))
+                  (return-from clipboard-percent-decode nil))
+                (let ((high (digit-char-p
+                             (char text (1+ index)) 16))
+                      (low (digit-char-p
+                            (char text (+ index 2)) 16)))
+                  (unless (and high low)
+                    (return-from clipboard-percent-decode nil))
+                  (vector-push-extend (+ (* 16 high) low) octets)
+                  (incf index 2)))
+               (t
+                (let ((code (char-code character)))
+                  (unless (<= code 127)
+                    (return-from clipboard-percent-decode nil))
+                  (vector-push-extend code octets)))))
+    (handler-case
+        (sb-ext:octets-to-string octets :external-format :utf-8)
+      (error () nil))))
+
+(defun clipboard-file-url-path (url)
+  ;; darwin-platform.m getFilePaths returns NSURL
+  ;; fileSystemRepresentation. Node fileURLToPath is the same path
+  ;; for a local file URL: empty host or localhost, query and hash
+  ;; dropped, one percent-decode, encoded slash rejected.
+  (unless (stringp url)
+    (return-from clipboard-file-url-path nil))
+  (let* ((limit
+           (or (position-if
+                (lambda (character)
+                  (or (char= character #\?)
+                      (char= character #\#)))
+                url)
+               (length url)))
+         (bare (subseq url 0 limit))
+         (colon (position #\: bare)))
+    (unless (and colon
+                 (string-equal (subseq bare 0 colon) "file"))
+      (return-from clipboard-file-url-path nil))
+    (let ((rest (subseq bare (1+ colon)))
+          (host "")
+          (path ""))
+      (cond
+        ((and (>= (length rest) 2)
+              (string= rest "//" :end1 2))
+         (let* ((body (subseq rest 2))
+                (slash (position #\/ body)))
+           (setf host (if slash (subseq body 0 slash) body))
+           (setf path (if slash (subseq body slash) ""))))
+        ((and (plusp (length rest))
+              (char= (char rest 0) #\/))
+         (setf path rest))
+        (t
+         (return-from clipboard-file-url-path nil)))
+      (unless (or (zerop (length host))
+                  (string-equal host "localhost"))
+        (return-from clipboard-file-url-path nil))
+      (when (or (zerop (length path))
+                (char/= (char path 0) #\/)
+                (clipboard-encoded-separator-p path))
+        (return-from clipboard-file-url-path nil))
+      (clipboard-percent-decode path))))
+
+(defun clipboard-paths-from-file-urls (urls)
+  (let ((paths
+          (loop for url in (coerce (or urls nil) 'list)
+                for path = (clipboard-file-url-path url)
+                when path
+                  collect path)))
+    (and paths paths)))
+
+(defun darwin-ns-pasteboard-file-urls ()
+  ;; pi@4a080252f darwin-platform.m getFilePaths. Only darwin exports
+  ;; the native getter; other platforms leave the paste empty.
+  (unless (uiop:os-macosx-p)
+    (return-from darwin-ns-pasteboard-file-urls nil))
+  (multiple-value-bind (output error-output exit-code)
+      (uiop:run-program
+       (list "osascript" "-l" "JavaScript" "-e"
+             +darwin-pasteboard-file-url-script+)
+       :output :string
+       :error-output :string
+       :ignore-error-status t)
+    (unless (and (integerp exit-code) (zerop exit-code))
+      (error "Native clipboard file read failed~@[~%: ~A~]"
+             (let ((detail
+                     (string-trim
+                      '(#\Space #\Tab #\Newline #\Return)
+                      (or error-output ""))))
+               (and (plusp (length detail)) detail))))
+    (remove ""
+            (uiop:split-string (or output "")
+                               :separator '(#\Newline))
+            :test #'string=)))
+
+(defun native-clipboard-file-paths ()
+  (clipboard-paths-from-file-urls
+   (if *clipboard-pasteboard-file-urls-function*
+       (funcall *clipboard-pasteboard-file-urls-function*)
+       (darwin-ns-pasteboard-file-urls))))
+
 (defun read-clipboard-file-paths (&key native-getter)
-  ;; pi@4a080252f clipboard.ts readClipboardFilePaths. An empty list
-  ;; is the same as a missing getter: the paste falls through.
-  (unless native-getter
-    (return-from read-clipboard-file-paths nil))
-  (let ((paths (funcall native-getter)))
+  ;; pi@4a080252f clipboard.ts readClipboardFilePaths. No injected
+  ;; getter still reads NSPasteboard file URLs. An empty list falls
+  ;; through to the image.
+  (let ((paths
+          (funcall
+           (or native-getter #'native-clipboard-file-paths))))
     (when (and paths (plusp (length paths)))
       (coerce paths 'list))))
 

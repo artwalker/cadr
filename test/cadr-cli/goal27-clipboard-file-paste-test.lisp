@@ -116,6 +116,8 @@
          inserted))))
 
 (test read-clipboard-file-paths-drops-an-empty-native-list
+  ;; No getter still asks the pasteboard. Linux has no getFilePaths,
+  ;; so an empty board is nil and the paste falls through.
   (is (null (cadr-cli::read-clipboard-file-paths)))
   (is (null
        (cadr-cli::read-clipboard-file-paths
@@ -127,6 +129,42 @@
        '("/tmp/photo.png")
        (cadr-cli::read-clipboard-file-paths
         :native-getter (lambda () #("/tmp/photo.png"))))))
+
+(test pasteboard-file-urls-become-filesystem-paths
+  ;; Node 22 fileURLToPath, same path as NSURL fileSystemRepresentation
+  ;; for these Finder file URLs (darwin-platform.m getFilePaths).
+  (is (string= "/tmp/screenshot.png"
+               (cadr-cli::clipboard-file-url-path
+                "file:///tmp/screenshot.png")))
+  (is (string= "/tmp/My Photos/photo.png"
+               (cadr-cli::clipboard-file-url-path
+                "file:///tmp/My%20Photos/photo.png")))
+  (is (string= "/tmp/screenshot.png"
+               (cadr-cli::clipboard-file-url-path
+                "file://localhost/tmp/screenshot.png")))
+  (is (string= "/tmp/screenshot.png"
+               (cadr-cli::clipboard-file-url-path
+                "FILE:///tmp/screenshot.png?ignored=1")))
+  (is (string= "/tmp/café.png"
+               (cadr-cli::clipboard-file-url-path
+                "file:///tmp/caf%C3%A9.png")))
+  (is (string= "/tmp/dir/"
+               (cadr-cli::clipboard-file-url-path
+                "file:///tmp/dir/")))
+  (is (null (cadr-cli::clipboard-file-url-path
+             "https://example.invalid/tmp/a.png")))
+  (is (null (cadr-cli::clipboard-file-url-path
+             "file://hostname/tmp/a.png")))
+  (is (null (cadr-cli::clipboard-file-url-path
+             "file:///tmp/a%2Fb")))
+  (let ((cadr-cli::*clipboard-pasteboard-file-urls-function*
+          (lambda ()
+            '("file:///tmp/screenshot.png"
+              "https://example.invalid/icon.png"
+              "file:///tmp/My%20Photos/photo.png"))))
+    (is (equal
+         '("/tmp/screenshot.png" "/tmp/My Photos/photo.png")
+         (cadr-cli::read-clipboard-file-paths)))))
 
 (test paste-image-key-decodes-to-the-clipboard-handler
   (let ((previous (cadr-tui:get-keybindings)))
@@ -202,15 +240,15 @@
                            (t nil)))))
                    (string (code-char 3))
                    (string (code-char 3)))))
-           (cadr-cli::run-tui
-            (lambda (line)
-              (error "Unexpected submission: ~A" line))
-            :model "faux"
-            :terminal terminal
-            :clipboard-file-path-getter
-            (lambda ()
-              '("/tmp/screenshot.png"
-                "/tmp/My Photos/photo.png")))
+           (let ((cadr-cli::*clipboard-pasteboard-file-urls-function*
+                   (lambda ()
+                     '("file:///tmp/screenshot.png"
+                       "file:///tmp/My%20Photos/photo.png"))))
+             (cadr-cli::run-tui
+              (lambda (line)
+                (error "Unexpected submission: ~A" line))
+              :model "faux"
+              :terminal terminal))
            (is (search "/tmp/screenshot.png" captured))
            (is (search "/tmp/My Photos/photo.png" captured)))
       (cadr-tui:set-keybindings previous))))

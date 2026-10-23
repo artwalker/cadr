@@ -180,7 +180,9 @@
   (loop for json-key in '("minimal" "low" "medium" "high")
         for level in '(:minimal :low :medium :high)
         for tokens = (cadr-ai::json-get value json-key :missing)
-        when (and (integerp tokens) (plusp tokens))
+        ;; Type.Number() keeps 0 and negatives. A missing key stays
+        ;; :missing and falls through to the default budget.
+        when (realp tokens)
         append (list level tokens)))
 
 (defun settings-thinking-budgets (manager)
