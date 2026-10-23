@@ -240,6 +240,7 @@
                              (:file "goal24-system-prompt-sections-test")
                              (:file "goal24-prepare-prompt-loadout-test")
                              (:file "goal24-selector-save-keybindings-test")
+                             (:file "goal27-thinking-selector-test")
                              (:file "goal24-cache-miss-notices-test")
                              (:file "goal24-compaction-cost-notices-test")
                              (:file "goal24-post-login-catalog-wait-test")

@@ -395,33 +395,81 @@
                 key)
                width :padding-x 0)))))
 
+(defun thinking-selector-item-label (level current-p)
+  ;; v1.4.0 thinking-selector.ts label: "✓ <level>" or "  <level>".
+  (concatenate 'string
+               (if current-p "✓ " "  ")
+               (thinking-level-label level)))
+
+(defun thinking-selector-column-width (text)
+  ;; v1.4.0 visibleWidth uses eastAsianWidth. U+2713 is ambiguous, so
+  ;; it is one cell. visible-width counts that dingbat as an emoji.
+  (loop for character across text
+        sum (if (char= character #\✓)
+                1
+                (cadr-tui:visible-width
+                 (string character)))))
+
+(defun thinking-selector-primary-column-width (levels current)
+  ;; v1.4.0 select-list.ts getPrimaryColumnWidth, clamped to the
+  ;; thinking selector's 12..32 layout.
+  (max 12
+       (min 32
+            (loop for level in levels
+                  maximize
+                  (+ 2
+                     (thinking-selector-column-width
+                      (thinking-selector-item-label
+                       level (eq level current))))))))
+
 (defun thinking-selector-level-row
-    (level selected-p current-p default width)
-  ;; v1.4.0 SelectList label is "✓ <level>" or "  <level>", primary
-  ;; column at least 12, then the description. The current marker is
-  ;; the check in that label, not a trailing glyph.
-  (let* ((label (thinking-level-label level))
+    (level selected-p current-p default width primary-width)
+  ;; v1.4.0 select-list.ts renderItem. The description column starts
+  ;; after the primary column and keeps a 2-cell safety margin. The
+  ;; selected row is accent end to end. An unselected row leaves the
+  ;; level name in the default color and mutes the description.
+  (let* ((prefix (if selected-p "→ " "  "))
+         (prefix-width (thinking-selector-column-width prefix))
          (description
            (thinking-level-description-line level default))
-         (primary
-           (format nil "~A~A" (if current-p "✓ " "  ") label))
-         (padded
-           (if (< (length primary) 12)
-               (concatenate
-                'string primary
-                (make-string (- 12 (length primary))
-                             :initial-element #\Space))
-               primary))
-         (body
-           (concatenate 'string
-                        (if selected-p "→ " "  ")
-                        padded
-                        description)))
-    (selector-component-text-line
-     (if selected-p
-         (thinking-selector-accent body)
-         (thinking-selector-muted body))
-     width :padding-x 0)))
+         (effective
+           (max 1
+                (min primary-width
+                     (- width prefix-width 4))))
+         (maximum-primary (max 1 (- effective 2)))
+         (label
+           (cadr-tui:truncate-to-width
+            (thinking-selector-item-label level current-p)
+            maximum-primary ""))
+         (label-width (thinking-selector-column-width label))
+         (spacing
+           (make-string
+            (max 1 (- effective label-width))
+            :initial-element #\Space))
+         (remaining
+           (- width prefix-width label-width
+              (length spacing) 2)))
+    (if (and description (> width 40) (> remaining 10))
+        (let ((truncated
+                (cadr-tui:truncate-to-width
+                 description remaining "")))
+          (if selected-p
+              (thinking-selector-accent
+               (concatenate 'string prefix label spacing truncated))
+              (concatenate
+               'string prefix label
+               (thinking-selector-muted
+                (concatenate 'string spacing truncated)))))
+        (let ((plain
+                (concatenate
+                 'string prefix
+                 (cadr-tui:truncate-to-width
+                  (thinking-selector-item-label level current-p)
+                  (max 1 (- width prefix-width 2))
+                  ""))))
+          (if selected-p
+              (thinking-selector-accent plain)
+              plain)))))
 
 (defun render-thinking-selector (state width)
   (multiple-value-bind (visible start end total)
@@ -435,17 +483,21 @@
            (default (thinking-selector-state-default-level state))
            (body-lines nil))
       (if visible
-          (loop
-            for level in visible
-            for index from start
-            do (push
-                (thinking-selector-level-row
-                 level
-                 (= index selected)
-                 (eq level current)
-                 default
-                 width)
-                body-lines))
+          (let ((primary-width
+                  (thinking-selector-primary-column-width
+                   visible current)))
+            (loop
+              for level in visible
+              for index from start
+              do (push
+                  (thinking-selector-level-row
+                   level
+                   (= index selected)
+                   (eq level current)
+                   default
+                   width
+                   primary-width)
+                  body-lines)))
           (push (thinking-selector-empty-line width) body-lines))
       (when (> total (length visible))
         (push

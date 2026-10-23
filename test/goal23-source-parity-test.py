@@ -88,12 +88,12 @@ class Goal23SourceParityTest(unittest.TestCase):
         text = LEDGER.read_text(encoding="utf-8")
         self.assertIn(
             "GOAL12_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 "
-            "source=686/518/165/3",
+            "source=686/519/164/3",
             text,
         )
         self.assertIn("sorted 686-path manifest", text)
         self.assertIn(MANIFEST_SHA, text)
-        self.assertIn("| **Total** | **686** | **518** | **165** | **3** |", text)
+        self.assertIn("| **Total** | **686** | **519** | **164** | **3** |", text)
 
     def test_ledger_only_gate_passes(self) -> None:
         proc = run(
