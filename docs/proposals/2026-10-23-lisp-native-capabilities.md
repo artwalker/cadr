@@ -2,6 +2,8 @@
 
 状态：未裁决。本文只提出设计，不授权写实现。新机制按 `docs/development-policy.md` 第 3 节，要等用户逐项裁决之后才能进 `docs/open-questions.md` 并开工。
 
+2026-10-23 更正。上一版把 `get_state` 的字段写少了，把帮助文本的锁写成了不存在的排除名单，并把「换掉下一次工具调用」说成 Node 做不到。这三处下面已改。方向 4 补上了同用户子进程仍能读到父进程文件和环境。读入时拒绝 `#.` 和 `#,`，挡不住文件前半段改掉的读表，也挡不住 `in-package`。`--self-extend` 在没有 bash 时也是父进程里的代码执行。
+
 日期：2026-10-23。cadr 侧行号对着 `cadr-migration` 的 `7f6db4d72`。上游行号用 `git show v1.4.0:<路径>`，提交 `4a080252f06caf63a525d7873c5d94d3c23887e0`。Goal 27 在 `goal27-parity` 上并行，实现时不要进那条分支，也不要把本文和任何对齐补丁打在同一个提交里。
 
 这篇要回答的是对齐完成之后，哪些事只有 Lisp 做得成，而且默认跑起来仍和 pi v1.4.0 一样。判断标准用政策第 1 节：Lisp 原生要拿出可核对的好处。换一种拼写不算。政策第 6.6 节已经把「用条件系统改写 agent 自己的失败行为」排除在开发工具之外，因为它会改可观察行为。下面凡是碰到失败路径的，都按这条写，不靠「用了 Lisp」过关。
@@ -12,7 +14,7 @@
 
 发布用的二进制是一个 SBCL 镜像。`build.sh` 在空的 `HOME` 里跑 `build.lisp`，后者加载 `slynk/mrepl` 然后 `sb-ext:save-lisp-and-die` 写成 `cadr`。正在跑的进程就是这个镜像，不是每次请求拉起来的新运行时。
 
-人连进这个进程的入口已经有了，而且只此一个。`src/cadr-cli/remote-repl.lisp` 的 `start-remote-repl` 调用 `slynk:create-server`，接口固定 `"127.0.0.1"`。`docs/architecture.md` 第 28 节写明：`--slynk <port>` 是唯一开关，配置和环境变量不能悄悄打开，回环不是沙箱。`docs/parity-map.md` 把它记成默认关闭的有意差异，不进基线帮助文本。`test/cadr-cli/tui-test.lisp` 的 `cli-help-matches-the-baseline-printhelp-contract` 要求 cadr 专有旗标不出现在从基线派生的帮助里。
+人连进这个进程的入口已经有了，而且只此一个。`src/cadr-cli/remote-repl.lisp` 的 `start-remote-repl` 调用 `slynk:create-server`，接口固定 `"127.0.0.1"`。`docs/architecture.md` 第 28 节写明：`--slynk <port>` 是唯一开关，配置和环境变量不能悄悄打开，回环不是沙箱。`docs/parity-map.md` 把它记成默认关闭的有意差异，不进基线帮助文本。帮助文本的字节锁是 `test/cadr-cli/part-b-cli-test.lisp` 的 `print-cli-usage-plain-bytes-match-shipped-literal`，对照 `test/fixtures/cli-usage-plain.txt`。`cli-help-matches-the-baseline-printhelp-contract` 只查几段子串，包括没有 `--alt` 和 `--yolo`。`--slynk` 只出现在那个测试的注释里。没有一份排除名单可以往上加新旗标。
 
 工具失败上的重启也已经有了。`src/cadr-agent/loop/tool-execution.lisp` 的 `call-tool-operation-with-restarts` 在栈还在的时候建立 `retry-tool-call`、`skip-tool-call`、`abort-agent-run`。没人做选择时，它仍交出原来的错误工具结果。`:tool-call-error` 只在扩展生命周期里出现，不进 agent 事件、会话、JSON 或 RPC。`docs/architecture.md` 第 28 节把合法返回值冻成 retry、skip、abort 三个，并写明以后加事件或改重启语义要重新提案。这是 `OQ-G10-D1-TOOL-RESTARTS` 的已落地边界。
 
@@ -47,7 +49,7 @@ cadr --slynk 4005
 建议新增的只有一个给这个 REPL 用的只读快照，避免每个人临时扒槽位：
 
 ```lisp
-(cadr-agent:agent-live-snapshot (cadr-cli:active-agent))
+(cadr-cli::agent-live-snapshot (cadr-cli:active-agent))
 ```
 
 返回一个 plist：会话 id、模型、是否在流式输出、自动重试的 attempt 和上限、当前工具名、工具重启次数、扩展包名列表。没有求值，没有 `load`。
@@ -56,23 +58,23 @@ cadr --slynk 4005
 
 ### pi 里对应的做法和限制
 
-pi 没有进程内 REPL。交互模式的 TUI 不提供第二终端来看正在跑的 agent。RPC 的 `get_state` 在 `git show v1.4.0:packages/coding-agent/src/modes/rpc/rpc-types.ts` 第 96 到 109 行，字段是模型、是否在流、会话文件、消息计数。没有自动重试的 attempt，没有工具重启次数，也没有扩展实例。而且只有 `--mode rpc` 才有这条命令。正在跑的 TUI 会话对不上它。
+pi 没有进程内 REPL。交互模式的 TUI 不提供第二终端来看正在跑的 agent。RPC 的 `get_state` 在 `git show v1.4.0:packages/coding-agent/src/modes/rpc/rpc-types.ts` 第 96 到 109 行。`RpcSessionState` 有模型、thinking level、是否在流、是否在压缩、steering 和 follow-up 的模式、会话文件、会话 id、会话名、自动压缩开关、消息数和待处理消息数。没有自动重试的 attempt，没有工具重启次数，也没有扩展实例。而且只有 `--mode rpc` 才有这条命令。正在跑的 TUI 会话对不上它。
 
-Node 的 `--inspect` 可以连上进程求值。那是调试器协议，不是产品命令，也不能把一个已关闭在旧工具对象上的 `execute` 换成新函数后让下一次调用看见它。pi 自己的重载会把旧扩展上下文标成失效，见方向 2。V8 的 live edit 改的是调试器里的脚本，已经抓住旧函数对象的调用方不会跟着变。
+Node 的 `--inspect` 可以连上进程求值，也可以改对象上的属性。那是调试器协议，不是产品命令。已经抓住旧函数对象的调用方不会跟着变。pi 自己的重载会把旧扩展上下文标成失效，见方向 2。
 
 Lisp 这边函数槽是语言的一部分。`defun` 更新符号的函数，下一次通过符号的调用走进新定义。CLOS 重定义类时，已有实例走 `update-instance-for-redefined-class`。这两件事 pi 的模块系统和调试器都没有对应物。它们已经由 `--slynk` 交给人用，不需要再造一个监听来「获得」它们。
 
 ### cadr 的设计
 
-系统是 `cadr-agent`。新文件 `src/cadr-agent/live-snapshot.lisp`，在 `cadr-agent.asd` 里放在 `runtime` 之后。它只读公开访问器，不改 agent 的槽，所以不是 `runtime.lisp` 的第二个属主。
+系统是 `cadr-cli`。新文件 `src/cadr-cli/live-snapshot.lisp`，在 `cadr-cli.asd` 里放在 `remote-repl` 旁边。它只读 agent 的公开访问器，不改槽，所以不是 `runtime.lisp` 的第二个属主。函数不放进 `cadr-agent` 的导出列表。扩展的包 `:use` 了 `cadr-agent`，导出会变成扩展里的一个普通名字。
 
-对外就这一个函数：`cadr-agent:agent-live-snapshot`。参数是 agent。返回上面的 plist。不导出求值器，不导出 `load`。
+REPL 里调用的是 `cadr-cli::agent-live-snapshot`。不导出。参数是 agent。返回上面的 plist。不导出求值器，不导出 `load`。扩展仍可以写出 `cadr-cli::` 这个前缀，这和今天任何内部符号一样。函数不返回凭证，所以这条路漏出去的是会话 id、模型 id 和计数。
 
 `src/cadr-cli/remote-repl.lisp` 不动。`--slynk` 的绑定、端口检查、退出时 `stop-server` 和清掉 `*active-agent*` 保持现在的合同。
 
 ### 和对齐的关系
 
-默认进程不传 `--slynk`，不监听，帮助文本不变，`cli-help-matches-the-baseline-printhelp-contract` 继续成立。`agent-live-snapshot` 没有命令行入口，没有事件，没有会话字节。没人从 REPL 调用它时，回合路径碰不到它。
+默认进程不传 `--slynk`，不监听。`print-cli-usage` 的输出字节与 `test/fixtures/cli-usage-plain.txt` 一致。`agent-live-snapshot` 没有命令行入口，没有事件，没有会话字节。没人从 REPL 调用它时，回合路径碰不到它。
 
 不把快照接进 RPC 的 `get_state`。那会改变基线的状态字段。
 
@@ -86,7 +88,7 @@ Slynk 能在进程里求值任意 Lisp。`docs/architecture.md` 已经写明它�
 
 ### 怎么测试
 
-已有的 `test/cadr-cli/remote-repl-test.lisp` 继续锁 `--slynk` 的端口合同和回环。新的 FiveAM 在 `test/cadr-agent/` 里对一个构造出来的 agent 调用 `agent-live-snapshot`，锁字段集合和「不包含授权头、不包含系统提示」这两条。再锁一条：不传 `--slynk` 时 `start-remote-repl` 不被调用。这是现有启动路径，新测试不要放宽它。
+已有的 `test/cadr-cli/remote-repl-test.lisp` 继续锁 `--slynk` 的端口合同和回环。新的 FiveAM 在 `test/cadr-cli/` 里对一个构造出来的 agent 调用 `cadr-cli::agent-live-snapshot`，锁字段集合和「不包含授权头、不包含系统提示」这两条。符号不在 `cadr-agent` 的导出列表里。再锁一条：不传 `--slynk` 时 `start-remote-repl` 不被调用。这是现有启动路径，新测试不要放宽它。
 
 FiveAM 锁不住「人在 SLY 里重定义了函数」。那是现场诊断，政策第 6.1 节要求事后用 FiveAM 把触发条件钉住，而不是把 REPL 抄本当成门禁。
 
@@ -114,7 +116,9 @@ pi 可以重载扩展而不丢掉会话文件。`git show v1.4.0:packages/coding
 
 `invalidate` 的默认消息在 `git show v1.4.0:packages/coding-agent/src/core/extensions/runner.ts` 第 729 到 730 行。旧的 `ctx` 在 `reload` 之后再被用，会抛「stale after session replacement or reload」。捕获了旧工具对象的调用方不会看见新函数。加载器用 jiti，`git show v1.4.0:packages/coding-agent/src/core/extensions/loader.ts` 第 579 到 584 行把 `moduleCache` 设为 false 再 `import`。这会读到新文件，但新工厂要等 runner 重建之后才接上。
 
-所以「重载而不丢会话文件」pi 已经做到了。Lisp 多出来的是：不发 `session_shutdown`，不把旧 ctx 标死，只换函数槽。Node 做不到这件事，因为工具上的 `execute` 是已经分配好的函数对象，模块重导入不会改它。
+所以「重载而不丢会话文件」pi 已经做到了。pi 选择在重载时拆掉 runner。换掉下一次调用并不需要拆 runner。`executePreparedToolCall` 每次都读 `prepared.tool.execute`，`git show v1.4.0:packages/agent/src/agent-loop.ts` 第 842 行。把这个属性换成新函数，下一次调用就走新函数，不必发 `session_shutdown`。jiti 把 `moduleCache` 设成 false 不会改已经放在工具对象上的函数。cadr 把处理函数存成函数对象时，是同一件事。符号的函数槽是 Lisp 里现成的间接层。一个可变的格子，TypeScript 写一个属性就有。
+
+方向 2 还值得做的是这个产品行为，不是一门语言独占的能力。`/redef` 在不发 `session_shutdown`、不把旧 ctx 标失效的前提下装进新定义。pi 今天不这么做。Lisp 仍然多一件事。通过符号或 CLOS 方法调用的代码，`load` 之后全部看见新定义，不用把每个已经存下来的函数对象找出来改掉。扩展处理函数若继续存成函数对象，就要改那一格，Lisp 和 TypeScript 一样。所以 `/redef` 成功之后把那一格换成符号，下一次 `load` 才能碰到所有经由这个符号的调用，而不只是工具表里的那一个槽。
 
 ### cadr 的设计
 
@@ -147,7 +151,7 @@ pi 可以重载扩展而不丢掉会话文件。`git show v1.4.0:packages/coding
 
 `/reload` 的实现函数不变，事件顺序不变。新测试要锁：不论 `--redef` 开没开，`/reload` 仍然发出 `session_shutdown` 和 `session_start`，原因都是 `reload`。
 
-`--redef` 按 `--slynk` 的先例处理。不进基线帮助文本，写进 README 的 cadr 专有旗标说明。`docs/parity-map.md` 在实现那个提交里追加一条，和 `--slynk` 一样记成默认关闭。不新造一个有意差异类别。帮助文本测试的排除名单在同一个提交里加上这个旗标，排除的理由写明它不在 `printHelp` 的基线合同里。
+`--redef` 按 `--slynk` 的先例处理。不写进 `print-cli-usage`，所以 `test/fixtures/cli-usage-plain.txt` 的字节不变。旗标写进 README。`docs/parity-map.md` 在实现那个提交里追加一条，和 `--slynk` 一样记成默认关闭。不新造一个有意差异类别。没有排除名单。新旗标一旦出现在 `print-cli-usage` 的输出里，`print-cli-usage-plain-bytes-match-shipped-literal` 就会红。
 
 没有这个旗标时，斜杠命令表就是 `docs/parity-map.md` 里从 `/settings` 到 `/quit` 的那一份，其中包含 `/reload`，不包含 `/redef`。
 
@@ -306,9 +310,9 @@ pi 没有这种工具。扩展是在 agent 进程里由 jiti 导入的，`loader
 
 `OQ-G20-AGENT-EVAL-TOOL` 拒绝的是模型在活镜像里求值。那个否决还在。这里的差别是：模型只写文件，编译和测试在子进程，父进程只在成功之后 `load` fasl。活镜像里没有一段模型写的字符串被 `read` 然后 `eval`。
 
-TypeScript 也能「先跑测试再动态导入」。Lisp 多出来的是子进程和父进程是同一个 SBCL，`compile-file` 失败就没有 fasl，父进程无物可载。加载单位是包：失败时 `delete-package` 已经在 `load-extension-source` 里，成功之后的回滚是不替换上一份 bundle。`reload-cli-extensions` 已经按路径保留上一份成功结果。方向 4 复用这个行为，不另写一套回滚。
+TypeScript 也能先起一个子进程，失败就不把产物交给宿主。拒绝写出文件不是 Lisp 才有的。Lisp 多出来的是这份 fasl 就是父进程这个 SBCL 的编译结果。`load` 要么接上，要么子进程在 `compile-file` 时已经失败。Node 的语法检查和 jiti 的导入不是同一份产物。加载单位是包。失败时 `delete-package` 已经在 `load-extension-source` 里，成功之后的回滚是不替换上一份 bundle。`reload-cli-extensions` 已经按路径保留上一份成功结果。方向 4 复用这个行为，不另写一套回滚。
 
-这不是沙箱。模型今天就有 `bash`，`src/cadr-cli/tools/bash.lisp` 能跑用户能跑的命令。`self-extend` 若被说成安全边界，就是错的。它只保证一份编译失败或测试失败的扩展不会装进这次会话。
+这不是沙箱。模型今天就有 `bash`，`src/cadr-cli/tools/bash.lisp` 能跑用户能跑的命令。`--self-extend` 在工具表里没有 bash 时也是父进程里的代码执行。关掉 bash 不会让它变安全。`self-extend` 若被说成安全边界，就是错的。它只保证一份编译失败或测试失败的扩展不会装进这次会话。模型自己写的 FiveAM 可以是一条永远通过的断言。门禁证明的是声明的测试跑过了，而且编译成功了。它不证明扩展做了该做的事。
 
 ### cadr 的设计
 
@@ -323,16 +327,16 @@ TypeScript 也能「先跑测试再动态导入」。Lisp 多出来的是子进�
 
 子进程合同：
 
-- 新的 SBCL，不是父进程里的 `compile-file`。父进程里编译仍然会执行顶层形式。
-- `HOME` 指向空的临时目录。环境只保留 `PATH` 和区域设置。不继承父进程的 `CADR_*`，不继承 `OPENAI_API_KEY` 一类的变量。
-- 工作目录是临时目录，里面只有待编译的源和测试。扩展源里的 `asdf:load-system` 若指向 cadr 仓库以外的系统，直接失败。允许的系统只有子进程为了加载 `cadr-agent` 而需要的那一组，名单写在 `compile-gate.lisp` 里，测试锁这份名单。
-- 读时拒绝 `#.`。读到包的内部双冒号，且包不是这次扩展自己的包，就失败。这挡的是随手写的 `cadr-cli::` 内部符号，挡不住 `(funcall (find-symbol ...))`。文档和测试都要写明后者。真要挡住求值，就得把 CL 从 `:use` 里拿掉，扩展就写不成了。不走那条路。
-- 测试用 FiveAM，入口是子进程里一个固定的函数名，由测试文件提供。没有测试文件就拒绝加载，不接受「只编译不测试」。
+- 可执行文件用父进程的 `sb-ext:*runtime-pathname*`，不用 `PATH` 里先找到的 `sbcl`。父进程里的 `compile-file` 仍然会执行顶层形式，所以编译发生在子进程。
+- `HOME` 指向空的临时目录。环境只保留区域设置。不继承 `PATH`，不继承父进程的 `CADR_*`，不继承 `OPENAI_API_KEY` 一类的变量。子进程不加载 Quicklisp。
+- 工作目录是模式 `0700` 的临时目录，里面只有待编译的源和测试。扩展源里的 `asdf:load-system` 若指向允许名单以外的系统，直接失败。允许的系统只有子进程为了加载 `cadr-agent` 而需要的那一组，名单写在 `compile-gate.lisp` 里，测试锁这份名单。`ql:quickload` 在没有 Quicklisp 的子进程里不可用。`in-package` 进已经存在的包挡不住，和 `find-symbol` 是同一类洞。
+- 读时拒绝 `#.` 和 `#,`，并且绑住 `*read-eval*` 为 nil。读到包的内部双冒号，且包不是这次扩展自己的包，就失败。这挡的是随手写的 `cadr-cli::`。挡不住 `(funcall (find-symbol ...))`，也挡不住文件前半段把读表改掉。真要挡住求值，就得把 CL 从 `:use` 里拿掉，扩展就写不成了。不走那条路。读入过滤是减速带，不是沙箱。
+- 测试用 FiveAM，入口是子进程里一个固定的函数名，由测试文件提供。没有测试文件就拒绝加载，不接受「只编译不测试」。子进程墙钟超过 30 秒就杀掉，父进程不 `load`。30 秒是初值，改它要单独写进实现说明。
 - 子进程退出码非零，父进程不 `load`。标准输出和错误输出作为工具结果还给模型，先过现有的崩溃日志脱敏。凭证形状的字符串打成已有的红acted 标记。
 
 父进程装载复用 `load-extension-source` 的包和 `reload-cli-extensions` 的上一份成功结果。不写第二套包生命周期。
 
-`--self-extend` 的解析与 `--recover` 一样放在新的旗标文件里，或者并进 `recovery-flag.lisp` 若那时已经存在。两个旗标互不隐含。帮助文本里都没有它们。
+`--self-extend` 的解析与 `--recover` 一样放在新的旗标文件里，或者并进 `recovery-flag.lisp` 若那时已经存在。两个旗标互不隐含。它们都不出现在 `print-cli-usage` 里，`test/fixtures/cli-usage-plain.txt` 的字节不变。
 
 ### 和对齐的关系
 
@@ -344,11 +348,11 @@ TypeScript 也能「先跑测试再动态导入」。Lisp 多出来的是子进�
 
 ### 安全风险和对策
 
-最大的风险是把这件事理解成沙箱。对策写进工具的描述文本：它不限制模型，`bash` 仍然能做同样的事。描述文本只在旗标打开时进入提示，避免默认提示变长。
+最大的风险是把这件事理解成沙箱。对策写进工具的描述文本：它不限制模型。描述文本还要写明，工具表里没有 bash 时，这条工具仍然会在父进程里执行通过了门禁的代码。描述文本只在旗标打开时进入提示，避免默认提示变长。
 
-第二是子进程继承凭证。对策是白名单环境，空 `HOME`，临时目录里没有 `auth.json`。测试在父环境放一个金丝雀变量，断言子进程的环境转储里没有它。不要在测试里放真的密钥。
+第二是子进程继承凭证。白名单环境和空 `HOME` 挡的是继承进来的环境变量。挡不住同一个用户打开真实路径上的 `auth.json`，也挡不住读 `/proc/<父进程>/environ`。这道门不是凭证边界。同一个用户本来就可以用 bash 或调试器读这些。测试在父环境放一个金丝雀变量，断言子进程拿到的环境里没有它。不要在测试里放真的密钥。测试不声称子进程读不到父进程的文件。
 
-第三是 fasl 被掉包。fasl 路径必须在这次调用创建的临时目录里，`load` 之前核对 inode 仍在该目录下。用完删除临时目录。
+第三是 fasl 被掉包。子进程把 fasl 写进这次调用创建的 `0700` 目录，父进程在同一次工具调用里、把控制权交回模型之前 `load`。先核对路径再 `load` 另一个路径，中间可以被换掉。同一个用户的其他进程仍然可以在核对和 `load` 之间换文件。这个洞和 bash 的权限一样，不在这里声称关掉。用完删除临时目录。
 
 第四是模型通过扩展在父进程里拿到和 `bash` 相同的能力。这是真的，而且可以接受，因为旗标是用户显式打开的，和用户自己写一个扩展再 `/reload` 是同一权限。不允许的是模型连上 Slynk 或在父进程 `eval` 字符串。实现时不要给 `self-extend` 加一个「也在父进程求值」的参数。`OQ-G20-AGENT-EVAL-TOOL` 的重启条件仍然不满足，那条保持原判。
 
@@ -358,13 +362,14 @@ TypeScript 也能「先跑测试再动态导入」。Lisp 多出来的是子进�
 
 - 父环境设置金丝雀变量。子进程打印环境。工具结果和子进程输出都不含金丝雀。临时 `HOME` 里没有父进程的 `auth.json`。
 - 源文件含 `cadr-cli::` 内部符号。子进程失败，父进程的包列表和工具名单不变。
-- 源文件含 `#.`。子进程在读入时失败，父进程不 `load`。
+- 源文件含 `#.` 或 `#,`。子进程在读入时失败，父进程不 `load`。
+- 子进程睡眠超过 30 秒。父进程不 `load`，工具名单不变。
 - 测试 FiveAM 失败。父进程工具名单不变。上一次成功装入的工具仍返回旧值。
 - 编译和测试都通过。新工具可以被调用。会话路径不变。
 - 旗标关闭时，默认工具名列表与现有夹具一致，其中没有 `self-extend`。
 - 子进程允许加载的系统名单与测试里的字面列表一致。名单变了测试就红。
 
-FiveAM 锁不住「模型会不会写出恶意扩展」。那是产品边界，不是断言能证明的事。断言能证明的是失败不会装进父进程，以及子进程拿不到父进程的环境。
+FiveAM 锁不住「模型会不会写出恶意扩展」，也锁不住同一个用户去读 `auth.json` 或 `/proc/<父进程>/environ`。断言能证明的是失败不会装进父进程，继承的环境里没有金丝雀，以及墙钟超时不会 `load`。
 
 ### 工作量
 
@@ -389,7 +394,7 @@ FiveAM 锁不住「模型会不会写出恶意扩展」。那是产品边界，�
 
 ## 要拍板的问题
 
-1. 活镜像是否允许再监听一个端口，包括只绑回环的 TCP，或一个 Unix socket。建议否。`--slynk` 继续是唯一监听，继续只绑 `127.0.0.1`，继续没有 `CADR_*` 后门。不加端口的前提下，是否要 `agent-live-snapshot` 这一个函数。建议要。
+1. 活镜像是否允许再监听一个端口，包括只绑回环的 TCP，或一个 Unix socket。建议否。`--slynk` 继续是唯一监听，继续只绑 `127.0.0.1`，继续没有 `CADR_*` 后门。不加端口的前提下，是否要 `cadr-cli::agent-live-snapshot` 这一个不导出的函数。建议要。它不进 `cadr-agent` 的导出列表。
 
 2. `--recover` 是否只允许交互 TUI。建议是。和 `--print` 或 `--mode rpc` 同时出现就启动失败。不在 RPC 线上增加恢复事件。
 
