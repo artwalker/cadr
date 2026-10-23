@@ -295,9 +295,9 @@
       "user: hello" "assistant: answer" "(2/2)"))
     ("scoped-models"
      "components/scoped-models-selector.ts:91-180,202-252"
-     ("Model Configuration" "Session-only. ctrl+s to save to settings."
+     ("Model Configuration" "Session-only. Ctrl+S to save to settings."
       ">" "→ ✓ one [faux]" "    two [other]" "Model Name: One Model"
-      "enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider"))
+      "Enter toggle · Ctrl+A all · Ctrl+X clear · Ctrl+P provider"))
     ("trust"
      "components/trust-selector.ts:32-115"
      ("Project trust" "/tmp/project" "Saved decision: none"
@@ -404,7 +404,7 @@
             ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
             ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
             ("tree" . "B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117")
-            ("scoped-models" . "F5D45117A832230605FB46BBB017179D967A6BD23CEF1D4D80C22929B71A2ACA")
+            ("scoped-models" . "F830824ABF0324FF9838CAB746C3ED6F8A3BA51470EE0CE2F1A465072DDFA6E8")
             ("trust" . "583EB92A3BE3FA6C778141866D54FF7299822442F68A2B519565C428FB4D0842")
             ("login-method" . "305B0BB2D1C67D71D7851B1EF450E992212C08F8A680CC6DF00AA23CE3B033C0")
             ("login-provider" . "5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20")
@@ -494,7 +494,7 @@
       (list border ""
             (goal9-b3-overlay-text-line "Model Configuration" width)
             (goal9-b3-overlay-text-line
-             "Session-only. ctrl+s to save to settings." width) ""
+             "Session-only. Ctrl+S to save to settings." width) ""
             (goal9-b3-overlay-input-line "" width) ""
             (goal9-b3-overlay-text-line "→ ✓ one [faux]" width)
             (goal9-b3-overlay-text-line
@@ -502,13 +502,56 @@
             (goal9-b3-overlay-text-line "    two [other]" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
             (goal9-b3-overlay-text-line
-             "  enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider · alt+up/alt+down  "
+             "  Enter toggle · Ctrl+A all · Ctrl+X clear · Ctrl+P provider · Alt+Up/Alt+Down  "
              width)
             (goal9-b3-overlay-text-line
-             "reorder · ctrl+s save · 1/2 enabled · 1 unavailable" width)
+             "reorder · Ctrl+S save · 1/2 enabled · 1 unavailable" width)
             border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-scoped-models-selector state width))))))
+
+(test goal27-scoped-models-hotkey-hints-match-key-display-text
+  ;; v1.4.0 keybinding-hints.ts keyDisplayText and
+  ;; scoped-models-selector.ts session line plus getFooterText.
+  (let* ((one (goal9-b3-overlay-model :faux "one" "One Model"))
+         (two (goal9-b3-overlay-model :other "two" "Two Model"))
+         (default
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models (list one two)
+            :enabled-ids '("faux/one")))
+         (custom
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models (list one two)
+            :enabled-ids '("faux/one")
+            :keybindings
+            (cadr-cli::make-models-selector-keybindings
+             '(("app.models.save" . ("ctrl+shift+s" "alt+s"))
+               ("app.models.reorderUp" . ("alt+up" "shift+up"))))))
+         (default-text
+           (format nil "~{~A~^~%~}"
+                   (goal9-b3-overlay-plain-lines
+                    (cadr-cli::render-scoped-models-selector
+                     default 80))))
+         (custom-text
+           (format nil "~{~A~^~%~}"
+                   (goal9-b3-overlay-plain-lines
+                    (cadr-cli::render-scoped-models-selector
+                     custom 120)))))
+    (is (search "Session-only. Ctrl+S to save to settings."
+                default-text))
+    (is (search
+         "Enter toggle · Ctrl+A all · Ctrl+X clear · Ctrl+P provider · Alt+Up/Alt+Down"
+         default-text))
+    (is (search "reorder · Ctrl+S save" default-text))
+    (is (null (search "ctrl+s" default-text)))
+    (is (null (search "enter toggle" default-text)))
+    (is (search "Session-only. Ctrl+Shift+S/Alt+S to save to settings."
+                custom-text))
+    (is (search
+         "Alt+Up/Shift+Up/Alt+Down reorder · Ctrl+Shift+S/Alt+S"
+         custom-text))
+    (is (null (search "ctrl+shift+s" custom-text)))
+    (is (null (search "alt+s" custom-text)))))
 
 (test goal9-b3-resume-overlay-includes-query-prompt-and-every-line
   (let* ((now (cadr-ai::unix-milliseconds))

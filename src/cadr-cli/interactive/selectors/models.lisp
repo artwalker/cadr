@@ -1359,13 +1359,15 @@ shows the terminal message with the given style."
 
 (defun scoped-models-binding-label
     (state name)
-  (or
-   (first
-    (cadr-tui:keybinding-keys
-     (scoped-models-selector-state-keybindings
-      state)
-     name))
-   name))
+  ;; v1.4.0 keyDisplayText: every configured chord, each part capitalized.
+  (let ((label
+          (selector-keybinding-display-text
+           (scoped-models-selector-state-keybindings
+            state)
+           name)))
+    (if (plusp (length label))
+        label
+        name)))
 
 ;; Width-keyed chrome and interned row fragments so scoped-models paint
 ;; reuses title, session line, empty miss, pointer/check, and footer wrap.
