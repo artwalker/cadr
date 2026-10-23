@@ -149,7 +149,7 @@
    },
    {
      "path": "src/cadr-tui/terminal.lisp",
-     "reason": "Single real-terminal owner whose raw-mode lifecycle, keyboard protocol, Apple normalization, terminal queries, and progress reporting share process-terminal state."
+     "reason": "Single real-terminal owner whose raw-mode lifecycle, keyboard protocol, Apple normalization, terminal queries, progress reporting, and CADR_TUI_WRITE_LOG write log share process-terminal state."
    }
  ]
 }

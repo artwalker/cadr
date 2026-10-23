@@ -425,6 +425,10 @@
     :initarg :dimensions-refresh-function
     :initform #'refresh-terminal-dimensions
     :reader process-terminal-dimensions-refresh-function)
+   (write-log-path
+    :initform ""
+    :initarg :write-log-path
+    :accessor process-terminal-write-log-path)
    (resize-p
     :initform nil
     :accessor process-terminal-resize-p)))
@@ -451,7 +455,7 @@
        (process-terminal-program-status-supported-p
         terminal)
        (process-terminal-program-status terminal))
-    (terminal-write
+    (write-process-terminal-output
      terminal
      (format-program-status
       (process-terminal-program-status terminal)))))
@@ -469,7 +473,11 @@
        (windows-vt-input-function
          #'enable-windows-virtual-terminal-input)
        (dimensions-refresh-function
-         #'refresh-terminal-dimensions))
+         #'refresh-terminal-dimensions)
+       (write-log-environment nil write-log-environment-p)
+       (write-log-clock #'get-universal-time)
+       (write-log-pid nil write-log-pid-p)
+       (write-log-directory-p #'tui-write-log-directory-p))
   (multiple-value-bind (columns rows)
       (terminal-dimensions nil nil)
     (make-instance
@@ -481,6 +489,15 @@
      :native-modifier-function native-modifier-function
      :windows-vt-input-function windows-vt-input-function
      :dimensions-refresh-function dimensions-refresh-function
+     :write-log-path
+     (apply #'resolve-tui-write-log-path
+            :clock write-log-clock
+            :directory-p write-log-directory-p
+            (append
+             (when write-log-environment-p
+               (list :environment write-log-environment))
+             (when write-log-pid-p
+               (list :pid write-log-pid))))
      :columns columns
      :rows rows)))
 
@@ -775,7 +792,7 @@
                    terminal)
                   +program-status-query+
                   "")))
-        (terminal-write
+        (write-process-terminal-output
          terminal
          (format nil
                  "~C[?2004h~C[?25l~A~A~A~A~A"
@@ -815,11 +832,11 @@
                 (process-terminal-program-status-supported-p
                  terminal)
                 (process-terminal-program-status terminal))
-             (terminal-write
+             (write-process-terminal-output
               terminal
               (format-program-status
                (make-program-status :state :clear))))
-           (terminal-write
+           (write-process-terminal-output
             terminal
             (format nil
                     "~A~C[0m~C[?25h~C[?2004l~C[<u~A"
@@ -862,11 +879,274 @@
       (set-kitty-protocol-active nil)))
   terminal)
 
-(defmethod terminal-write ((terminal process-terminal) text)
+(defun tui-write-log-normalize-parts (parts allow-above-root)
+  (let ((stack nil))
+    (dolist (part parts)
+      (cond
+        ((or (zerop (length part)) (string= part "."))
+         nil)
+        ((string= part "..")
+         (cond
+           ((and stack (string/= (first stack) ".."))
+            (pop stack))
+           (allow-above-root
+            (push ".." stack))))
+        (t (push part stack))))
+    (nreverse stack)))
+
+(defun tui-write-log-split (text separator-p)
+  (let ((parts nil)
+        (start 0)
+        (length (length text)))
+    (loop for index from 0 to length
+          do (when (or (= index length)
+                       (funcall separator-p (char text index)))
+               (push (subseq text start index) parts)
+               (setf start (1+ index))))
+    (nreverse parts)))
+
+(defun tui-write-log-posix-join (directory filename)
+  ;; path.posix.join. An empty directory yields the filename.
+  (let* ((combined
+           (if (zerop (length directory))
+               filename
+               (concatenate 'string directory "/" filename)))
+         (absolute
+           (and (plusp (length combined))
+                (char= (char combined 0) #\/)))
+         (parts
+           (tui-write-log-normalize-parts
+            (tui-write-log-split
+             combined
+             (lambda (char) (char= char #\/)))
+            (not absolute))))
+    (cond
+      (absolute
+       (if parts
+           (format nil "/~{~A~^/~}" parts)
+           "/"))
+      (parts (format nil "~{~A~^/~}" parts))
+      (t "."))))
+
+(defun tui-write-log-win32-separator-p (char)
+  (or (char= char #\\) (char= char #\/)))
+
+(defun tui-write-log-win32-join-string (parts)
+  (if parts
+      (format nil "~{~A~^\\~}" parts)
+      ""))
+
+(defun tui-write-log-win32-normalize (path)
+  ;; path.win32.normalize for the joined write-log path. Device, UNC,
+  ;; and \\?\ prefixes stay; "." and ".." are collapsed in the tail.
+  (let ((length (length path))
+        (root-end 0)
+        (device nil)
+        (absolute-p nil))
+    (when (zerop length)
+      (return-from tui-write-log-win32-normalize "."))
+    (cond
+      ((tui-write-log-win32-separator-p (char path 0))
+       (setf absolute-p t)
+       (if (and (> length 1)
+                (tui-write-log-win32-separator-p (char path 1)))
+           (let ((index 2)
+                 (last 2))
+             (loop while (and (< index length)
+                              (not (tui-write-log-win32-separator-p
+                                    (char path index))))
+                   do (incf index))
+             (when (and (< index length) (/= index last))
+               (let ((first-part (subseq path last index)))
+                 (setf last index)
+                 (loop while (and (< index length)
+                                  (tui-write-log-win32-separator-p
+                                   (char path index)))
+                       do (incf index))
+                 (when (and (< index length) (/= index last))
+                   (setf last index)
+                   (loop while (and (< index length)
+                                    (not
+                                     (tui-write-log-win32-separator-p
+                                      (char path index))))
+                         do (incf index))
+                   (when (/= index last)
+                     (cond
+                       ((or (string= first-part ".")
+                            (string= first-part "?"))
+                        (setf device
+                              (concatenate 'string "\\\\" first-part)
+                              root-end 4))
+                       ((= index length)
+                        (return-from tui-write-log-win32-normalize
+                          (format nil "\\\\~A\\~A\\"
+                                  first-part
+                                  (subseq path last))))
+                       (t
+                        (setf device
+                              (format nil "\\\\~A\\~A"
+                                      first-part
+                                      (subseq path last index))
+                              root-end index))))))))
+           (setf root-end 1)))
+      (t
+       (let ((colon (position #\: path)))
+         (when (and colon
+                    (= colon 1)
+                    (alpha-char-p (char path 0)))
+           (setf device (subseq path 0 2)
+                 root-end 2)
+           (when (and (> length 2)
+                      (tui-write-log-win32-separator-p
+                       (char path 2)))
+             (setf absolute-p t
+                   root-end 3))))))
+    (let* ((tail-source
+             (if (< root-end length)
+                 (subseq path root-end)
+                 ""))
+           (tail-parts
+             (tui-write-log-normalize-parts
+              (tui-write-log-split
+               tail-source
+               #'tui-write-log-win32-separator-p)
+              (not absolute-p)))
+           (tail (tui-write-log-win32-join-string tail-parts)))
+      (cond
+        (device
+         (if absolute-p
+             (if (plusp (length tail))
+                 (concatenate 'string device "\\" tail)
+                 (concatenate 'string device "\\"))
+             (concatenate 'string device tail)))
+        (absolute-p
+         (if (plusp (length tail))
+             (concatenate 'string "\\" tail)
+             "\\"))
+        ((plusp (length tail)) tail)
+        (t ".")))))
+
+(defun tui-write-log-win32-join (directory filename)
+  ;; path.win32.join. A UNC first argument keeps its leading slashes;
+  ;; every other run of two or more is collapsed to one before normalize.
+  (let ((joined
+          (if (zerop (length directory))
+              filename
+              (concatenate 'string directory "\\" filename)))
+        (needs-replace t)
+        (slash-count 0))
+    (when (plusp (length directory))
+      (when (tui-write-log-win32-separator-p (char directory 0))
+        (incf slash-count)
+        (when (and (> (length directory) 1)
+                   (tui-write-log-win32-separator-p
+                    (char directory 1)))
+          (incf slash-count)
+          (when (> (length directory) 2)
+            (if (tui-write-log-win32-separator-p
+                 (char directory 2))
+                (incf slash-count)
+                (setf needs-replace nil))))))
+    (when needs-replace
+      (loop while (and (< slash-count (length joined))
+                       (tui-write-log-win32-separator-p
+                        (char joined slash-count)))
+            do (incf slash-count))
+      (when (>= slash-count 2)
+        (setf joined
+              (concatenate 'string
+                           "\\"
+                           (subseq joined slash-count)))))
+    (tui-write-log-win32-normalize joined)))
+
+(defun tui-write-log-join (directory filename)
+  #+win32
+  (tui-write-log-win32-join directory filename)
+  #-win32
+  (tui-write-log-posix-join directory filename))
+
+(defun tui-write-log-directory-p (path)
+  ;; fs.statSync(path).isDirectory(). stat follows symlinks and ".."
+  ;; when every component exists. ENOENT, EACCES, and every other
+  ;; failure mean "not a directory", so the original string is the file.
+  (handler-case
+      (and (stringp path)
+           (plusp (length path))
+           (sb-posix:s-isdir
+            (sb-posix:stat-mode (sb-posix:stat path))))
+    (condition () nil)))
+
+(defun tui-write-log-timestamp (universal-time)
+  ;; Date#getFullYear/getMonth/getDate/getHours/getMinutes/getSeconds,
+  ;; local time, month and clock fields padded to two digits.
+  (multiple-value-bind (second minute hour day month year)
+      (decode-universal-time universal-time)
+    (format nil "~D-~2,'0D-~2,'0D_~2,'0D-~2,'0D-~2,'0D"
+            year month day hour minute second)))
+
+(defun resolve-tui-write-log-path
+    (&key
+       (environment nil environment-p)
+       (clock #'get-universal-time)
+       (pid nil pid-p)
+       (directory-p #'tui-write-log-directory-p))
+  ;; pi@4a080252f packages/tui/src/terminal.ts ProcessTerminal
+  ;; writeLogPath. CADR_TUI_WRITE_LOG only; PI_TUI_WRITE_LOG is not read.
+  ;; Empty or unset yields "". An existing directory becomes
+  ;; tui-<local timestamp>-<pid>.log inside it. Anything else, including
+  ;; a missing path, is the file path. The path is fixed at construction.
+  (let ((value
+          (if environment-p
+              (cdr (assoc "CADR_TUI_WRITE_LOG"
+                          environment
+                          :test #'string=))
+              (uiop:getenv "CADR_TUI_WRITE_LOG"))))
+    (if (not (and (stringp value) (plusp (length value))))
+        ""
+        (let ((directory
+                (handler-case
+                    (funcall directory-p value)
+                  (condition () nil))))
+          (if directory
+              (tui-write-log-join
+               value
+               (format nil "tui-~A-~D.log"
+                       (tui-write-log-timestamp
+                        (funcall clock))
+                       (if pid-p
+                           pid
+                           #+sbcl (sb-posix:getpid)
+                           #-sbcl 0)))
+              value)))))
+
+(defun append-tui-write-log (path text)
+  (when (and (stringp path)
+             (plusp (length path))
+             (stringp text))
+    (handler-case
+        (with-open-file
+            (stream path
+                    :direction :output
+                    :if-exists :append
+                    :if-does-not-exist :create
+                    :external-format :utf-8)
+          (write-string text stream))
+      (condition () nil))))
+
+(defun write-process-terminal-output (terminal text)
   (write-string text
                 (process-terminal-output terminal))
   (finish-output
    (process-terminal-output terminal))
+  text)
+
+(defmethod terminal-write ((terminal process-terminal) text)
+  ;; stdout first. appendFileSync failures are ignored and do not
+  ;; replace a failed stdout write.
+  (write-process-terminal-output terminal text)
+  (append-tui-write-log
+   (process-terminal-write-log-path terminal)
+   text)
   text)
 
 (defun process-terminal-normalize-input
@@ -908,7 +1188,7 @@
        (process-terminal-keyboard-negotiator terminal)
        sequence)
     (dolist (write writes)
-      (terminal-write terminal write))
+      (write-process-terminal-output terminal write))
     (dolist (candidate sequences)
       (when (program-status-reply-p candidate)
         (when
@@ -1184,7 +1464,7 @@
      nil)
     (terminal-response-expect-color
      (process-terminal-response-filter terminal))
-    (terminal-write
+    (write-process-terminal-output
      terminal
      (format nil "~C]11;?~C"
              #\Escape (code-char 7)))
@@ -1222,7 +1502,7 @@
                 (coerce timeout-seconds 'double-float))))
     (setf (terminal-response-filter-color-query filter) query)
     (setf (terminal-response-filter-color-result filter) nil)
-    (terminal-write terminal (terminal-color-query-sequence))
+    (write-process-terminal-output terminal (terminal-color-query-sequence))
     (loop
       (let ((input (terminal-read-input terminal)))
         (when (plusp (length input))
@@ -1271,7 +1551,7 @@
     (setf
      (process-terminal-color-scheme-response terminal)
      nil)
-    (terminal-write
+    (write-process-terminal-output
      terminal
      (format nil "~C[?996n" #\Escape))
     (loop
@@ -1309,7 +1589,7 @@
         terminal)
        enabled-p)
       (when (process-terminal-started-p terminal)
-        (terminal-write
+        (write-process-terminal-output
          terminal
          (format nil "~C[?2031~C"
                  #\Escape
@@ -1329,7 +1609,7 @@
   (let ((active-p (not (null active))))
     (if active-p
         (progn
-          (terminal-write
+          (write-process-terminal-output
            terminal
            +terminal-progress-active-sequence+)
           (setf
@@ -1348,7 +1628,7 @@
            (process-terminal-progress-next-keepalive-at
             terminal)
            nil)
-          (terminal-write
+          (write-process-terminal-output
            terminal
            +terminal-progress-clear-sequence+)))
     active-p))
@@ -1367,7 +1647,7 @@
            (process-terminal-progress-clock-function
             terminal))
           next))
-      (terminal-write
+      (write-process-terminal-output
        terminal
        +terminal-progress-active-sequence+)
       (setf
@@ -1391,7 +1671,7 @@
   (when
       (process-terminal-program-status-supported-p
        terminal)
-    (terminal-write
+    (write-process-terminal-output
      terminal
      (format-program-status
       (or status

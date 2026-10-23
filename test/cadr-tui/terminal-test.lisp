@@ -87,3 +87,324 @@
           (is (search button writes) pairs)
           (is (not (search all writes)) pairs)
           (is (search sgr writes) pairs))))))
+
+(defun tui-write-log-temp-dir ()
+  (let ((dir (merge-pathnames
+              (format nil "cadr-tui-write-log-~A-~A/"
+                      (get-universal-time)
+                      (random 1000000))
+              (uiop:temporary-directory))))
+    (ensure-directories-exist dir)
+    dir))
+
+(test tui-write-log-join-matches-node-path-join
+  ;; Node 22 path.posix.join / path.win32.join. The write-log directory
+  ;; branch is path.join(env, `tui-${ts}-${pid}.log`).
+  (dolist (spec '(("" "tui.log" "tui.log")
+                  ("." "tui.log" "tui.log")
+                  (".." "tui.log" "../tui.log")
+                  ("../.." "a" "../../a")
+                  ("/" "tui.log" "/tui.log")
+                  ("/tmp/foo" "tui.log" "/tmp/foo/tui.log")
+                  ("/tmp/foo/" "tui.log" "/tmp/foo/tui.log")
+                  ("/tmp//foo" "tui.log" "/tmp/foo/tui.log")
+                  ("/tmp/foo/./bar" "tui.log" "/tmp/foo/bar/tui.log")
+                  ("/tmp/foo/../bar" "tui.log" "/tmp/bar/tui.log")
+                  ("/../tmp" "a" "/tmp/a")
+                  ("rel/../x" "tui.log" "x/tui.log")))
+    (destructuring-bind (directory filename expected) spec
+      (is (string= expected
+                   (cadr-tui::tui-write-log-posix-join
+                    directory filename))
+          spec)))
+  (dolist (spec `(("C:\\logs" "tui.log" "C:\\logs\\tui.log")
+                  ("C:/logs/" "tui.log" "C:\\logs\\tui.log")
+                  ("C:\\foo\\..\\bar" "a.log" "C:\\bar\\a.log")
+                  ("C:/foo/../bar" "a.log" "C:\\bar\\a.log")
+                  ("//server/share/dir" "a.log"
+                   "\\\\server\\share\\dir\\a.log")
+                  ("\\\\server\\share\\dir" "a.log"
+                   "\\\\server\\share\\dir\\a.log")
+                  ("rel/../x" "a.log" "x\\a.log")
+                  ("C:foo" "a.log" "C:foo\\a.log")
+                  ("C:foo/../bar" "a.log" "C:bar\\a.log")
+                  ("/tmp/foo" "a.log" "\\tmp\\foo\\a.log")
+                  ("\\\\?\\C:\\logs" "a.log" "\\\\?\\C:\\logs\\a.log")
+                  ("D:\\" "tui.log" "D:\\tui.log")
+                  ("." "tui.log" "tui.log")
+                  (".." "tui.log" "..\\tui.log")))
+    (destructuring-bind (directory filename expected) spec
+      (is (string= expected
+                   (cadr-tui::tui-write-log-win32-join
+                    directory filename))
+          spec))))
+
+(test tui-write-log-path-follows-cadr-env-file-or-directory
+  ;; pi@4a080252f packages/tui/src/terminal.ts writeLogPath initializer.
+  ;; CADR_TUI_WRITE_LOG is the product name. PI_TUI_WRITE_LOG is ignored.
+  (let ((probes 0))
+    (flet ((resolve (environment &key directory-p pid clock)
+             (cadr-tui::resolve-tui-write-log-path
+              :environment environment
+              :directory-p
+              (or directory-p
+                  (lambda (path)
+                    (incf probes)
+                    (cadr-tui::tui-write-log-directory-p path)))
+              :pid (or pid 1)
+              :clock (or clock (constantly 0)))))
+      (is (string= "" (resolve '())))
+      (is (string= ""
+                   (resolve '(("CADR_TUI_WRITE_LOG" . "")))))
+      (is (string= ""
+                   (resolve '(("PI_TUI_WRITE_LOG" . "/tmp/pi.log")))))
+      (is (zerop probes))
+      (is (string= "0"
+                   (resolve '(("CADR_TUI_WRITE_LOG" . "0"))
+                            :directory-p (constantly nil))))
+      (is (string= "/tmp/foo/../bar.log"
+                   (resolve '(("CADR_TUI_WRITE_LOG" . "/tmp/foo/../bar.log"))
+                            :directory-p (constantly nil))))
+      (is (string= "/tmp/kept.log"
+                   (resolve '(("CADR_TUI_WRITE_LOG" . "/tmp/kept.log"))
+                            :directory-p
+                            (lambda (path)
+                              (declare (ignore path))
+                              (error "stat failed")))))
+      (is (string= "/tmp/cadr.log"
+                   (resolve '(("PI_TUI_WRITE_LOG" . "/tmp/pi.log")
+                              ("CADR_TUI_WRITE_LOG" . "/tmp/cadr.log"))
+                            :directory-p (constantly nil))))))
+  (let* ((root (tui-write-log-temp-dir))
+         (instant (encode-universal-time 9 5 8 23 10 2026))
+         (pid 4242))
+    (unwind-protect
+         (multiple-value-bind (second minute hour day month year)
+             (decode-universal-time instant)
+           (let* ((filename
+                    (format nil
+                            "tui-~D-~2,'0D-~2,'0D_~2,'0D-~2,'0D-~2,'0D-~D.log"
+                            year month day hour minute second pid))
+                  (logs (merge-pathnames "logs/" root))
+                  (via (merge-pathnames "other/../logs" root))
+                  (link (merge-pathnames "linkdir" root))
+                  (nested (merge-pathnames "missing-dir/ansi.log" root))
+                  (plain (merge-pathnames "ansi.log" root)))
+             (ensure-directories-exist logs)
+             (ensure-directories-exist
+              (merge-pathnames "other/" root))
+             (is (= 32 (length filename)))
+             (is (char= #\_ (char filename 14)))
+             (is (null (find #\: filename)))
+             (let ((resolved
+                     (cadr-tui::resolve-tui-write-log-path
+                      :environment
+                      `(("CADR_TUI_WRITE_LOG" . ,(namestring logs)))
+                      :clock (constantly instant)
+                      :pid pid)))
+               (is (string= filename (file-namestring resolved)))
+               (is (string= resolved
+                            (cadr-tui::tui-write-log-join
+                             (namestring logs)
+                             filename)))
+               (is (null (probe-file resolved))))
+             (let ((resolved
+                     (cadr-tui::resolve-tui-write-log-path
+                      :environment
+                      `(("CADR_TUI_WRITE_LOG"
+                         . ,(concatenate 'string
+                                         (string-right-trim
+                                          "/" (namestring logs))
+                                         "/")))
+                      :clock (constantly instant)
+                      :pid pid)))
+               (is (string= filename (file-namestring resolved))))
+             (let ((resolved
+                     (cadr-tui::resolve-tui-write-log-path
+                      :environment
+                      `(("CADR_TUI_WRITE_LOG" . ,(namestring via)))
+                      :clock (constantly instant)
+                      :pid pid)))
+               (is (null (search "other" resolved)))
+               (is (string= filename (file-namestring resolved))))
+             (sb-posix:symlink
+              (string-right-trim "/" (namestring logs))
+              (namestring link))
+             (let ((resolved
+                     (cadr-tui::resolve-tui-write-log-path
+                      :environment
+                      `(("CADR_TUI_WRITE_LOG" . ,(namestring link)))
+                      :clock (constantly instant)
+                      :pid pid)))
+               (is (search "linkdir" resolved))
+               (is (null (search "/logs/" resolved)))
+               (is (string= filename (file-namestring resolved))))
+             (is (string= (namestring plain)
+                          (cadr-tui::resolve-tui-write-log-path
+                           :environment
+                           `(("CADR_TUI_WRITE_LOG" . ,(namestring plain)))
+                           :pid pid)))
+             (is (string= (namestring nested)
+                          (cadr-tui::resolve-tui-write-log-path
+                           :environment
+                           `(("CADR_TUI_WRITE_LOG" . ,(namestring nested)))
+                           :pid pid)))))
+      (uiop:delete-directory-tree root :validate t))))
+
+(defclass tui-write-log-observing-stream
+    (sb-gray:fundamental-character-output-stream)
+  (   (path :initarg :path :reader tui-write-log-observing-path)
+   (observed-p :initform nil :accessor tui-write-log-observing-observed-p)
+   (saw-file-p :initform nil
+               :accessor tui-write-log-observing-saw-file-p)
+   (text :initform (make-string-output-stream)
+         :reader tui-write-log-observing-text)))
+
+(defmethod sb-gray:stream-write-string
+    ((stream tui-write-log-observing-stream) string &optional start end)
+  (unless (tui-write-log-observing-observed-p stream)
+    (setf (tui-write-log-observing-observed-p stream) t
+          (tui-write-log-observing-saw-file-p stream)
+          (not (null (probe-file (tui-write-log-observing-path stream))))))
+  (write-string (subseq string (or start 0) (or end (length string)))
+                (tui-write-log-observing-text stream)))
+
+(defmethod sb-gray:stream-write-char
+    ((stream tui-write-log-observing-stream) character)
+  (unless (tui-write-log-observing-observed-p stream)
+    (setf (tui-write-log-observing-observed-p stream) t
+          (tui-write-log-observing-saw-file-p stream)
+          (not (null (probe-file (tui-write-log-observing-path stream))))))
+  (write-char character (tui-write-log-observing-text stream)))
+
+(defmethod sb-gray:stream-finish-output
+    ((stream tui-write-log-observing-stream))
+  nil)
+
+(defclass tui-write-log-failing-stream
+    (sb-gray:fundamental-character-output-stream)
+  ())
+
+(defmethod sb-gray:stream-write-string
+    ((stream tui-write-log-failing-stream) string &optional start end)
+  (declare (ignore stream string start end))
+  (error "stdout failed"))
+
+(defmethod sb-gray:stream-write-char
+    ((stream tui-write-log-failing-stream) character)
+  (declare (ignore stream character))
+  (error "stdout failed"))
+
+(defun tui-write-log-terminal (path &key output environment directory-p)
+  (cadr-tui:make-process-terminal
+   :input (make-string-input-stream "")
+   :output (or output (make-string-output-stream))
+   :write-log-environment
+   (or environment
+       `(("CADR_TUI_WRITE_LOG" . ,path)))
+   :write-log-directory-p
+   (or directory-p #'cadr-tui::tui-write-log-directory-p)
+   :write-log-clock (constantly (encode-universal-time 9 5 8 23 10 2026))
+   :write-log-pid 4242))
+
+(test tui-write-log-appends-writes-and-ignores-log-errors
+  ;; ProcessTerminal.write appends the same string after stdout.
+  ;; fs.appendFileSync errors are ignored. Cursor, progress, and query
+  ;; bytes use process.stdout.write in v1.4.0 and stay out of the log.
+  (let ((root (tui-write-log-temp-dir)))
+    (unwind-protect
+         (let* ((log (namestring (merge-pathnames "ansi.log" root)))
+                (missing (namestring
+                          (merge-pathnames "missing-dir/ansi.log" root)))
+                (output (make-string-output-stream))
+                (terminal
+                  (tui-write-log-terminal log :output output)))
+           (with-open-file (stream log :direction :output
+                                       :if-exists :supersede
+                                       :external-format :utf-8)
+             (write-string "old" stream))
+           (is (string= "new"
+                        (cadr-tui:terminal-write terminal "new")))
+           (is (string= "oldnew"
+                        (uiop:read-file-string log :external-format :utf-8)))
+           (cadr-tui:terminal-write terminal "héllo中")
+           (is (equalp
+                (sb-ext:string-to-octets "oldnewhéllo中"
+                                         :external-format :utf-8)
+                (with-open-file (stream log :element-type '(unsigned-byte 8))
+                  (let ((octets (make-array (file-length stream)
+                                            :element-type '(unsigned-byte 8))))
+                    (read-sequence octets stream)
+                    octets))))
+           (delete-file log)
+           (cadr-tui:terminal-write terminal "two")
+           (is (string= "two"
+                        (uiop:read-file-string log :external-format :utf-8)))
+           (cadr-tui:terminal-set-progress terminal t)
+           (is (string= "two"
+                        (uiop:read-file-string log :external-format :utf-8)))
+           (is (search (format nil "~C]9;4;3" #\Escape)
+                       (get-output-stream-string output)))
+           (let* ((empty (namestring (merge-pathnames "empty.log" root)))
+                  (empty-terminal (tui-write-log-terminal empty)))
+             (cadr-tui:terminal-write empty-terminal "")
+             (is (probe-file empty))
+             (is (zerop (with-open-file (stream empty
+                                                :element-type '(unsigned-byte 8))
+                           (file-length stream)))))
+           (let* ((frame (namestring (merge-pathnames "frame.log" root)))
+                  (watch (make-instance 'tui-write-log-observing-stream
+                                        :path frame))
+                  (watched (tui-write-log-terminal frame :output watch)))
+             (cadr-tui:terminal-write watched "AB")
+             (cadr-tui:terminal-write watched "CD")
+             (is (not (tui-write-log-observing-saw-file-p watch)))
+             (is (string= "ABCD"
+                          (uiop:read-file-string
+                           frame :external-format :utf-8)))
+             (is (string= "ABCD"
+                          (get-output-stream-string
+                           (tui-write-log-observing-text watch)))))
+           (let ((quiet (namestring (merge-pathnames "quiet.log" root)))
+                 (virtual (cadr-tui:make-virtual-terminal)))
+             (cadr-tui:terminal-write virtual "nope")
+             (is (null (probe-file quiet)))
+             (let ((terminal
+                     (tui-write-log-terminal
+                      quiet
+                      :environment
+                      `(("PI_TUI_WRITE_LOG" . ,quiet)))))
+               (cadr-tui:terminal-write terminal "nope")
+               (is (null (probe-file quiet)))))
+           (let* ((output (make-string-output-stream))
+                  (terminal
+                    (tui-write-log-terminal missing :output output)))
+             (is (string= "still"
+                          (cadr-tui:terminal-write terminal "still")))
+             (is (string= "still" (get-output-stream-string output)))
+             (is (null (probe-file missing))))
+           (let* ((blocked (namestring (merge-pathnames "blocked.log" root)))
+                  (terminal
+                    (tui-write-log-terminal
+                     blocked
+                     :output (make-instance 'tui-write-log-failing-stream))))
+             (signals simple-error
+               (cadr-tui:terminal-write terminal "x"))
+             (is (null (probe-file blocked))))
+           (let ((calls 0)
+                 (sticky (namestring (merge-pathnames "sticky.log" root))))
+             (let ((terminal
+                     (tui-write-log-terminal
+                      sticky
+                      :directory-p
+                      (lambda (path)
+                        (incf calls)
+                        (declare (ignore path))
+                        nil))))
+               (cadr-tui:terminal-write terminal "a")
+               (cadr-tui:terminal-write terminal "b")
+               (is (= 1 calls))
+               (is (string= "ab"
+                            (uiop:read-file-string
+                             sticky :external-format :utf-8))))))
+      (uiop:delete-directory-tree root :validate t))))
