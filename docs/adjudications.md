@@ -2370,3 +2370,17 @@ The gray `Working` status rule is canonicalized in
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-08 and GAP-11.
   The status cell keeps the previous blocked text after the new open
   prefix.
+
+## 2026-10-23 — GAP-41 gets a narrow fourth repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-41's third acceptance left one defect. The issue count is
+  converging. The row is open for a fourth repair limited to that one
+  defect. The previous blocked text stays after the new prefix.
+- **Scope:** 第四次返修，范围只限第三次验收的一条（offset/limit
+  续读时，文件以换行结尾的末尾空行要按上游计入行数），并把钉死 40/80
+  more lines 的测试改为对着上游 v1.4.0 的计数锁死。
+- **Why:** the third acceptance named one remaining defect. The count
+  is converging, so this pass stays inside that scope.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-41. The status
+  cell starts with `open：顾问裁决 2026-10-23 第四次返修，范围只限第三次验收的一条（offset/limit 续读时，文件以换行结尾的末尾空行要按上游计入行数），并把钉死 40/80 more lines 的测试改为对着上游 v1.4.0 的计数锁死；原 blocked 记录：` and keeps the previous blocked text.
