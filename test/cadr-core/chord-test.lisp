@@ -181,10 +181,32 @@
     (is (search "stale" (princ-to-string (chord-caught (lambda () (tracker-adopt tracker stale)))))))
   (let ((change (tracker-begin-change (track (json-object)))))
     (change-prepare change)
-    (is (search "settled" (princ-to-string (chord-caught (lambda () (change-prepare change)))))))
-  (let ((change (tracker-begin-change (track (json-object)))))
-    (change-abort change)
-    (is (search "aborted" (princ-to-string (chord-caught (lambda () (change-prepare change))))))))
+    (is (search "Change has already been settled"
+                (princ-to-string (chord-caught (lambda () (change-prepare change)))))))
+  (let* ((tracker (track (json-object "n" 0)))
+         (aborted (tracker-begin-change tracker))
+         (live (tracker-begin-change tracker)))
+    (draft-set (change-state aborted) "n" 1)
+    (change-abort aborted)
+    (draft-set (change-state live) "n" 1)
+    (let* ((ready (change-prepare live))
+           (settled (princ-to-string
+                     (chord-caught (lambda () (change-prepare aborted)))))
+           (again (chord-caught (lambda () (change-abort aborted))))
+           (rejected (princ-to-string
+                      (chord-caught
+                       (lambda ()
+                         (change-abort live)
+                         (tracker-adopt tracker ready)))))
+           (second (chord-caught (lambda () (change-abort live)))))
+      (is (and (search "Change has already been settled" settled)
+               (null again)
+               (search "Prepared change has been aborted" rejected)
+               (null second)
+               (= 0 (json-get (tracker-value tracker) "n")))
+          "v1.4.0 settled=~S again=~S rejected=~S second=~S value=~S"
+          settled again rejected second
+          (json-get (tracker-value tracker) "n")))))
 
 (defun counter-contract ()
   (local-contract "t.counter"

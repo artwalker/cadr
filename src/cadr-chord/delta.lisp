@@ -453,7 +453,7 @@
     (t (cons (list "r" after) operations))))
 
 (defstruct tracker value generation)
-(defstruct change tracker state base generation status)
+(defstruct change tracker state base generation status preparation)
 (defstruct preparation tracker base value ops generation status)
 
 (defun track (initial)
@@ -468,18 +468,18 @@
 
 (defun change-prepare (change)
   (unless (eq (change-status change) :open)
-    (error (if (eq (change-status change) :aborted)
-               "change was aborted"
-               "change has already settled")))
+    (error "Change has already been settled"))
   (setf (change-status change) :prepared)
   (let* ((ops (diff-revisions (change-base change) (change-state change)))
-         (noop (null ops)))
-    (make-preparation :tracker (change-tracker change)
-                      :base (change-base change)
-                      :value (if noop (change-base change) (change-state change))
-                      :ops ops
-                      :generation (change-generation change)
-                      :status :ready)))
+         (noop (null ops))
+         (preparation
+           (make-preparation :tracker (change-tracker change)
+                             :base (change-base change)
+                             :value (if noop (change-base change) (change-state change))
+                             :ops ops
+                             :generation (change-generation change)
+                             :status :ready)))
+    (setf (change-preparation change) preparation)))
 
 (defun tracker-prepare-replace (tracker replacement)
   (let ((noop (json-deep-equal (tracker-value tracker) replacement)))
@@ -497,7 +497,7 @@
     ((eq (preparation-status preparation) :used)
      (error "preparation has already been used"))
     ((eq (preparation-status preparation) :aborted)
-     (error "preparation was aborted"))
+     (error "Prepared change has been aborted"))
     ((/= (preparation-generation preparation) (tracker-generation tracker))
      (error "preparation is stale"))
     (t
@@ -507,6 +507,9 @@
      (tracker-value tracker))))
 
 (defun change-abort (change)
+  (let ((preparation (change-preparation change)))
+    (when (and preparation (eq (preparation-status preparation) :ready))
+      (setf (preparation-status preparation) :aborted)))
   (setf (change-status change) :aborted)
   nil)
 

@@ -447,7 +447,7 @@ unified requirements 7–9.
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-chord/child-entry.lisp` | 9 | 0 | Load the library in a child process without putting the package name in the reader before it exists. | pass | no-rewrite | The entry is a load script. A function wrapper would still have to be read after the system loads. | 27 |
 | `src/cadr-chord/contract.lisp` | 197 | 20 | Describe, cover, and bind host contracts. | pass | no-rewrite | Contracts are closed records. Coverage is a predicate, not an open protocol. | 27 |
-| `src/cadr-chord/delta.lisp` | 517 | 43 | Encode, apply, and track JSON deltas. | pass | no-rewrite | Ops are data tuples. Tracker generation is a slot, not a proxy class. | 27 |
+| `src/cadr-chord/delta.lisp` | 520 | 43 | Encode, apply, and track JSON deltas. | pass | no-rewrite | Ops are data tuples. Tracker generation is a slot, not a proxy class. | 27 |
 | `src/cadr-chord/errors.lisp` | 38 | 9 | Signal chord failures with stable codes, reasons, and retryability. | pass | no-rewrite | One condition plus a message function is the Lisp encoding of the typed error. | 27 |
 | `src/cadr-chord/host.lisp` | 627 | 84 | Activate hosts, hold objects, and reload code against pinned roots. | pass | no-rewrite | Object lifetime is explicit struct state. Methods are closures over that state. | 27 |
 | `src/cadr-chord/json.lisp` | 267 | 21 | Copy, print, and parse strict JSON for chord values. | pass | no-rewrite | Hash tables and lists are the JSON values. A class hierarchy would not change the wire. | 27 |
