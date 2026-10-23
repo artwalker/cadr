@@ -197,8 +197,8 @@
         :expires
         (cadr-ai:oauth-credential-expires credential)
         :account-id
-        (cadr-ai:oauth-credential-account-id
-         credential))))))
+        (cadr-ai:oauth-credential-account-id credential)
+        :metadata (copy-list (cadr-ai:oauth-credential-metadata credential)))))))
 
 (defun auth-storage-modify
     (storage provider function)

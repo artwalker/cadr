@@ -738,3 +738,103 @@
       (is (search "agent_name_hint=Cadr" (getf (first prompts) :url)))
       (is (search "client_id=dynamic_agent_client"
                   (getf (first prompts) :url))))))
+
+(defparameter +chatgpt-auth-file-scope+
+  "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct")
+(defparameter +chatgpt-auth-file-device-id+
+  "e61bbe28-07ef-466d-8e5d-a344f94ab305")
+(defparameter +chatgpt-auth-token-url+
+  "https://auth.openai.com/api/accounts/oauth/token")
+
+(defun chatgpt-auth-file-token ()
+  (cadr-ai::json-object
+   "access_token" "access-token"
+   "refresh_token" "refresh-token"
+   "expires_in" 3600
+   "id_token" "id-token"
+   "scope" +chatgpt-auth-file-scope+))
+
+(defun chatgpt-auth-file-paste (client-id)
+  (lambda (prompt)
+    (let* ((url (getf prompt :url))
+           (query (subseq url (1+ (position #\? url)))))
+      (format nil
+              "http://127.0.0.1:1455/auth/callback?code=authorization-code&state=~A&client_id=~A"
+              (gethash "state" (cadr-ai::parse-query query))
+              client-id))))
+
+(defun chatgpt-auth-file-metadata (path)
+  (let ((credential
+          (cadr-cli:auth-storage-read
+           (cadr-cli:make-file-auth-storage path)
+           :openai)))
+    (values
+     (cdr (assoc "clientId"
+                 (cadr-ai:oauth-credential-metadata credential)
+                 :test #'string=))
+     (map 'list #'identity
+          (cdr (assoc "scopes"
+                      (cadr-ai:oauth-credential-metadata credential)
+                      :test #'string=))))))
+
+(defun chatgpt-auth-file-refresh-client (path)
+  (let ((calls nil)
+        (credential
+          (cadr-cli:auth-storage-read
+           (cadr-cli:make-file-auth-storage path)
+           :openai)))
+    (let ((cadr-ai::*oauth-flow-request-function*
+            (lambda (url &key method content &allow-other-keys)
+              (push (list url method content) calls)
+              (values (chatgpt-auth-file-token) 200))))
+      (cadr-ai::refresh-openai-chatgpt-oauth-credential credential))
+    (values (cadr-ai::parse-query (third (first calls)))
+            (first (first calls)))))
+
+(test chatgpt-login-writes-issued-client-and-scopes-into-auth-json
+  ;; pi@4a080252f credentialFromTokenResponse stores clientId and scopes.
+  ;; auth-storage.ts modify JSON.stringifies that credential. The next
+  ;; start's refresh posts that clientId to the OpenAI token endpoint.
+  (dolist (client-id '("oaiapp_builtin" "oaiapp_native"))
+    (with-test-directory (directory)
+      (let* ((path (merge-pathnames "auth.json" directory))
+             (registry
+               (cadr-cli:make-model-registry
+                :path (merge-pathnames "models.json" directory)
+                :credentials (cadr-cli:make-file-auth-storage path)))
+             (cadr-ai::*oauth-login-device-id*
+               +chatgpt-auth-file-device-id+)
+             (cadr-ai::*oauth-login-agent-name* nil)
+             (cadr-ai::*oauth-browser-open-function*
+               (lambda (url) (declare (ignore url))))
+             (cadr-ai::*oauth-flow-request-function*
+               (lambda (&rest args)
+                 (declare (ignore args))
+                 (values (chatgpt-auth-file-token) 200))))
+        (when (string= client-id "oaiapp_native")
+          (cadr-ai:models-runtime-set-provider
+           (cadr-cli::model-registry-native-runtime registry)
+           (cadr-ai::make-built-in-runtime-provider
+            (cadr-ai:find-provider-definition :openai))))
+        (cadr-cli::handle-native-auth-command
+         registry "/login openai chatgpt"
+         (cadr-ai:make-runtime-auth-interaction
+          :prompt-function (chatgpt-auth-file-paste client-id))
+         :output (make-string-output-stream))
+        (is (search (format nil "\"clientId\":\"~A\"" client-id)
+                    (read-text path)))
+        (is (search "\"chatgpt.tokens.use.direct\"" (read-text path)))
+        (multiple-value-bind (stored-client stored-scopes)
+            (chatgpt-auth-file-metadata path)
+          (is (string= client-id stored-client))
+          (is (equal '("openid" "profile" "email" "offline_access"
+                       "resource.invoke" "chatgpt.tokens.use.direct")
+                     stored-scopes)))
+        (multiple-value-bind (body url)
+            (chatgpt-auth-file-refresh-client path)
+          (is (string= +chatgpt-auth-token-url+ url))
+          (is (string= client-id (gethash "client_id" body)))
+          (is (string= "refresh_token" (gethash "grant_type" body)))
+          (is (string= "refresh-token" (gethash "refresh_token" body)))
+          (is (string= "https://api.openai.com/v1"
+                       (gethash "resource" body))))))))
