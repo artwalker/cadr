@@ -3365,12 +3365,12 @@
     (let* ((rendered
              (cadr-cli::render-settings-select-submenu
               state 100 "Theme"
-              "Select a theme, or choose Automatic to follow terminal appearance."))
+              "Select a theme, or choose automatic to follow terminal appearance."))
            (automatic
              (find-if
               (lambda (line)
                 (string=
-                 "  Automatic   Use separate themes for light and dark terminal appearance"
+                 "    automatic  Use separate themes for light and dark terminal appearance"
                  (string-right-trim
                   " "
                   (cadr-tui:strip-terminal-sequences line))))
@@ -3379,7 +3379,7 @@
              (find-if
               (lambda (line)
                 (string=
-                 "→ dark"
+                 "→ ✓ dark"
                  (string-right-trim
                   " "
                   (cadr-tui:strip-terminal-sequences line))))
@@ -3388,7 +3388,7 @@
              (find-if
               (lambda (line)
                 (string=
-                 "  light"
+                 "    light"
                  (string-right-trim
                   " "
                   (cadr-tui:strip-terminal-sequences line))))
@@ -3397,18 +3397,18 @@
        (string=
         (concatenate
          'string
-         "  Automatic"
+         "    automatic"
          (cadr-tui:theme-foreground
           :muted
-          "   Use separate themes for light and dark terminal appearance"
+          "  Use separate themes for light and dark terminal appearance"
           :enabled-p t))
         automatic))
       (is
        (string=
         (cadr-tui:theme-foreground
-         :accent "→ dark" :enabled-p t)
+         :accent "→ ✓ dark" :enabled-p t)
         dark))
-      (is (string= "  light" light)))
+      (is (string= "    light" light)))
     (setf (cadr-cli::settings-selector-state-mode state)
           :theme-automatic)
     (let* ((rendered

@@ -6412,12 +6412,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "acb4dd67b2a500f38d215e8358e8d5deb4cbad0590583ccddef01a1830a1ed05",
-          "cadr": "3070c718906abadabd32fea0196344dae3fdb525cb784c2ade570ff50e27ec58"
+          "pi": "2fe2bd6e972de9f9f579c0abd9d295a66b68d99ea828cb1d472630161f7dcca6",
+          "cadr": "50c76b858749a2ad5bb03a07cf835c53874f05b23be767566e1a04c560a94217"
         },
         "narrow": {
-          "pi": "fde07d77bac05b2015adc28d0b11084bc03471bcf84504998773659aba08b6b6",
-          "cadr": "d2e97ef90ae108a93c7fa423ba9fc2f96a92ae24f50aebd31f793636067f0af0"
+          "pi": "f97f53f7dd78001b1bf5e970029a31bdb274e97106f578fa79bdd55d09bb0f79",
+          "cadr": "5ac540c63640ffbe5c1d77ac95053a1dfc292a57e7f351da5d605e77dbd34c94"
         }
       },
       "note": "At overlays-secondary/settings-theme [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
@@ -6434,8 +6434,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0f982e2786e8662bebdaf4d98f5a62e417d0d059eac44eef3a25c382d3456f68",
-          "cadr": "d2eb4dc5065b58336bce22823e2f50065a8d7d7d0536cd993fc8168e5cdb6664"
+          "pi": "e65afa04557f9d0721a14477444fa0888070029a7b76f1fdd2c666d8eed744a2",
+          "cadr": "76d418c2b3861cc5de95a28093193267eb619a0e23311e152d9b7dceab2de633"
         }
       },
       "note": "At overlays-secondary/settings-theme-automatic [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
@@ -6444,7 +6444,6 @@
       "scenario": "overlays-secondary",
       "checkpoint": "settings-theme-dark",
       "dimensions": [
-        "narrow",
         "wide"
       ],
       "classes": [
@@ -6453,21 +6452,16 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "565666edee749ab6116dfcda536043a0ad6dba569abda34dede0ef1d60c9e661",
-          "cadr": "b041019cf4f53fa524a0abcb3c52732f544036c3223b12959124bf1f8efb0d88"
-        },
-        "narrow": {
-          "pi": "7a3b44e1e1d28d20ba1ccdfbc56ec48a1508e6f48932b9fb77706763d3b6719b",
-          "cadr": "24a85b1a2aa0d205b8b1d55ed0264611c49fae0c07d14200a0c05b629dd4e94e"
+          "pi": "c2bea0b5be3cb4b7cb56869b9a84ecffe3da80bd85f7bf562cd3265986937c09",
+          "cadr": "bcaac6e5b8c9ad1fbd85f86c04b2cbeea7e4e38a8cb7bc45c268bdc7641338a9"
         }
       },
-      "note": "At overlays-secondary/settings-theme-dark [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-secondary/settings-theme-dark [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-secondary",
       "checkpoint": "settings-theme-light",
       "dimensions": [
-        "narrow",
         "wide"
       ],
       "classes": [
@@ -6476,15 +6470,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7cfefd9753bfc05cda514acc6af18eb660cbb7293972c48208c2f1f3f6cb92fc",
-          "cadr": "8e9d04d05c723a51ab93582b4625b0242768b51526e844b2a2545122919fb3d0"
-        },
-        "narrow": {
-          "pi": "1d09f6d7959fe7e9b5a2a9b601fb0030f0bad7cfdafece24570589e92fe4432f",
-          "cadr": "8e7f69a87ee2ec4367f5ea78b572635a03ad0aab87294ab1f98d6762edb2fe44"
+          "pi": "9e46d986b6f4efab8092d61fad4d8ee4e0594a220f316dd6848e21032d7388a8",
+          "cadr": "96be13654bca179a35354033f6a1a4ebdb58fbe739edc1c1711491f2619e1904"
         }
       },
-      "note": "At overlays-secondary/settings-theme-light [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At overlays-secondary/settings-theme-light [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -8618,11 +8608,45 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "0825e3ce0bad31d1d69edeada746f227090526f29ac320324ee6ee1d2bdaae13",
-          "cadr": "0825e3ce0bad31d1d69edeada746f227090526f29ac320324ee6ee1d2bdaae13"
+          "pi": "c33eb933ef66d34636ec2e05ecd33699e67bda5672ac2881dafbf35f47ad002d",
+          "cadr": "c33eb933ef66d34636ec2e05ecd33699e67bda5672ac2881dafbf35f47ad002d"
         }
       },
       "note": "At overlays-secondary/settings-theme-automatic [narrow] semantic screens match under product-identity placeholders; raw ANSI/teardown is I01."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-light",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "3938b0f1dd206b53ffd6dca29c0672cc782acf8516196f771dff38438b7f067f",
+          "cadr": "3938b0f1dd206b53ffd6dca29c0672cc782acf8516196f771dff38438b7f067f"
+        }
+      },
+      "note": "At overlays-secondary/settings-theme-light [narrow] semantic screens match under product-identity placeholders; a 20-row terminal keeps the selector top border and drops the bottom border. Raw ANSI/teardown is I01."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-dark",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "33f9f3b13c1c4cf7adcb557a61c73f1025c60358f5defe6f63f038f70e8fdc43",
+          "cadr": "33f9f3b13c1c4cf7adcb557a61c73f1025c60358f5defe6f63f038f70e8fdc43"
+        }
+      },
+      "note": "At overlays-secondary/settings-theme-dark [narrow] semantic screens match under product-identity placeholders; a 20-row terminal keeps the selector top border and drops the bottom border. Raw ANSI/teardown is I01."
     },
     {
       "scenario": "overlays-secondary",

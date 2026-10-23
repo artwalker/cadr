@@ -370,17 +370,32 @@
        (setf (settings-selector-state-mode state)
              (if automatic :theme-automatic :theme-single)
              (settings-selector-state-original-theme state)
-             setting
-             (settings-selector-state-submenu-selected state)
+             setting)
+       (setf (settings-selector-state-submenu-selected state)
              (if automatic
                  0
-                 (1+
-                  (or (position
-                       fixed
-                       (settings-selector-state-theme-names state)
-                       :test #'string=)
-                      -1)))))))
+                 (or (position
+                      fixed
+                      (settings-selector-submenu-options state)
+                      :key #'settings-option-value
+                      :test #'string=)
+                     0))))))
   state)
+
+(defun settings-theme-choice-option (name current)
+  (make-settings-option
+   :id name
+   :label
+   (concatenate
+    'string
+    (if (and (stringp current) (string= name current))
+        "✓ "
+        "  ")
+    name)
+   :value name
+   :description
+   (when (string= name "system")
+     "Theme created from your terminal's colors")))
 
 (defun settings-selector-automatic-theme-setting (state)
   (format nil "~A/~A"
@@ -448,15 +463,22 @@
     (:model-thinking-level
      (settings-model-thinking-level-options state))
     (:theme-single
-     (cons
-      (make-settings-option
-       :id "automatic" :label "Automatic" :value "/"
-       :description
-       "Use separate themes for light and dark terminal appearance")
-      (loop for name in (settings-selector-state-theme-names state)
-            collect
-            (make-settings-option
-             :id name :label name :value name))))
+     (let* ((names (settings-selector-state-theme-names state))
+            (current (settings-selector-state-single-theme state)))
+       (append
+        (when (find "system" names :test #'string=)
+          (list (settings-theme-choice-option "system" current)))
+        (list
+         (make-settings-option
+          :id "automatic"
+          :label "  automatic"
+          :value "/"
+          :description
+          "Use separate themes for light and dark terminal appearance"))
+        (mapcar
+         (lambda (name)
+           (settings-theme-choice-option name current))
+         (remove "system" names :test #'string=)))))
     (:theme-automatic
      (list
       (make-settings-option
@@ -482,10 +504,15 @@
        :value "switch to single theme"
        :values (list "switch to single theme"))))
     ((:theme-light :theme-dark)
-     (loop for name in (settings-selector-state-theme-names state)
-           collect
-           (make-settings-option
-            :id name :label name :value name)))
+     (let ((current
+             (if (eq :theme-light
+                     (settings-selector-state-mode state))
+                 (settings-selector-state-light-theme state)
+                 (settings-selector-state-dark-theme state))))
+       (mapcar
+        (lambda (name)
+          (settings-theme-choice-option name current))
+        (settings-selector-state-theme-names state))))
     (otherwise nil)))
 
 (defun settings-selector-submenu-move (state delta)
@@ -616,13 +643,14 @@
                        state)))
                 (setf (settings-selector-state-single-theme state)
                       active
-                      (settings-selector-state-mode state) :theme-single
-                      (settings-selector-state-submenu-selected state)
-                      (1+ (or (position
-                               active
-                               (settings-selector-state-theme-names state)
-                               :test #'string=)
-                              -1))
+                      (settings-selector-state-mode state) :theme-single)
+                (setf (settings-selector-state-submenu-selected state)
+                      (or (position
+                           active
+                           (settings-selector-submenu-options state)
+                           :key #'settings-option-value
+                           :test #'string=)
+                          0)
                       change
                       (list :id "theme-preview" :value active))))))
           (:theme-light
@@ -733,7 +761,9 @@
                 (values :changed nil))
                ((member mode '(:theme-light :theme-dark))
                 (setf (settings-selector-state-mode state)
-                      :theme-automatic)
+                      :theme-automatic
+                      (settings-selector-state-submenu-selected state)
+                      (if (eq mode :theme-light) 0 1))
                 (setf change
                       (list
                        :id "theme-preview"
@@ -1286,7 +1316,7 @@
          (multiple-value-bind (lines start)
              (render-settings-select-submenu
               state width "Theme"
-              "Select a theme, or choose Automatic to follow terminal appearance.")
+              "Select a theme, or choose automatic to follow terminal appearance.")
            (settings-selector-place-list state lines start 10)))
         (:theme-light
          (multiple-value-bind (lines start)

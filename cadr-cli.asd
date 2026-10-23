@@ -219,6 +219,7 @@
                              (:file "goal28-external-editor-settings-test")
                              (:file "goal28-external-editor-key-test")
                              (:file "goal27-clipboard-file-paste-test")
+                             (:file "goal27-automatic-theme-test")
                              (:file "goal27-earendil-announcement-test")
                              (:file "goal27-subagent-example-prompts-test")
                              (:file "goal27-config-schemas-test")

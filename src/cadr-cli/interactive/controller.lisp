@@ -648,7 +648,7 @@ interactive-mode.ts:5956-5960).")
                     (multiple-value-bind
                           (lines cursor-row cursor-column
                            editor-origin dock-line-count
-                           placements)
+                           placements dock-sections)
                         (render-tui-state
                          state (current-editor)
                          (cadr-tui:terminal-columns terminal)
@@ -672,6 +672,9 @@ interactive-mode.ts:5956-5960).")
                        (cadr-tui::terminal-renderer-chat-dock-lines
                         renderer)
                        (if alt-p (or dock-line-count 0) 0)
+                       (cadr-tui::terminal-renderer-chat-dock-sections
+                        renderer)
+                       (when alt-p dock-sections)
                        (cadr-tui::terminal-renderer-chat-editor-origin
                         renderer)
                        editor-origin

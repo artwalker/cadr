@@ -452,6 +452,115 @@
                       (max 0 (- width left-edge bar-width)) t))
                     line))))))
 
+(defparameter +chat-dock-min-sizes+ '(0 0 0 3 0 0))
+
+(defun chat-dock-shrink-sizes (sizes mins amount)
+  ;; v1.4.0 stack.ts distribute(..., "shrink"). Weight is shrink * size,
+  ;; and every chat-dock child has shrink 1.
+  (let ((remaining amount))
+    (loop
+      (unless (plusp remaining)
+        (return))
+      (let ((candidates nil)
+            (total-weight 0)
+            (distributed 0))
+        (loop for index from 0 below (length sizes)
+              when (> (aref sizes index) (aref mins index))
+                do (push index candidates))
+        (setf candidates (nreverse candidates))
+        (dolist (index candidates)
+          (incf total-weight (max 1 (aref sizes index))))
+        (when (or (null candidates) (zerop total-weight))
+          (return))
+        (dolist (index candidates)
+          (when (plusp remaining)
+            (let* ((weight (max 1 (aref sizes index)))
+                   (proposed
+                     (max 1 (floor (* remaining weight) total-weight)))
+                   (capacity (- (aref sizes index) (aref mins index)))
+                   (delta (min remaining proposed capacity)))
+              (when (plusp delta)
+                (decf (aref sizes index) delta)
+                (decf remaining delta)
+                (incf distributed delta)))))
+        (when (zerop distributed)
+          (return)))))
+  sizes)
+
+(defun fit-chat-dock-to-rows (sections rows)
+  "Clip a fullscreen chat dock the way v1.4.0 createChatViewport does.
+
+SECTIONS is a list of (lines min-size), in dock order: pending, status,
+widgets above, editor, widgets below, footer. The root stack keeps one
+transcript row. A dock that still overflows shrinks its children, and
+each child keeps its first allocated lines (VStack slice from the top)
+so a tall selector loses its bottom border instead of its title."
+  (flet ((clamp (size min-size)
+           (max (max 0 (floor min-size))
+                (max 0 (floor size)))))
+    (let* ((blocks (mapcar #'first sections))
+           (mins (mapcar (lambda (section)
+                           (max 0 (floor (second section))))
+                         sections))
+           (sizes (mapcar #'clamp
+                          (mapcar #'length blocks)
+                          mins))
+           (intrinsic (reduce #'+ sizes :initial-value 0))
+           (dock (max 1 intrinsic))
+           (overflow (max 0 (- (+ 1 dock) (max 0 (floor rows))))))
+      (unless (plusp overflow)
+        (return-from fit-chat-dock-to-rows blocks))
+      (setf dock (max 1 (- dock (min overflow (max 0 (- dock 1))))))
+      (let ((size-vector (make-array (length sizes)
+                                     :initial-contents sizes))
+            (min-vector (make-array (length mins)
+                                    :initial-contents mins)))
+        (chat-dock-shrink-sizes
+         size-vector min-vector
+         (max 0 (- (reduce #'+ sizes) dock)))
+        (loop for block in blocks
+              for index from 0
+              for size = (aref size-vector index)
+              collect (append
+                       (subseq block 0 (min size (length block)))
+                       (make-list (max 0 (- size (length block)))
+                                  :initial-element "")))))))
+
+(defun clip-pinned-chat-dock (dock-lines section-lengths terminal-rows)
+  (let ((start 0))
+    (apply
+     #'append
+     (fit-chat-dock-to-rows
+      (loop for length in section-lengths
+            for min-size in +chat-dock-min-sizes+
+            collect (list (subseq dock-lines start
+                                  (incf start length))
+                          min-size))
+      terminal-rows))))
+
+(defun chat-dock-shown-index (offset section-lengths shown-dock
+                              terminal-rows)
+  "Index of document offset OFFSET inside the clipped dock, or nil."
+  (let* ((fitted
+           (fit-chat-dock-to-rows
+            (loop for length in section-lengths
+                  for min-size in +chat-dock-min-sizes+
+                  collect (list (make-list length) min-size))
+            terminal-rows))
+         (seen 0)
+         (shown 0))
+    (declare (ignore shown-dock))
+    (loop for length in section-lengths
+          for kept in fitted
+          do (when (< offset (+ seen length))
+               (let ((within (- offset seen)))
+                 (return-from chat-dock-shown-index
+                   (when (< within (length kept))
+                     (+ shown within)))))
+             (incf seen length)
+             (incf shown (length kept)))
+    nil))
+
 (defun render-alt-frame
     (renderer lines &key
                       (cursor-row
@@ -471,23 +580,33 @@
          ;; It stays on the last rows; only the transcript scrolls.
          (dock-lines
            (terminal-renderer-chat-dock-lines renderer))
+         (dock-sections
+           (terminal-renderer-chat-dock-sections renderer))
          (pin-p
            (and (> height 1)
                 (plusp dock-lines)
                 (<= dock-lines (length document))))
-         (dock-height
-           (if pin-p (min dock-lines (1- height)) 0))
-         (viewport-height
-           (if pin-p (- height dock-height) height))
          (split
            (if pin-p (- (length document) dock-lines) 0))
-         (scroll-document
-           (if pin-p (subseq document 0 split) document))
+         (sectioned-p
+           (and pin-p
+                (consp dock-sections)
+                (= 6 (length dock-sections))
+                (= dock-lines (reduce #'+ dock-sections))))
          (shown-dock
            (when pin-p
-             (nthcdr
-              (- dock-lines dock-height)
-              (subseq document split))))
+             (if sectioned-p
+                 (clip-pinned-chat-dock
+                  (subseq document split) dock-sections height)
+                 (nthcdr
+                  (- dock-lines (min dock-lines (1- height)))
+                  (subseq document split)))))
+         (dock-height
+           (if pin-p (min (length shown-dock) (1- height)) 0))
+         (viewport-height
+           (if pin-p (- height dock-height) height))
+         (scroll-document
+           (if pin-p (subseq document 0 split) document))
          (maximum-top
            (max 0 (- (length scroll-document) viewport-height))))
     (setf
@@ -530,7 +649,12 @@
        (when (and pin-p origin)
          (let ((row
                  (+ viewport-height
-                    (- origin split dropped))))
+                    (if sectioned-p
+                        (or (chat-dock-shown-index
+                             (- origin split) dock-sections
+                             shown-dock height)
+                            -1)
+                        (- origin split dropped)))))
            (and (>= row 0) (< row height) row)))))
     (when (terminal-renderer-alt-search-state renderer)
       (renderer-refresh-search
@@ -625,7 +749,13 @@
                    (if (>= cursor-row split)
                        (let ((row
                                (+ viewport-height
-                                  (- cursor-row split dropped))))
+                                  (if sectioned-p
+                                      (or (chat-dock-shown-index
+                                           (- cursor-row split)
+                                           dock-sections shown-dock
+                                           height)
+                                          -1)
+                                      (- cursor-row split dropped)))))
                          (and (>= row 0) (< row height) row))
                        (let ((row
                                (- cursor-row

@@ -439,13 +439,16 @@
                   (+ entry-origin (second hit))
                   (+ entry-origin (third hit))))
           entry-hits)))
-      (let* ((dock-line-count
-               (+ (length pending-message-lines)
-                  (length status-indicator)
-                  (length widget-above-lines)
-                  (length active-editor-lines)
-                  (length widget-below-lines)
-                  (length footer-lines)))
+      (let* ((dock-sections
+               ;; Lengths before nconc. nconc splices these lists
+               ;; together, so a later length would include the tail.
+               (list (length pending-message-lines)
+                     (length status-indicator)
+                     (length widget-above-lines)
+                     (length active-editor-lines)
+                     (length widget-below-lines)
+                     (length footer-lines)))
+             (dock-line-count (reduce #'+ dock-sections))
              (tic-tac-toe-slot-p
                (and overlay
                     (not floating-overlay)
@@ -478,6 +481,10 @@
                           active-editor-lines
                           widget-below-lines
                           footer-lines))))
+        ;; The tic-tac-toe board is already windowed to the terminal.
+        ;; Pinning that frame again with the unwindowed dock length
+        ;; would clip the title. Other fullscreen docks report section
+        ;; lengths so a short terminal keeps the selector top border.
         (values
          frame
          cursor-row
@@ -485,9 +492,10 @@
              overlay-column
              editor-column)
          editor-origin
-         dock-line-count
+         (if tic-tac-toe-slot-p 0 dock-line-count)
          (when (and floating-overlay
                     (extension-custom-ui-visible-p floating-overlay))
            (list
             (extension-custom-ui-overlay-placement
-             floating-overlay width rows)))))))))
+             floating-overlay width rows)))
+         (unless tic-tac-toe-slot-p dock-sections)))))))

@@ -37,6 +37,10 @@
   ;; lines (pending, status, widgets, editor, footer). Zero means the
   ;; whole document scrolls, which is regular mode.
   (chat-dock-lines 0 :type (integer 0 *))
+  ;; Six lengths: pending, status, widgets above, editor, widgets
+  ;; below, footer. Nil keeps the prefix clip used before v1.4.0
+  ;; dock shrink.
+  (chat-dock-sections nil :type list)
   (chat-editor-origin nil :type (or null integer))
   ;; Rows of the transcript viewport after the dock is placed. Zero
   ;; means scroll math uses the terminal height.

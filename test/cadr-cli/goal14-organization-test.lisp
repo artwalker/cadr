@@ -909,6 +909,10 @@
     ;; renderer-deliver-component-mouse.
     ;; +1 Goal 24 clipboard fail-naming: renderer-copy-selection-flash
     ;; (lifecycle-input.lisp) maps a backend error string to a 5s flash.
+    ;; +5 GAP-79: v1.4.0 dock shrink in renderer/alt-screen.lisp
+    ;; (+chat-dock-min-sizes+, chat-dock-shrink-sizes,
+    ;; fit-chat-dock-to-rows, clip-pinned-chat-dock,
+    ;; chat-dock-shown-index). A tall selector keeps its top border.
     ;; +1 GAP-65: renderer-chat-viewport-height (lifecycle-input.lisp)
     ;; sizes fullscreen scroll to the transcript viewport above the dock.
     ;; +1 GAP-28: renderer-right-click-paste (lifecycle-input.lisp).
@@ -919,7 +923,7 @@
     ;; +1 GAP-65: composite-chat-overlay-placements
     ;; (renderer/lifecycle-input.lisp) paints overlay placements after
     ;; the fullscreen dock is pinned.
-    (is (= 397 definition-count)
+    (is (= 402 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

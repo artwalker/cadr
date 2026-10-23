@@ -683,12 +683,12 @@
       (list
        border (goal9-b3-full-width-line "Theme" width) ""
        (goal9-b3-full-width-line
-        "Select a theme, or choose Automatic to follow terminal appearance."
+        "Select a theme, or choose automatic to follow terminal appearance."
         width)
        ""
-       "  Automatic   Use separate themes for light and dark terminal appearance"
-       "→ dark"
-       "  light"
+       "    automatic  Use separate themes for light and dark terminal appearance"
+       "→ ✓ dark"
+       "    light"
        ""
        (goal9-b3-full-width-line
         "  Enter to select · Esc to go back" width)
