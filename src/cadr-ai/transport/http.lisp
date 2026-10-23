@@ -435,6 +435,11 @@
 
 (defun connect-http-stream
     (parsed connect-timeout read-timeout &optional abort-p)
+  ;; openai@7.19.0 fetchWithTimeout arms setTimeout(abort, ms). ms 0
+  ;; aborts before the socket is useful. A false connect-timeout still
+  ;; means "no deadline".
+  (when (and (realp connect-timeout) (zerop connect-timeout))
+    (error 'native-http-timeout))
   (let* ((host
            (parsed-url-host parsed))
          (address

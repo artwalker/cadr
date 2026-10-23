@@ -267,7 +267,7 @@
              :timeout-ms 0
              :max-retry-delay-ms 0)
     (is (= 0 (getf seen :timeout-ms)))
-    (is (null (getf seen :read-timeout)))
+    (is (= 0 (getf seen :read-timeout)))
     (is (= 0 (getf seen :max-retry-delay-ms))))
   (let* ((seen nil)
          (manager
@@ -343,4 +343,62 @@
           (cadr-cli::settings-retry-settings manager)))
        provider model context nil))
     (is (= 30 (getf captured :connect-timeout)))
-    (is (= 30 (getf captured :read-timeout)))))
+    (is (= 30 (getf captured :read-timeout))))
+  (let ((captured nil)
+        (provider
+          (cadr-ai:make-openai-provider :api-key "retry-fields-zero"))
+        (model
+          (cadr-ai:make-model
+           :id "gpt-test"
+           :provider :openai
+           :api :openai-responses
+           :base-url "https://api.openai.com"
+           :max-tokens 4096))
+        (context
+          (cadr-ai:make-context
+           :messages
+           (list
+            (cadr-ai:make-user-message
+             :content "hi"
+             :timestamp 1))))
+        (manager
+          (cadr-cli::make-memory-settings-manager
+           (args "httpIdleTimeoutMs" 5000
+                 "retry"
+                 (args "provider"
+                       (args "timeoutMs" 0
+                             "maxRetryDelayMs" 0))))))
+    (let ((cadr-ai:*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url))
+              (setf captured arguments)
+              (values "{}" 200 nil))))
+      (funcall
+       (cadr-cli::stream-function-with-provider-retry
+        (cadr-cli::stream-function-with-http-idle-timeout
+         (lambda (provider model context on-event &rest options)
+           (declare (ignore on-event))
+           (apply #'cadr-ai:complete-chat
+                  provider model context options))
+         (lambda ()
+           (cadr-cli::settings-http-idle-timeout-ms manager)))
+        (lambda ()
+          (cadr-cli::settings-retry-settings manager)))
+       provider model context nil)
+      (is (= 0 (getf captured :connect-timeout)))
+      (is (= 0 (getf captured :read-timeout)))
+      (setf captured nil)
+      (funcall
+       (cadr-cli::stream-function-with-provider-retry
+        (cadr-cli::stream-function-with-http-idle-timeout
+         (lambda (provider model context on-event &rest options)
+           (apply #'cadr-ai:stream-chat
+                  provider model context on-event options))
+         (lambda ()
+           (cadr-cli::settings-http-idle-timeout-ms manager)))
+        (lambda ()
+          (cadr-cli::settings-retry-settings manager)))
+       provider model context (lambda (&rest ignored)
+                                (declare (ignore ignored)))))
+    (is (= 0 (getf captured :connect-timeout)))
+    (is (= 0 (getf captured :read-timeout)))))

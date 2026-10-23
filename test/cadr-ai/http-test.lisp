@@ -471,6 +471,49 @@
       (when server-error
         (error server-error)))))
 
+(test zero-connect-timeout-fails-before-the-socket-waits
+  ;; openai@7.19.0 fetchWithTimeout uses setTimeout(abort, ms). ms 0
+  ;; aborts on the next turn. A blackhole listener must not be waited on.
+  (let* ((listener
+           (usocket:socket-listen
+            "127.0.0.1" 0
+            :reuse-address t
+            :element-type '(unsigned-byte 8)))
+         (port (usocket:get-local-port listener))
+         (caught nil)
+         (started (get-internal-real-time))
+         (worker
+           (sb-thread:make-thread
+            (lambda ()
+              (handler-case
+                  (let ((*http-request-function*
+                          #'cadr-ai::native-http-request))
+                    (cadr-ai::request-json
+                     (cadr-ai::make-request-spec
+                      :url (format nil "http://127.0.0.1:~D/timeout"
+                                   port)
+                      :method :post
+                      :payload (cadr-ai::json-object)
+                      :provider :openai)
+                     :connect-timeout 0
+                     :read-timeout 0))
+                (condition (condition)
+                  (setf caught condition))))
+            :name "cadr-test-zero-connect-timeout")))
+    (unwind-protect
+         (progn
+           (sb-thread:join-thread worker :timeout 1)
+           (is (not (sb-thread:thread-alive-p worker)))
+           (is (typep caught 'cadr-ai:timeout-error))
+           (is (cadr-ai:cadr-error-retryable-p caught))
+           (is (< (/ (- (get-internal-real-time) started)
+                     internal-time-units-per-second)
+                  0.5)))
+      (when (sb-thread:thread-alive-p worker)
+        (ignore-errors (sb-thread:terminate-thread worker))
+        (ignore-errors (sb-thread:join-thread worker :timeout 1)))
+      (ignore-errors (usocket:socket-close listener)))))
+
 (test socket-timeouts-remain-distinct-retryable-transport-errors
   (multiple-value-bind (provider model)
       (provider-case :anthropic)

@@ -902,7 +902,7 @@ string. Returns the buffer to store back. Per-delta
                   :identity identity
                   :provider provider))
                (timeout-seconds
-                 (and (integerp timeout-ms) (plusp timeout-ms)
+                 (and (integerp timeout-ms) (>= timeout-ms 0)
                       (/ timeout-ms 1000)))
                (response
                  (call-with-provider-retries
@@ -1031,7 +1031,7 @@ string. Returns the buffer to store back. Per-delta
          (saw-provider-event-p nil)
          (response-request-id nil)
          (timeout-seconds
-           (and (integerp timeout-ms) (plusp timeout-ms)
+           (and (integerp timeout-ms) (>= timeout-ms 0)
                 (/ timeout-ms 1000))))
     (handler-case
         (progn

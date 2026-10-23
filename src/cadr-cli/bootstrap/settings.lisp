@@ -265,7 +265,9 @@
       (unless (member :read-timeout request-options :test #'eq)
         (setf (getf request-options :read-timeout)
               (cond
-                ((and explicit-p (realp explicit) (plusp explicit))
+                ;; OpenAI/Anthropic SDKs arm setTimeout(abort, timeout).
+                ;; 0 is a real 0ms timeout, not "no timeout".
+                ((and explicit-p (realp explicit) (>= explicit 0))
                  (/ explicit 1000))
                 ((and explicit-p (numberp explicit))
                  nil)
