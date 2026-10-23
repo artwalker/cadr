@@ -30,17 +30,17 @@
 
 (defstruct (task-record (:constructor %make-task-record))
   id kind version conversation-id owner input state restarts
-  (abort-requested nil) abort-reason (background nil))
+  (abort-requested nil) abort-reason (background nil) trace)
 
 (defun make-task-record (&key id kind (version 1) conversation-id owner input state
-                           restarts abort-requested abort-reason background)
+                           restarts abort-requested abort-reason background trace)
   (%make-task-record :id id :kind kind :version version :conversation-id conversation-id
                      :owner owner :input input :state state :restarts restarts
                      :abort-requested abort-requested :abort-reason abort-reason
-                     :background background))
+                     :background background :trace trace))
 
 (defstruct submission-record
-  id conversation-id request-id type status entry answer reason)
+  id conversation-id request-id type status entry answer reason trace)
 
 (defstruct document-record
   id kind scope-kind scope-id key (version 1) (history "latest") fork

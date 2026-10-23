@@ -175,6 +175,19 @@
       (cadr-chord:json-put object "byTaskId" (entry-by-task-id entry)))
     object))
 
+(defun encode-carrier (carrier)
+  (when carrier
+    (let ((object (cadr-chord:json-object)))
+      (dolist (pair carrier)
+        (cadr-chord:json-put object (car pair) (cdr pair)))
+      object)))
+
+(defun decode-carrier (object)
+  (when (hash-table-p object)
+    (let ((pairs nil))
+      (maphash (lambda (key value) (push (cons key value) pairs)) object)
+      (nreverse pairs))))
+
 (defun encode-task (task)
   (let ((object (cadr-chord:json-object
                  "id" (task-record-id task)
@@ -193,6 +206,8 @@
       (cadr-chord:json-put object "abortReason" (task-record-abort-reason task)))
     (when (task-record-background task)
       (cadr-chord:json-put object "background" t))
+    (when (task-record-trace task)
+      (cadr-chord:json-put object "trace" (encode-carrier (task-record-trace task))))
     object))
 
 (defun encode-submission (submission)
@@ -209,6 +224,8 @@
       (cadr-chord:json-put object "answer" (submission-record-answer submission)))
     (when (submission-record-reason submission)
       (cadr-chord:json-put object "reason" (submission-record-reason submission)))
+    (when (submission-record-trace submission)
+      (cadr-chord:json-put object "trace" (encode-carrier (submission-record-trace submission))))
     object))
 
 (defun encode-document (document)
@@ -260,7 +277,8 @@
                     :restarts (present-json (hash-get object "restarts"))
                     :abort-requested (hash-get object "abortRequested")
                     :abort-reason (present-json (hash-get object "abortReason"))
-                    :background (hash-get object "background")))
+                    :background (hash-get object "background")
+                    :trace (decode-carrier (present-json (hash-get object "trace")))))
 
 (defun decode-submission (object)
   (make-submission-record :id (hash-get object "id")
@@ -270,7 +288,8 @@
                           :status (hash-get object "status")
                           :entry (present-json (hash-get object "entry"))
                           :answer (present-json (hash-get object "answer"))
-                          :reason (present-json (hash-get object "reason"))))
+                          :reason (present-json (hash-get object "reason"))
+                          :trace (decode-carrier (present-json (hash-get object "trace")))))
 
 (defun decode-document (object)
   (make-document-record :id (hash-get object "id")

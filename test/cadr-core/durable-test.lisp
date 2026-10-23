@@ -1121,13 +1121,37 @@
                      (cdr (assoc "entry.kind"
                                  (cadr-telemetry:recorded-telemetry-event-attributes entry)
                                  :test #'string=))))
+        (is (equal '("pi.durable.entry" "pi.durable.entry" "pi.durable.submission")
+                   (mapcar #'cadr-telemetry:recorded-telemetry-event-name
+                           (cadr-telemetry:recorded-telemetry-span-events fresh))))
+        (is (string= "pi.assistant"
+                     (cdr (assoc "entry.kind"
+                                 (cadr-telemetry:recorded-telemetry-event-attributes
+                                  (second (cadr-telemetry:recorded-telemetry-span-events fresh)))
+                                 :test #'string=))))
+        (let ((settled (durable-event-named fresh "pi.durable.submission")))
+          (is (equal "done"
+                     (cdr (assoc "status"
+                                 (cadr-telemetry:recorded-telemetry-event-attributes settled)
+                                 :test #'string=))))
+          (is (eql (cadr-durable:submission-answer
+                    (cadr-durable:storage-submission-by-request storage 1 "dedupe"))
+                   (cdr (assoc "answer.entry_id"
+                               (cadr-telemetry:recorded-telemetry-event-attributes settled)
+                               :test #'string=)))))
+        (is (equal (cadr-telemetry:recorded-telemetry-span-context fresh)
+                   (cadr-durable::submission-record-trace
+                    (cadr-durable:storage-submission-by-request storage 1 "dedupe"))))
         (is (equal (cadr-telemetry:recorded-telemetry-span-context caller)
                    (cadr-telemetry:recorded-telemetry-link-context
                     (first (cadr-telemetry:recorded-telemetry-span-links fresh)))))
-        (is (null (cadr-telemetry:recorded-telemetry-span-events
-                   (find "done" submits
-                         :key (lambda (span) (durable-span-attr span "result"))
-                         :test #'equal)))))
+        (let ((duplicate (find "done" submits
+                               :key (lambda (span) (durable-span-attr span "result"))
+                               :test #'equal)))
+          (is (null (cadr-telemetry:recorded-telemetry-span-events duplicate)))
+          (is (not (equal (cadr-telemetry:recorded-telemetry-span-context duplicate)
+                          (cadr-durable::submission-record-trace
+                           (cadr-durable:storage-submission-by-request storage 1 "dedupe")))))))
       (let ((rejected (find-if (lambda (span)
                                  (eq :error
                                      (cadr-telemetry:telemetry-status-kind
@@ -1368,3 +1392,419 @@
                                  (cadr-telemetry:recorded-telemetry-event-attributes
                                   (durable-event-named span "pi.durable.replay"))
                                  :test #'string=)))))))))
+
+(defun durable-span-named (telemetry name)
+  (find name (cadr-telemetry:in-memory-telemetry-spans telemetry)
+        :key #'cadr-telemetry:recorded-telemetry-span-name
+        :test #'string=))
+
+(defun durable-report-types (telemetry)
+  (mapcar (lambda (metric)
+            (cdr (assoc "type"
+                        (cadr-telemetry:recorded-measurement-attributes metric)
+                        :test #'string=)))
+          (remove-if-not
+           (lambda (metric)
+             (string= "pi.durable.reports"
+                      (cadr-telemetry:recorded-measurement-name metric)))
+           (cadr-telemetry:in-memory-measurements telemetry))))
+
+(test durable-busy-input-results-are-placed-then-queued
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (storage (cadr-durable:make-memory-storage))
+         (harness nil))
+    (setf harness
+          (cadr-durable:open-harness
+           storage :telemetry telemetry
+           :model (lambda (messages)
+                    (declare (ignore messages))
+                    (let ((second (cadr-durable:harness-submit
+                                   harness "second" :request-id "queued")))
+                      (is (string= "queued" (cadr-durable:submission-status second)))
+                      (let ((duplicate (cadr-durable:harness-submit
+                                        harness "ignored" :request-id "queued")))
+                        (is (eql (cadr-durable:submission-id second)
+                                 (cadr-durable:submission-id duplicate)))
+                        (is (string= "queued" (cadr-durable:submission-status duplicate)))))
+                    "second-answer")))
+    (cadr-durable:harness-submit harness "first")
+    (let ((submits (durable-recorded-spans telemetry "pi.durable.submit")))
+      (is (equal '("placed" "queued" "queued")
+                 (mapcar (lambda (span) (durable-span-attr span "result")) submits)))
+      (is (null (cadr-telemetry:recorded-telemetry-span-events (second submits))))
+      (is (null (cadr-telemetry:recorded-telemetry-span-events (third submits))))
+      (is (equal (cadr-telemetry:recorded-telemetry-span-context (second submits))
+                 (cadr-durable::submission-record-trace
+                  (cadr-durable:storage-submission-by-request storage 1 "queued"))))
+      (is (not (equal (cadr-telemetry:recorded-telemetry-span-context (third submits))
+                      (cadr-durable::submission-record-trace
+                       (cadr-durable:storage-submission-by-request storage 1 "queued"))))))
+    (is (null (search "second-answer"
+                      (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))
+    (is (null (search "ignored"
+                      (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))))
+
+(test durable-public-write-stays-open-as-a-child-of-its-caller
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (storage (cadr-durable:make-memory-storage))
+         (harness (cadr-durable:open-harness
+                   storage :telemetry telemetry
+                   :model (lambda (messages)
+                            (declare (ignore messages))
+                            (error "write ran the model")))))
+    (cadr-telemetry:telemetry-start-span
+     telemetry "caller"
+     (lambda (caller)
+       (let ((submission (cadr-durable:harness-submit
+                          harness nil :type "write" :context-telemetry caller
+                          :entry (cadr-chord:json-object
+                                  "kind" "app.note" "data" "private-note"))))
+         (is (string= "done" (cadr-durable:submission-status submission)))
+         (let* ((recorded-caller (durable-span-named telemetry "caller"))
+                (span (first (durable-recorded-spans telemetry "pi.durable.submit")))
+                (events (cadr-telemetry:recorded-telemetry-span-events span)))
+           (is (eql (cadr-telemetry:recorded-telemetry-span-id recorded-caller)
+                    (cadr-telemetry:recorded-telemetry-span-parent-id span)))
+           (is (equal (cadr-telemetry:recorded-telemetry-span-context recorded-caller)
+                      (cadr-telemetry:recorded-telemetry-span-parent-context span)))
+           (is (null (cadr-telemetry:recorded-telemetry-span-links span)))
+           (is (equal "done" (durable-span-attr span "result")))
+           (is (string= "write" (durable-span-attr span "submission.type")))
+           (is (equal '("pi.durable.entry" "pi.durable.submission")
+                      (mapcar #'cadr-telemetry:recorded-telemetry-event-name events)))
+           (is (string= "app.note"
+                        (cdr (assoc "entry.kind"
+                                    (cadr-telemetry:recorded-telemetry-event-attributes
+                                     (first events))
+                                    :test #'string=))))
+           (is (equal "done"
+                      (cdr (assoc "status"
+                                  (cadr-telemetry:recorded-telemetry-event-attributes
+                                   (second events))
+                                  :test #'string=))))
+           (is (null (assoc "answer.entry_id"
+                            (cadr-telemetry:recorded-telemetry-event-attributes
+                             (second events))
+                            :test #'string=)))
+           (is (equal (cadr-telemetry:recorded-telemetry-span-context span)
+                      (cadr-durable::submission-record-trace submission))))))
+     :attributes nil)
+    (is (null (search "private-note"
+                      (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))))
+
+(test durable-failed-and-orphaned-outcomes-collapse-to-faulted
+  (dolist (status '("faulted" "failed" "orphaned"))
+    (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+           (message (with-output-to-string (stream)
+                      (loop repeat 80 do (write-string "diagnostic " stream))))
+           (registry (cadr-durable:make-registry))
+           (phases (make-hash-table :test #'equal))
+           (storage (cadr-durable:make-memory-storage)))
+      (setf (gethash "fail" phases)
+            (lambda (task runtime)
+              (declare (ignore task))
+              (cond
+                ((string= status "faulted")
+                 (error "~A" message))
+                ((string= status "orphaned")
+                 (cadr-durable:runtime-commit
+                  runtime (lambda ()
+                            (cadr-chord:json-object
+                             "status" "terminal"
+                             "outcome" (cadr-chord:json-object
+                                        "status" "orphaned"
+                                        "reason" message)))))
+                (t
+                 (cadr-durable:runtime-commit
+                  runtime (lambda ()
+                            (cadr-chord:json-object
+                             "status" "terminal"
+                             "outcome" (cadr-chord:json-object
+                                        "status" "failed"
+                                        "error" (cadr-chord:json-object
+                                                 "message" message
+                                                 "detail" "private-error-detail")))))))))
+      (cadr-durable:registry-install
+       registry
+       (cadr-durable:define-task "job"
+         :initial (lambda (input)
+                    (declare (ignore input))
+                    (cadr-chord:json-object "phase" "fail"))
+         :phases phases))
+      (let* ((harness (cadr-durable:open-harness storage :registry registry :telemetry telemetry))
+             (task (cadr-durable:harness-create-task
+                    harness "job" (cadr-chord:json-object)
+                    :trace '(("unknown" . "carrier"))))
+             (span (first (durable-recorded-spans telemetry "pi.durable.phase")))
+             (recorded (format nil "~A~A"
+                               (cadr-telemetry:recorded-telemetry-span-attributes span)
+                               (cadr-telemetry:recorded-telemetry-span-events span)))
+             (outcome (cadr-chord:json-get
+                       (cadr-chord:json-get (cadr-durable:task-record-state task) "outcome")
+                       "status")))
+        (is (string= status outcome))
+        (is (null (cadr-telemetry:recorded-telemetry-span-parent-id span)))
+        (is (string= "faulted" (durable-span-attr span "outcome")))
+        (is (eq :error (cadr-telemetry:telemetry-status-kind
+                        (cadr-telemetry:recorded-telemetry-span-status span))))
+        (is (string= (format nil "task_~A" status)
+                     (cadr-telemetry:telemetry-status-error-name
+                      (cadr-telemetry:recorded-telemetry-span-status span))))
+        (is (= 500 (length (cadr-telemetry:telemetry-status-error-message
+                            (cadr-telemetry:recorded-telemetry-span-status span)))))
+        (is (string= "diagnostic"
+                     (subseq (cadr-telemetry:telemetry-status-error-message
+                              (cadr-telemetry:recorded-telemetry-span-status span))
+                             0 10)))
+        (is (null (search "diagnostic" recorded)))
+        (is (null (search "private-error-detail"
+                          (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))
+        (is (null (search "private-exception-name"
+                          (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))
+        (when (string= status "faulted")
+          (let ((event (durable-event-named span "pi.durable.report")))
+            (is (equal "task_faulted"
+                       (cdr (assoc "type"
+                                   (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                   :test #'string=))))
+            (is (equal "threw"
+                       (cdr (assoc "reason"
+                                   (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                   :test #'string=))))
+            (is (eql (cadr-durable:task-record-id task)
+                     (cdr (assoc "task.id"
+                                 (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                 :test #'string=))))))))))
+
+(test durable-no-progress-and-bare-abort-report-threw
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (registry (cadr-durable:make-registry))
+         (idle (make-hash-table :test #'equal))
+         (held (make-hash-table :test #'equal))
+         (storage (cadr-durable:make-memory-storage)))
+    (setf (gethash "idle" idle)
+          (lambda (task runtime)
+            (declare (ignore task runtime))))
+    (setf (gethash "hold" held)
+          (lambda (task runtime)
+            (declare (ignore task))
+            (cadr-durable:runtime-commit
+             runtime (lambda ()
+                       (cadr-chord:json-object "status" "running" "phase" "hold")))))
+    (cadr-durable:registry-install
+     registry
+     (cadr-durable:define-task "idle"
+       :initial (lambda (input)
+                  (declare (ignore input))
+                  (cadr-chord:json-object "phase" "idle"))
+       :phases idle))
+    (cadr-durable:registry-install
+     registry
+     (cadr-durable:define-task "hold"
+       :initial (lambda (input)
+                  (declare (ignore input))
+                  (cadr-chord:json-object "phase" "hold"))
+       :phases held
+       :abort (lambda (task runtime)
+                (declare (ignore task runtime)))))
+    (let ((harness (cadr-durable:open-harness storage :registry registry :telemetry telemetry)))
+      (cadr-durable:harness-create-task harness "idle" (cadr-chord:json-object))
+      (let* ((held-task (cadr-durable:harness-create-task
+                         harness "hold" (cadr-chord:json-object)))
+             (abort (cadr-durable:harness-abort-task
+                     harness (cadr-durable:task-record-id held-task)))
+             (phases (durable-recorded-spans telemetry "pi.durable.phase"))
+             (idle-span (find "idle" phases
+                              :key (lambda (span) (durable-span-attr span "phase"))
+                              :test #'string=))
+             (abort-span (find "abort" phases
+                               :key (lambda (span) (durable-span-attr span "kind"))
+                               :test #'string=)))
+        (declare (ignore abort))
+        (dolist (span (list idle-span abort-span))
+          (let ((event (durable-event-named span "pi.durable.report")))
+            (is (string= "faulted" (durable-span-attr span "outcome")))
+            (is (equal "threw"
+                       (cdr (assoc "reason"
+                                   (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                   :test #'string=))))
+            (is (null (search "no_progress"
+                              (format nil "~A"
+                                      (cadr-telemetry:recorded-telemetry-event-attributes event)))))
+            (is (null (search "abort"
+                              (cdr (assoc "reason"
+                                          (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                          :test #'string=)))))))))))
+
+(test durable-phase-inherits-the-creator-and-drops-an-explicit-root
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (registry (cadr-durable:make-registry))
+         (phases (make-hash-table :test #'equal))
+         (storage (cadr-durable:make-memory-storage)))
+    (setf (gethash "finish" phases)
+          (lambda (task runtime)
+            (declare (ignore task))
+            (cadr-durable:runtime-commit
+             runtime (lambda ()
+                       (cadr-chord:json-object
+                        "status" "terminal"
+                        "outcome" (cadr-chord:json-object "status" "completed"))))))
+    (cadr-durable:registry-install
+     registry
+     (cadr-durable:define-task "traced"
+       :initial (lambda (input)
+                  (declare (ignore input))
+                  (cadr-chord:json-object "phase" "finish"))
+       :phases phases))
+    (let ((harness (cadr-durable:open-harness storage :registry registry :telemetry telemetry))
+          (tasks nil))
+      (cadr-telemetry:telemetry-start-span
+       telemetry "creator"
+       (lambda (creator)
+         (setf tasks
+               (list (cadr-durable:harness-create-task
+                      harness "traced" (cadr-chord:json-object)
+                      :context-telemetry creator)
+                     (cadr-durable:harness-create-task
+                      harness "traced" (cadr-chord:json-object)
+                      :context-telemetry creator :trace nil)
+                     (cadr-durable:harness-create-task
+                      harness "traced" (cadr-chord:json-object)
+                      :context-telemetry creator :trace "root"))))
+       :attributes nil)
+      (let ((creator (durable-span-named telemetry "creator"))
+            (phase-spans (durable-recorded-spans telemetry "pi.durable.phase")))
+        (is (= 3 (length phase-spans)))
+        (is (equal (list (cadr-telemetry:recorded-telemetry-span-context creator)
+                         (cadr-telemetry:recorded-telemetry-span-context creator)
+                         nil)
+                   (mapcar #'cadr-durable::task-record-trace tasks)))
+        (is (equal (list (cadr-telemetry:recorded-telemetry-span-id creator)
+                         (cadr-telemetry:recorded-telemetry-span-id creator)
+                         nil)
+                   (mapcar #'cadr-telemetry:recorded-telemetry-span-parent-id phase-spans)))
+        (is (equal (cadr-telemetry:recorded-telemetry-span-context creator)
+                   (cadr-telemetry:recorded-telemetry-span-parent-context (first phase-spans))))
+        (is (null (cadr-telemetry:recorded-telemetry-span-parent-context (third phase-spans))))))))
+
+(test durable-reopened-phase-keeps-the-stored-parent
+  (let* ((directory (merge-pathnames (format nil "cadr-durable-trace-~A/" (random 1000000))
+                                     (uiop:temporary-directory)))
+         (telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (registry (cadr-durable:make-registry))
+         (phases (make-hash-table :test #'equal))
+         (creator-context nil)
+         (task-id nil))
+    (ensure-directories-exist directory)
+    (setf (gethash "hold" phases)
+          (lambda (task runtime)
+            (cadr-durable:runtime-commit
+             runtime (lambda ()
+                       (cadr-chord:json-object
+                        "status" "running" "phase" "hold"
+                        "count" (1+ (or (cadr-chord:json-get
+                                         (cadr-durable:task-record-state task) "count")
+                                        0)))))))
+    (cadr-durable:registry-install
+     registry
+     (cadr-durable:define-task "held"
+       :initial (lambda (input)
+                  (declare (ignore input))
+                  (cadr-chord:json-object "phase" "hold"))
+       :phases phases))
+    (unwind-protect
+         (progn
+           (let ((storage (cadr-durable:open-jsonl-storage directory)))
+             (let ((harness (cadr-durable:open-harness
+                             storage :registry registry :telemetry telemetry)))
+               (cadr-telemetry:telemetry-start-span
+                telemetry "creator"
+                (lambda (creator)
+                  (setf creator-context (cadr-telemetry:telemetry-inject
+                                         (cadr-telemetry:telemetry-span-propagation creator)
+                                         creator))
+                  (setf task-id
+                        (cadr-durable:task-record-id
+                         (cadr-durable:harness-create-task
+                          harness "held" (cadr-chord:json-object)
+                          :context-telemetry creator))))
+                :attributes nil))
+             (cadr-durable:storage-close storage))
+           (let* ((reopened (cadr-telemetry:make-in-memory-telemetry))
+                  (storage (cadr-durable:open-jsonl-storage directory))
+                  (harness (cadr-durable:open-harness
+                            storage :registry registry :telemetry reopened)))
+             (cadr-durable:harness-resume harness)
+             (let ((span (first (durable-recorded-spans reopened "pi.durable.phase"))))
+               (is (eq t (durable-span-attr span "resumed")))
+               (is (string= "hold" (durable-span-attr span "phase")))
+               (is (equal creator-context
+                          (cadr-telemetry:recorded-telemetry-span-parent-context span)))
+               (is (equal creator-context
+                          (cadr-durable::task-record-trace
+                           (cadr-durable:storage-task storage task-id)))))
+             (cadr-durable:storage-close storage)))
+      (uiop:delete-directory-tree directory :validate t :if-does-not-exist :ignore))))
+
+(test durable-checkpoint-fires-again-after-leaving-and-returning
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (registry (cadr-durable:make-registry))
+         (phases (make-hash-table :test #'equal))
+         (storage (cadr-durable:make-memory-storage)))
+    (setf (gethash "call" phases)
+          (lambda (task runtime)
+            (declare (ignore task))
+            (cadr-durable:runtime-commit
+             runtime (lambda () (cadr-chord:json-object "status" "running" "phase" "call")))
+            (cadr-durable:runtime-commit
+             runtime (lambda () (cadr-chord:json-object "status" "running" "phase" "other")))
+            (cadr-durable:runtime-commit
+             runtime (lambda () (cadr-chord:json-object "status" "running" "phase" "call")))))
+    (cadr-durable:registry-install
+     registry
+     (cadr-durable:define-task "job"
+       :initial (lambda (input)
+                  (declare (ignore input))
+                  (cadr-chord:json-object "phase" "call"))
+       :phases phases))
+    (let ((harness (cadr-durable:open-harness storage :registry registry :telemetry telemetry)))
+      (cadr-durable:harness-create-task harness "job" (cadr-chord:json-object))
+      (is (equal '("other" "call")
+                 (mapcar (lambda (event)
+                           (cdr (assoc "phase"
+                                       (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                       :test #'string=)))
+                         (remove-if-not
+                          (lambda (event)
+                            (string= "pi.durable.checkpoint"
+                                     (cadr-telemetry:recorded-telemetry-event-name event)))
+                          (cadr-telemetry:recorded-telemetry-span-events
+                           (first (durable-recorded-spans telemetry "pi.durable.phase"))))))))))
+
+(test durable-session-failure-counts-without-starting-a-span
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (reports nil)
+         (storage (cadr-durable:make-memory-storage))
+         (harness (cadr-durable:open-harness
+                   storage :telemetry telemetry
+                   :on-report (lambda (event) (push event reports))))
+         (session (cadr-durable:open-session storage :harness harness)))
+    (is (search "Unknown conversation"
+                (durable-error-text
+                 (lambda ()
+                   (cadr-durable:session-commit
+                    session
+                    (lambda (tx)
+                      (cadr-durable:tx-append-entry
+                       tx :conversation-id 999 :kind "app.failed")))))))
+    (is (cadr-durable:session-failed-p session))
+    (is (null (cadr-telemetry:in-memory-telemetry-spans telemetry)))
+    (is (equal '("session_failed") (durable-report-types telemetry)))
+    (is (search "Unknown conversation"
+                (cadr-chord:json-get (first reports) "message")))
+    (is (null (search "Unknown conversation"
+                      (format nil "~A" (cadr-telemetry:in-memory-measurements telemetry)))))
+    (is (null (search "app.failed"
+                      (format nil "~A"
+                              (append (cadr-telemetry:in-memory-telemetry-spans telemetry)
+                                      (cadr-telemetry:in-memory-measurements telemetry))))))))

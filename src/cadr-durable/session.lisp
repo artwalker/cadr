@@ -30,14 +30,17 @@
   storage
   (failed nil)
   (closed nil)
+  harness
   (cache (make-hash-table :test #'equal)))
 
 (defun assert-live-session (session)
   (when (session-failed session)
     (fail-session)))
 
-(defun open-session (storage)
-  (make-session :storage storage))
+(defvar *session-failure-reporter* (constantly nil))
+
+(defun open-session (storage &key harness)
+  (make-session :storage storage :harness harness))
 
 (defun session-failed-p (session)
   (session-failed session))
@@ -303,6 +306,7 @@
         (storage-commit (session-storage session) (nreverse (tx-writes tx)))
       (error (condition)
         (setf (session-failed session) t)
+        (funcall *session-failure-reporter* session condition)
         (error condition)))))
 
 (defun session-snapshot (session definition scope-id &optional key)
