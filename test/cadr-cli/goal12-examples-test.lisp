@@ -102,7 +102,10 @@
            (goal12-read-project-file
             "docs/acceptance/goal-v12-extension-event-dispatch.md"))
          (events cadr-agent::+extension-hook-events+))
-    (is (= 41 (length events)))
+    ;; pi ExtensionAPI.on is 41 names. cadr keeps the tool_call /
+    ;; tool_result split, so the hook table is 42 once
+    ;; cache_warming_decision is included.
+    (is (= 42 (length events)))
     (dolist (event events)
       (let* ((prefix (format nil "| `:~(~A~)` |" (symbol-name event)))
              (start (search prefix audit))
@@ -132,6 +135,7 @@
   ;; mechanically from types.ts into baseline-interface-inventory.json
   ;; (git-verified at gate time); cadr's set must equal it modulo the
   ;; adjudicated tool_call/tool_result three-phase split.
+  ;; cache_warming_decision stays in both sets.
   (let* ((inventory
           (cadr-ai::parse-json
            (goal12-read-project-file
@@ -145,8 +149,7 @@
            (append
             (remove-if
              (lambda (name)
-               (member name '("tool-call" "tool-result"
-                              "cache-warming-decision")
+               (member name '("tool-call" "tool-result")
                        :test #'string=))
              (mapcar
               (lambda (name)

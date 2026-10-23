@@ -492,3 +492,164 @@
          (search
           "Status: Inactive (waiting for first request)"
           plain))))))
+
+(defun goal19-cache-warming-host (registrars &optional notes)
+  (let ((bundles nil))
+    (loop for registrar in registrars
+          for index from 0
+          for bundle =
+          (cadr-agent::make-extension-bundle
+           :id (format nil "cache-warm-~D" index)
+           :path (format nil "/tmp/cache-warm-~D.lisp" index)
+           :scope :project
+           :rank 1
+           :order index)
+          do (cadr-agent::call-with-extension-registration
+              bundle registrar)
+             (push bundle bundles))
+    (let ((host
+            (cadr-agent::make-extension-host
+             :cwd #P"/tmp/"
+             :notify-function
+             (lambda (message level)
+               (when notes
+                 (push (list level message) (car notes)))))))
+      (cadr-agent::replace-extension-bundles
+       host (nreverse bundles))
+      host)))
+
+(test cache-warming-decision-hook-changes-the-refresh
+  ;; pi@4a080252f cache-warmer.ts refresh calls decide before sending.
+  ;; A later "stop" ends warming until the next real request. A "warm"
+  ;; on an unprofitable decision records the extension-override note.
+  ;; A handler error leaves pi's action. make-live-cache-warmer asks
+  ;; the extension host unless the caller passed its own decide.
+  (let* ((notes (list nil))
+         (stop-host
+           (goal19-cache-warming-host
+            (list
+             (lambda ()
+               (cadr-agent:define-event-hook
+                "cache_warming_decision"
+                :handler
+                (lambda (event context)
+                  (declare (ignore event context))
+                  '(:action :warm))))
+             (lambda ()
+               (cadr-agent:define-event-hook
+                :cache-warming-decision
+                :handler
+                (lambda (event context)
+                  (declare (ignore event context))
+                  '(:action "stop")))))
+            notes))
+         (stopped
+           (goal24-fake-runtime
+            :decide
+            (lambda (event)
+              (cadr-agent::emit-cache-warming-decision
+               stop-host event)))))
+    (cadr-cli:cache-warmer-start
+     (getf stopped :warmer)
+     (goal24-request)
+     #'goal24-current)
+    (funcall (getf stopped :advance) 270000)
+    (is (zerop (length (funcall (getf stopped :get-calls)))))
+    (let ((status
+            (cadr-cli:cache-warmer-status
+             (getf stopped :warmer))))
+      (is (eq (cadr-cli:cache-warming-status-state status) :inactive))
+      (is (string=
+           "stopped by extension"
+           (cadr-cli:cache-warming-status-reason status)))
+      (is (cadr-cli:cache-warming-status-extension-override status))
+      (is (eq :warm
+              (cadr-cli:cache-warming-decision-action
+               (cadr-cli:cache-warming-status-decision status))))
+      (is (search
+           "Stopped (extension override,"
+           (cadr-cli:format-cache-warming-status status 0)))))
+  (let* ((warm-host
+           (goal19-cache-warming-host
+            (list
+             (lambda ()
+               (cadr-agent:define-event-hook
+                :cache-warming-decision
+                :handler
+                (lambda (event context)
+                  (declare (ignore event context))
+                  '(:action :warm)))))))
+         (forced
+           (goal24-fake-runtime
+            :branch (goal24-branch-with-prompt 5000)
+            :decide
+            (lambda (event)
+              (cadr-agent::emit-cache-warming-decision
+               warm-host event)))))
+    (cadr-cli:cache-warmer-start
+     (getf forced :warmer) (goal24-request) #'goal24-current)
+    (funcall (getf forced :advance) 270000)
+    (is (= 1 (length (funcall (getf forced :get-calls)))))
+    (is (string=
+         "extension override"
+         (cadr-cli::cache-warm-usage-entry-note
+          (first (funcall (getf forced :get-warmed))))))
+    (cadr-cli:cache-warmer-cancel (getf forced :warmer)))
+  (let* ((notes (list nil))
+         (broken-host
+           (goal19-cache-warming-host
+            (list
+             (lambda ()
+               (cadr-agent:define-event-hook
+                :cache-warming-decision
+                :handler
+                (lambda (event context)
+                  (declare (ignore event context))
+                  (error "warming broke")))))
+            notes))
+         (kept
+           (goal24-fake-runtime
+            :decide
+            (lambda (event)
+              (cadr-agent::emit-cache-warming-decision
+               broken-host event)))))
+    (cadr-cli:cache-warmer-start
+     (getf kept :warmer) (goal24-request) #'goal24-current)
+    (funcall (getf kept :advance) 270000)
+    (is (= 1 (length (funcall (getf kept :get-calls)))))
+    (is (null
+         (cadr-cli::cache-warm-usage-entry-note
+          (first (funcall (getf kept :get-appended))))))
+    (is (search "warming broke" (second (first (car notes)))))
+    (cadr-cli:cache-warmer-cancel (getf kept :warmer)))
+  (let* ((host
+           (goal19-cache-warming-host
+            (list
+             (lambda ()
+               (cadr-agent:define-event-hook
+                :cache-warming-decision
+                :handler
+                (lambda (event context)
+                  (declare (ignore event context))
+                  '(:action :stop)))))))
+         (settings (cadr-cli::make-memory-settings-manager))
+         (live
+           (cadr-cli:make-live-cache-warmer
+            settings
+            (lambda () nil)
+            (lambda () nil)
+            (lambda (&rest args) (declare (ignore args)) nil)
+            :extension-host host))
+         (owned
+           (cadr-cli:make-live-cache-warmer
+            settings
+            (lambda () nil)
+            (lambda () nil)
+            (lambda (&rest args) (declare (ignore args)) nil)
+            :extension-host host
+            :decide (lambda (event) (getf event :action))))
+         (event '(:type :cache-warming-decision :action :warm)))
+    (is (eq :stop
+            (funcall (cadr-cli::cache-warmer-decide live) event)))
+    (is (eq :warm
+            (funcall (cadr-cli::cache-warmer-decide owned) event)))))

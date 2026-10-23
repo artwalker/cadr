@@ -934,7 +934,10 @@
                             (cadr-agent:agent-session agent))))
                 (and active
                      (cadr-agent:session-entries active))))
-            inner-stream))
+            inner-stream
+            :extension-host
+            (cli-extension-manager-host
+             extension-manager)))
          (agent
            (cadr-agent:make-agent
             :provider (provider-config-provider config)

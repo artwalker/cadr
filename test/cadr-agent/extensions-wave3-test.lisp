@@ -10,8 +10,8 @@
     :user-bash))
 
 ;; pi@4a080252f packages/coding-agent/src/core/extensions/types.ts
-;; ExtensionAPI.on. cache_warming_decision is not a hook-table member.
-;; tool_call / tool_result are the three-phase split.
+;; ExtensionAPI.on. tool_call / tool_result are the three-phase split.
+;; cache_warming_decision is a hook-table member.
 (defparameter +v140-extension-on-events+
   '("project_trust"
     "resources_discover"
@@ -60,8 +60,7 @@
    (append
     (loop for name in +v140-extension-on-events+
           unless (member name
-                         '("tool_call" "tool_result"
-                           "cache_warming_decision")
+                         '("tool_call" "tool_result")
                          :test #'string=)
             collect (intern
                      (substitute #\- #\_ (string-upcase name))
@@ -824,3 +823,167 @@
              host :confirm "Inner"
              (lambda () 'ok))))))
     (is (equal '((:end :select) (:start :select)) seen))))
+
+(test cache-warming-decision-uses-the-last-extension-override
+  ;; pi@4a080252f packages/coding-agent/test/cache-warmer.test.ts
+  ;; ExtensionRunner.emitCacheWarmingDecision, and runner.ts
+  ;; emitCacheWarmingDecision: the last supplied action wins, a
+  ;; missing action does not replace, and a handler error is reported
+  ;; without discarding the action chosen so far. Later handlers still
+  ;; see pi's original action.
+  (let ((event
+          '(:type :cache-warming-decision
+            :warm-cost 0.05d0
+            :miss-cost 0.5d0
+            :continuation-probability 0.15d0
+            :action :warm))
+        (*notifications* nil))
+    (declare (special *notifications*))
+    (let* ((seen nil)
+           (warm
+             (make-test-extension-bundle
+              "cache-warm"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 "cache_warming_decision"
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore context))
+                   (push
+                    (cadr-agent:extension-event-payload hook-event)
+                    seen)
+                   '(:action :warm))))))
+           (stop
+             (make-test-extension-bundle
+              "cache-stop"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :cache-warming-decision
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore context))
+                   (push
+                    (getf
+                     (cadr-agent:extension-event-payload hook-event)
+                     :action)
+                    seen)
+                   '(:action "stop"))))))
+           (host
+             (make-test-extension-host
+              (list warm stop)
+              :notifications '*notifications*)))
+      (is (string= "stop"
+                   (cadr-agent::emit-cache-warming-decision
+                    host event)))
+      (is (eq :warm (first seen)))
+      (is (equal event (second seen)))
+      (is (null *notifications*)))
+    (let* ((keep
+             (make-test-extension-bundle
+              "cache-keep"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :cache-warming-decision
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore hook-event context))
+                   '(:action :stop))))))
+           (blank
+             (make-test-extension-bundle
+              "cache-blank"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :cache-warming-decision
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore hook-event context))
+                   nil)))))
+           (ignored
+             (make-test-extension-bundle
+              "cache-ignored"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :cache-warming-decision
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore hook-event context))
+                   '(:note "seen"))))))
+           (host
+             (make-test-extension-host
+              (list keep blank ignored))))
+      (is (eq :stop
+              (cadr-agent::emit-cache-warming-decision host event))))
+    (let* ((broken
+             (make-test-extension-bundle
+              "cache-broken"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :cache-warming-decision
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore hook-event context))
+                   (error "warming broke"))))
+              :path "/tmp/cache-broken.lisp"))
+           (after
+             (make-test-extension-bundle
+              "cache-after"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :cache-warming-decision
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore hook-event context))
+                   '(:action :stop))))))
+           (host
+             (make-test-extension-host
+              (list broken after)
+              :notifications '*notifications*)))
+      (setf *notifications* nil)
+      (is (eq :stop
+              (cadr-agent::emit-cache-warming-decision host event)))
+      (is (some
+           (lambda (notification)
+             (and (eq :error (first notification))
+                  (search "warming broke" (second notification))
+                  (search "/tmp/cache-broken.lisp"
+                          (second notification))))
+           *notifications*)))
+    (let* ((only
+             (make-test-extension-bundle
+              "cache-only-error"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :cache-warming-decision
+                 :handler
+                 (lambda (hook-event context)
+                   (declare (ignore hook-event context))
+                   (error "warming broke"))))))
+           (host
+             (make-test-extension-host
+              (list only)
+              :notifications '*notifications*))
+           (empty (make-test-extension-host nil)))
+      (setf *notifications* nil)
+      (is (eq :warm
+              (cadr-agent::emit-cache-warming-decision host event)))
+      (is (search "warming broke"
+                  (second (first *notifications*))))
+      (is (eq :warm
+              (cadr-agent::emit-cache-warming-decision empty event)))
+      (is (eq :warm
+              (cadr-agent::emit-cache-warming-decision nil event)))
+      (let ((cleared
+              (make-test-extension-host
+               (list
+                (make-test-extension-bundle
+                 "cache-clear"
+                 (lambda ()
+                   (cadr-agent:define-event-hook
+                    :cache-warming-decision
+                    :handler
+                    (lambda (hook-event context)
+                      (declare (ignore hook-event context))
+                      '(:action nil)))))))))
+        (is (null
+             (cadr-agent::emit-cache-warming-decision
+              cleared event)))))))

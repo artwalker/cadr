@@ -827,7 +827,7 @@
 (defun make-live-cache-warmer
     (settings-manager get-agent get-branch
      inner-stream-function
-     &key decide on-warmed now-fn schedule-fn)
+     &key decide extension-host on-warmed now-fn schedule-fn)
   (apply
    #'make-cache-warmer
    (make-cache-warmer-stream-simple
@@ -839,7 +839,10 @@
     (list :decide
           (or decide
               (lambda (event)
-                (getf event :action))))
+                (if extension-host
+                    (cadr-agent::emit-cache-warming-decision
+                     extension-host event)
+                    (getf event :action)))))
     (when on-warmed (list :on-warmed on-warmed))
     (when now-fn (list :now-fn now-fn))
     (when schedule-fn (list :schedule-fn schedule-fn)))))

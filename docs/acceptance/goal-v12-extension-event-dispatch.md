@@ -1,6 +1,6 @@
 # Goal 12 extension event dispatch audit
 
-The public event set contains 41 events. Declaration and result validation do
+The public event set contains 42 events. Declaration and result validation do
 not count as implementation: every row below names the production dispatch
 site and a test that installs a handler, drives that production path, and
 asserts that the handler was called.
@@ -11,6 +11,7 @@ asserts that the handler was called.
 | `:turn-end` | `src/cadr-agent/loop.lisp:744` | `TURN-HOOKS-REWRITE-AND-APPEND-BEFORE-SESSION-PERSISTENCE`, `test/cadr-agent/extensions-test.lisp:881` |
 | `:agent-before-settle` | `src/cadr-agent/loop/turns.lisp` | `AGENT-BEFORE-SETTLE-ENTRIES-REQUEST-ANOTHER-PROVIDER-TURN`, `test/cadr-agent/loop-test.lisp:430` |
 | `:context-with-system` | `src/cadr-agent/loop/turns.lisp` | `CONTEXT-WITH-SYSTEM-REPLACES-THE-REQUEST-PROMPT`, `test/cadr-agent/loop-test.lisp:543` |
+| `:cache-warming-decision` | `src/cadr-cli/cache-warmer.lisp` | `CACHE-WARMING-DECISION-HOOK-CHANGES-THE-REFRESH`, `test/cadr-cli/goal24-cache-warmer-test.lisp:521` |
 | `:tool-call-before` | `src/cadr-agent/tool.lisp:201` | `TOOL-HOOKS-AFFECT-REAL-EXECUTION-AND-REVALIDATE-REWRITTEN-ARGUMENTS`, `test/cadr-agent/extensions-test.lisp:606` |
 | `:tool-call-after` | `src/cadr-agent/loop.lisp:213` | `TOOL-HOOKS-AFFECT-REAL-EXECUTION-AND-REVALIDATE-REWRITTEN-ARGUMENTS`, `test/cadr-agent/extensions-test.lisp:606` |
 | `:tool-call-error` | `src/cadr-agent/loop.lisp:324` | `GOAL10-TOOL-CALL-ERROR-HOOK-RETRIES-AT-THE-LIVE-CONDITION-SITE`, `test/cadr-agent/extensions-wave2-test.lisp:1329` |

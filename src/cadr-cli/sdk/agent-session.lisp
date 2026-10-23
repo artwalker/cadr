@@ -538,7 +538,8 @@
                   (and session
                        (cadr-agent:session-entries
                         session))))
-              inner-stream))
+              inner-stream
+              :extension-host extension-host))
            (wrapped-stream
              (wrap-stream-function-with-cache-warmer
               warmer

@@ -978,6 +978,48 @@
     (finalize-lifecycle-state
      event state last-result)))
 
+(defun emit-cache-warming-decision (host event)
+  ;; pi@4a080252f runner.ts emitCacheWarmingDecision. The event keeps
+  ;; pi's action. The last handler that supplies :action replaces it.
+  ;; A handler error is reported and leaves the action chosen so far.
+  (let ((action (getf event :action)))
+    (unless host
+      (return-from emit-cache-warming-decision action))
+    (let* ((snapshot (extension-host-current-snapshot host))
+           (definitions
+             (copy-list
+              (gethash
+               :cache-warming-decision
+               (extension-snapshot-hooks snapshot))))
+           (held (acquire-extension-snapshot host snapshot)))
+      (unwind-protect
+           (sb-thread:with-recursive-lock
+               ((extension-host-hook-lock host))
+             (dolist (definition definitions)
+               (handler-case
+                   (let ((result
+                           (call-with-extension-definition
+                            host snapshot definition
+                            (lambda (context)
+                              (funcall
+                               (extension-hook-definition-handler
+                                definition)
+                               (make-lifecycle-event
+                                :cache-warming-decision
+                                (copy-tree event))
+                               context)))))
+                     (when (strict-keyword-plist-p result)
+                       (let* ((sentinel (cons nil nil))
+                              (override
+                                (getf result :action sentinel)))
+                         (unless (eq override sentinel)
+                           (setf action override)))))
+                 (condition (condition)
+                   (notify-extension-failure
+                    host definition "Hook" condition)))))
+        (release-acquired-extension-snapshot host held)))
+    action))
+
 (defun extension-resource-source-label (extension-path)
   (let ((text
           (if (pathnamep extension-path)

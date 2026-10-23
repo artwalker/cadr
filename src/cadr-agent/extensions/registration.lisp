@@ -401,6 +401,7 @@
     :session-tree
     :context
     :context-with-system
+    :cache-warming-decision
     :before-agent-start
     :agent-start
     :agent-end
@@ -430,7 +431,9 @@
   '(("tool_call" . :tool-call-before)
     ("tool-call" . :tool-call-before)
     ("tool_result" . :tool-call-after)
-    ("tool-result" . :tool-call-after)))
+    ("tool-result" . :tool-call-after)
+    ("cache_warming_decision" . :cache-warming-decision)
+    ("cache-warming-decision" . :cache-warming-decision)))
 
 (defun normalize-extension-hook-event (event)
   (let ((name

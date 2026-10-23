@@ -1263,7 +1263,9 @@
     ;; call-when so a confirm opened on the TUI input thread returns
     ;; before the next key (v1.4.0 showExtensionConfirm).
     ;; Measured 2026-10-23: 274 def forms in these eight owners.
-    (is (= 274 definition-count)
+    ;; +1 GAP-19: emit-cache-warming-decision (lifecycle.lisp).
+    ;; Measured 2026-10-23 after that function: 275.
+    (is (= 275 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1321,7 +1323,7 @@
           "B9 changed the frozen extension export text")
       (is (and events
                (string=
-                "3f487d4b7b42f5f4dd2c44b2ef86730571f615b9eaff0b86de34a581d2a37e2b"
+                "a1861c5dd6e35637b2611fce8557fd1baad47ad6604b6f3bbc05324ec3200db2"
                 (goal14-sha256 events)))
           "B9 changed the frozen 41-event source block"))))
 
