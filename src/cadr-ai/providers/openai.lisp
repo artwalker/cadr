@@ -616,16 +616,26 @@
   (and supplied-p (stringp summary) (plusp (length summary))))
 
 (defun responses-summary-value (summary supplied-p codex-p)
-  ;; Responses uses `reasoningSummary || "auto"`. Codex uses `??`,
-  ;; so a supplied null stays JSON null and "" stays "".
+  ;; Responses uses `reasoningSummary || "auto"`.
+  ;; Codex uses `reasoningSummary ?? "auto"`: null becomes "auto"
+  ;; and "" stays "".
   (cond
-    ((and codex-p supplied-p)
-     (cond
-       ((or (null summary) (eq summary 'null)) 'null)
-       ((stringp summary) summary)
-       ((symbolp summary) (string-downcase (symbol-name summary)))
-       (t (princ-to-string summary))))
-    ((responses-summary-present-p summary supplied-p) summary)
+    ((and codex-p supplied-p (stringp summary))
+     summary)
+    ((and codex-p supplied-p
+          (symbolp summary)
+          (not (null summary))
+          (not (eq summary 'null)))
+     (string-downcase (symbol-name summary)))
+    ((and codex-p supplied-p
+          summary
+          (not (eq summary 'null))
+          (not (stringp summary))
+          (not (symbolp summary)))
+     (princ-to-string summary))
+    ((and (not codex-p)
+          (responses-summary-present-p summary supplied-p))
+     summary)
     (t "auto")))
 
 (defun responses-sampling-level (model reasoning summary summary-p)

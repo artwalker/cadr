@@ -134,6 +134,7 @@
               :sampling (goal13-sampling-levels))
              (goal13-context)
              :stream-p t
+             :service-tier "flex"
              :reasoning-summary "concise"))))
     (is (string= "medium"
                  (cadr-ai::json-get
@@ -171,7 +172,9 @@
                   "summary")))
     (is (goal13-close
          0.8d0
-         (cadr-ai::json-get azure "temperature")))))
+         (cadr-ai::json-get azure "temperature")))
+    ;; AzureOpenAIResponsesOptions has no serviceTier.
+    (is (not (cadr-ai::json-present-p azure "service_tier")))))
 
 (test responses-service-tier-is-sent-only-when-supplied
   ;; pi@4a080252f openai-responses.ts. Undefined omits the field.
@@ -234,10 +237,17 @@
     (let ((null-summary
             (goal13-codex-payload
              model :reasoning :low :reasoning-summary nil)))
-      (is (cadr-ai::json-null-p
-           (cadr-ai::json-get
-            (cadr-ai::json-get null-summary "reasoning")
-            "summary"))))
+      (is (string= "auto"
+                   (cadr-ai::json-get
+                    (cadr-ai::json-get null-summary "reasoning")
+                    "summary"))))
+    (let ((empty-summary
+            (goal13-codex-payload
+             model :reasoning :low :reasoning-summary "")))
+      (is (string= ""
+                   (cadr-ai::json-get
+                    (cadr-ai::json-get empty-summary "reasoning")
+                    "summary"))))
     (let ((summary-only
             (goal13-codex-payload
              model :reasoning-summary "detailed")))
@@ -310,6 +320,22 @@
                   "zai-glm-5-3" t +goal13-glm-5-3-levels+)
                  :reasoning :medium)
                 "reasoning_effort")))
+  (let ((glm-off
+          (goal13-mistral-model
+           "zai-glm-5-3" t +goal13-glm-5-3-levels+)))
+    (is (not (cadr-ai::json-present-p
+              (goal13-mistral-payload glm-off)
+              "reasoning_effort")))
+    (is (string= "low"
+                 (cadr-ai::json-get
+                  (goal13-mistral-payload glm-off :reasoning :off)
+                  "reasoning_effort"))))
+  (is (not (cadr-ai::json-present-p
+            (goal13-mistral-payload
+             (goal13-mistral-model
+              "empty-effort" t '((:high . "") (:off . "none")))
+             :reasoning :high)
+            "reasoning_effort")))
   (let ((plain
           (goal13-mistral-payload
            (goal13-mistral-model "mistral-medium-2505" nil)

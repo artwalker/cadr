@@ -12,20 +12,21 @@
           milliseconds))
 
 (defun mistral-active-reasoning (model reasoning)
-  ;; streamSimple drops "off" before choosing prompt_mode or effort.
-  (let ((requested
-          (and reasoning (not (eq reasoning :off)) reasoning)))
-    (when requested
-      (let ((clamped (clamp-thinking-level model requested)))
-        (unless (eq clamped :off)
-          clamped)))))
+  ;; streamSimple clamps first. A level that is still "off" after
+  ;; the clamp is dropped. An unsupported "off" moves up first.
+  (when reasoning
+    (let ((clamped (clamp-thinking-level model reasoning)))
+      (unless (eq clamped :off)
+        clamped))))
 
 (defun mistral-mapped-effort (model level)
-  ;; `effortMap[level] ?? "high"`. A null map entry is "high".
+  ;; `effortMap[level] ?? "high"`. Null and a missing entry become
+  ;; "high". "" stays empty so the payload writer omits the field.
   (let ((value (model-thinking-level-value model level)))
-    (if (and (stringp value) (plusp (length value)))
-        value
-        "high")))
+    (cond
+      ((not (stringp value)) "high")
+      ((plusp (length value)) value)
+      (t nil))))
 
 (defun apply-mistral-reasoning
     (payload model reasoning prompt-mode prompt-mode-p)

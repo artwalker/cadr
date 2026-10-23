@@ -273,7 +273,10 @@
                                    :api :openai-responses
                                    :base-url base)
                   context
-                  args)))
+                  ;; Azure Responses options have no serviceTier.
+                  (loop for (arg-key arg-value) on args by #'cddr
+                        unless (eq arg-key :service-tier)
+                          append (list arg-key arg-value)))))
     (json-put (request-spec-payload request)
               "model" deployment)
     (setf
