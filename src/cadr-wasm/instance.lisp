@@ -183,13 +183,12 @@
                                          :elems elems :datas datas)))
       (loop for provided in func-imports for index from 0 do
         (let ((fn (wasm-extern-value provided))
-              (owner (wasm-extern-instance provided)))
+              (owner (wasm-extern-instance provided))
+              (sig (aref func-types index)))
           (setf (aref funcs index)
-                (if owner
-                    (lambda (&rest args)
-                      (let ((*wasm-instance* owner))
-                        (apply fn args)))
-                    fn))))
+                (cond (owner (adapt-cross-instance fn owner sig))
+                      ((host-adapt-p sig) (adapt-host-function fn sig))
+                      (t fn)))))
       (loop for fn across (compiled-module-funcs compiled) for index from (length func-imports) do
         (setf (aref funcs index) fn))
       (loop for provided in table-imports for index from 0 do
@@ -263,15 +262,96 @@
       (:table (let ((table (aref (wasm-instance-tables instance) (wasm-export-index item))))
                 (make-wasm-extern :kind :table :value table :type (table-type-of table)))))))
 
+(defun spec-to-lisp-args (types args)
+  (loop for type across types
+        for arg in args
+        nconc (ecase type
+                (:i64 (list (ldb (byte 32 0) arg)
+                            (ldb (byte 32 32) (i64 arg))))
+                (:i32 (list (ldb (byte 32 0) arg)))
+                (:f32 (list (bits-to-f32 arg)))
+                (:f64 (list (bits-to-f64 arg)))
+                ((:funcref :externref) (list arg)))))
+
+(defun lisp-to-spec-results (types values)
+  (let ((rest values))
+    (loop for type across types
+          collect (ecase type
+                    (:i64 (logior (pop rest) (ash (pop rest) 32)))
+                    (:i32 (pop rest))
+                    (:f32 (f32-to-bits (pop rest)))
+                    (:f64 (f64-to-bits (pop rest)))
+                    ((:funcref :externref) (pop rest))))))
+
+(defun host-adapt-p (sig)
+  (flet ((splitp (types)
+           (find-if (lambda (type) (member type '(:i64 :f32 :f64))) types)))
+    (or (splitp (sig-params sig)) (splitp (sig-results sig)))))
+
+(defun adapt-host-function (fn sig)
+  "Host imports still take one integer per wasm value. Compiled code passes halves."
+  (let* ((results (coerce (sig-results sig) 'list))
+         (groups (param-groups (sig-params sig)))
+         (vars (group-vars groups))
+         (spec-vars (loop for type in results collect (gensym "R")))
+         (packed (let ((rest vars))
+                   (loop for type in (coerce (sig-params sig) 'list)
+                         collect (ecase type
+                                   (:i64 (let ((lo (pop rest)) (hi (pop rest)))
+                                           (i64-join-form lo hi)))
+                                   (:i32 `(ldb (byte 32 0) ,(pop rest)))
+                                   (:f32 (f32-to-bits-form (pop rest)))
+                                   (:f64 (f64-to-bits-form (pop rest)))
+                                   ((:funcref :externref) (pop rest))))))
+         (unpacked (let ((rest spec-vars))
+                     (loop for type in results
+                           nconc (ecase type
+                                   (:i64 (let ((n (pop rest)))
+                                           `((ldb (byte 32 0) ,n)
+                                             (ldb (byte 32 32) ,n))))
+                                   (:i32 (list (pop rest)))
+                                   (:f32 (list (f32-from-bits-form (pop rest))))
+                                   (:f64 (list (f64-from-bits-form (pop rest))))
+                                   ((:funcref :externref) (list (pop rest))))))))
+    (compile nil
+             `(lambda ,vars
+                (declare (optimize (speed 3) (safety 0) (debug 0))
+                         (ignorable ,@vars))
+                ,(if results
+                     `(multiple-value-bind ,spec-vars
+                          (funcall ,fn ,@packed)
+                        (values ,@unpacked))
+                     `(funcall ,fn ,@packed))))))
+
+(defun adapt-cross-instance (fn owner sig)
+  (let* ((groups (param-groups (sig-params sig)))
+         (vars (group-vars groups)))
+    (compile nil
+             `(lambda ,vars
+                (declare (optimize (speed 3) (safety 0) (debug 0))
+                         (ignorable ,@vars))
+                (let ((*wasm-instance* ,owner))
+                  (funcall (the function ,fn) ,@vars))))))
+
 (defun invoke (instance name &rest args)
   (let ((extern (get-export instance name)))
     (unless (eq (wasm-extern-kind extern) :func)
       (wasm-trap "indirect call type mismatch"))
     (sb-int:with-float-traps-masked (:invalid :overflow :divide-by-zero :underflow :inexact)
       (let ((*wasm-instance* instance)
-            (*wasm-depth* 0))
-        (multiple-value-list (apply (wasm-extern-value extern) args))))))
+            (*wasm-depth* 0)
+            (sig (wasm-extern-type extern)))
+        (lisp-to-spec-results
+         (sig-results sig)
+         (multiple-value-list
+          (apply (wasm-extern-value extern)
+                 (spec-to-lisp-args (sig-params sig) args))))))))
 
 (defun global-value (instance name)
-  (let ((extern (get-export instance name)))
-    (wasm-gcell-value (wasm-extern-value extern))))
+  (let* ((extern (get-export instance name))
+         (cell (wasm-extern-value extern))
+         (type (car (wasm-extern-type extern))))
+    (case type
+      ((:i64 :f64) (logior (wasm-gcell-lo cell) (ash (wasm-gcell-hi cell) 32)))
+      ((:i32 :f32) (wasm-gcell-lo cell))
+      (t (wasm-gcell-value cell)))))

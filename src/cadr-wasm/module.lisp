@@ -64,6 +64,10 @@
 (defstruct wasm-gcell
   (value 0)
   (bits 0 :type (unsigned-byte 64))
+  ;; i64 and the raw bits of f32/f64 live in two fixnum halves. A single
+  ;; (unsigned-byte 64) with bit 62 or 63 set is a bignum.
+  (lo 0 :type (unsigned-byte 32))
+  (hi 0 :type (unsigned-byte 32))
   (f64 0d0 :type double-float)
   (f32 0f0 :type single-float))
 

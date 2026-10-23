@@ -323,10 +323,13 @@ A mask on every f64 operation is arch_set_fp_modes in the profile."
 (defun gcell-store (cell type value)
   (setf (wasm-gcell-value cell) value)
   (when (member type '(:i32 :i64 :f32 :f64))
-    (setf (wasm-gcell-bits cell) (i64 value))
-    (case type
-      (:f32 (setf (wasm-gcell-f32 cell) (bits-to-f32 value)))
-      (:f64 (setf (wasm-gcell-f64 cell) (bits-to-f64 value)))))
+    (let ((bits (i64 value)))
+      (setf (wasm-gcell-bits cell) bits
+            (wasm-gcell-lo cell) (ldb (byte 32 0) bits)
+            (wasm-gcell-hi cell) (ldb (byte 32 32) bits))
+      (case type
+        (:f32 (setf (wasm-gcell-f32 cell) (bits-to-f32 value)))
+        (:f64 (setf (wasm-gcell-f64 cell) (bits-to-f64 value))))))
   value)
 
 (defun load-le (memory address offset size)

@@ -93,38 +93,54 @@ operand stack. Spec functions that push a funcref or externref are not."
                        body)))))
 
 (defun bit-binop (width function left right)
-  (let ((mask (if (= width 32) '(byte 32 0) '(byte 64 0))))
+  (let ((mask (if (= width 32) '(byte 32 0) '(byte 64 0)))
+        (word (if (= width 32) '(unsigned-byte 32) '(unsigned-byte 64))))
     (case function
-      ((i32-add i64-add) `(ldb ,mask (+ (the (unsigned-byte 64) ,left)
-                                        (the (unsigned-byte 64) ,right))))
-      ((i32-sub i64-sub) `(ldb ,mask (- (the (unsigned-byte 64) ,left)
-                                        (the (unsigned-byte 64) ,right))))
-      ((i32-mul i64-mul) `(ldb ,mask (* (the (unsigned-byte 64) ,left)
-                                        (the (unsigned-byte 64) ,right))))
-      ((i32-and i64-and) `(logand (the (unsigned-byte 64) ,left)
-                                  (the (unsigned-byte 64) ,right)
+      ((i32-add i64-add) `(ldb ,mask (+ (the ,word ,left)
+                                        (the ,word ,right))))
+      ((i32-sub i64-sub) `(ldb ,mask (- (the ,word ,left)
+                                        (the ,word ,right))))
+      (i32-mul
+       `(let* ((a (the (unsigned-byte 32) ,left))
+               (b (the (unsigned-byte 32) ,right))
+               (a0 (ldb (byte 16 0) a))
+               (a1 (ash a -16))
+               (b0 (ldb (byte 16 0) b))
+               (b1 (ash b -16))
+               (p00 (* a0 b0))
+               (mid (+ (ash p00 -16)
+                       (ldb (byte 16 0) (* a0 b1))
+                       (ldb (byte 16 0) (* a1 b0)))))
+          (declare (type (unsigned-byte 32) a b)
+                   (type (unsigned-byte 16) a0 a1 b0 b1))
+          (logior (ldb (byte 16 0) p00)
+                  (ash (ldb (byte 16 0) mid) 16))))
+      (i64-mul `(ldb ,mask (* (the ,word ,left)
+                              (the ,word ,right))))
+      ((i32-and i64-and) `(logand (the ,word ,left)
+                                  (the ,word ,right)
                                   ,(if (= width 32) '#xffffffff '#xffffffffffffffff)))
-      ((i32-or i64-or) `(ldb ,mask (logior (the (unsigned-byte 64) ,left)
-                                           (the (unsigned-byte 64) ,right))))
-      ((i32-xor i64-xor) `(ldb ,mask (logxor (the (unsigned-byte 64) ,left)
-                                             (the (unsigned-byte 64) ,right))))
-      ((i32-eq i64-eq) `(if (= (the (unsigned-byte 64) ,left)
-                               (the (unsigned-byte 64) ,right))
+      ((i32-or i64-or) `(ldb ,mask (logior (the ,word ,left)
+                                           (the ,word ,right))))
+      ((i32-xor i64-xor) `(ldb ,mask (logxor (the ,word ,left)
+                                             (the ,word ,right))))
+      ((i32-eq i64-eq) `(if (= (the ,word ,left)
+                               (the ,word ,right))
                             1 0))
-      ((i32-ne i64-ne) `(if (= (the (unsigned-byte 64) ,left)
-                               (the (unsigned-byte 64) ,right))
+      ((i32-ne i64-ne) `(if (= (the ,word ,left)
+                               (the ,word ,right))
                             0 1))
-      ((i32-lt-u i64-lt-u) `(if (< (the (unsigned-byte 64) ,left)
-                                   (the (unsigned-byte 64) ,right))
+      ((i32-lt-u i64-lt-u) `(if (< (the ,word ,left)
+                                   (the ,word ,right))
                                 1 0))
-      ((i32-gt-u i64-gt-u) `(if (> (the (unsigned-byte 64) ,left)
-                                   (the (unsigned-byte 64) ,right))
+      ((i32-gt-u i64-gt-u) `(if (> (the ,word ,left)
+                                   (the ,word ,right))
                                 1 0))
-      ((i32-le-u i64-le-u) `(if (<= (the (unsigned-byte 64) ,left)
-                                    (the (unsigned-byte 64) ,right))
+      ((i32-le-u i64-le-u) `(if (<= (the ,word ,left)
+                                    (the ,word ,right))
                                 1 0))
-      ((i32-ge-u i64-ge-u) `(if (>= (the (unsigned-byte 64) ,left)
-                                    (the (unsigned-byte 64) ,right))
+      ((i32-ge-u i64-ge-u) `(if (>= (the ,word ,left)
+                                    (the ,word ,right))
                                 1 0))
       (t nil))))
 
@@ -198,13 +214,25 @@ operand stack. Spec functions that push a funcref or externref are not."
   (case type
     (:f32 'single-float)
     (:f64 'double-float)
-    (t '(unsigned-byte 64))))
+    ;; i32, and each half of an i64. A full (unsigned-byte 64) does not
+    ;; fit in a fixnum once bit 62 is set.
+    (t '(unsigned-byte 32))))
 
 (defun repr-default (type)
   (case type
     (:f32 '0f0)
     (:f64 '0d0)
     (t 0)))
+
+(defun param-groups (types)
+  "One group per wasm value. An i64 group is (:i64 lo hi)."
+  (loop for type across types
+        collect (if (eq type :i64)
+                    (list :i64 (gensym "LO") (gensym "HI"))
+                    (list type (gensym "P")))))
+
+(defun group-vars (groups)
+  (loop for group in groups nconc (copy-list (rest group))))
 
 (defun f64-from-bits-form (form)
   (let ((bits (gensym "B")) (hi (gensym "H")) (lo (gensym "L")))
@@ -340,29 +368,36 @@ operand stack. Spec functions that push a funcref or externref are not."
   (case type
     (:f64 `(wasm-gcell-f64 ,cell))
     (:f32 `(wasm-gcell-f32 ,cell))
-    (t `(wasm-gcell-bits ,cell))))
+    (:i64 `(wasm-gcell-lo ,cell))
+    (t `(wasm-gcell-lo ,cell))))
 
 (defun global-write-form (cell type value-form)
   (case type
-    (:f64 (let ((f (gensym "F")) (bits (gensym "B")))
+    (:f64 (let ((f (gensym "F")) (hi (gensym "H")) (lo (gensym "L")))
             `(let* ((,f (the double-float ,value-form))
-                    (,bits ,(f64-to-bits-form f)))
+                    (,lo (ldb (byte 32 0) (sb-kernel:double-float-low-bits ,f)))
+                    (,hi (ldb (byte 32 0) (sb-kernel:double-float-high-bits ,f))))
                (declare (type double-float ,f)
-                        (type (unsigned-byte 64) ,bits))
+                        (type (unsigned-byte 32) ,lo ,hi))
                (setf (wasm-gcell-f64 ,cell) ,f
-                     (wasm-gcell-bits ,cell) ,bits
-                     (wasm-gcell-value ,cell) ,bits))))
+                     (wasm-gcell-lo ,cell) ,lo
+                     (wasm-gcell-hi ,cell) ,hi))))
     (:f32 (let ((f (gensym "F")) (bits (gensym "B")))
             `(let* ((,f (the single-float ,value-form))
-                    (,bits ,(f32-to-bits-form f)))
+                    (,bits (ldb (byte 32 0)
+                                (sb-kernel:single-float-bits ,f))))
                (declare (type single-float ,f)
                         (type (unsigned-byte 32) ,bits))
                (setf (wasm-gcell-f32 ,cell) ,f
-                     (wasm-gcell-bits ,cell) ,bits
-                     (wasm-gcell-value ,cell) ,bits))))
+                     (wasm-gcell-lo ,cell) ,bits
+                     (wasm-gcell-hi ,cell) 0))))
+    (:i32 (let ((n (gensym "N")))
+            `(let ((,n (the (unsigned-byte 32) ,value-form)))
+               (setf (wasm-gcell-lo ,cell) ,n
+                     (wasm-gcell-value ,cell) ,n))))
     (t (let ((n (gensym "N")))
-         `(let ((,n (the (unsigned-byte 64) ,value-form)))
-            (setf (wasm-gcell-bits ,cell) ,n
+         `(let ((,n (the (unsigned-byte 32) ,value-form)))
+            (setf (wasm-gcell-lo ,cell) ,n
                   (wasm-gcell-value ,cell) ,n))))))
 
 (defun fast-load-form (op bytes address offset)
@@ -472,13 +507,422 @@ operand stack. Spec functions that push a funcref or externref are not."
                           collect `(setf (aref ,bytes (+ ea ,index))
                                          (ldb (byte 8 ,(* 8 index)) word))))))))))
 
+(defun i64-load-halves-form (op bytes address offset dest)
+  (let ((width (case op
+                 ((:i64.load8-s :i64.load8-u) 1)
+                 ((:i64.load16-s :i64.load16-u) 2)
+                 ((:i64.load32-s :i64.load32-u) 4)
+                 (:i64.load 8))))
+    `(with-mem-bytes (,bytes ea ,address ,offset ,width)
+       ,(case op
+          (:i64.load
+           `(setf (aref i32s ,dest)
+                  (the (unsigned-byte 32)
+                       (logior (aref ,bytes ea)
+                               (ash (aref ,bytes (+ ea 1)) 8)
+                               (ash (aref ,bytes (+ ea 2)) 16)
+                               (ash (aref ,bytes (+ ea 3)) 24)))
+                  (aref ihs ,dest)
+                  (the (unsigned-byte 32)
+                       (logior (aref ,bytes (+ ea 4))
+                               (ash (aref ,bytes (+ ea 5)) 8)
+                               (ash (aref ,bytes (+ ea 6)) 16)
+                               (ash (aref ,bytes (+ ea 7)) 24)))))
+          (:i64.load8-u
+           `(setf (aref i32s ,dest) (aref ,bytes ea)
+                  (aref ihs ,dest) 0))
+          (:i64.load8-s
+           `(let ((byte (aref ,bytes ea)))
+              (declare (type (unsigned-byte 8) byte))
+              (if (logbitp 7 byte)
+                  (setf (aref i32s ,dest) (logior byte #xffffff00)
+                        (aref ihs ,dest) #xffffffff)
+                  (setf (aref i32s ,dest) byte
+                        (aref ihs ,dest) 0))))
+          (:i64.load16-u
+           `(setf (aref i32s ,dest)
+                  (the (unsigned-byte 32)
+                       (logior (aref ,bytes ea)
+                               (ash (aref ,bytes (+ ea 1)) 8)))
+                  (aref ihs ,dest) 0))
+          (:i64.load16-s
+           `(let ((value (logior (aref ,bytes ea)
+                                 (ash (aref ,bytes (+ ea 1)) 8))))
+              (declare (type (unsigned-byte 16) value))
+              (if (logbitp 15 value)
+                  (setf (aref i32s ,dest) (logior value #xffff0000)
+                        (aref ihs ,dest) #xffffffff)
+                  (setf (aref i32s ,dest) value
+                        (aref ihs ,dest) 0))))
+          (:i64.load32-u
+           `(setf (aref i32s ,dest)
+                  (the (unsigned-byte 32)
+                       (logior (aref ,bytes ea)
+                               (ash (aref ,bytes (+ ea 1)) 8)
+                               (ash (aref ,bytes (+ ea 2)) 16)
+                               (ash (aref ,bytes (+ ea 3)) 24)))
+                  (aref ihs ,dest) 0))
+          (:i64.load32-s
+           `(let ((value (logior (aref ,bytes ea)
+                                 (ash (aref ,bytes (+ ea 1)) 8)
+                                 (ash (aref ,bytes (+ ea 2)) 16)
+                                 (ash (aref ,bytes (+ ea 3)) 24))))
+              (declare (type (unsigned-byte 32) value))
+              (setf (aref i32s ,dest) value
+                    (aref ihs ,dest)
+                    (if (logbitp 31 value) #xffffffff 0))))))))
+
+(defun i64-store-halves-form (op bytes address offset dest)
+  (let ((width (case op
+                 (:i64.store8 1)
+                 (:i64.store16 2)
+                 (:i64.store32 4)
+                 (:i64.store 8))))
+    `(with-mem-bytes (,bytes ea ,address ,offset ,width)
+       (let ((lo (aref i32s ,dest))
+             (hi (aref ihs ,dest)))
+         (declare (type (unsigned-byte 32) lo hi))
+         ,@(loop for index from 0 below (min width 4)
+                 collect `(setf (aref ,bytes (+ ea ,index))
+                                (ldb (byte 8 ,(* 8 index)) lo)))
+         ,@(loop for index from 4 below width
+                 collect `(setf (aref ,bytes (+ ea ,index))
+                                (ldb (byte 8 ,(* 8 (- index 4))) hi)))))))
+
+(defun i64-add-form (dest right)
+  (let ((sum (gensym "SUM")))
+    `(let* ((lo1 (aref i32s ,dest))
+            (lo2 (aref i32s ,right))
+            (hi1 (aref ihs ,dest))
+            (hi2 (aref ihs ,right))
+            (,sum (+ lo1 lo2)))
+       (declare (type (unsigned-byte 32) lo1 lo2 hi1 hi2)
+                (type (unsigned-byte 33) ,sum))
+       (setf (aref i32s ,dest) (ldb (byte 32 0) ,sum)
+             (aref ihs ,dest)
+             (ldb (byte 32 0) (+ hi1 hi2 (ash ,sum -32)))))))
+
+(defun i64-sub-form (dest right)
+  `(let* ((lo1 (aref i32s ,dest))
+          (lo2 (aref i32s ,right))
+          (hi1 (aref ihs ,dest))
+          (hi2 (aref ihs ,right)))
+     (declare (type (unsigned-byte 32) lo1 lo2 hi1 hi2))
+     (setf (aref i32s ,dest) (ldb (byte 32 0) (- lo1 lo2))
+           (aref ihs ,dest)
+           (ldb (byte 32 0) (- hi1 hi2 (if (< lo1 lo2) 1 0))))))
+
+(defun i64-mul-form (dest right)
+  "32x32 products stay inside a fixnum by splitting each half into 16 bits."
+  `(let* ((lo1 (aref i32s ,dest))
+          (lo2 (aref i32s ,right))
+          (hi1 (aref ihs ,dest))
+          (hi2 (aref ihs ,right)))
+     (declare (type (unsigned-byte 32) lo1 lo2 hi1 hi2))
+     (let* ((a0 (ldb (byte 16 0) lo1))
+            (a1 (ash lo1 -16))
+            (b0 (ldb (byte 16 0) lo2))
+            (b1 (ash lo2 -16))
+            (c0 (ldb (byte 16 0) hi1))
+            (c1 (ash hi1 -16))
+            (d0 (ldb (byte 16 0) hi2))
+            (d1 (ash hi2 -16))
+            (p00 (* a0 b0))
+            (p01 (* a0 b1))
+            (p10 (* a1 b0))
+            (p11 (* a1 b1))
+            (mid (+ (ash p00 -16) p01 p10))
+            (lo (logior (ldb (byte 16 0) p00)
+                        (ash (ldb (byte 16 0) mid) 16)))
+            (hi (+ (ash mid -16) p11
+                   (* c0 b0) (* c1 b0 65536)
+                   (* a0 d0) (* a1 d0 65536)
+                   (* c0 b1 65536)
+                   (* a0 d1 65536))))
+       (declare (type (unsigned-byte 16) a0 a1 b0 b1 c0 c1 d0 d1)
+                (type (unsigned-byte 32) p00 p01 p10 p11))
+       (setf (aref i32s ,dest) (the (unsigned-byte 32) lo)
+             (aref ihs ,dest) (ldb (byte 32 0) hi)))))
+
+(defun i64-bit-form (op dest right)
+  (let ((fn (ecase op (:and 'logand) (:or 'logior) (:xor 'logxor))))
+    `(let ((lo1 (aref i32s ,dest))
+           (lo2 (aref i32s ,right))
+           (hi1 (aref ihs ,dest))
+           (hi2 (aref ihs ,right)))
+       (declare (type (unsigned-byte 32) lo1 lo2 hi1 hi2))
+       (setf (aref i32s ,dest) (,fn lo1 lo2)
+             (aref ihs ,dest) (,fn hi1 hi2)))))
+
+(defun i64-eq-form (dest right)
+  `(setf (aref i32s ,dest)
+         (if (and (= (the (unsigned-byte 32) (aref ihs ,dest))
+                     (the (unsigned-byte 32) (aref ihs ,right)))
+                  (= (the (unsigned-byte 32) (aref i32s ,dest))
+                     (the (unsigned-byte 32) (aref i32s ,right))))
+             1 0)))
+
+(defun i64-cmp-form (op dest right)
+  (let ((signed (member op '(:lt-s :gt-s :le-s :ge-s))))
+    `(let* ((hi1 (aref ihs ,dest))
+            (hi2 (aref ihs ,right))
+            (lo1 (aref i32s ,dest))
+            (lo2 (aref i32s ,right))
+            (s1 ,(if signed `(logxor hi1 #x80000000) 'hi1))
+            (s2 ,(if signed `(logxor hi2 #x80000000) 'hi2)))
+       (declare (type (unsigned-byte 32) hi1 hi2 lo1 lo2 s1 s2))
+       (setf (aref i32s ,dest)
+             (if ,(ecase op
+                    ((:lt-u :lt-s) `(or (< s1 s2) (and (= s1 s2) (< lo1 lo2))))
+                    ((:gt-u :gt-s) `(or (> s1 s2) (and (= s1 s2) (> lo1 lo2))))
+                    ((:le-u :le-s) `(or (< s1 s2) (and (= s1 s2) (<= lo1 lo2))))
+                    ((:ge-u :ge-s) `(or (> s1 s2) (and (= s1 s2) (>= lo1 lo2)))))
+                 1 0)))))
+
+(defun i64-shift-form (op dest right)
+  "Variable shifts use ash and a mask. (byte n pos) with a variable n allocates."
+  (let ((mask `(ash #xffffffff (- n))))
+    `(let* ((lo (aref i32s ,dest))
+            (hi (aref ihs ,dest))
+            (n (logand (aref i32s ,right) 63)))
+       (declare (type (unsigned-byte 32) lo hi)
+                (type (unsigned-byte 6) n))
+       ,(ecase op
+          (:shl
+           `(cond ((zerop n) nil)
+                  ((< n 32)
+                   (let ((mask ,mask))
+                     (setf (aref ihs ,dest)
+                           (ldb (byte 32 0)
+                                (logior (ash (logand hi mask) n)
+                                        (ash lo (- n 32))))
+                           (aref i32s ,dest)
+                           (ash (logand lo mask) n))))
+                  ((= n 32)
+                   (setf (aref ihs ,dest) lo
+                         (aref i32s ,dest) 0))
+                  (t
+                   (let ((k (- n 32)))
+                     (setf (aref ihs ,dest)
+                           (ash (logand lo (ash #xffffffff (- k))) k)
+                           (aref i32s ,dest) 0)))))
+          (:shr-u
+           `(cond ((zerop n) nil)
+                  ((< n 32)
+                   (setf (aref i32s ,dest)
+                         (ldb (byte 32 0)
+                              (logior (ash lo (- n))
+                                      (ash (logand hi (1- (ash 1 n))) (- 32 n))))
+                         (aref ihs ,dest)
+                         (ash hi (- n))))
+                  ((= n 32)
+                   (setf (aref i32s ,dest) hi
+                         (aref ihs ,dest) 0))
+                  (t
+                   (setf (aref i32s ,dest) (ash hi (- 32 n))
+                         (aref ihs ,dest) 0))))
+          (:shr-s
+           `(let ((neg (logbitp 31 hi)))
+              (cond ((zerop n) nil)
+                    ((< n 32)
+                     (setf (aref i32s ,dest)
+                           (ldb (byte 32 0)
+                                (logior (ash lo (- n))
+                                        (ash (logand hi (1- (ash 1 n))) (- 32 n))))
+                           (aref ihs ,dest)
+                           (ldb (byte 32 0)
+                                (logior (ash hi (- n))
+                                        (if neg
+                                            (ash (1- (ash 1 n)) (- 32 n))
+                                            0)))))
+                    (t
+                     (let ((k (- n 32)))
+                       (setf (aref i32s ,dest)
+                             (if (zerop k)
+                                 hi
+                                 (ldb (byte 32 0)
+                                      (logior (ash hi (- k))
+                                              (if neg
+                                                  (ash (1- (ash 1 k)) (- 32 k))
+                                                  0))))
+                             (aref ihs ,dest)
+                             (if neg #xffffffff 0)))))))))))
+
+(defun fast-i64-unop-form (op index)
+  (let ((lo `(aref i32s ,index))
+        (hi `(aref ihs ,index)))
+    (case op
+      (:i64.eqz
+       `(setf (aref i32s ,index)
+              (if (and (zerop (the (unsigned-byte 32) ,lo))
+                       (zerop (the (unsigned-byte 32) ,hi)))
+                  1 0)))
+      (:i32.wrap-i64
+       `(setf (aref i32s ,index) (the (unsigned-byte 32) ,lo)))
+      (:i64.extend-i32-u
+       `(setf (aref ihs ,index) 0))
+      ((:i64.extend-i32-s :i64.extend32-s)
+       `(setf (aref ihs ,index)
+              (if (logbitp 31 (the (unsigned-byte 32) ,lo)) #xffffffff 0)))
+      (:i64.extend8-s
+       `(let ((b (logand (the (unsigned-byte 32) ,lo) #xff)))
+          (if (logbitp 7 b)
+              (setf (aref i32s ,index) (logior b #xffffff00)
+                    (aref ihs ,index) #xffffffff)
+              (setf (aref i32s ,index) b
+                    (aref ihs ,index) 0))))
+      (:i64.extend16-s
+       `(let ((b (logand (the (unsigned-byte 32) ,lo) #xffff)))
+          (if (logbitp 15 b)
+              (setf (aref i32s ,index) (logior b #xffff0000)
+                    (aref ihs ,index) #xffffffff)
+              (setf (aref i32s ,index) b
+                    (aref ihs ,index) 0))))
+      (:f64.reinterpret-i64
+       `(setf (aref f64stack ,index)
+              (sb-kernel:make-double-float
+               (let ((h (the (unsigned-byte 32) ,hi)))
+                 (if (logbitp 31 h) (- h #x100000000) h))
+               (the (unsigned-byte 32) ,lo))))
+      (:i64.reinterpret-f64
+       `(let ((f (the double-float (aref f64stack ,index))))
+          (setf (aref i32s ,index)
+                (ldb (byte 32 0) (sb-kernel:double-float-low-bits f))
+                (aref ihs ,index)
+                (ldb (byte 32 0) (sb-kernel:double-float-high-bits f)))))
+      (t
+       (let* ((n (gensym "N"))
+              (fn (simple-function op))
+              (arg-type (car (unary-type op)))
+              (res (cdr (unary-type op)))
+              (arg-form (ecase arg-type
+                          (:i64 (i64-join-form lo hi))
+                          (:f64 (to-bits-form `(aref f64stack ,index) :f64))
+                          (:f32 (to-bits-form `(aref f32stack ,index) :f32))
+                          (:i32 `(the (unsigned-byte 32) (aref i32s ,index))))))
+         (cond ((eq res :i64)
+                `(let ((,n (,fn ,arg-form)))
+                   (setf (aref i32s ,index) (ldb (byte 32 0) ,n)
+                         (aref ihs ,index) (ldb (byte 32 32) ,n))))
+               ((eq res :f64)
+                `(setf (aref f64stack ,index)
+                       ,(from-bits-form `(,fn ,arg-form) :f64)))
+               ((eq res :f32)
+                `(setf (aref f32stack ,index)
+                       ,(from-bits-form `(,fn ,arg-form) :f32)))
+               (t
+                `(setf (aref i32s ,index)
+                       (ldb (byte 32 0) (,fn ,arg-form))))))))))
+
+(defun fast-i64-binop-form (op dest right)
+  (case op
+    (:i64.add (i64-add-form dest right))
+    (:i64.sub (i64-sub-form dest right))
+    (:i64.mul (i64-mul-form dest right))
+    (:i64.and (i64-bit-form :and dest right))
+    (:i64.or (i64-bit-form :or dest right))
+    (:i64.xor (i64-bit-form :xor dest right))
+    (:i64.eq (i64-eq-form dest right))
+    (:i64.ne
+     `(setf (aref i32s ,dest)
+            (if (and (= (the (unsigned-byte 32) (aref ihs ,dest))
+                        (the (unsigned-byte 32) (aref ihs ,right)))
+                     (= (the (unsigned-byte 32) (aref i32s ,dest))
+                        (the (unsigned-byte 32) (aref i32s ,right))))
+                0 1)))
+    (:i64.lt-u (i64-cmp-form :lt-u dest right))
+    (:i64.gt-u (i64-cmp-form :gt-u dest right))
+    (:i64.le-u (i64-cmp-form :le-u dest right))
+    (:i64.ge-u (i64-cmp-form :ge-u dest right))
+    (:i64.lt-s (i64-cmp-form :lt-s dest right))
+    (:i64.gt-s (i64-cmp-form :gt-s dest right))
+    (:i64.le-s (i64-cmp-form :le-s dest right))
+    (:i64.ge-s (i64-cmp-form :ge-s dest right))
+    (:i64.shl (i64-shift-form :shl dest right))
+    (:i64.shr-u (i64-shift-form :shr-u dest right))
+    (:i64.shr-s (i64-shift-form :shr-s dest right))
+    (t
+     (let ((n (gensym "N"))
+           (fn (simple-function op)))
+       `(let ((,n (,fn ,(i64-join-form `(aref i32s ,dest) `(aref ihs ,dest))
+                       ,(i64-join-form `(aref i32s ,right) `(aref ihs ,right)))))
+          (setf (aref i32s ,dest) (ldb (byte 32 0) ,n)
+                (aref ihs ,dest) (ldb (byte 32 32) ,n)))))))
+
+(defun i64-join-form (lo hi)
+  `(logior (the (unsigned-byte 32) ,lo) (ash (the (unsigned-byte 32) ,hi) 32)))
+
+(defun boundary-lisp-type (type)
+  (case type
+    (:f32 'single-float)
+    (:f64 'double-float)
+    ((:i32 :i64) '(unsigned-byte 32))
+    (t nil)))
+
+(defun expanded-arg-forms (types base fast)
+  (loop for type in types
+        for index from base
+        nconc (cond ((and fast (eq type :i64))
+                     (list `(aref i32s ,index) `(aref ihs ,index)))
+                    ((eq type :i64)
+                     (list `(car (aref stack ,index))
+                           `(cdr (aref stack ,index))))
+                    ((and fast (eq type :f64))
+                     (list `(aref f64stack ,index)))
+                    ((and fast (eq type :f32))
+                     (list `(aref f32stack ,index)))
+                    ((and fast (eq type :i32))
+                     (list `(aref i32s ,index)))
+                    (t (list `(aref stack ,index))))))
+
+(defun expanded-result-temps (types scratch)
+  (loop for type in types
+        nconc (if (eq type :i64)
+                  (list (funcall scratch) (funcall scratch))
+                  (list (funcall scratch)))))
+
+(defun result-decl (temps types)
+  (let ((rest (copy-list temps))
+        (decls nil))
+    (loop for type in types
+          do (cond ((eq type :i64)
+                    (let ((lo (pop rest)) (hi (pop rest)))
+                      (push `(type (unsigned-byte 32) ,lo ,hi) decls)))
+                   ((boundary-lisp-type type)
+                    (push `(type ,(boundary-lisp-type type) ,(pop rest)) decls))
+                   (t (pop rest))))
+    (when decls `((declare ,@(nreverse decls))))))
+
+(defun store-results (types dest temps fast)
+  (let ((rest (copy-list temps)))
+    (loop for type in types
+          for index from dest
+          nconc (cond ((and fast (eq type :i64))
+                       (list `(setf (aref i32s ,index) ,(pop rest))
+                             `(setf (aref ihs ,index) ,(pop rest))))
+                      ((eq type :i64)
+                       (list `(setf (aref stack ,index)
+                                    (cons ,(pop rest) ,(pop rest)))))
+                      ((and fast (eq type :f64))
+                       (list `(setf (aref f64stack ,index) ,(pop rest))))
+                      ((and fast (eq type :f32))
+                       (list `(setf (aref f32stack ,index) ,(pop rest))))
+                      ((and fast (eq type :i32))
+                       (list `(setf (aref i32s ,index) ,(pop rest))))
+                      (t (list `(setf (aref stack ,index) ,(pop rest))))))))
+
+(defvar *wasm-interpreter-functions* nil
+  "Function indexes translated as the small opcode loop, not compiled.")
+
 (defun large-function-interpreter (module sig locals body)
   "Compile a long cold function as a tiny loop over its opcodes.
-Unrolling thousands of loads makes SBCL fill the default heap."
-  (let* ((param-vars (loop for type across (sig-params sig) collect (gensym "P")))
-         (local-count (+ (length param-vars) (length locals)))
+Unrolling thousands of loads makes SBCL fill the default heap.
+i64 values in the stack vector are (lo . hi), both fixnums."
+  (let* ((groups (param-groups (sig-params sig)))
+         (param-vars (group-vars groups))
+         (local-count (+ (length groups) (length locals)))
          (sigs (collect-sigs module))
-         (results (length (sig-results sig))))
+         (result-types (coerce (sig-results sig) 'list)))
     `(lambda ,param-vars
        (declare (optimize (speed 1) (safety 1) (debug 0) (compilation-speed 3))
                 (ignorable ,@param-vars))
@@ -486,9 +930,16 @@ Unrolling thousands of loads makes SBCL fill the default heap."
              (stack (make-array 64 :initial-element 0))
              (locs (make-array ,local-count :initial-element 0))
              (sp 0))
-         ,@(loop for var in param-vars
+         ,@(loop for group in groups
                  for index from 0
-                 collect `(setf (aref locs ,index) ,var))
+                 collect (if (eq (first group) :i64)
+                             `(setf (aref locs ,index)
+                                    (cons ,(second group) ,(third group)))
+                             `(setf (aref locs ,index) ,(second group))))
+         ,@(loop for type in locals
+                 for index from (length groups)
+                 when (eq type :i64)
+                   collect `(setf (aref locs ,index) (cons 0 0)))
          (when (> *wasm-depth* *wasm-call-limit*)
            (error 'wasm-exhaustion :message "call stack exhausted"))
          (loop for instr across ,body
@@ -498,7 +949,10 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                      (setf (aref stack sp) (i32 (instr-a instr)))
                      (incf sp))
                     (:i64.const
-                     (setf (aref stack sp) (i64 (instr-a instr)))
+                     (let ((n (i64 (instr-a instr))))
+                       (setf (aref stack sp)
+                             (cons (ldb (byte 32 0) n)
+                                   (ldb (byte 32 32) n))))
                      (incf sp))
                     (:local.get
                      (setf (aref stack sp) (aref locs (instr-a instr)))
@@ -516,9 +970,10 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                      (incf sp))
                     (:i64.load
                      (decf sp)
-                     (setf (aref stack sp)
-                           (load-i64 (aref (wasm-instance-memories *wasm-instance*) 0)
-                                     (aref stack sp) (instr-b instr)))
+                     (let ((n (load-i64 (aref (wasm-instance-memories *wasm-instance*) 0)
+                                        (aref stack sp) (instr-b instr))))
+                       (setf (aref stack sp)
+                             (cons (ldb (byte 32 0) n) (ldb (byte 32 32) n))))
                      (incf sp))
                     (:i32.store
                      (let ((value (aref stack (1- sp)))
@@ -530,26 +985,39 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                      (let ((value (aref stack (1- sp)))
                            (addr (aref stack (- sp 2))))
                        (store-i64 (aref (wasm-instance-memories *wasm-instance*) 0)
-                                  addr (instr-b instr) value)
+                                  addr (instr-b instr)
+                                  (logior (car value) (ash (cdr value) 32)))
                        (decf sp 2)))
                     (:call
                      (let* ((target (aref ,sigs (instr-a instr)))
-                            (nparams (length (sig-params target)))
-                            (nresults (length (sig-results target))))
-                       (decf sp nparams)
-                       (let ((results
-                               (multiple-value-list
-                                (apply (svref (wasm-instance-funcs *wasm-instance*)
-                                              (instr-a instr))
-                                       (loop for index from sp below (+ sp nparams)
-                                             collect (aref stack index))))))
-                         (loop for value in results
-                               for index from 0 below nresults
-                               do (setf (aref stack (+ sp index)) value))
-                         (incf sp nresults))))
+                            (ptypes (coerce (sig-params target) 'list))
+                            (rtypes (coerce (sig-results target) 'list)))
+                       (decf sp (length ptypes))
+                       (let* ((results
+                                (multiple-value-list
+                                 (apply (svref (wasm-instance-funcs *wasm-instance*)
+                                               (instr-a instr))
+                                        (loop for type in ptypes
+                                              for index from sp
+                                              nconc (if (eq type :i64)
+                                                        (let ((cell (aref stack index)))
+                                                          (list (car cell) (cdr cell)))
+                                                        (list (aref stack index)))))))
+                              (rest results))
+                         (loop for type in rtypes
+                               for index from sp
+                               do (if (eq type :i64)
+                                      (setf (aref stack index)
+                                            (cons (pop rest) (pop rest)))
+                                      (setf (aref stack index) (pop rest))))
+                         (incf sp (length rtypes)))))
                     (t (error "unsupported opcode ~A" (instr-op instr)))))
-         (values ,@(loop for index from 0 below results
-                         collect `(aref stack ,index)))))))
+         (values ,@(loop for type in result-types
+                         for index from 0
+                         nconc (if (eq type :i64)
+                                   `((car (aref stack ,index))
+                                     (cdr (aref stack ,index)))
+                                   `((aref stack ,index)))))))))
 
 (defun translate-function (module sig locals body)
   (let* ((code nil)
@@ -563,24 +1031,35 @@ Unrolling thousands of loads makes SBCL fill the default heap."
         ;; wasm stays under 64 locals, so it keeps the typed path.
         (fast (and (<= (+ (length (sig-params sig)) (length locals)) 64)
                    (numeric-function-p module sig locals body)))
-        (param-vars (loop for type across (sig-params sig) collect (gensym "P")))
-        (param-count (length param-vars))
+        (groups (param-groups (sig-params sig)))
+        (param-vars (group-vars groups))
+        (param-count (length groups))
         (local-count (+ param-count (length locals)))
         (all-types (append (coerce (sig-params sig) 'list) locals))
         (local-names (when fast
                        (coerce (loop repeat local-count collect (gensym "L")) 'vector)))
+        (local-hi (when fast
+                    (coerce (loop for type in all-types
+                                  collect (when (eq type :i64) (gensym "H")))
+                            'vector)))
         (stypes (make-array 8192 :initial-element :i32))
         (needs-f32 (member :f32 all-types))
         (needs-f64 (member :f64 all-types))
+        (needs-i64 (member :i64 all-types))
         (needs-mem (module-has-memory-p module))
         (mem-var (gensym "MEM"))
         (gcells (make-hash-table))
         (sigs (collect-sigs module)))
     (labels ((tag () (gensym "LBL"))
              (temp (type)
-               (let ((symbol (gensym "T")))
-                 (push (cons symbol type) hoisted)
-                 symbol))
+               (if (and fast (eq type :i64))
+                   (let ((lo (gensym "TL")) (hi (gensym "TH")))
+                     (push (cons lo :i32) hoisted)
+                     (push (cons hi :i32) hoisted)
+                     (cons lo hi))
+                   (let ((symbol (gensym "T")))
+                     (push (cons symbol type) hoisted)
+                     symbol)))
              (scratch () (gensym "S"))
              (emit (form) (push form code))
              (note (index type)
@@ -588,11 +1067,12 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                  (setf (aref stypes index) type)
                  (case type
                    (:f32 (setf needs-f32 t))
-                   (:f64 (setf needs-f64 t)))))
+                   (:f64 (setf needs-f64 t))
+                   (:i64 (setf needs-i64 t)))))
              (dest-slot (type index)
                (if fast
                    (ecase type
-                     ((:i32 :i64) `(aref istack ,index))
+                     ((:i32 :i64) `(aref i32s ,index))
                      (:f32 `(aref f32stack ,index))
                      (:f64 `(aref f64stack ,index)))
                    `(aref stack ,index)))
@@ -600,65 +1080,113 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                (if fast (dest-slot (aref stypes index) index) `(aref stack ,index)))
              (local-form (index)
                (if fast (aref local-names index) `(aref locs ,index)))
+             (local-hi-form (index)
+               (aref local-hi index))
              (gcell (index)
                (or (gethash index gcells)
                    (setf (gethash index gcells) (gensym "GC"))))
              (bump (n)
                (incf ht n)
                (setf max-ht (max max-ht ht)))
-             (push-form (form &optional (type :i32))
+             (push-form (form &optional (type :i32) hi)
                (when reachable
                  (note ht type)
-                 (emit `(setf ,(slot ht) ,form))
+                 (cond ((and fast (eq type :i64))
+                        (emit `(setf (aref i32s ,ht) ,form))
+                        (emit `(setf (aref ihs ,ht) ,(or hi 0))))
+                       (t (emit `(setf ,(slot ht) ,form))))
                  (bump 1)))
              (unop (function op)
                (when reachable
                  (let* ((spec (unary-type op))
-                        (arg (slot (1- ht)))
-                        (fast-form (and fast (or (fast-unop-form function arg)
-                                                (fast-float-unop-form function arg))))
+                        (arg-type (car spec))
                         (res (cdr spec))
-                        (form (or fast-form
-                                  (if fast
-                                      (from-bits-form
-                                       `(,function ,(to-bits-form arg (car spec)))
-                                       res)
-                                      `(,function ,arg)))))
-                   (note (1- ht) res)
-                   (emit `(setf ,(slot (1- ht)) ,form)))))
+                        (index (1- ht))
+                        (arg (slot index))
+                        (fast-i64 (and fast (or (eq arg-type :i64) (eq res :i64))))
+                        (fast-form (and fast (not fast-i64)
+                                        (or (fast-unop-form function arg)
+                                            (fast-float-unop-form function arg)))))
+                   (cond (fast-i64
+                          (emit (fast-i64-unop-form op index))
+                          (note index res))
+                         (t
+                          (let ((form (or fast-form
+                                          (if fast
+                                              (from-bits-form
+                                               `(,function ,(to-bits-form arg arg-type))
+                                               res)
+                                              (slow-value-form function (list arg) (list arg-type) res)))))
+                            (note index res)
+                            (emit `(setf ,(slot index) ,form))))))))
              (binop (function op)
                (when reachable
                  (let* ((spec (binary-type op))
                         (left (- ht 2))
-                        (lhs (slot left))
-                        (rhs (slot (1+ left)))
-                        (fast-form (and fast (or (fast-binop-form function lhs rhs)
-                                                (fast-float-binop-form function lhs rhs))))
+                        (right (1+ left))
                         (res (third spec))
-                        (form (or fast-form
-                                  (if fast
-                                      (from-bits-form
-                                       `(,function ,(to-bits-form lhs (first spec))
-                                                   ,(to-bits-form rhs (second spec)))
-                                       res)
-                                      `(,function ,lhs ,rhs)))))
-                   (decf ht)
-                   (note left res)
-                   (emit `(setf ,(slot left) ,form)))))
+                        (fast-i64 (and fast (or (eq (first spec) :i64)
+                                                (eq res :i64)))))
+                   (cond (fast-i64
+                          (emit (fast-i64-binop-form op left right))
+                          (decf ht)
+                          (note left res))
+                         (t
+                          (let* ((lhs (slot left))
+                                 (rhs (slot right))
+                                 (fast-form (and fast (or (fast-binop-form function lhs rhs)
+                                                         (fast-float-binop-form function lhs rhs))))
+                                 (form (or fast-form
+                                           (if fast
+                                               (from-bits-form
+                                                `(,function ,(to-bits-form lhs (first spec))
+                                                            ,(to-bits-form rhs (second spec)))
+                                                res)
+                                               (slow-value-form function (list lhs rhs)
+                                                                (list (first spec) (second spec))
+                                                                res)))))
+                            (decf ht)
+                            (note left res)
+                            (emit `(setf ,(slot left) ,form))))))))
+             (slow-value-form (function args types res)
+               (let ((joined (loop for arg in args
+                                   for type in types
+                                   collect (if (eq type :i64)
+                                               (i64-join-form `(car ,arg) `(cdr ,arg))
+                                               arg)))
+                     (n (gensym "N")))
+                 (if (eq res :i64)
+                     `(let ((,n (,function ,@joined)))
+                        (cons (ldb (byte 32 0) ,n) (ldb (byte 32 32) ,n)))
+                     `(,function ,@joined))))
              (copy-form (base arity)
-               (let* ((types (loop for index from (- ht arity) below ht
-                                   collect (if fast (aref stypes index) :i64)))
-                      (temps (loop for type in types collect (scratch)))
-                      (sources (loop for index from (- ht arity) below ht collect index))
-                      (dests (loop for index from base below (+ base arity) collect index)))
-                 `(let ,(mapcar (lambda (temp source) `(,temp ,(slot source))) temps sources)
-                    ,@(when (and fast temps)
+               (let* ((sources (loop for index from (- ht arity) below ht collect index))
+                      (dests (loop for index from base below (+ base arity) collect index))
+                      (temps (loop for source in sources
+                                   collect (if (and fast (eq (aref stypes source) :i64))
+                                               (cons (scratch) (scratch))
+                                               (scratch)))))
+                 `(let ,(loop for temp in temps
+                              for source in sources
+                              nconc (if (consp temp)
+                                        `((,(car temp) (aref i32s ,source))
+                                          (,(cdr temp) (aref ihs ,source)))
+                                        `((,temp ,(slot source)))))
+                    ,@(when fast
                         `((declare ,@(loop for temp in temps
-                                           for type in types
-                                           collect `(type ,(repr-lisp-type type) ,temp)))))
-                    ,@(mapcar (lambda (temp dest type)
-                                `(setf ,(dest-slot type dest) ,temp))
-                              temps dests types))))
+                                           for source in sources
+                                           nconc (if (consp temp)
+                                                     `((type (unsigned-byte 32) ,(car temp) ,(cdr temp)))
+                                                     `((type ,(repr-lisp-type (aref stypes source)) ,temp)))))))
+                    ,@(loop for temp in temps
+                            for dest in dests
+                            for source in sources
+                            nconc (cond ((consp temp)
+                                         `((setf (aref i32s ,dest) ,(car temp))
+                                           (setf (aref ihs ,dest) ,(cdr temp))))
+                                        (fast
+                                         `((setf ,(dest-slot (aref stypes source) dest) ,temp)))
+                                        (t `((setf (aref stack ,dest) ,temp))))))))
              (branch-to (target)
                (when reachable
                  (emit `(progn ,(copy-form (cframe-base target) (cframe-br-arity target))
@@ -681,7 +1209,11 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                      for type in (cframe-param-types current)
                      for index from (cframe-base current)
                      do (note index type)
-                        (emit `(setf ,(slot index) ,temp))))
+                        (if (consp temp)
+                            (progn
+                              (emit `(setf (aref i32s ,index) ,(car temp)))
+                              (emit `(setf (aref ihs ,index) ,(cdr temp))))
+                            (emit `(setf ,(slot index) ,temp)))))
              (finish (current)
                (when (and (eq (cframe-kind current) :if)
                           (not (cframe-saw-else current))
@@ -717,15 +1249,37 @@ Unrolling thousands of loads makes SBCL fill the default heap."
             (:drop (when reachable (decf ht)))
             (:select
              (when reachable
-               (let ((cond (- ht 1)) (second (- ht 2)) (first (- ht 3)))
-                 (emit `(setf ,(slot first)
-                              (if (zerop ,(slot cond)) ,(slot second) ,(slot first))))
+               (let ((cond-index (- ht 1)) (second (- ht 2)) (first (- ht 3)))
+                 (if (and fast (eq (aref stypes first) :i64))
+                     (emit `(progn
+                              (setf (aref i32s ,first)
+                                    (if (zerop (aref i32s ,cond-index))
+                                        (aref i32s ,second)
+                                        (aref i32s ,first)))
+                              (setf (aref ihs ,first)
+                                    (if (zerop (aref i32s ,cond-index))
+                                        (aref ihs ,second)
+                                        (aref ihs ,first)))))
+                     (emit `(setf ,(slot first)
+                                  (if (zerop ,(slot cond-index))
+                                      ,(slot second) ,(slot first)))))
                  (decf ht 2))))
             (:select-t
              (when reachable
-               (let ((cond (- ht 1)) (second (- ht 2)) (first (- ht 3)))
-                 (emit `(setf ,(slot first)
-                              (if (zerop ,(slot cond)) ,(slot second) ,(slot first))))
+               (let ((cond-index (- ht 1)) (second (- ht 2)) (first (- ht 3)))
+                 (if (and fast (eq (aref stypes first) :i64))
+                     (emit `(progn
+                              (setf (aref i32s ,first)
+                                    (if (zerop (aref i32s ,cond-index))
+                                        (aref i32s ,second)
+                                        (aref i32s ,first)))
+                              (setf (aref ihs ,first)
+                                    (if (zerop (aref i32s ,cond-index))
+                                        (aref ihs ,second)
+                                        (aref ihs ,first)))))
+                     (emit `(setf ,(slot first)
+                                  (if (zerop ,(slot cond-index))
+                                      ,(slot second) ,(slot first)))))
                  (decf ht 2))))
             ((:block :loop :if)
              (let* ((parts (block-parts module (instr-a item)))
@@ -741,8 +1295,13 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                      (temps (when (eq op :if)
                               (loop for type in param-types collect (temp type)))))
                  (when (and (eq op :if) reachable)
-                   (loop for temp in temps for index from base do
-                     (emit `(setf ,temp ,(slot index))))
+                   (loop for temp in temps
+                         for index from base
+                         do (if (consp temp)
+                                (progn
+                                  (emit `(setf ,(car temp) (aref i32s ,index)))
+                                  (emit `(setf ,(cdr temp) (aref ihs ,index))))
+                                (emit `(setf ,temp ,(slot index)))))
                    (emit `(when (zerop ,(slot (+ base nparams))) (go ,else))))
                  (when (and (eq op :loop) reachable) (emit start))
                  (push (make-cframe :kind op :base base :nparams nparams
@@ -815,28 +1374,20 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                       (param-types (coerce (sig-params sig) 'list))
                       (result-types (coerce (sig-results sig) 'list))
                       (nparams (length param-types))
-                      (nresults (length result-types))
-                      (args (loop for type in param-types
-                                  for index from (- ht nparams)
-                                  collect (if fast
-                                              (to-bits-form (slot index) type)
-                                              (slot index))))
                       (dest (- ht nparams))
-                      (temps (loop repeat nresults collect (scratch)))
+                      (args (expanded-arg-forms param-types dest fast))
+                      (temps (expanded-result-temps result-types #'scratch))
                       (call (direct-call-form (instr-a item) args)))
-                 (if (zerop nresults)
+                 (if (null result-types)
                      (emit call)
                      (emit `(multiple-value-bind ,temps
                                 ,call
-                              ,@(loop for temp in temps
-                                      for type in result-types
-                                      for index from dest
-                                      do (note index type)
-                                      collect `(setf ,(slot index)
-                                                     ,(if fast
-                                                          (from-bits-form temp type)
-                                                          temp))))))
-                 (setf ht (+ dest nresults))
+                              ,@(result-decl temps result-types)
+                              ,@(store-results result-types dest temps fast))))
+                 (loop for type in result-types
+                       for index from dest
+                       do (note index type))
+                 (setf ht (+ dest (length result-types)))
                  (setf max-ht (max max-ht ht))
                  (when (and fast needs-mem)
                    (emit (refresh-mem-form mem-var))))))
@@ -844,19 +1395,14 @@ Unrolling thousands of loads makes SBCL fill the default heap."
              (let* ((sig (type-at module (instr-a item)))
                     (param-types (coerce (sig-params sig) 'list))
                     (result-types (coerce (sig-results sig) 'list))
-                    (nparams (length param-types))
-                    (nresults (length result-types)))
+                    (nparams (length param-types)))
                (when reachable
-                 (let ((index-form (slot (1- ht)))
-                       (args (loop for type in param-types
-                                   for slot-index from (- ht 1 nparams) below (1- ht)
-                                   collect (if fast
-                                               (to-bits-form (slot slot-index) type)
-                                               (slot slot-index))))
-                       (dest (- ht 1 nparams))
-                       (temps (loop repeat nresults collect (scratch)))
-                       (fn (gensym "FN"))
-                       (owner (gensym "OWN")))
+                 (let* ((index-form (slot (1- ht)))
+                        (dest (- ht 1 nparams))
+                        (args (expanded-arg-forms param-types dest fast))
+                        (temps (expanded-result-temps result-types #'scratch))
+                        (fn (gensym "FN"))
+                        (owner (gensym "OWN")))
                    (decf ht)
                    (emit `(multiple-value-bind (,fn ,owner)
                               (indirect-callee *wasm-instance*
@@ -864,42 +1410,70 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                                                ,(instr-a item)
                                                ,index-form)
                             (let ((*wasm-instance* ,owner))
-                              ,(if (zerop nresults)
+                              ,(if (null result-types)
                                    `(funcall (the function ,fn) ,@args)
                                    `(multiple-value-bind ,temps
                                         (funcall (the function ,fn) ,@args)
-                                      ,@(loop for temp in temps
-                                              for type in result-types
-                                              for index from dest
-                                              do (note index type)
-                                              collect `(setf ,(slot index)
-                                                             ,(if fast
-                                                                  (from-bits-form temp type)
-                                                                  temp))))))))
-                   (setf ht (+ dest nresults))
+                                      ,@(result-decl temps result-types)
+                                      ,@(store-results result-types dest temps fast))))))
+                   (loop for type in result-types
+                         for index from dest
+                         do (note index type))
+                   (setf ht (+ dest (length result-types)))
                    (setf max-ht (max max-ht ht))
-                   (when (and fast needs-mem)
-                     (emit (refresh-mem-form mem-var)))))))
-            (:local.get (push-form (local-form (instr-a item))
-                                   (if fast (nth (instr-a item) all-types) :i32)))
+                    (when (and fast needs-mem)
+                      (emit (refresh-mem-form mem-var)))))))
+            (:local.get
+             (let* ((index (instr-a item))
+                    (type (nth index all-types)))
+               (if (and fast (eq type :i64))
+                   (push-form (local-form index) :i64 (local-hi-form index))
+                   (push-form (local-form index) (if fast type :i32)))))
             (:local.set
              (when reachable
-               (emit `(setf ,(local-form (instr-a item)) ,(slot (1- ht))))
-               (decf ht)))
+               (let* ((index (instr-a item))
+                      (type (nth index all-types)))
+                 (cond ((and fast (eq type :i64))
+                        (emit `(setf ,(local-form index) (aref i32s ,(1- ht))))
+                        (emit `(setf ,(local-hi-form index) (aref ihs ,(1- ht)))))
+                       (t (emit `(setf ,(local-form index) ,(slot (1- ht))))))
+                 (decf ht))))
             (:local.tee
              (when reachable
-               (emit `(setf ,(local-form (instr-a item)) ,(slot (1- ht))))))
+               (let* ((index (instr-a item))
+                      (type (nth index all-types)))
+                 (cond ((and fast (eq type :i64))
+                        (emit `(setf ,(local-form index) (aref i32s ,(1- ht))))
+                        (emit `(setf ,(local-hi-form index) (aref ihs ,(1- ht)))))
+                       (t (emit `(setf ,(local-form index) ,(slot (1- ht)))))))))
             (:global.get
              (let ((type (car (global-type-at module (instr-a item)))))
-               (if fast
-                   (push-form (global-read-form (gcell (instr-a item)) type) type)
-                   (push-form `(wasm-gcell-value ,(global (instr-a item)))))))
+               (cond ((and fast (eq type :i64))
+                      (push-form `(wasm-gcell-lo ,(gcell (instr-a item)))
+                                 :i64
+                                 `(wasm-gcell-hi ,(gcell (instr-a item)))))
+                     (fast
+                      (push-form (global-read-form (gcell (instr-a item)) type) type))
+                     ((eq type :i64)
+                      (push-form `(cons (wasm-gcell-lo ,(global (instr-a item)))
+                                        (wasm-gcell-hi ,(global (instr-a item))))))
+                     (t (push-form `(wasm-gcell-value ,(global (instr-a item))))))))
             (:global.set
              (when reachable
                (let ((type (car (global-type-at module (instr-a item)))))
-                 (if fast
-                     (emit (global-write-form (gcell (instr-a item)) type (slot (1- ht))))
-                     (emit `(gcell-store ,(global (instr-a item)) ',type ,(slot (1- ht))))))
+                 (cond ((and fast (eq type :i64))
+                        (emit `(setf (wasm-gcell-lo ,(gcell (instr-a item)))
+                                     (aref i32s ,(1- ht))
+                                     (wasm-gcell-hi ,(gcell (instr-a item)))
+                                     (aref ihs ,(1- ht)))))
+                       ((eq type :i64)
+                        (emit `(let ((pair ,(slot (1- ht))))
+                                 (setf (wasm-gcell-lo ,(global (instr-a item))) (car pair)
+                                       (wasm-gcell-hi ,(global (instr-a item))) (cdr pair)))))
+                       (fast
+                        (emit (global-write-form (gcell (instr-a item)) type (slot (1- ht)))))
+                       (t (emit `(gcell-store ,(global (instr-a item)) ',type
+                                              ,(slot (1- ht)))))))
                (decf ht)))
             (:table.get
              (when reachable
@@ -957,7 +1531,12 @@ Unrolling thousands of loads makes SBCL fill the default heap."
              (when reachable
                (emit `(drop-seg (aref (wasm-instance-datas *wasm-instance*) ,(instr-a item))))))
             (:i32.const (push-form (i32 (instr-a item)) :i32))
-            (:i64.const (push-form (i64 (instr-a item)) :i64))
+            (:i64.const
+             (let ((n (i64 (instr-a item))))
+               (if fast
+                   (push-form (ldb (byte 32 0) n) :i64 (ldb (byte 32 32) n))
+                   (push-form `(cons ,(ldb (byte 32 0) n)
+                                     ,(ldb (byte 32 32) n))))))
             (:f32.const (if fast
                             (push-form (f32-from-bits-form (instr-a item)) :f32)
                             (push-form (instr-a item))))
@@ -975,26 +1554,47 @@ Unrolling thousands of loads makes SBCL fill the default heap."
               :i64.load16-u :i64.load32-s :i64.load32-u)
              (when reachable
                (let* ((addr (slot (1- ht)))
-                      (rtype (load-result op))
-                      (fast-form (and fast (fast-load-form op mem-var addr (instr-b item)))))
-                 (note (1- ht) (or rtype :i32))
-                 (emit `(setf ,(slot (1- ht))
-                              ,(or fast-form
-                                   `(,(load-name op) ,(memory) ,addr ,(instr-b item))))))))
+                      (rtype (or (load-result op) :i32))
+                      (fast-form (and fast (not (eq rtype :i64))
+                                      (fast-load-form op mem-var addr (instr-b item)))))
+                 (note (1- ht) rtype)
+                 (cond ((and fast (eq rtype :i64))
+                        (emit (i64-load-halves-form op mem-var addr (instr-b item) (1- ht))))
+                       ((eq rtype :i64)
+                        (emit `(setf (aref stack ,(1- ht))
+                                     (let ((n (,(load-name op) ,(memory) ,addr ,(instr-b item))))
+                                       (cons (ldb (byte 32 0) n)
+                                             (ldb (byte 32 32) n))))))
+                       (t
+                        (emit `(setf ,(slot (1- ht))
+                                     ,(or fast-form
+                                          `(,(load-name op) ,(memory) ,addr ,(instr-b item))))))))))
             ((:i32.store :i64.store :f32.store :f64.store :i32.store8 :i32.store16
               :i64.store8 :i64.store16 :i64.store32)
              (when reachable
                (let* ((addr (slot (- ht 2)))
-                      (vtype (if fast (aref stypes (1- ht)) :i64))
+                      (vtype (if fast (aref stypes (1- ht))
+                                 (case op
+                                   ((:i64.store :i64.store8 :i64.store16 :i64.store32) :i64)
+                                   ((:f32.store) :f32)
+                                   ((:f64.store) :f64)
+                                   (t :i32))))
                       (value (slot (1- ht)))
-                      (fast-form (and fast
+                      (fast-form (and fast (not (eq vtype :i64))
                                       (fast-store-form op mem-var addr (instr-b item)
                                                        value vtype))))
-                 (emit (or fast-form
-                           `(,(store-name op) ,(memory) ,addr ,(instr-b item)
-                              ,(if (and fast (member vtype '(:f32 :f64)))
-                                   (to-bits-form value vtype)
-                                   value))))
+                 (cond ((and fast (eq vtype :i64))
+                        (emit (i64-store-halves-form op mem-var addr (instr-b item) (1- ht))))
+                       ((eq vtype :i64)
+                        (emit `(let ((pair ,value))
+                                 (,(store-name op) ,(memory) ,addr ,(instr-b item)
+                                  (logior (car pair) (ash (cdr pair) 32))))))
+                       (t
+                        (emit (or fast-form
+                                  `(,(store-name op) ,(memory) ,addr ,(instr-b item)
+                                     ,(if (and fast (member vtype '(:f32 :f64)))
+                                          (to-bits-form value vtype)
+                                          value))))))
                (decf ht 2))))
             (t (let ((function (or (simple-function op)
                                    (error "unsupported opcode ~A" op))))
@@ -1004,19 +1604,34 @@ Unrolling thousands of loads makes SBCL fill the default heap."
       (emit `(return-from wasm-fn
                (values ,@(loop for type in (coerce (sig-results sig) 'list)
                                for index from 0
-                               collect (if fast
-                                           (to-bits-form (slot index) type)
-                                           (slot index))))))
+                               nconc (cond ((and fast (eq type :i64))
+                                            (list `(aref i32s ,index)
+                                                  `(aref ihs ,index)))
+                                           ((eq type :i64)
+                                            (list `(car (aref stack ,index))
+                                                  `(cdr (aref stack ,index))))
+                                           ((and fast (eq type :f64))
+                                            (list `(aref f64stack ,index)))
+                                           ((and fast (eq type :f32))
+                                            (list `(aref f32stack ,index)))
+                                           ((and fast (eq type :i32))
+                                            (list `(aref i32s ,index)))
+                                           (t (list `(aref stack ,index))))))))
       (let* ((param-inits (unless fast
-                              (loop for var in param-vars
+                              (loop for group in groups
                                     for index from 0
-                                    collect `(setf (aref locs ,index) ,var))))
+                                    collect (if (eq (first group) :i64)
+                                                `(setf (aref locs ,index)
+                                                       (cons ,(second group) ,(third group)))
+                                                `(setf (aref locs ,index) ,(second group))))))
              (local-inits (unless fast
                             (loop for type in locals
                                   for index from param-count
-                                  for default = (default-for type)
-                                  unless (eql default 0)
-                                    collect `(setf (aref locs ,index) ,default))))
+                                  when (eq type :i64)
+                                    collect `(setf (aref locs ,index) (cons 0 0))
+                                  when (and (not (eq type :i64))
+                                            (not (eql (default-for type) 0)))
+                                    collect `(setf (aref locs ,index) ,(default-for type)))))
              (gcell-pairs (loop for index being the hash-key of gcells
                                   using (hash-value var)
                                 collect (cons index var)))
@@ -1024,10 +1639,35 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                (when fast
                  (loop for index from 0 below local-count
                        for type = (nth index all-types)
-                       collect `(,(aref local-names index)
-                                 ,(if (< index param-count)
-                                      (from-bits-form (nth index param-vars) type)
-                                      (repr-default type))))))
+                       nconc (if (eq type :i64)
+                                 (let ((group (and (< index param-count)
+                                                   (nth index groups))))
+                                   `((,(aref local-names index)
+                                      ,(if group (second group) 0))
+                                     (,(aref local-hi index)
+                                      ,(if group (third group) 0))))
+                                 `((,(aref local-names index)
+                                    ,(if (< index param-count)
+                                         (second (nth index groups))
+                                         (repr-default type))))))))
+             (param-decls
+               (loop for group in groups
+                     nconc (if (eq (first group) :i64)
+                               `((type (unsigned-byte 32) ,(second group) ,(third group)))
+                               (let ((lisp-type (boundary-lisp-type (first group))))
+                                 (when lisp-type
+                                   `((type ,lisp-type ,(second group))))))))
+             (local-decls
+               (when fast
+                 (loop for index from 0 below local-count
+                       for type = (nth index all-types)
+                       nconc (if (eq type :i64)
+                                 `((type (unsigned-byte 32)
+                                         ,(aref local-names index)
+                                         ,(aref local-hi index)))
+                                 (let ((lisp-type (boundary-lisp-type type)))
+                                   (when lisp-type
+                                     `((type ,lisp-type ,(aref local-names index)))))))))
              (hoist-bindings
                (loop for (var . type) in hoisted
                      collect `(,var ,(if fast (repr-default type) 0))))
@@ -1035,13 +1675,16 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                        `(lambda ,param-vars
                           (declare (optimize (speed 3) (safety 0) (debug 0))
                                    (type wasm-instance *wasm-instance*)
-                                   ,@(when param-vars
-                                       `((type (unsigned-byte 64) ,@param-vars)))
+                                   ,@param-decls
                                    (ignorable ,@param-vars *wasm-instance*))
                           (let ((*wasm-depth* (1+ *wasm-depth*))
-                                (istack (make-array ,max-ht
-                                                    :element-type '(unsigned-byte 64)
-                                                    :initial-element 0))
+                                (i32s (make-array ,max-ht
+                                                  :element-type '(unsigned-byte 32)
+                                                  :initial-element 0))
+                                ,@(when needs-i64
+                                    `((ihs (make-array ,max-ht
+                                                       :element-type '(unsigned-byte 32)
+                                                       :initial-element 0))))
                                 ,@(when needs-f32
                                     `((f32stack (make-array ,max-ht
                                                             :element-type 'single-float
@@ -1065,26 +1708,34 @@ Unrolling thousands of loads makes SBCL fill the default heap."
                                                              ,index)))
                                 ,@local-bindings
                                 ,@hoist-bindings)
-                            (declare (type (simple-array (unsigned-byte 64) (*)) istack)
+                            (declare (type (simple-array (unsigned-byte 32) (*)) i32s)
+                                     (dynamic-extent i32s
+                                                     ,@(when needs-i64 '(ihs))
+                                                     ,@(when needs-f32 '(f32stack))
+                                                     ,@(when needs-f64 '(f64stack)))
+                                     ,@(when needs-i64
+                                         '((type (simple-array (unsigned-byte 32) (*)) ihs)))
                                      ,@(when needs-f32
                                          '((type (simple-array single-float (*)) f32stack)))
                                      ,@(when needs-f64
                                          '((type (simple-array double-float (*)) f64stack)))
                                      ,@(when needs-mem
                                          `((type (simple-array (unsigned-byte 8) (*)) ,mem-var)))
-                                     ,@(loop for index from 0 below local-count
-                                             collect `(type ,(repr-lisp-type (nth index all-types))
-                                                            ,(aref local-names index)))
+                                     ,@local-decls
                                      ,@(loop for (var . type) in hoisted
                                              collect `(type ,(repr-lisp-type type) ,var))
                                      ,@(loop for (index . var) in gcell-pairs
                                              collect `(type wasm-gcell ,var))
-                                     (ignorable istack
+                                     (ignorable i32s
+                                                ,@(when needs-i64 '(ihs))
                                                 ,@(when needs-f32 '(f32stack))
                                                 ,@(when needs-f64 '(f64stack))
                                                 ,@(when needs-mem (list mem-var))
                                                 ,@(when local-names
                                                     (coerce local-names 'list))
+                                                ,@(when local-hi
+                                                    (loop for name across local-hi
+                                                          when name collect name))
                                                 ,@(mapcar #'car hoisted)
                                                 ,@(mapcar #'cdr gcell-pairs)))
                             (when (> *wasm-depth* *wasm-call-limit*)

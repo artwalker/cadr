@@ -133,3 +133,35 @@ sb-sprof，174 个样本，0.174s。自身时间靠前的是：
 `arch_set_fp_modes` 和 `arch_get_fp_modes` 不在采样里。`VECTOR-HAIRY-DATA-VECTOR-REF` 和 `(OPTIMIZED-DATA-VECTOR-REF T)` 也不在。`pthread_sigmask` 的总时间挂在 `interrupt_handle_pending` / `maybe_gc` 下面，不是每条浮点运算各屏蔽一次。`lisp_alloc` 的总时间是 8.6%。生成的 quickjs 源里没有 `with-float-traps-masked`。
 
 热函数自身占一半以上，剩下的大头是别的已编译 quickjs 函数。再去掉陷阱屏蔽和泛型向量读，补不上到 5 倍以内的那一截。
+
+## 5'''''' 这一轮
+
+i64 在函数边界、`funcall` 和全局槽里改成两个 `(unsigned-byte 32)`（低位在前）。函数体里的加减、按位、比较和移位在两半上做，不再合成第 62/63 位为 1 的 `(unsigned-byte 64)`。f32/f64 仍以浮点过边界。导出和 WASI 导入在边界上再合成规范整数。quickjs 的 1698 个函数全部是 fast（局部加参数不超过 64，且没有引用类型），slow 0，解释器 0。1e6 累加和 1MB JSON 里解释器调用次数都是 0。
+
+AOT：`scripts/aot-quickjs-wasm.sh`，SBCL 2.6.7，`--dynamic-space-size 8192`。墙钟 4:50.65，峰值 RSS 2470784 kB，fasl 12463659 字节。上一轮是 4:33.98、2432324 kB、12113280 字节。
+
+吞吐仍是已经 `qjs_init` 的实例上只计 `qjs_eval`。每次求值用新实例。Node 对照同一天重跑了 `/tmp/qjs-bench/bench.mjs`（Node 22.22.0，quickjs-wasi 3.6.2）。
+
+| 脚本 | cadr | Node 22.22.0 | 倍数 |
+|---|---|---|---|
+| `let s=0; for (let i=0;i<1000000;i++) s+=i; s` | 577.92ms、599.45ms，值 499999500000 | 第一次 92.1ms，第二次 63.4ms，值相同 | 9.5 |
+| 1MB `"x"` 的 `JSON.stringify(JSON.parse(JSON.stringify(s))).length` | 232.88ms，值 1048578 | 36.4ms，值 1048578 | 6.4 |
+
+`qjs_eval` 的 `1+1` 是 0.12ms，值 2。`codemode-run-vm` 的 `return 1 + 1` 是 73ms、73ms、66ms。上一轮 1e6 循环是 696ms 和 708ms（10.7 倍），JSON 是 304ms（9.6 倍）。这一轮短了，仍超过 5 倍。
+
+1e6 循环的 `sb-ext:get-bytes-consed`：第一次 327632 字节，第二次 0。都低于 1MB。第二次为 0，循环体不再按迭代分配。上一轮是 794657984 字节。JSON 往返是 19136656 字节，来自主机把结果字符串读出来，不是 i64 装箱。
+
+sb-sprof，156 个样本。自身时间靠前的是：
+
+| 自身 | 函数 |
+|---|---|
+| 56.4% | `QJS-AOT-80` |
+| 12.2% | `QJS-AOT-28` |
+| 9.6% | `QJS-AOT-87` |
+| 7.7% | `QJS-AOT-97` |
+| 7.7% | `QJS-AOT-27` |
+| 5.8% | `QJS-AOT-81` |
+
+前 6 名都是已编译的 quickjs 函数，合计约 99%。`ALLOC-UNSIGNED-BIGNUM-*`、`pthread_sigmask`、`maybe_gc`、`arch_set_fp_modes`、`VECTOR-HAIRY-DATA-VECTOR-REF` 都不在采样里。
+
+小循环解释器上的函数是空表。没有任何函数在这两次基准里被调用超过 1000 次还停在解释器上。`cadr-wasm` FiveAM 为 Did 145、Pass 145、Skip 0、Fail 0、exit 0。倍数仍超过 5，这一轮按裁决记 blocked。

@@ -7,16 +7,31 @@
 (defun quickjs-aot-fasl ()
   (vendor-file "quickjs-aot.fasl"))
 
+(defun aot-lisp-type (type)
+  (case type
+    (:f32 'single-float)
+    (:f64 'double-float)
+    (:i32 '(unsigned-byte 32))
+    (t 't)))
+
 (defun aot-function-type (sig)
+  "i64 crosses the function as two (unsigned-byte 32) values, low then high."
   (with-output-to-string (out)
     (write-string "(function (" out)
-    (loop repeat (length (sig-params sig))
+    (loop for type across (sig-params sig)
           for space = nil then t
-          do (when space (write-char #\Space out))
-             (format out "~S" '(unsigned-byte 64)))
+          do (flet ((emit (text)
+                      (when space (write-char #\Space out))
+                      (write-string text out)
+                      (setf space t)))
+               (if (eq type :i64)
+                   (emit (format nil "~S ~S" '(unsigned-byte 32) '(unsigned-byte 32)))
+                   (emit (format nil "~S" (aot-lisp-type type))))))
     (write-string ") (values" out)
-    (loop repeat (length (sig-results sig))
-          do (format out " ~S" '(unsigned-byte 64)))
+    (loop for type across (sig-results sig)
+          do (if (eq type :i64)
+                 (format out " ~S ~S" '(unsigned-byte 32) '(unsigned-byte 32))
+                 (format out " ~S" (aot-lisp-type type))))
     (write-string "))" out)))
 
 (defun write-quickjs-aot-source (path)
