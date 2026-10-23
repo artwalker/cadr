@@ -12318,15 +12318,7 @@
       "path": "src/cadr-durable/telemetry.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            (list (cons \"pi.durable.entry\" (durable-event \"A transcript entry was committed.\"))",
-      "occurrences": 1,
-      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
-    },
-    {
-      "path": "src/cadr-durable/telemetry.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "     (cons \"pi.durable.phase\"",
+      "line": "(defparameter *durable-submit-span* \"pi.durable.submit\")",
       "occurrences": 1,
       "reason": "v1.4.0 durable telemetry span name. The token is the span protocol name, not the Cadr product name."
     },
@@ -12334,23 +12326,7 @@
       "path": "src/cadr-durable/telemetry.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "     (cons \"pi.durable.phase.duration\"",
-      "occurrences": 1,
-      "reason": "v1.4.0 durable telemetry metric name. The token is the span protocol name, not the Cadr product name."
-    },
-    {
-      "path": "src/cadr-durable/telemetry.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "     (cons \"pi.durable.reports\"",
-      "occurrences": 1,
-      "reason": "v1.4.0 durable telemetry metric name. The token is the span protocol name, not the Cadr product name."
-    },
-    {
-      "path": "src/cadr-durable/telemetry.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "     (cons \"pi.durable.submit\"",
+      "line": "(defparameter *durable-phase-span* \"pi.durable.phase\")",
       "occurrences": 1,
       "reason": "v1.4.0 durable telemetry span name. The token is the span protocol name, not the Cadr product name."
     },
@@ -12358,7 +12334,47 @@
       "path": "src/cadr-durable/telemetry.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "     (cons \"pi.durable.tasks.active\"",
+      "line": "(defparameter *durable-entry-event* \"pi.durable.entry\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
+    },
+    {
+      "path": "src/cadr-durable/telemetry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter *durable-submission-event* \"pi.durable.submission\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
+    },
+    {
+      "path": "src/cadr-durable/telemetry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter *durable-report-event* \"pi.durable.report\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
+    },
+    {
+      "path": "src/cadr-durable/telemetry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter *durable-checkpoint-event* \"pi.durable.checkpoint\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
+    },
+    {
+      "path": "src/cadr-durable/telemetry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter *durable-replay-event* \"pi.durable.replay\")",
+      "occurrences": 1,
+      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
+    },
+    {
+      "path": "src/cadr-durable/telemetry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter *durable-reports-metric* \"pi.durable.reports\")",
       "occurrences": 1,
       "reason": "v1.4.0 durable telemetry metric name. The token is the span protocol name, not the Cadr product name."
     },
@@ -12366,33 +12382,17 @@
       "path": "src/cadr-durable/telemetry.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                  (cons \"pi.durable.checkpoint\" (durable-event \"A task checkpoint was committed.\"))",
+      "line": "(defparameter *durable-phase-duration-metric* \"pi.durable.phase.duration\")",
       "occurrences": 1,
-      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
+      "reason": "v1.4.0 durable telemetry metric name. The token is the span protocol name, not the Cadr product name."
     },
     {
       "path": "src/cadr-durable/telemetry.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                  (cons \"pi.durable.replay\" (durable-event \"A code-mode call was replayed.\"))))))",
+      "line": "(defparameter *durable-tasks-active-metric* \"pi.durable.tasks.active\")",
       "occurrences": 1,
-      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
-    },
-    {
-      "path": "src/cadr-durable/telemetry.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "                  (cons \"pi.durable.report\" (durable-event \"A harness report was published.\"))",
-      "occurrences": 1,
-      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
-    },
-    {
-      "path": "src/cadr-durable/telemetry.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "                  (cons \"pi.durable.submission\" (durable-event \"A submission changed status.\"))",
-      "occurrences": 1,
-      "reason": "v1.4.0 durable telemetry event name. The token is the span protocol name, not the Cadr product name."
+      "reason": "v1.4.0 durable telemetry metric name. The token is the span protocol name, not the Cadr product name."
     },
     {
       "path": "src/cadr-evals/harness.lisp",

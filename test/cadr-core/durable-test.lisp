@@ -832,8 +832,494 @@
                                                        :invoke (lambda (call)
                                                                  (declare (ignore call)) "no"))))))))
 
-(test durable-telemetry-schema-names-the-submit-span-and-the-report-metric
-  (let ((schema cadr-durable:*durable-telemetry-schema*))
+(defun durable-schema-span (name)
+  (cdr (assoc name
+              (cadr-telemetry:telemetry-schema-spans cadr-durable:*durable-telemetry-schema*)
+              :test #'string=)))
+
+(defun durable-schema-metric (name)
+  (cdr (assoc name
+              (cadr-telemetry:telemetry-schema-metrics cadr-durable:*durable-telemetry-schema*)
+              :test #'string=)))
+
+(defun durable-schema-attribute (attributes name)
+  (cdr (assoc name attributes :test #'string=)))
+
+(defun durable-attribute-matches (attribute type description &key required values cardinality)
+  (and (string= type (cadr-telemetry:telemetry-attribute-definition-type attribute))
+       (string= description (cadr-telemetry:telemetry-attribute-definition-description attribute))
+       (eq required (cadr-telemetry::telemetry-attribute-definition-required attribute))
+       (equal values (cadr-telemetry::telemetry-attribute-definition-values attribute))
+       (equal cardinality (cadr-telemetry::telemetry-attribute-definition-cardinality attribute))))
+
+(test durable-telemetry-schema-matches-v140-field-for-field
+  (let* ((schema cadr-durable:*durable-telemetry-schema*)
+         (submit (durable-schema-span "pi.durable.submit"))
+         (phase (durable-schema-span "pi.durable.phase"))
+         (reports (durable-schema-metric "pi.durable.reports"))
+         (duration (durable-schema-metric "pi.durable.phase.duration"))
+         (active (durable-schema-metric "pi.durable.tasks.active"))
+         (submit-start (cadr-telemetry::telemetry-span-definition-start-attributes submit))
+         (submit-end (cadr-telemetry::telemetry-span-definition-end-attributes submit))
+         (submit-events (cadr-telemetry::telemetry-span-definition-events submit))
+         (phase-start (cadr-telemetry::telemetry-span-definition-start-attributes phase))
+         (phase-end (cadr-telemetry::telemetry-span-definition-end-attributes phase))
+         (phase-events (cadr-telemetry::telemetry-span-definition-events phase))
+         (entry (cdr (assoc "pi.durable.entry" submit-events :test #'string=)))
+         (submission (cdr (assoc "pi.durable.submission" submit-events :test #'string=)))
+         (report (cdr (assoc "pi.durable.report" submit-events :test #'string=)))
+         (checkpoint (cdr (assoc "pi.durable.checkpoint" phase-events :test #'string=)))
+         (replay (cdr (assoc "pi.durable.replay" phase-events :test #'string=))))
+    (is (eq schema (cadr-telemetry:define-telemetry-schema schema)))
     (is (= 1 (cadr-telemetry:telemetry-schema-version schema)))
-    (is (assoc "pi.durable.submit" (cadr-telemetry:telemetry-schema-spans schema) :test #'string=))
-    (is (assoc "pi.durable.reports" (cadr-telemetry:telemetry-schema-metrics schema) :test #'string=))))
+    (is (string= "Public submission admission and its commit. Inputs start root traces linked to their callers; writes are children. Internal admissions emit phase events only."
+                 (cadr-telemetry:telemetry-span-definition-description submit)))
+    (is (equal '(:kind "any") (cadr-telemetry::telemetry-span-definition-parents submit)))
+    (is (equal '(:kind "any") (cadr-telemetry::telemetry-span-definition-parents phase)))
+    (is (not (eq (cadr-telemetry::telemetry-span-definition-parents submit)
+                 (cadr-telemetry::telemetry-span-definition-parents phase))))
+    (is (durable-attribute-matches
+         (durable-schema-attribute submit-start "submission.type")
+         "string" "Submission type." :required t :values '("input" "write")))
+    (is (durable-attribute-matches
+         (durable-schema-attribute submit-start "conversation.id")
+         "number" "Conversation ID." :required t :cardinality "high"))
+    (is (durable-attribute-matches
+         (durable-schema-attribute submit-end "submission.id")
+         "number" "Admitted submission ID." :cardinality "high"))
+    (is (durable-attribute-matches
+         (durable-schema-attribute submit-end "result")
+         "string" "Admission result; stale writes report done."
+         :values '("queued" "placed" "done")))
+    (is (equal '(:default "ok" :error-when "Admission failed.")
+               (cadr-telemetry::telemetry-span-definition-status submit)))
+    (is (string= "One task phase invocation, including its decision commit, never a wait or restart."
+                 (cadr-telemetry:telemetry-span-definition-description phase)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-start "task.id")
+         "number" "Task ID." :required t :cardinality "high"))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-start "task.name")
+         "string" "Registered task name." :required t))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-start "phase")
+         "string" "Invoked checkpoint phase." :required t))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-start "kind")
+         "string" "Invocation kind." :required t :values '("run" "abort")))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-start "attempt")
+         "number" "Checkpoint attempt, when present." :required nil))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-start "resumed")
+         "boolean" "First invocation of a task loaded in this process." :required t))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-end "outcome")
+         "string" "next=<phase>, waiting, sleeping, done, faulted, or aborted."))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-end "tool.name")
+         "string" "Called tool name."))
+    (is (durable-attribute-matches
+         (durable-schema-attribute phase-end "tool.call_id")
+         "string" "Transcript tool call ID." :cardinality "high"))
+    (is (equal '(:default "ok"
+                 :error-when
+                 "Faulted, failed, and orphaned outcomes use task_faulted, task_failed, and task_orphaned with a diagnostic capped at 500 characters. Aborted outcomes keep status ok.")
+               (cadr-telemetry::telemetry-span-definition-status phase)))
+    (is (eq entry (cdr (assoc "pi.durable.entry" phase-events :test #'string=))))
+    (is (eq submission (cdr (assoc "pi.durable.submission" phase-events :test #'string=))))
+    (is (eq report (cdr (assoc "pi.durable.report" phase-events :test #'string=))))
+    (is (string= "A transcript entry was committed; content remains in the transcript."
+                 (getf entry :description)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf entry :attributes) "entry.id")
+         "number" "Transcript entry ID." :required t :cardinality "high"))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf entry :attributes) "entry.kind")
+         "string" "Entry kind." :required t))
+    (is (string= "A submission was settled." (getf submission :description)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf submission :attributes) "submission.id")
+         "number" "Submission ID." :required t :cardinality "high"))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf submission :attributes) "status")
+         "string" "Settlement." :required t :values '("done" "unanswered")))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf submission :attributes) "answer.entry_id")
+         "number" "Answer entry ID." :required nil :cardinality "high"))
+    (is (string= "A report was raised; no error payload is recorded."
+                 (getf report :description)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf report :attributes) "type")
+         "string" "ReportInfo type." :required t
+         :values '("session_failed" "task_faulted" "task_parked" "migration_failed"
+                   "task_outdated" "task_error" "extension_error" "host_error"
+                   "listener_error")))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf report :attributes) "reason")
+         "string" "Fixed report reason, when present." :required nil
+         :values '("threw" "restart_limit" "missing_task" "incompatible_task")))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf report :attributes) "extension")
+         "string" "Registered extension name, when present." :required nil))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf report :attributes) "task.id")
+         "number" "Task ID, when present." :required nil :cardinality "high"))
+    (is (eq (durable-schema-attribute (getf report :attributes) "type")
+            (durable-schema-attribute
+             (cadr-telemetry::telemetry-metric-definition-attributes reports) "type")))
+    (is (string= "The running checkpoint's phase changed while the invocation continued."
+                 (getf checkpoint :description)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf checkpoint :attributes) "phase")
+         "string" "Committed checkpoint phase." :required t))
+    (is (string= "A nested tool call was answered from its stored result."
+                 (getf replay :description)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute (getf replay :attributes) "tool.name")
+         "string" "Called tool name." :required t))
+    (is (string= "counter" (cadr-telemetry:telemetry-metric-definition-kind reports)))
+    (is (string= "Reports raised, grouped by their fixed ReportInfo type."
+                 (cadr-telemetry:telemetry-metric-definition-description reports)))
+    (is (null (cadr-telemetry:telemetry-metric-definition-unit reports)))
+    (is (string= "histogram" (cadr-telemetry:telemetry-metric-definition-kind duration)))
+    (is (string= "ms" (cadr-telemetry:telemetry-metric-definition-unit duration)))
+    (is (string= "Duration of a phase invocation and its decision commit."
+                 (cadr-telemetry:telemetry-metric-definition-description duration)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute
+          (cadr-telemetry::telemetry-metric-definition-attributes duration) "task")
+         "string" "Registered task name." :required t))
+    (is (durable-attribute-matches
+         (durable-schema-attribute
+          (cadr-telemetry::telemetry-metric-definition-attributes duration) "phase")
+         "string" "Invoked checkpoint phase." :required t))
+    (is (durable-attribute-matches
+         (durable-schema-attribute
+          (cadr-telemetry::telemetry-metric-definition-attributes duration) "outcome")
+         "string" "Phase outcome." :required t))
+    (is (string= "upDownCounter" (cadr-telemetry:telemetry-metric-definition-kind active)))
+    (is (string= "Live tasks held by this Harness; decremented at terminal settlement or close."
+                 (cadr-telemetry:telemetry-metric-definition-description active)))
+    (is (null (cadr-telemetry:telemetry-metric-definition-unit active)))
+    (is (durable-attribute-matches
+         (durable-schema-attribute
+          (cadr-telemetry::telemetry-metric-definition-attributes active) "task")
+         "string" "Registered task name." :required t))))
+
+(defun durable-recorded-spans (telemetry name)
+  (remove-if-not
+   (lambda (span)
+     (string= name (cadr-telemetry:recorded-telemetry-span-name span)))
+   (cadr-telemetry:in-memory-telemetry-spans telemetry)))
+
+(defun durable-span-attr (span name)
+  (cdr (assoc name (cadr-telemetry:recorded-telemetry-span-attributes span)
+              :test #'string=)))
+
+(defun durable-event-named (span name)
+  (find name (cadr-telemetry:recorded-telemetry-span-events span)
+        :key #'cadr-telemetry:recorded-telemetry-event-name
+        :test #'string=))
+
+(test durable-submit-emits-a-root-span-and-keeps-content-out
+  (let ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+        (storage (cadr-durable:make-memory-storage))
+        (failures nil)
+        (harness nil))
+    (is (eq cadr-telemetry:*noop-telemetry-context*
+            (cadr-durable::harness-telemetry
+             (cadr-durable:open-harness
+              (cadr-durable:make-memory-storage)
+              :model (lambda (messages)
+                       (declare (ignore messages))
+                       "x")))))
+    (setf harness
+          (cadr-durable:open-harness
+           storage :telemetry telemetry
+           :model (lambda (messages)
+                    (declare (ignore messages))
+                    (handler-case
+                        (cadr-durable:harness-submit
+                         harness "nested-private" :when-busy "reject")
+                      (error (condition) (push condition failures)))
+                    "visible-answer")))
+    (cadr-telemetry:telemetry-start-span
+     telemetry "caller"
+     (lambda (caller)
+       (let ((done (cadr-durable:harness-submit
+                    harness "private-input" :request-id "dedupe"
+                    :context-telemetry caller)))
+         (is (string= "done" (cadr-durable:submission-status done)))
+         (let ((again (cadr-durable:harness-submit
+                       harness "another-private-input" :request-id "dedupe"
+                       :context-telemetry caller)))
+           (is (eql (cadr-durable:submission-id done)
+                    (cadr-durable:submission-id again))))))
+     :attributes nil)
+    (let ((submits (durable-recorded-spans telemetry "pi.durable.submit")))
+      (is (= 3 (length submits)))
+      (let* ((fresh (find "placed" submits :key (lambda (span) (durable-span-attr span "result"))
+                                         :test #'equal))
+             (entry (durable-event-named fresh "pi.durable.entry"))
+             (caller (find "caller" (cadr-telemetry:in-memory-telemetry-spans telemetry)
+                           :key #'cadr-telemetry:recorded-telemetry-span-name
+                           :test #'string=)))
+        (is (null (cadr-telemetry:recorded-telemetry-span-parent-id fresh)))
+        (is (string= "input" (durable-span-attr fresh "submission.type")))
+        (is (= 1 (durable-span-attr fresh "conversation.id")))
+        (is (equal "placed" (durable-span-attr fresh "result")))
+        (is (eql (cadr-durable:submission-id
+                  (cadr-durable:storage-submission-by-request storage 1 "dedupe"))
+                 (durable-span-attr fresh "submission.id")))
+        (is (string= "pi.user"
+                     (cdr (assoc "entry.kind"
+                                 (cadr-telemetry:recorded-telemetry-event-attributes entry)
+                                 :test #'string=))))
+        (is (equal (cadr-telemetry:recorded-telemetry-span-context caller)
+                   (cadr-telemetry:recorded-telemetry-link-context
+                    (first (cadr-telemetry:recorded-telemetry-span-links fresh)))))
+        (is (null (cadr-telemetry:recorded-telemetry-span-events
+                   (find "done" submits
+                         :key (lambda (span) (durable-span-attr span "result"))
+                         :test #'equal)))))
+      (let ((rejected (find-if (lambda (span)
+                                 (eq :error
+                                     (cadr-telemetry:telemetry-status-kind
+                                      (cadr-telemetry:recorded-telemetry-span-status span))))
+                               submits)))
+        (is (string= "" (cadr-telemetry:telemetry-status-error-message
+                         (cadr-telemetry:recorded-telemetry-span-status rejected))))
+        (is (null (durable-span-attr rejected "submission.id")))
+        (is (typep (first failures) 'cadr-durable:conversation-busy))))
+    (is (null (search "private-input"
+                      (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))
+    (is (null (search "visible-answer"
+                      (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))
+    (is (null (search "nested-private"
+                      (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry)))))))
+
+(test durable-phase-report-clock-and-replay-follow-the-v140-vocabulary
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (reports nil)
+         (clock-calls 0)
+         (registry (cadr-durable:make-registry))
+         (phases (make-hash-table :test #'equal))
+         (storage (cadr-durable:make-memory-storage)))
+    (setf (gethash "call" phases)
+          (lambda (task runtime)
+            (declare (ignore task))
+            (cadr-durable:runtime-commit
+             runtime (lambda () (cadr-chord:json-object "status" "running" "phase" "call")))
+            (cadr-durable:runtime-commit
+             runtime (lambda () (cadr-chord:json-object "status" "running" "phase" "call")))
+            (cadr-durable:runtime-commit
+             runtime (lambda () (cadr-chord:json-object "status" "running" "phase" "finish")))
+            (cadr-durable:runtime-now runtime)
+            (cadr-durable:runtime-now runtime)))
+    (setf (gethash "finish" phases)
+          (lambda (task runtime)
+            (declare (ignore task runtime))
+            (error "private-fault-payload~A" (make-string 520 :initial-element #\x))))
+    (cadr-durable:registry-install
+     registry
+     (cadr-durable:define-task "job"
+       :initial (lambda (input) (declare (ignore input))
+                  (cadr-chord:json-object "phase" "call"))
+       :phases phases
+       :abort (lambda (task runtime)
+                (declare (ignore task))
+                (cadr-durable:runtime-commit
+                 runtime (lambda ()
+                           (cadr-chord:json-object
+                            "status" "terminal"
+                            "outcome" (cadr-chord:json-object
+                                       "status" "aborted"
+                                       "reason" "private-abort-reason")))))))
+    (let ((harness (cadr-durable:open-harness
+                    storage :registry registry :telemetry telemetry
+                    :now (lambda ()
+                           (incf clock-calls)
+                           (when (= clock-calls 1)
+                             (error "private-clock-error"))
+                           10)
+                    :on-report (lambda (event) (push event reports)))))
+      (let ((task (cadr-durable:harness-create-task
+                   harness "job" (cadr-chord:json-object))))
+        (is (string= "terminal"
+                     (cadr-chord:json-get (cadr-durable:task-record-state task) "status")))
+        (let ((phases (durable-recorded-spans telemetry "pi.durable.phase")))
+          (is (= 2 (length phases)))
+          (is (every (lambda (span)
+                       (and (null (cadr-telemetry:recorded-telemetry-span-parent-id span))
+                            (string= "job" (durable-span-attr span "task.name"))
+                            (string= "run" (durable-span-attr span "kind"))
+                            (null (durable-span-attr span "resumed"))
+                            (assoc "resumed"
+                                   (cadr-telemetry:recorded-telemetry-span-attributes span)
+                                   :test #'string=)))
+                     phases))
+          (is (string= "next=finish" (durable-span-attr (first phases) "outcome")))
+          (is (string= "call" (durable-span-attr (first phases) "phase")))
+          (let ((checkpoints
+                  (remove-if-not
+                   (lambda (event)
+                     (string= "pi.durable.checkpoint"
+                              (cadr-telemetry:recorded-telemetry-event-name event)))
+                   (cadr-telemetry:recorded-telemetry-span-events (first phases)))))
+            (is (= 1 (length checkpoints)))
+            (is (string= "finish"
+                         (cdr (assoc "phase"
+                                     (cadr-telemetry:recorded-telemetry-event-attributes
+                                      (first checkpoints))
+                                     :test #'string=)))))
+          (let ((fault (second phases))
+                (event (durable-event-named (second phases) "pi.durable.report")))
+            (is (eq :error (cadr-telemetry:telemetry-status-kind
+                            (cadr-telemetry:recorded-telemetry-span-status fault))))
+            (is (string= "task_faulted"
+                         (cadr-telemetry:telemetry-status-error-name
+                          (cadr-telemetry:recorded-telemetry-span-status fault))))
+            (is (= 500 (length (cadr-telemetry:telemetry-status-error-message
+                                (cadr-telemetry:recorded-telemetry-span-status fault)))))
+            (is (string= "faulted" (durable-span-attr fault "outcome")))
+            (is (equal "task_faulted"
+                       (cdr (assoc "type"
+                                   (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                   :test #'string=))))
+            (is (equal "threw"
+                       (cdr (assoc "reason"
+                                   (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                   :test #'string=))))
+            (is (eql (cadr-durable:task-record-id task)
+                     (cdr (assoc "task.id"
+                                 (cadr-telemetry:recorded-telemetry-event-attributes event)
+                                 :test #'string=))))
+            (is (null (assoc "message"
+                             (cadr-telemetry:recorded-telemetry-event-attributes event)
+                             :test #'string=)))
+            (is (null (search "private-clock-error"
+                              (format nil "~A"
+                                      (cadr-telemetry:recorded-telemetry-span-events fault)))))))
+        (cadr-durable:harness-abort-task harness (cadr-durable:task-record-id task))
+        (let ((abort (find "abort" (durable-recorded-spans telemetry "pi.durable.phase")
+                           :key (lambda (span) (durable-span-attr span "kind"))
+                           :test #'string=)))
+          (is (string= "aborted" (durable-span-attr abort "outcome")))
+          (is (eq :ok (cadr-telemetry:telemetry-status-kind
+                       (cadr-telemetry:recorded-telemetry-span-status abort))))
+          (is (null (search "private-abort-reason"
+                            (format nil "~A" (cadr-telemetry:in-memory-telemetry-spans telemetry))))))
+        (is (equal '("host_error" "task_faulted")
+                   (mapcar (lambda (metric)
+                             (cdr (assoc "type"
+                                         (cadr-telemetry:recorded-measurement-attributes metric)
+                                         :test #'string=)))
+                           (remove-if-not
+                            (lambda (metric)
+                              (string= "pi.durable.reports"
+                                       (cadr-telemetry:recorded-measurement-name metric)))
+                            (cadr-telemetry:in-memory-measurements telemetry)))))
+        (is (= 2 clock-calls))
+        (is (some (lambda (event)
+                    (let ((message (cadr-chord:json-get event "message")))
+                      (and message (search "private-clock-error" message))))
+                  reports))
+        (cadr-durable:harness-close harness)
+        (is (= 0 (reduce #'+
+                         (mapcar #'cadr-telemetry:recorded-measurement-value
+                                 (remove-if-not
+                                  (lambda (metric)
+                                    (string= "pi.durable.tasks.active"
+                                             (cadr-telemetry:recorded-measurement-name metric)))
+                                  (cadr-telemetry:in-memory-measurements telemetry)))
+                         :initial-value 0)))))))
+
+(test durable-loaded-task-is-resumed-once-and-commits-emit-after-success
+  (let* ((telemetry (cadr-telemetry:make-in-memory-telemetry))
+         (registry (cadr-durable:make-registry))
+         (phases (make-hash-table :test #'equal))
+         (storage (cadr-durable:make-memory-storage)))
+    (setf (gethash "finish" phases)
+          (lambda (task runtime)
+            (declare (ignore task))
+            (cadr-durable:runtime-commit
+             runtime (lambda ()
+                       (cadr-chord:json-object
+                        "status" "terminal"
+                        "outcome" (cadr-chord:json-object "status" "completed" "result" "ok"))))))
+    (cadr-durable:registry-install
+     registry
+     (cadr-durable:define-task "loaded"
+       :initial (lambda (input) (declare (ignore input))
+                  (cadr-chord:json-object "phase" "finish"))
+       :phases phases))
+    (cadr-durable:storage-commit
+     storage
+     (list (cons :conversation (cadr-durable:make-conversation))
+           (cons :task (cadr-durable:make-task-record
+                        :id 2 :kind "loaded" :conversation-id 1
+                        :state (cadr-chord:json-object "status" "pending" "phase" "finish"
+                                                       "attempt" 3)))))
+    (let ((harness (cadr-durable:open-harness storage :registry registry :telemetry telemetry)))
+      (cadr-durable:harness-resume harness)
+      (let ((span (first (durable-recorded-spans telemetry "pi.durable.phase"))))
+        (is (eq t (durable-span-attr span "resumed")))
+        (is (= 3 (durable-span-attr span "attempt")))
+        (is (string= "done" (durable-span-attr span "outcome"))))
+      (cadr-telemetry:telemetry-start-span
+       telemetry "commit"
+       (lambda (span)
+         (let ((cadr-durable::*durable-span* span))
+           (handler-case
+               (cadr-durable:session-commit
+                (cadr-durable:open-session storage)
+                (lambda (tx)
+                  (declare (ignore tx))
+                  (error "rollback")))
+             (error () nil))
+           (is (null (cadr-telemetry:recorded-telemetry-span-events
+                      (find "commit"
+                            (cadr-telemetry:in-memory-telemetry-spans telemetry)
+                            :key #'cadr-telemetry:recorded-telemetry-span-name
+                            :test #'string=))))
+           (cadr-durable:storage-commit
+            storage
+            (list (cons :entry (cadr-durable:make-entry
+                                :id 9 :conversation-id 1 :kind "app.note"))
+                  (cons :submission
+                        (cadr-durable::make-submission-record
+                         :id 10 :conversation-id 1 :type "write" :status "done"
+                         :entry 9))))))
+       :attributes nil)
+      (let ((span (find "commit" (cadr-telemetry:in-memory-telemetry-spans telemetry)
+                        :key #'cadr-telemetry:recorded-telemetry-span-name
+                        :test #'string=)))
+        (is (equal '("pi.durable.entry" "pi.durable.submission")
+                   (mapcar #'cadr-telemetry:recorded-telemetry-event-name
+                           (cadr-telemetry:recorded-telemetry-span-events span))))
+        (is (null (assoc "answer.entry_id"
+                         (cadr-telemetry:recorded-telemetry-event-attributes
+                          (second (cadr-telemetry:recorded-telemetry-span-events span)))
+                         :test #'string=))))
+      (let ((sandbox (cadr-durable:make-codemode-sandbox)))
+        (cadr-telemetry:telemetry-start-span
+         telemetry "replay"
+         (lambda (span)
+           (let ((cadr-durable::*durable-span* span))
+             (cadr-durable:codemode-run
+              sandbox '((:kind :tool :name "once"))
+              :journal (list (cadr-durable::make-journal-entry
+                              :seq 1 :kind :tool :name "once" :result "kept"))
+              :invoke (lambda (step)
+                        (declare (ignore step))
+                        (error "reran")))))
+         :attributes nil)
+        (let ((span (find "replay" (cadr-telemetry:in-memory-telemetry-spans telemetry)
+                          :key #'cadr-telemetry:recorded-telemetry-span-name
+                          :test #'string=)))
+          (is (equal "once"
+                     (cdr (assoc "tool.name"
+                                 (cadr-telemetry:recorded-telemetry-event-attributes
+                                  (durable-event-named span "pi.durable.replay"))
+                                 :test #'string=)))))))))

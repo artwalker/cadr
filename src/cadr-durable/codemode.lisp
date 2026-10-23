@@ -72,6 +72,8 @@
                  (entry
                   (unless (same-call-p entry step)
                     (replay-mismatch entry step))
+                  (when (eq (journal-entry-kind entry) :tool)
+                    (note-durable-replay (journal-entry-name entry)))
                   (push (journal-entry-result entry) delivered))
                  (t
                   (let* ((seq (1+ index))

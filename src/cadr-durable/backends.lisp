@@ -340,6 +340,7 @@
     (unless (eq next (durable-storage-state storage))
       (persist-storage storage next)
       (setf (durable-storage-state storage) next))
+    (note-durable-commit writes)
     (durable-state-seq (durable-storage-state storage))))
 
 (defun storage-close (storage)
