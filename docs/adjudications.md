@@ -2183,3 +2183,27 @@ The gray `Working` status rule is canonicalized in
   is.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-20. The status
   cell keeps the previous blocked text after the new open prefix.
+
+## 2026-10-23 — GAP-41 gets a third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-41 is open for a third repair. Keep the row whole. If the third
+  acceptance fails, write the status `blocked` and hand the row to the
+  advisor.
+- **Why:** two acceptances failed. The defects are concrete. Each
+  acceptance found new defects. The implementation was following review
+  comments instead of starting from the upstream test surface. Do not
+  split the row.
+- **Repair conditions:**
+  1. Before other repair work, use `git show v1.4.0` to list every test
+     file in the upstream durable package and its storage backends, and
+     every `test` / `it` case in those files.
+  2. Map each case to a cadr FiveAM test in the status cell or in an
+     appendix under `docs/reviews`. Mark each case covered, newly added,
+     or out of scope, and give the reason when it is out of scope. Lock
+     the assertions to upstream.
+  3. Fix every review-fail item already recorded from the two failed
+     acceptances.
+- **Acceptance:** the third acceptance checks that mapping case by case.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-41. The status
+  cell keeps the previous blocked text after the new open prefix.
