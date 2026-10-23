@@ -2502,3 +2502,19 @@ The gray `Working` status rule is canonicalized in
   is converging, so this pass stays inside that scope.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05b. The status
   cell starts with `open：顾问裁决 2026-10-23 第四次返修，范围只限第三次验收的一条（同一脚本内并发 models.classify 按上游每脚本 4 个封顶，各次 usage 累加进脚本结果），测试对着 v1.4.0 packages/codemode 对应测试锁死；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-23 — GAP-43b gets a narrow third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-43b's second acceptance left two defects. The row is open for a
+  third repair limited to those two defects. The previous blocked text
+  stays after the new prefix.
+- **Why:** each acceptance found new defects. The implementation was
+  following review comments instead of starting from the upstream test
+  surface.
+- **Second failure:** settlement events are recorded on the submit span
+  instead of the span upstream uses. A storage failure does not close
+  the Harness.
+- **Scope:** 第三次返修，范围只限第二次验收的两条（结算事件按上游记在正确的 span 上而不是 submit span；存储失败时按上游关闭 Harness），测试对着 v1.4.0 packages/durable 对应源码与测试锁死。第三次返修仍按已记录的条件 S。第三次验收不通过直接 blocked 交顾问。
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-43b. The status
+  cell starts with `open：顾问裁决 2026-10-23 第三次返修，范围只限第二次验收的两条（结算事件按上游记在正确的 span 上而不是 submit span；存储失败时按上游关闭 Harness），测试对着 v1.4.0 packages/durable 对应源码与测试锁死；原 blocked 记录：` and keeps the previous blocked text.
