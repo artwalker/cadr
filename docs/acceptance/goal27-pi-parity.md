@@ -119,7 +119,7 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-40 Chord | `packages/chord/README.md`，`packages/chord/src/index.ts` → none | open |
+| GAP-40 Chord | `packages/chord/README.md`，`packages/chord/src/index.ts` → `src/cadr-chord/` | done：宿主按契约激活对象，热重载在兼容时保留旧根的方法并共享状态，schema 升级让旧根得到可重试的 `upgrade_conflict`。JSON 链路使用协议版本 4，旧客户端被拒绝且不会被服务。子进程宿主能回声并在停止时退出。delta 编解码与 tracker 世代、SQLite 迁移、连接默认值和 Durable Object 游标适配与 v1.4.0 的可观察行为一致。 |
 
 ### P10. Telemetry contracts
 

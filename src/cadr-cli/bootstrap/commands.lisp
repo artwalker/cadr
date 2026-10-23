@@ -3212,10 +3212,10 @@
             :name "cadr-tmux-extended-keys-format"))
          (extended-keys
            (ignore-errors
-             (sb-thread:join-thread keys-thread)))
+             (cadr-core:join-active-thread keys-thread :reason "tmux extended-keys probe")))
          (extended-keys-format
            (ignore-errors
-             (sb-thread:join-thread format-thread))))
+             (cadr-core:join-active-thread format-thread :reason "tmux extended-keys format probe"))))
     (cond
       ((not (stringp extended-keys))
        nil)

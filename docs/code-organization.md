@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=306 lines=130311 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=150 in-progress=0 done=157 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=323 lines=143984 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=161 in-progress=0 done=157 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -440,6 +440,22 @@ Part H has no cell; assertions-first may share the rewrite commit
 when the new test is red on the old body. Full text:
 `docs/acceptance/goal-v20-part-j.md` and `goal20-draft.md` K
 unified requirements 7–9.
+
+### 2.10 `cadr-chord`
+
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
+|---|---:|---:|---|---|---|---|---|
+| `src/cadr-chord/child-entry.lisp` | 9 | 0 | Load the library in a child process without putting the package name in the reader before it exists. | pass | no-rewrite | The entry is a load script. A function wrapper would still have to be read after the system loads. | 27 |
+| `src/cadr-chord/contract.lisp` | 197 | 20 | Describe, cover, and bind host contracts. | pass | no-rewrite | Contracts are closed records. Coverage is a predicate, not an open protocol. | 27 |
+| `src/cadr-chord/delta.lisp` | 517 | 43 | Encode, apply, and track JSON deltas. | pass | no-rewrite | Ops are data tuples. Tracker generation is a slot, not a proxy class. | 27 |
+| `src/cadr-chord/errors.lisp` | 38 | 9 | Signal chord failures with stable codes, reasons, and retryability. | pass | no-rewrite | One condition plus a message function is the Lisp encoding of the typed error. | 27 |
+| `src/cadr-chord/host.lisp` | 627 | 84 | Activate hosts, hold objects, and reload code against pinned roots. | pass | no-rewrite | Object lifetime is explicit struct state. Methods are closures over that state. | 27 |
+| `src/cadr-chord/json.lisp` | 267 | 21 | Copy, print, and parse strict JSON for chord values. | pass | no-rewrite | Hash tables and lists are the JSON values. A class hierarchy would not change the wire. | 27 |
+| `src/cadr-chord/link.lisp` | 181 | 31 | Move JSON frames across memory and process pipes. | pass | no-rewrite | Generic functions already distinguish link kinds. Another wrapper would not. | 27 |
+| `src/cadr-chord/manager.lisp` | 306 | 38 | Lock, fork, and supervise a child host process. | pass | no-rewrite | Process supervision is a state machine over launch-program, not a new object model. | 27 |
+| `src/cadr-chord/package.lisp` | 169 | 1 | Declare the public chord package surface. | pass | no-rewrite | defpackage is the boundary. The export list is the library's public surface. | 27 |
+| `src/cadr-chord/schema.lisp` | 267 | 29 | Canonicalize schemas, fingerprint them, and test structural fits. | pass | no-rewrite | The fingerprint is a pure function of canonical JSON, so it stays a function. | 27 |
+| `src/cadr-chord/sqlite.lisp` | 236 | 36 | Apply SQLite migrations and adapt Durable Object SQL cursors. | pass | no-rewrite | The driver is a mutex around one connection. The cursor adapter is a pair of functions. | 27 |
 
 ## 3. Verdict summary and expected distribution
 
