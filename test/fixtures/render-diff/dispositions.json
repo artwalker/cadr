@@ -576,7 +576,7 @@
       "screenSha256": {
         "narrow": {
           "pi": "0e5e2fcdb33a688c48daf5ca48666ceb8035947d742ccf48cb33240633dfae33",
-          "cadr": "0f9154bb61111bfac91f5667da0ece3bcdc6cb1982c89eb622aacf46eef4bac4"
+          "cadr": "2e3f13f6430a0f927658dfbdb1f8d2fdbc573478801e9986ed6c280514bfb803"
         }
       },
       "note": "At overlays-core/overlay-settings [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -594,7 +594,7 @@
       "screenSha256": {
         "wide": {
           "pi": "7175d99ee9a3de9a17de7f0486a98fbae0a5dc4889f2b5dc6f715fd65ed2048c",
-          "cadr": "d1682ed08ad60743424aa9b4d62e8df901c3916920679c09f1c3e57765fa70c3"
+          "cadr": "31febd2828d664d03b833e48a42b4891c98e799490c3982d134f689e29404c35"
         }
       },
       "note": "At overlays-core/overlay-settings [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -3743,7 +3743,7 @@
       "screenSha256": {
         "wide": {
           "pi": "1083a2e1d8013de512547608fe338c5d1e504bff2f256735b8d4ab0c4a0618bf",
-          "cadr": "364f42f40293858de8051daaf7468e807742a970a020dfeb02046cd8a0f8f81b"
+          "cadr": "2d185c59a16f886a514dd87a22e195351eb703a3c59f0b751e45d57a7e6f98e2"
         }
       },
       "note": "At selector-state-sweep/settings-auto-resize-row [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -3779,7 +3779,7 @@
       "screenSha256": {
         "wide": {
           "pi": "0fe5f5cb21d2903d73a403838bb928fd798176e2a7e59ceae90801d1947d7f63",
-          "cadr": "25aedd45055e6eb9364864078fc80491eb4759da4c9c793ad58a2e7cd430e68c"
+          "cadr": "78248da448a6a4b179b8bf8f3fe4828bb4db3bd2a1a7d691965743b7a2459db2"
         }
       },
       "note": "At selector-state-sweep/settings-image-rows [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -3815,7 +3815,7 @@
       "screenSha256": {
         "wide": {
           "pi": "3719e6358b544846c1a116a22152fef475dfdd63550242724d1ac5f686c9a055",
-          "cadr": "86010d4f808edc9b94942bc4abf7bd80cb6a238f47a1c59db49dd48fbb095ccc"
+          "cadr": "c3348dbeb52b53bbef737d14193e5bf6f4c6103e31914f050b5e80284f78b5ee"
         }
       },
       "note": "At selector-state-sweep/settings-image-width-row [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -3833,7 +3833,7 @@
       "screenSha256": {
         "narrow": {
           "pi": "1d378e7c27005ddfb24cd50e65511c4f01ce49b18fd55bd4167c33b816ff8612",
-          "cadr": "f1aa1047bf7b238f7bd3ead704623b5342c54c455c07992ac13329ee3b5369a2"
+          "cadr": "0a5b1df1f6fbd7c625f05388d9a6140ad256dfa6ffe38a187967d5190494c6f6"
         }
       },
       "note": "At selector-state-sweep/settings-image-width-row [narrow] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
