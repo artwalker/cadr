@@ -580,9 +580,15 @@
              ("interactive/components/armin.lisp"
               "(defclass armin-component"
               "(defun armin-component-tick")
-             ("interactive/components/daxnuts.lisp"
-              "(defclass daxnuts-component"
-              "(defun daxnuts-component-tick")
+             ("interactive/components/easter-egg-3d.lisp"
+              "(defun pi-logo-model"
+              "(defun egg-visible-faces")
+             ("interactive/components/easter-egg-show.lisp"
+              "(defun egg-render-raster"
+              "(defun egg-parse-screen")
+             ("interactive/components/easter-egg-play.lisp"
+              "(defclass easter-egg-3d-animation"
+              "(defun play-pi-logo-3d")
              ("interactive/components/announcement.lisp"
               "(defun make-earendil-announcement-component")))
          (definition-count 0))
@@ -680,7 +686,9 @@
     ;; add-compaction-cost-notice (interactive/entries.lisp).
     ;; +2 GAP-28: apply-right-click-clipboard-paste and
     ;; interactive-right-click-paste-target (interactive/controller.lisp).
-    (is (= 353 definition-count)
+    ;; GAP-39 replaces daxnuts (19 defs) with the 3D egg owners
+    ;; (easter-egg-3d 74, easter-egg-show 5, easter-egg-play 30).
+    (is (= 443 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -731,7 +739,9 @@
              ("(:file \"loaders\")" 1)
              ("(:file \"countdown\")" 1)
              ("(:file \"armin\")" 1)
-             ("(:file \"daxnuts\")" 1)
+             ("(:file \"easter-egg-3d\")" 1)
+             ("(:file \"easter-egg-show\")" 1)
+             ("(:file \"easter-egg-play\")" 1)
              ("(:file \"announcement\")" 1)
              ("(:module \"interactive-controller\"" 1)
              ("(:file \"state\")" 1)

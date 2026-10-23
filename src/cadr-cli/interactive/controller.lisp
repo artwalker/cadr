@@ -517,6 +517,7 @@ interactive-mode.ts:5956-5960).")
          (status-animation
            (make-tui-status-animation))
          (overlay nil)
+         (easter-egg nil)
          (overlay-kind nil)
          (login-provider-auth-type nil)
          (busy-p nil)
@@ -589,11 +590,6 @@ interactive-mode.ts:5956-5960).")
              :type :live-component
              :custom-component component))
            (request-render))
-         (maybe-show-daxnuts (provider id)
-           (when (daxnuts-easter-egg-p provider id)
-             (append-live-component
-              (make-daxnuts-component
-               (extension-runtime)))))
          (confirm-missing-session-cwd (session-cwd fallback-cwd)
            (eq t
                (show-extension-overlay
@@ -627,50 +623,64 @@ interactive-mode.ts:5956-5960).")
          (render-now ()
            (let ((work-rendered-p nil))
              (sb-thread:with-mutex (lock)
-               (let ((floating-overlay
-                       (and remembered-overlay-custom
-                            (not (eq overlay remembered-overlay-custom))
-                            (not
-                             (extension-custom-ui-state-done-p
-                              remembered-overlay-custom))
-                            remembered-overlay-custom)))
-               (multiple-value-bind
-                     (lines cursor-row cursor-column editor-origin)
-                   (render-tui-state
-                    state (current-editor)
-                    (cadr-tui:terminal-columns terminal)
-                    (cadr-tui:terminal-rows terminal)
-                    :overlay overlay
-                    :busy-p
-                    (and
-                     (tui-state-agent-working-p state)
-                     ;; The settle window keeps the agent marked busy
-                     ;; until agent_end, but the baseline never paints
-                     ;; the loader there; omit it from these frames.
-                     (not (tui-state-settle-window-p state)))
-                    :extension-host extension-host
-                    :full-document-p alt-p
-                    :now (funcall clock-function)
-                    :spinner-frame
-                    (tui-status-animation-frame
-                     status-animation)
-                    :floating-overlay floating-overlay)
-                 (cadr-tui:render-frame
-                  renderer lines
-                  :cursor-row cursor-row
-                  :cursor-column cursor-column
-                  :overlay-active-p
-                  (or (and floating-overlay
-                           (extension-custom-ui-visible-p
-                            floating-overlay))
-                      (and
-                       (extension-custom-ui-state-p overlay)
-                       (extension-custom-ui-state-overlay-p overlay)
-                       (extension-custom-ui-visible-p overlay))))
-                 (setf
-                  list-mouse-origin editor-origin
-                  work-rendered-p pending-work-render-p
-                  pending-work-render-p nil))))
+               (cond
+                 (easter-egg
+                  (let ((lines
+                          (cadr-tui:component-render
+                           easter-egg
+                           (cadr-tui:terminal-columns terminal))))
+                    (cadr-tui:render-frame
+                     renderer lines
+                     :cursor-row -1
+                     :cursor-column 0
+                     :overlay-active-p t)
+                    (setf work-rendered-p pending-work-render-p
+                          pending-work-render-p nil)))
+                 (t
+                  (let ((floating-overlay
+                          (and remembered-overlay-custom
+                               (not (eq overlay remembered-overlay-custom))
+                               (not
+                                (extension-custom-ui-state-done-p
+                                 remembered-overlay-custom))
+                               remembered-overlay-custom)))
+                    (multiple-value-bind
+                          (lines cursor-row cursor-column editor-origin)
+                        (render-tui-state
+                         state (current-editor)
+                         (cadr-tui:terminal-columns terminal)
+                         (cadr-tui:terminal-rows terminal)
+                         :overlay overlay
+                         :busy-p
+                         (and
+                          (tui-state-agent-working-p state)
+                          ;; The settle window keeps the agent marked busy
+                          ;; until agent_end, but the baseline never paints
+                          ;; the loader there; omit it from these frames.
+                          (not (tui-state-settle-window-p state)))
+                         :extension-host extension-host
+                         :full-document-p alt-p
+                         :now (funcall clock-function)
+                         :spinner-frame
+                         (tui-status-animation-frame
+                          status-animation)
+                         :floating-overlay floating-overlay)
+                      (cadr-tui:render-frame
+                       renderer lines
+                       :cursor-row cursor-row
+                       :cursor-column cursor-column
+                       :overlay-active-p
+                       (or (and floating-overlay
+                                (extension-custom-ui-visible-p
+                                 floating-overlay))
+                           (and
+                            (extension-custom-ui-state-p overlay)
+                            (extension-custom-ui-state-overlay-p overlay)
+                            (extension-custom-ui-visible-p overlay))))
+                      (setf
+                       list-mouse-origin editor-origin
+                       work-rendered-p pending-work-render-p
+                       pending-work-render-p nil))))))
              (when (and work-rendered-p
                         work-rendered-function)
                (funcall work-rendered-function))))
@@ -2384,12 +2394,6 @@ interactive-mode.ts:5956-5960).")
                                 matched)
                                (tui-state-model
                                 state))))
-                           (let ((selected
-                                   (tui-state-model state)))
-                             (when (cadr-ai::model-p selected)
-                               (maybe-show-daxnuts
-                                (cadr-ai:model-provider selected)
-                                (cadr-ai:model-id selected))))
                            (refresh-footer-state)
                            (request-render)
                            t)))
@@ -2464,9 +2468,28 @@ interactive-mode.ts:5956-5960).")
                ((string= trimmed "/debug")
                 (handle-debug-command))
                ((string= trimmed "/arminsayshi")
-                (append-live-component
-                 (make-armin-component
-                  (extension-runtime))))
+                (multiple-value-bind (swallowed animation)
+                    (play-armin-3d
+                     terminal renderer
+                     (copy-list
+                      (cadr-tui::terminal-renderer-previous-lines
+                       renderer))
+                     :request-render #'request-render
+                     :overlay-check #'overlay-captures-input-p
+                     :on-done
+                     (lambda ()
+                       (sb-thread:with-mutex (lock)
+                         (setf easter-egg nil))
+                       (request-render)))
+                  (cond
+                    (animation
+                     (sb-thread:with-mutex (lock)
+                       (setf easter-egg animation))
+                     (request-render))
+                    ((not swallowed)
+                     (append-live-component
+                      (make-armin-component
+                       (extension-runtime)))))))
                ((string= trimmed "/dementedelves")
                 (append-live-component
                  (make-earendil-announcement-component)))
@@ -2641,12 +2664,7 @@ interactive-mode.ts:5956-5960).")
                          value
                          (when persist '(:persist t)))
                         (tui-state-model
-                         state))))
-                    (let ((selected (tui-state-model state)))
-                      (when (cadr-ai::model-p selected)
-                        (maybe-show-daxnuts
-                         (cadr-ai:model-provider selected)
-                         (cadr-ai:model-id selected)))))
+                         state)))))
                    (:thinking
                     (when on-thinking-selected
                       (funcall
@@ -2742,10 +2760,7 @@ interactive-mode.ts:5956-5960).")
                                   (oauth-selector-option-name option)
                                   provider
                                   :no-default-model
-                                  nil)))
-                              (when (stringp selection)
-                                (maybe-show-daxnuts
-                                 provider selection)))))))
+                                  nil))))))))
                    (:trust
                     (when on-trust-selected
                       (funcall
@@ -3506,6 +3521,7 @@ interactive-mode.ts:5956-5960).")
                (lambda (gesture)
                  (let* ((origin list-mouse-origin)
                         (y (getf gesture :y))
+                        (x (getf gesture :x))
                         (content-line
                           (and y
                                (+ (cadr-tui::terminal-renderer-scroll-top
@@ -3518,6 +3534,41 @@ interactive-mode.ts:5956-5960).")
                                      y)
                                   origin))))
                    (cond
+                     (easter-egg
+                      (when (eq (getf gesture :type) :click)
+                        (egg-anim-close easter-egg)
+                        (request-render))
+                      t)
+                     ((and (eq (getf gesture :type) :click)
+                           (not (overlay-captures-input-p))
+                           (startup-logo-supported-p)
+                           x y)
+                      (multiple-value-bind (column row)
+                          (pi-logo-click-origin
+                           (cadr-tui::terminal-renderer-previous-lines
+                            renderer)
+                           x y)
+                        (when column
+                          (multiple-value-bind (swallowed animation)
+                              (play-pi-logo-3d
+                               terminal renderer
+                               (copy-list
+                                (cadr-tui::terminal-renderer-previous-lines
+                                 renderer))
+                               column row
+                               :request-render #'request-render
+                               :overlay-check #'overlay-captures-input-p
+                               :on-done
+                               (lambda ()
+                                 (sb-thread:with-mutex (lock)
+                                   (setf easter-egg nil))
+                                 (request-render)))
+                            (declare (ignore swallowed))
+                            (when animation
+                              (sb-thread:with-mutex (lock)
+                                (setf easter-egg animation))
+                              (request-render)))
+                          t)))
                      ((and content-line
                            (not (overlay-captures-input-p))
                            (transcript-summary-click
@@ -3633,6 +3684,21 @@ interactive-mode.ts:5956-5960).")
                                (find-extension-shortcut-for-input
                                 extension-host input))))
                       (cond
+                        ((and easter-egg
+                              (plusp (length input))
+                              (null
+                               (cadr-tui::sgr-mouse-event input)))
+                         (when (or
+                                (cadr-tui:keybinding-matches-p
+                                 (cadr-tui:get-keybindings)
+                                 input
+                                 "tui.select.cancel")
+                                (cadr-tui:keybinding-matches-p
+                                 (cadr-tui:get-keybindings)
+                                 input
+                                 "app.clear"))
+                           (egg-anim-close easter-egg))
+                         (request-render))
                         ((cadr-tui:renderer-handle-input
                           renderer input)
                          (request-render))

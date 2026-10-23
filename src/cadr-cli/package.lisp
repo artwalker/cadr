@@ -197,9 +197,6 @@
    #:armin-component
    #:make-armin-component
    #:armin-component-tick
-   #:daxnuts-component
-   #:make-daxnuts-component
-   #:daxnuts-component-tick
    #:make-earendil-announcement-component
    #:build-system-prompt
    #:normalize-build-system-prompt-options

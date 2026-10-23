@@ -8,9 +8,9 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=359 systems=12 axes=6 rewrite=1 keep=11 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=361 systems=12 axes=6 rewrite=1 keep=11 -->
 
-The audited tree contains 359 Lisp files.  The form inventory below is
+The audited tree contains 361 Lisp files.  The form inventory below is
 syntactic evidence, not a quality score.  Line totals below are the last
 measured audit snapshot; only the file counts are suite-locked.
 
@@ -19,7 +19,7 @@ measured audit snapshot; only the file counts are suite-locked.
 | `cadr-core` | 7 | 471 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
 | `cadr-ai` | 70 | 26,575 | 46 | 13 | 6 | 34 | 1 | 67 | 2 | 0 |
 | `cadr-agent` | 49 | 16,281 | 49 | 7 | 23 | 35 | 15 | 54 | 3 | 1 |
-| `cadr-cli` | 128 | 65,995 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
+| `cadr-cli` | 130 | 65,995 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
 | `cadr-tui` | 53 | 23,711 | 40 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `cadr-server` | 11 | 2,793 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
@@ -153,7 +153,7 @@ as permanent:
 | `src/cadr-cli/bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` | separate tool construction, session lifecycle, settings/runtime, authentication, command dispatch, and the process entrypoint | keep command-domain functions explicit; `bootstrap/commands.lisp` is the sole mode-output injection owner and `bootstrap/main.lisp` stays a thin entrypoint |
 | `src/cadr-cli/modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` | separate RPC command domains from the JSONL loop | keep the closed RPC command handlers explicit; every domain emits only through the shared `rpc-write-object` wire sink |
 | `src/cadr-cli/interactive/{state,status,user-bash,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` | separate direct bash rendering, interactive state, reducers, transcript projection, composition, extension bridges, and lifecycle control | keep the closed state records and explicit controller functions; composition and mutation now have named owners without inventing an open hierarchy |
-| `src/cadr-cli/interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` | separate reusable loader primitives from independent animated and announcement components | keep each component's existing CLOS lifecycle while making its source owner exact |
+| `src/cadr-cli/interactive/components/{loaders,countdown,armin,easter-egg-3d,easter-egg-show,easter-egg-play,announcement}.lisp` | separate reusable loader primitives from the 3D egg and announcement components | keep each component's existing CLOS lifecycle while making its source owner exact |
 | `src/cadr-tui/components/{markdown,image,tool-block,status,select-list}.lisp` | separate Markdown/image/tool/status/select rendering families | keep plain render functions and closed tool/select state; these are value transformations, not an open object protocol |
 | `src/cadr-tui/composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` | separate the reusable component protocol from concrete content, settings, loader, and root orchestration | keep the existing CLOS protocol and load it before implementations; no new dispatch surface is needed |
 | `src/cadr-tui/renderer/{terminal-protocol,virtual-terminal,alt-screen-search,lifecycle-input,main-screen,alt-screen}.lisp` | separate terminal protocols, deterministic virtual terminal, lifecycle/input, transcript search, and screen-specific rendering | keep terminal polymorphism and closed renderer state; main- and alt-screen algorithms remain explicit owners |

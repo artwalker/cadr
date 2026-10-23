@@ -226,7 +226,7 @@
     (is (= 1 expired))
     (cadr-tui:component-dispose timer)))
 
-(test goal12-coding-agent-armin-and-daxnuts-animation-components-are-driven-without-sleeps
+(test goal12-coding-agent-armin-and-easter-egg-animation-components-are-driven-without-sleeps
   (let* ((renders 0)
          (ui (cadr-tui:make-tui-root
               :render-function
@@ -236,27 +236,29 @@
          (armin
            (cadr-cli:make-armin-component
             ui :effect :scanline :start-p nil))
-         (dax
-           (cadr-cli:make-daxnuts-component
-            ui :start-p nil)))
+         (egg
+           (cadr-cli::make-easter-egg-3d-animation
+            '("hello") (cadr-cli::pi-logo-model 1 1)
+            '(212d0 212d0 212d0) '(0d0 0d0 0d0)
+            (lambda ())
+            :rows 8
+            :forced-elapsed 0d0
+            :start-p nil)))
     (is (= 19 (length (cadr-tui:component-render armin 40))))
     (is (search "ARMIN SAYS HI"
                 (car (last
                       (cadr-tui:component-render armin 40)))))
     (cadr-cli:armin-component-tick armin)
     (is (plusp renders))
-    (is (= 24 (length (cadr-tui:component-render dax 50))))
-    (cadr-cli:daxnuts-component-tick dax)
-    (is (>= renders 2))
+    (is (= 8 (length (cadr-tui:component-render egg 24))))
     (cadr-tui:component-dispose armin)
-    (cadr-tui:component-dispose dax)))
+    (cadr-tui:component-dispose egg)))
 
 (test goal12-easter-egg-commands-reach-the-chat-entry
-  (is-true (cadr-cli::daxnuts-easter-egg-p :opencode "kimi-k2.5"))
-  (is-true (cadr-cli::daxnuts-easter-egg-p
-            "opencode" "vendor/kimi-k2.5-fast"))
-  (is (null (cadr-cli::daxnuts-easter-egg-p :opencode-go "kimi-k2.5")))
-  (is (null (cadr-cli::daxnuts-easter-egg-p :opencode "kimi-k2.6")))
+  ;; v1.4.0 deleted daxnuts; logo click /arminsayshi use the 3D egg.
+  (is (fboundp 'cadr-cli::play-pi-logo-3d))
+  (is (fboundp 'cadr-cli::play-armin-3d))
+  (is (fboundp 'cadr-cli::pi-logo-click-origin))
   (let* ((ui (cadr-tui:make-tui-root
               :render-function
               (lambda (lines) (declare (ignore lines)))))
@@ -289,7 +291,6 @@
   (dolist (name '("MAKE-ARMIN-COMPONENT"
                   "MAKE-BORDERED-LOADER-COMPONENT"
                   "MAKE-COUNTDOWN-TIMER"
-                  "MAKE-DAXNUTS-COMPONENT"
                   "MAKE-DYNAMIC-BORDER-COMPONENT"
                   "MAKE-EARENDIL-ANNOUNCEMENT-COMPONENT"
                   "FORMAT-KEY-TEXT"

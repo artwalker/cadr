@@ -1001,11 +1001,11 @@
        (cadr-cli::format-key-text "alt+enter" :capitalize-p t)
        (cadr-cli::format-key-text* '("alt+enter") :capitalize-p t))))
 
-(test daxnuts-rgb-grid-matches-hex-parse
-  (is (equal '(187 186 184) (cadr-cli::daxnuts-rgb-at 0 0)))
-  (is (= 16 (length cadr-cli::+daxnuts-image-lines+)))
-  (is (search (format nil "~C[38;2;" #\Escape)
-              (first cadr-cli::+daxnuts-image-lines+))))
+(test egg-hash-and-braille-table-are-seeded
+  (is (= 256 (length cadr-cli::+egg-braille+)))
+  (is (string= (string (code-char #x2800))
+               (aref cadr-cli::+egg-braille+ 0)))
+  (is (= 0.11478774505667388d0 (cadr-cli::egg-hash 0))))
 
 (test llama-gated-approval-text-uses-keyword
   (is (string= "Manual approval is required"

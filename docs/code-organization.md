@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=341 lines=150191 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=177 in-progress=0 done=159 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=341 lines=150191 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=179 in-progress=0 done=159 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -216,7 +216,9 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/interactive/components/loaders.lisp` | 155 | 15 | Own dynamic-border and bordered-loader component primitives. | pass | done | format-key-text*. I0: no join/split round trip. | 20 |
 | `src/cadr-cli/interactive/components/countdown.lisp` | 90 | 7 | Own deterministic countdown timer state, rendering, and ticking. | pass | no-rewrite | most TS-like is the union-typed ui slot dispatched via typep/functionp (26-32), but that is the deliberate test seam (render-request function double vs tui-root); the rest is idiom — decf/when/unless flags and dispose guarding against joining its own thread (84-89) — matching baseline setInterval countdown semantics. | 20 |
 | `src/cadr-cli/interactive/components/armin.lisp` | 282 | 21 | Own the Armin animated component and its frame lifecycle. | pass | done | 2D array + aref. I0: no nth cell write. | 20 |
-| `src/cadr-cli/interactive/components/daxnuts.lisp` | 185 | 17 | Own the Daxnuts animated component and its frame lifecycle. | pass | done | +daxnuts-rgb-grid+ / image lines. I0: parse once. | 20 |
+| `src/cadr-cli/interactive/components/easter-egg-3d.lisp` | 510 | 74 | Own the v1.4.0 3D egg model, spin, and visible faces. | pass | done | One timeline of constants and a ray-face list. | 27 |
+| `src/cadr-cli/interactive/components/easter-egg-show.lisp` | 323 | 5 | Rasterize braille dots and parse the dissolved screen. | pass | no-rewrite | Float32 stores match the upstream buffers. A macro would not remove another decision. | 27 |
+| `src/cadr-cli/interactive/components/easter-egg-play.lisp` | 713 | 30 | Play the fullscreen logo and Armin eggs and hit-test the logo. | pass | no-rewrite | Click, escape, and overlay gates stay explicit functions. | 27 |
 | `src/cadr-cli/interactive/components/announcement.lisp` | 41 | 2 | Compose the Earendil announcement component. | pass | no-rewrite | most TS-like is the duplicated accent-border lambda (11-13 vs 38-40) in an otherwise straight container assembly; the strings are baseline copy/geometry and the only repeated decision is a 3-line lambda — extracting it is cosmetic with no checkable benefit. | 20 |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | 22 | Own platform clipboard text/image discovery, reading, and writes. | pass · large | no-rewrite | most TS-like is the catch-all (condition () nil) swallow pattern (46-56, 76-81, 94-100, 204-216), i.e. try/catch→null, but best-effort fallback over external tools is the baseline contract and the boundary does signal configuration-error when every strategy fails (111-113); keyword outcome returns (114-120) and multiple-value runners (204-216) are already Lisp-shaped. | 20 |
 | `src/cadr-cli/interactive/footer.lisp` | 536 | 23 | Own footer path/usage/status projection and asynchronous Git branch data. | pass · large | no-rewrite | most TS-like is the conditional pyramid in find-git-footer-paths (107-155) and the ".invalid" literal appearing twice (214, 293), but both mirror the baseline's git-discovery case analysis and sentinel (footer-data-provider.ts:16-48, 245, 259); the file otherwise uses Lisp strengths — semaphore-timeout poll loop with content-signature hashing replacing fs.watch (251-270, 437-450) and a dynamically-rebound *git-symbolic-branch-function* seam (419-420, 437-439). | 20 |
@@ -536,7 +538,7 @@ not chopped up to make the chart prettier.
 | `ai/utilities.lisp` | **Completed in B10:** `support/{threads,release,retry,token-estimation,overflow,grammar-coercion,uuid}.lisp` (7). |
 | `cli/core-support.lisp` | **Completed in B4:** `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6). |
 | `cli/extensions.lisp` | **Completed in B4:** `extensions/{discovery,loader,commands,installer}.lisp` (4). |
-| `cli/interactive-components.lisp` | **Completed in B6:** `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` (5). |
+| `cli/interactive-components.lisp` | **Completed in B6:** `interactive/components/{loaders,countdown,armin,easter-egg-3d,easter-egg-show,easter-egg-play,announcement}.lisp` (7). |
 | `cli/interactive-services.lisp` | **Completed in B2:** `interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` (8); `common` was implemented before the domain extraction. |
 | `cli/main.lisp` | **Completed in B5:** `bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` (6). |
 | `cli/model-services.lisp` | **Completed in B4:** `models/{auth-storage,store,registry,matching,credential-print}.lisp` (5). |
