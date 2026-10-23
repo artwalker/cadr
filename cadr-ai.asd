@@ -120,6 +120,7 @@
                              (:file "provider-payloads-test")
                              (:file "provider-compat-test")
                              (:file "goal27-small-option-locks-test")
+                             (:file "goal27-request-options-test")
                              (:file "anthropic-mid-conversation-effort-test")
                              (:file "openai-responses-mid-convo-effort-test")
                              (:file "google-thinking-level-map-test")

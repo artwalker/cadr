@@ -608,29 +608,133 @@
        `(("session_id" . ,session-id)
          ("x-client-request-id" . ,session-id))))))
 
-(defun add-responses-reasoning (payload model reasoning)
-  (when (model-reasoning-p model)
+(defun responses-codex-api-p (model)
+  (eq (model-api model) :openai-codex-responses))
+
+(defun responses-summary-present-p (summary supplied-p)
+  ;; JS truthiness. null and "" do not select the summary-only effort.
+  (and supplied-p (stringp summary) (plusp (length summary))))
+
+(defun responses-summary-value (summary supplied-p codex-p)
+  ;; Responses uses `reasoningSummary || "auto"`. Codex uses `??`,
+  ;; so a supplied null stays JSON null and "" stays "".
+  (cond
+    ((and codex-p supplied-p)
+     (cond
+       ((or (null summary) (eq summary 'null)) 'null)
+       ((stringp summary) summary)
+       ((symbolp summary) (string-downcase (symbol-name summary)))
+       (t (princ-to-string summary))))
+    ((responses-summary-present-p summary supplied-p) summary)
+    (t "auto")))
+
+(defun responses-sampling-level (model reasoning summary summary-p)
+  (if (responses-codex-api-p model)
+      reasoning
+      (or reasoning
+          (and (responses-summary-present-p summary summary-p)
+               :medium))))
+
+(defun responses-service-tier-wire (value)
+  (cond
+    ((or (null value) (eq value 'null)) 'null)
+    ((stringp value) value)
+    ((symbolp value) (string-downcase (symbol-name value)))
+    (t (princ-to-string value))))
+
+(defun responses-service-tier-name (value)
+  (cond
+    ((stringp value) value)
+    ((and (symbolp value)
+          (not (null value))
+          (not (eq value 'null)))
+     (string-downcase (symbol-name value)))
+    (t nil)))
+
+(defun responses-service-tier-multiplier (model-id tier codex-p)
+  ;; pi@4a080252f getServiceTierCostMultiplier. Codex has no "fast" case.
+  (cond
+    ((equal tier "flex") 0.5d0)
+    ((and (equal model-id "gpt-5.5")
+          (or (equal tier "priority")
+              (and (not codex-p) (equal tier "fast"))))
+     2.5d0)
+    ((or (equal tier "priority")
+         (and (not codex-p) (equal tier "fast")))
+     2.0d0)
+    (t 1.0d0)))
+
+(defun resolved-responses-service-tier (response-tier codex-p)
+  (let ((response (responses-service-tier-name response-tier))
+        (request
+          (and *responses-request-service-tier-p*
+               (responses-service-tier-name
+                *responses-request-service-tier*))))
+    ;; Codex echoes "default" for flex and priority. Keep the request tier.
     (cond
-      (reasoning
-       (json-put
-        payload "reasoning"
-        (json-object
-         "effort"
-         (or (model-thinking-level-value model reasoning)
-             (string-downcase (symbol-name reasoning)))
-         "summary" "auto"))
-       (json-put
-        payload "include"
-        (json-array "reasoning.encrypted_content")))
-      ((and (not (eq (model-provider model) :github-copilot))
-            (or (not (model-thinking-level-present-p model :off))
-                (model-thinking-level-value model :off)))
-       (json-put
-        payload "reasoning"
-        (json-object
-         "effort"
-         (or (model-thinking-level-value model :off)
-             "none"))))))
+      ((and codex-p
+            (equal response "default")
+            (member request '("flex" "priority") :test #'equal))
+       request)
+      (t (or response request)))))
+
+(defun apply-responses-service-tier-cost (message response-tier)
+  (let ((codex-p
+          (eq (assistant-message-api message)
+              :openai-codex-responses)))
+    (when (or codex-p
+              (eq (assistant-message-api message) :openai-responses))
+      (let ((multiplier
+              (responses-service-tier-multiplier
+               (assistant-message-model message)
+               (resolved-responses-service-tier response-tier codex-p)
+               codex-p)))
+        (unless (= multiplier 1d0)
+          (let ((cost (usage-cost (assistant-message-usage message))))
+            (setf (cost-input cost) (* (cost-input cost) multiplier)
+                  (cost-output cost) (* (cost-output cost) multiplier)
+                  (cost-cache-read cost)
+                  (* (cost-cache-read cost) multiplier)
+                  (cost-cache-write cost)
+                  (* (cost-cache-write cost) multiplier)
+                  (cost-total cost)
+                  (+ (cost-input cost)
+                     (cost-output cost)
+                     (cost-cache-read cost)
+                     (cost-cache-write cost))))))))
+  message)
+
+(defun add-responses-reasoning
+    (payload model reasoning &key summary summary-p)
+  (when (model-reasoning-p model)
+    (let ((codex-p (responses-codex-api-p model))
+          (effort
+            (or reasoning
+                (and (not (responses-codex-api-p model))
+                     (responses-summary-present-p summary summary-p)
+                     :medium))))
+      (cond
+        (effort
+         (json-put
+          payload "reasoning"
+          (json-object
+           "effort"
+           (or (model-thinking-level-value model effort)
+               (string-downcase (symbol-name effort)))
+           "summary"
+           (responses-summary-value summary summary-p codex-p)))
+         (json-put
+          payload "include"
+          (json-array "reasoning.encrypted_content")))
+        ((and (not (eq (model-provider model) :github-copilot))
+              (or (not (model-thinking-level-present-p model :off))
+                  (model-thinking-level-value model :off)))
+         (json-put
+          payload "reasoning"
+          (json-object
+           "effort"
+           (or (model-thinking-level-value model :off)
+               "none")))))))
   payload)
 
 (defmethod build-request ((provider openai-provider)
@@ -638,6 +742,8 @@
                           &key stream-p max-tokens temperature reasoning
                             cache-retention session-id tool-choice metadata
                             sampling-params
+                            (service-tier nil service-tier-p)
+                            (reasoning-summary nil reasoning-summary-p)
                             &allow-other-keys)
   (declare (ignore metadata))
   ;; Models without mid-conversation system messages still receive one
@@ -752,6 +858,9 @@
         (json-put payload "max_output_tokens" (max 16 max-tokens)))
       (when (not (null temperature))
         (json-put payload "temperature" temperature)))
+    (when service-tier-p
+      (json-put payload "service_tier"
+                (responses-service-tier-wire service-tier)))
     (when immediate-tools
       (json-put payload "tools"
                 (openai-tools model immediate-tools)))
@@ -765,12 +874,22 @@
            payload "reasoning"
            (json-object
             "effort" +configuration-update-request-effort+
-            "summary" "auto"))
+            "summary"
+            (responses-summary-value
+             reasoning-summary reasoning-summary-p
+             (responses-codex-api-p model))))
           (json-put
            payload "include"
            (json-array "reasoning.encrypted_content")))
-        (add-responses-reasoning payload model reasoning))
-    (apply-sampling-params payload model reasoning sampling-params)
+        (add-responses-reasoning
+         payload model reasoning
+         :summary reasoning-summary
+         :summary-p reasoning-summary-p))
+    (apply-sampling-params
+     payload model
+     (responses-sampling-level
+      model reasoning reasoning-summary reasoning-summary-p)
+     sampling-params)
     (make-request-spec
      :url
      (let ((base (strip-trailing-slash (model-base-url model))))
@@ -849,7 +968,7 @@
              :namespace (json-get item "namespace"))))
           (t nil))))
 
-(defun update-openai-usage (message usage)
+(defun update-openai-usage (message usage &optional response)
   (when (hash-table-p usage)
     (let* ((input-details (json-get usage "input_tokens_details"))
            (output-details (json-get usage "output_tokens_details"))
@@ -865,7 +984,11 @@
        cache-write
        (json-get output-details "reasoning_tokens")
        (json-get usage "total_tokens"))
-      (apply-known-model-cost message))))
+      (apply-known-model-cost message)
+      (apply-responses-service-tier-cost
+       message
+       (and (hash-table-p response)
+            (json-get response "service_tier"))))))
 
 (defmethod parse-complete-response ((provider openai-provider)
                                     model response)
@@ -880,7 +1003,7 @@
             :response-id (json-get response "id")
             :raw-stop-reason raw-stop
             :stop-reason (map-simple-stop-reason raw-stop))))
-    (update-openai-usage message (json-get response "usage"))
+    (update-openai-usage message (json-get response "usage") response)
     (when (and (eq :stop (assistant-message-stop-reason message))
                (tool-call-present-p message))
       (setf (assistant-message-stop-reason message) :tool-use))
@@ -1128,7 +1251,7 @@
            (when (json-present-p response "end_turn")
              (setf (assistant-message-end-turn message)
                    (eq (json-get response "end_turn") t)))
-           (update-openai-usage message (json-get response "usage"))
+           (update-openai-usage message (json-get response "usage") response)
            (when (and (eq :stop
                           (assistant-message-stop-reason message))
                       (tool-call-present-p message))

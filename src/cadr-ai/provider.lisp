@@ -122,7 +122,14 @@
      &key stream-p max-tokens temperature reasoning cache-retention
        session-id tool-choice metadata thinking-budgets headers
        sampling-params identity debug
+       service-tier reasoning-summary text-verbosity prompt-mode
      &allow-other-keys))
+
+(defvar *responses-request-service-tier* nil
+  "service_tier for the Responses call in progress.")
+
+(defvar *responses-request-service-tier-p* nil
+  "True when the caller passed service_tier, including JSON null.")
 
 (defun suppress-client-identity-p (provider)
   ;; Anthropic OAuth sends Claude Code headers instead of the client identity.
@@ -817,30 +824,47 @@ string. Returns the buffer to store back. Per-delta
                         debug
                         max-retries max-retry-delay-ms timeout-ms
                         (read-timeout nil read-timeout-supplied-p)
+                        (service-tier nil service-tier-p)
+                        (reasoning-summary nil reasoning-summary-p)
+                        (text-verbosity nil text-verbosity-p)
+                        (prompt-mode nil prompt-mode-p)
                       &allow-other-keys)
   (handler-case
       (progn
         (check-abort abort-p)
         (let* ((*identity-deleted-header-names* (list nil))
+               (*responses-request-service-tier* service-tier)
+               (*responses-request-service-tier-p* service-tier-p)
                (transcript (ensure-transcript-context context))
                (max-tokens
                  (clamp-max-tokens-to-context
                   model transcript
                   (or max-tokens (model-max-tokens model))))
-               (request (build-request provider model transcript
-                                       :stream-p nil
-                                       :max-tokens max-tokens
-                                       :temperature temperature
-                                       :reasoning reasoning
-                                       :cache-retention cache-retention
-                                       :session-id session-id
-                                       :tool-choice tool-choice
-                                       :metadata metadata
-                                       :thinking-budgets thinking-budgets
-                                       :headers headers
-                                       :sampling-params sampling-params
-                                       :identity identity
-                                       :debug debug))
+               (request
+                 (apply #'build-request
+                        provider model transcript
+                        (append
+                         (list :stream-p nil
+                               :max-tokens max-tokens
+                               :temperature temperature
+                               :reasoning reasoning
+                               :cache-retention cache-retention
+                               :session-id session-id
+                               :tool-choice tool-choice
+                               :metadata metadata
+                               :thinking-budgets thinking-budgets
+                               :headers headers
+                               :sampling-params sampling-params
+                               :identity identity
+                               :debug debug)
+                         (when service-tier-p
+                           (list :service-tier service-tier))
+                         (when reasoning-summary-p
+                           (list :reasoning-summary reasoning-summary))
+                         (when text-verbosity-p
+                           (list :text-verbosity text-verbosity))
+                         (when prompt-mode-p
+                           (list :prompt-mode prompt-mode)))))
                (_prepared
                  (apply-provider-request-callbacks
                   request model
@@ -946,12 +970,18 @@ string. Returns the buffer to store back. Per-delta
                       debug
                       max-retries max-retry-delay-ms timeout-ms
                       (read-timeout nil read-timeout-supplied-p)
+                      (service-tier nil service-tier-p)
+                      (reasoning-summary nil reasoning-summary-p)
+                      (text-verbosity nil text-verbosity-p)
+                      (prompt-mode nil prompt-mode-p)
                     &allow-other-keys)
   (when (eq (model-api model) :pi-virtual)
     (error "Virtual model ~A/~A must be routed before streaming"
            (string-downcase (symbol-name (model-provider model)))
            (model-id model)))
   (let* ((*identity-deleted-header-names* (list nil))
+         (*responses-request-service-tier* service-tier)
+         (*responses-request-service-tier-p* service-tier-p)
          (*assistant-stream-started-wall* (unix-milliseconds))
          (*assistant-stream-started-mono* (get-internal-real-time))
          (*assistant-stream-closed-p* nil)
@@ -980,22 +1010,32 @@ string. Returns the buffer to store back. Per-delta
               (check-abort abort-p)
               (let* ((*anthropic-preferred-strict-sent-p* nil)
                      (request
-                       (build-request provider model transcript
-                                      :stream-p t
-                                      :max-tokens max-tokens
-                                      :temperature temperature
-                                      :reasoning reasoning
-                                      :cache-retention cache-retention
-                                      :session-id session-id
-                                      :tool-choice tool-choice
-                                      :metadata metadata
-                                      :thinking-budgets thinking-budgets
-                                      :headers headers
-                                      :sampling-params sampling-params
-                                      :identity identity
-                                      :debug debug
-                                      :disable-preferred-strict-tools
-                                      disable-preferred-strict-p))
+                       (apply #'build-request
+                              provider model transcript
+                              (append
+                               (list :stream-p t
+                                     :max-tokens max-tokens
+                                     :temperature temperature
+                                     :reasoning reasoning
+                                     :cache-retention cache-retention
+                                     :session-id session-id
+                                     :tool-choice tool-choice
+                                     :metadata metadata
+                                     :thinking-budgets thinking-budgets
+                                     :headers headers
+                                     :sampling-params sampling-params
+                                     :identity identity
+                                     :debug debug
+                                     :disable-preferred-strict-tools
+                                     disable-preferred-strict-p)
+                               (when service-tier-p
+                                 (list :service-tier service-tier))
+                               (when reasoning-summary-p
+                                 (list :reasoning-summary reasoning-summary))
+                               (when text-verbosity-p
+                                 (list :text-verbosity text-verbosity))
+                               (when prompt-mode-p
+                                 (list :prompt-mode prompt-mode)))))
                      (preferred-strict-p
                        *anthropic-preferred-strict-sent-p*))
                 (apply-provider-request-callbacks

@@ -545,9 +545,16 @@ NIL means that the caller must send the original, uncompressed body."
       (close-codex-websocket
        (codex-websocket-cache-entry-connection entry))))
 
+(defun codex-text-verbosity (value supplied-p)
+  ;; pi@4a080252f openai-codex-responses.ts. `textVerbosity || "low"`.
+  (if (and supplied-p (stringp value) (plusp (length value)))
+      value
+      "low"))
+
 (defmethod build-request :around
     ((provider openai-codex-provider) model context
-     &rest args &key &allow-other-keys)
+     &rest args &key (text-verbosity nil text-verbosity-p)
+     &allow-other-keys)
   (let ((*provider-request-transcript* (ensure-transcript-context context))
         (*responses-omit-leading-system-text* t))
     (let* ((request-context
@@ -572,7 +579,10 @@ NIL means that the caller must send the original, uncompressed body."
                 (or (and (non-empty-string-p initial-text) initial-text)
                     (context-system-prompt request-context)
                     "You are a helpful assistant."))
-    (json-put payload "text" (json-object "verbosity" "low"))
+    (json-put payload "text"
+              (json-object "verbosity"
+                           (codex-text-verbosity
+                            text-verbosity text-verbosity-p)))
     (json-put payload "include" (json-array "reasoning.encrypted_content"))
     (unless (json-present-p payload "tool_choice")
       (json-put payload "tool_choice" "auto"))

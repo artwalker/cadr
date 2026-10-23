@@ -723,7 +723,17 @@
            :on
            :absent))
       (:mistral-conversations
-       (if reasoning :on :absent))
+       ;; A thinking-level map sends reasoning_effort, including "none"
+       ;; when thinking is off and the off entry is a string. Models
+       ;; without a map send prompt_mode only while reasoning is on.
+       (cond
+         ((not (cadr-ai:model-reasoning-p model)) :absent)
+         ((and (cadr-ai::model-thinking-level-map model)
+               (or reasoning
+                   (cadr-ai::model-thinking-level-value model :off)))
+          :on)
+         (reasoning :on)
+         (t :absent)))
       (:pi-messages
        (if reasoning :on :absent))
       (:openai-completions

@@ -11,13 +11,44 @@
   (format nil "Mistral response headers timed out after ~Dms"
           milliseconds))
 
-(defun mistral-reasoning-effort-model-p (model)
-  (member
-   (model-id model)
-   '("mistral-small-2603"
-     "mistral-small-latest"
-     "mistral-medium-3.5")
-   :test #'string=))
+(defun mistral-active-reasoning (model reasoning)
+  ;; streamSimple drops "off" before choosing prompt_mode or effort.
+  (let ((requested
+          (and reasoning (not (eq reasoning :off)) reasoning)))
+    (when requested
+      (let ((clamped (clamp-thinking-level model requested)))
+        (unless (eq clamped :off)
+          clamped)))))
+
+(defun mistral-mapped-effort (model level)
+  ;; `effortMap[level] ?? "high"`. A null map entry is "high".
+  (let ((value (model-thinking-level-value model level)))
+    (if (and (stringp value) (plusp (length value)))
+        value
+        "high")))
+
+(defun apply-mistral-reasoning
+    (payload model reasoning prompt-mode prompt-mode-p)
+  (let* ((active (mistral-active-reasoning model reasoning))
+         (effort-map
+           (and (model-reasoning-p model)
+                (model-thinking-level-map model))))
+    (cond
+      (effort-map
+       (let ((effort
+               (if active
+                   (mistral-mapped-effort model active)
+                   (let ((off (model-thinking-level-value model :off)))
+                     (and (stringp off) (plusp (length off)) off)))))
+         (when effort
+           (json-put payload "reasoning_effort" effort))))
+      ((and (model-reasoning-p model) active)
+       (json-put payload "prompt_mode" "reasoning")))
+    (when (and prompt-mode-p
+               (stringp prompt-mode)
+               (plusp (length prompt-mode)))
+      (json-put payload "prompt_mode" prompt-mode)))
+  payload)
 
 (defun derive-mistral-tool-call-id (id attempt)
   (let ((normalized
@@ -53,6 +84,7 @@
     ((provider mistral-provider) model context
      &key stream-p max-tokens temperature reasoning
        cache-retention session-id tool-choice metadata
+       (prompt-mode nil prompt-mode-p)
        &allow-other-keys)
   (declare (ignore metadata))
   (ensure-supported-content model context)
@@ -81,13 +113,8 @@
                 (if (string= tool-choice "any")
                     "any"
                     tool-choice)))
-    (when reasoning
-      (if (mistral-reasoning-effort-model-p model)
-          (json-put
-           payload "reasoning_effort"
-           (or (model-thinking-level-value model reasoning)
-               (string-downcase (symbol-name reasoning))))
-          (json-put payload "prompt_mode" "reasoning")))
+    (apply-mistral-reasoning
+     payload model reasoning prompt-mode prompt-mode-p)
     (when affinity-p
       (json-put payload "prompt_cache_key" session-id))
     (make-request-spec
