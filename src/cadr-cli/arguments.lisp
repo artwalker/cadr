@@ -1010,20 +1010,20 @@ Built-in Tool Names:
 
 (defun resolve-cli-mode
     (arguments input-terminal-p output-terminal-p)
-  (or
-   (cli-arguments-mode arguments)
-   (and
-    (cli-arguments-print-p arguments)
-    :text)
-   (and
-    (cli-arguments-no-tui-p arguments)
-    :repl)
-   (and
-    (or
-     (not input-terminal-p)
-     (not output-terminal-p))
-    :text)
-   :tui))
+  (let ((mode (cli-arguments-mode arguments)))
+    (cond
+      ((eq mode :rpc)
+       :rpc)
+      ((eq mode :json)
+       :json)
+      ((cli-arguments-print-p arguments)
+       :text)
+      ((cli-arguments-no-tui-p arguments)
+       :repl)
+      ((or (not input-terminal-p)
+           (not output-terminal-p))
+       :text)
+      (t :tui))))
 
 (defun build-cli-print-prompts
     (arguments stdin-content

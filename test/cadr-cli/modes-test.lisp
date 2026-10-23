@@ -104,6 +104,31 @@
     (cadr-cli::parse-cli-arguments
      '("--mode" "yaml"))))
 
+(test text-mode-on-a-tty-stays-interactive
+  ;; v1.4.0 packages/coding-agent/src/main.ts resolveAppMode:
+  ;; rpc and json win; print or a non-TTY stdio is print; text is not.
+  (flet ((resolved (argv input-tty output-tty)
+           (cadr-cli::resolve-cli-mode
+            (cadr-cli::parse-cli-arguments argv)
+            input-tty output-tty)))
+    (is (eq :tui (resolved '("--mode" "text") t t)))
+    (is (eq :tui (resolved nil t t)))
+    (is (eq :text (resolved '("--mode" "text" "--print") t t)))
+    (is (eq :text (resolved '("--print") t t)))
+    (is (eq :text (resolved '("--mode" "text") nil t)))
+    (is (eq :text (resolved '("--mode" "text") t nil)))
+    (is (eq :text (resolved '("--mode" "text") nil nil)))
+    (is (eq :json (resolved '("--mode" "json") t t)))
+    (is (eq :json (resolved '("--mode" "json") nil nil)))
+    (is (eq :json (resolved '("--mode" "json" "--print") t t)))
+    (is (eq :rpc (resolved '("--mode" "rpc") t t)))
+    (is (eq :rpc (resolved '("--mode" "rpc") nil nil)))
+    (is (eq :rpc (resolved '("--mode" "rpc" "--print") t t)))
+    (is (eq :repl (resolved '("--mode" "text" "--no-tui") t t)))
+    (is (eq :repl (resolved '("--mode" "text" "--no-tui") nil nil)))
+    (is (eq :json (resolved '("--mode" "json" "--no-tui") t t)))
+    (is (eq :text (resolved '("--mode" "text" "--no-tui" "--print") t t)))))
+
 (test piped-stdin-merges-with-only-the-first-cli-message
   (let ((arguments
           (cadr-cli::parse-cli-arguments

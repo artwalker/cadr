@@ -255,10 +255,10 @@ and fullscreen action id; defaults remain `alt+enter` for follow-up and
 ```
 
 Interactive terminals use the full-screen TUI. `--no-tui` explicitly selects
-the line REPL. `--print`/`--mode text` prints only the final answer,
-`--mode json` emits agent events as JSONL, and `--mode rpc` exposes the
-original pi command/response/event JSONL protocol. Without an explicit mode,
-non-TTY input or output selects one-shot text mode.
+the line REPL. `--mode text` on a terminal stays in that UI; `--print`, or a
+non-TTY stdin or stdout, prints only the final answer. `--mode json` emits
+agent events as JSONL, and `--mode rpc` exposes the original pi
+command/response/event JSONL protocol.
 
 Sessions are parent-linked JSONL trees under `~/.cadr/agent/sessions/`. Interactive
 session navigation uses `/resume`, `/fork`, and `/tree`; the remaining slash
