@@ -778,7 +778,7 @@
      :protocols (:typesafe-system-one)
      :base-url "https://api.typesafe.ai/v1/"
      :auth-types (:api-key)
-     :default-model "jev-latest"
+     :default-model ""
      :key-environment "TYPESAFE_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -998,7 +998,7 @@
                (keywordp (getf row :protocol))
                (member (getf row :protocol) (getf row :protocols))
                (stringp (getf row :base-url))
-               (non-empty-string-p (getf row :default-model)))
+               (stringp (getf row :default-model)))
     (error 'configuration-error
            :message (format nil "Incomplete provider declaration for ~A"
                             (getf row :id))))

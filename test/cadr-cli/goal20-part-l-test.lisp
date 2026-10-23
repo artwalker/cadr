@@ -22,6 +22,55 @@
       (is (search "no models are available for that provider" text))
       (is (null (search "no default model is configured" text))))))
 
+(test typesafe-login-reports-no-configured-chat-default
+  ;; v1.4.0 model-resolver.ts defaultModelPerProvider omits typesafe.
+  ;; interactive-mode.ts completeProviderAuthentication checks
+  ;; hasDefaultModelProvider before the chat catalog, and
+  ;; deferSelection stays false, so the catalog is not refreshed.
+  (is (string= ""
+               (cadr-ai:provider-definition-default-model
+                (cadr-ai:find-provider-definition :typesafe))))
+  (is (null (cadr-cli:provider-default-model-id :typesafe)))
+  (multiple-value-bind (model kind extra)
+      (cadr-cli:classify-post-login-model :typesafe '())
+    (is (null model))
+    (is (eq kind :no-default-model))
+    (is (null extra)))
+  (is (string=
+       "Saved API key for TypeSafe, but no default model is configured for provider \"typesafe\". Use /model to select a model."
+       (cadr-cli:post-login-selection-error
+        "Saved API key for" "TypeSafe" :typesafe
+        :no-default-model nil)))
+  (let* ((chat
+           (cadr-ai:make-model
+            :id "custom-chat"
+            :name "custom-chat"
+            :api :openai-completions
+            :provider :typesafe
+            :base-url "https://api.typesafe.ai/v1/"
+            :context-window 1
+            :max-tokens 1))
+         (refreshed-p nil)
+         (result
+           (cadr-cli:post-login-selection-result
+            :typesafe
+            (list chat)
+            (lambda (model)
+              (declare (ignore model))
+              (error "select must not run"))
+            :refresh-models-function
+            (lambda (provider)
+              (declare (ignore provider))
+              (setf refreshed-p t)
+              '()))))
+    (is (null refreshed-p))
+    (is (equal '(:no-default-model nil) result))
+    (is (string=
+         "Saved API key for TypeSafe, but no default model is configured for provider \"typesafe\". Use /model to select a model."
+         (cadr-cli:post-login-selection-error
+          "Saved API key for" "TypeSafe" :typesafe
+          (first result) (second result))))))
+
 (test goal20-l-missing-default-model-branch-still-exists
   (multiple-value-bind (model kind extra)
       (cadr-cli:classify-post-login-model :not-a-provider '())

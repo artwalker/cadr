@@ -8,6 +8,9 @@
 ;;; An empty value does not authenticate. The only model is the
 ;;; typesafe-system-one classifier jev-latest
 ;;; (generate-models.ts loadModelsDevClassifierModels).
+;;; packages/coding-agent/src/core/model-resolver.ts
+;;; defaultModelPerProvider lists chat defaults only and omits
+;;; typesafe, so the declaration's default-model is empty.
 
 (test typesafe-provider-reads-typesafe-api-key-for-system-one
   (let ((definition (cadr-ai:find-provider-definition :typesafe))
@@ -30,7 +33,7 @@
                (cadr-ai::provider-definition-protocols definition)))
     (is (string= "https://api.typesafe.ai/v1/"
                  (cadr-ai:provider-definition-base-url definition)))
-    (is (string= "jev-latest"
+    (is (string= ""
                  (cadr-ai:provider-definition-default-model definition)))
     (is (null (cadr-ai:list-model-metadata :typesafe)))
     (is (eq :typesafe-system-one (cadr-ai:classifier-model-api model)))
