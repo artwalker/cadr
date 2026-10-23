@@ -33,8 +33,7 @@
                               :keyword))
                        (subagent-unquote (subseq line (1+ colon)))))))
                 (values metadata
-                        (string-left-trim
-                         '(#\Space #\Tab #\Newline #\Return)
+                        (subagent-trim
                          (subseq normalized (+ end 4))))))))))
 
 (defun subagent-load-directory (directory source)

@@ -823,5 +823,6 @@
         (is (= 1 (length (getf result :agents))))
         (is (string= "reviewer" (getf agent :name)))
         (is (equal '("read" "grep") (getf agent :tools)))
-        (is (string= (format nil "Be strict.~%")
+        ;; v1.4.0 extractFrontmatter trims the body on both ends.
+        (is (string= "Be strict."
                      (getf agent :system-prompt)))))))

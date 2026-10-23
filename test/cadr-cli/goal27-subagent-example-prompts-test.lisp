@@ -35,25 +35,33 @@
      ("read" "grep" "find" "ls")
      "claude-sonnet-4-5"
      "You are a planning specialist."
-     "Keep the plan concrete. The worker agent will execute it verbatim.")
+     "Keep the plan concrete. The worker agent will execute it verbatim."
+     747
+     #\.)
     ("reviewer"
      "Code review specialist for quality and security analysis"
      ("read" "grep" "find" "ls" "bash")
      "claude-sonnet-4-5"
      "You are a senior code reviewer."
-     "Be specific with file paths and line numbers.")
+     "Be specific with file paths and line numbers."
+     779
+     #\.)
     ("scout"
      "Fast codebase recon that returns compressed context for handoff to other agents"
      ("read" "grep" "find" "ls" "bash")
      "claude-haiku-4-5"
      "You are a scout."
-     "Which file to look at first and why.")
+     "Which file to look at first and why."
+     1082
+     #\.)
     ("worker"
      "General-purpose subagent with full capabilities, isolated context"
      nil
      "claude-sonnet-4-5"
      "You are a worker agent with full capabilities."
-     "Key functions/types touched (short list)")))
+     "Key functions/types touched (short list)"
+     537
+     #\))))
 
 (defun goal27-subagent-sample-root ()
   (merge-pathnames
@@ -91,7 +99,9 @@
         (is (string= (second entry) (goal27-sha256-file path)) relative)))))
 
 (test goal27-subagent-example-agents-discover-from-project-directory
-  ;; v1.4.0 agents.ts loadAgentsFromDir. Project agents live under
+  ;; v1.4.0 agents.ts loadAgentsFromDir stores parseFrontmatter's trimmed
+  ;; body, and index.ts writes that string to the append-system-prompt
+  ;; file. Hash :system-prompt as returned. Project agents live under
   ;; .cadr/agents/ (CONFIG_DIR_NAME agents, product name cadr).
   (let ((root (goal27-subagent-sample-root)))
     (let ((*package* (find-package '#:cadr-cli/tests)))
@@ -123,10 +133,6 @@
                                 :key (lambda (item) (getf item :name))
                                 :test #'string=))
                    (prompt (getf agent :system-prompt))
-                   (trimmed
-                     (string-trim
-                      '(#\Space #\Tab #\Newline #\Return)
-                      prompt))
                    (entry
                      (goal27-sample-entry
                       (format nil "agents/~A.md" name))))
@@ -135,9 +141,13 @@
               (is (equal (third expected) (getf agent :tools)) name)
               (is (string= (fourth expected) (getf agent :model)) name)
               (is (eq :project (getf agent :source)) name)
-              (is (search (fifth expected) trimmed) name)
-              (is (search (sixth expected) trimmed) name)
-              (is (string= (third entry) (goal27-sha256-text trimmed))
+              (is (search (fifth expected) prompt) name)
+              (is (search (sixth expected) prompt) name)
+              (is (= (seventh expected) (length prompt)) name)
+              (is (char= (eighth expected)
+                         (char prompt (1- (length prompt))))
+                  name)
+              (is (string= (third entry) (goal27-sha256-text prompt))
                   name))))))))
 
 (test goal27-subagent-example-chain-prompts-expand-arguments
