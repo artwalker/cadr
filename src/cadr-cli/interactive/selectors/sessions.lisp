@@ -378,10 +378,17 @@
 
 (defun session-to-search-record (session)
   (let* ((messages
-           (cadr-agent:session-messages session))
-         ;; Baseline session-manager.ts: the search corpus holds user
-         ;; and assistant texts only (tool results are skipped), and
-         ;; firstMessage is the first user message with text.
+           ;; v1.4.0 session-manager.ts buildSessionInfo increments
+           ;; messageCount only for type === "message". Projected
+           ;; context (compaction summaries, branch summaries, custom
+           ;; messages) is not part of that count or of firstMessage.
+           (loop for entry in (cadr-agent:session-entries session)
+                 when (eq :message
+                          (cadr-agent:session-entry-type entry))
+                 collect (cadr-agent:session-entry-message entry)))
+         ;; The search corpus holds user and assistant texts only
+         ;; (tool results are skipped), and firstMessage is the first
+         ;; user message with text.
          (user-texts
            (loop for message in messages
                  when (typep message 'cadr-ai:user-message)

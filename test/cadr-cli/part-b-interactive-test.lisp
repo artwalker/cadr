@@ -2877,6 +2877,130 @@ user question"
                          (cadr-cli::session-search-record-all-messages-text
                           record))))))))
 
+(test gap77-resume-message-count-counts-only-message-entries
+  ;; v1.4.0 session-manager.ts buildSessionInfo: messageCount increments
+  ;; only when entry.type === "message". model_change, thinking_level_change,
+  ;; session_info, custom_message, compaction, and branch_summary do not.
+  ;; An empty persisted session therefore renders "(no messages)" with 0.
+  (with-test-directory (root)
+    (let* ((directory (merge-pathnames "sessions/" root))
+           (tool
+             (cadr-ai:make-tool
+              :name "read"
+              :description "Read a file."
+              :parameters
+              (cadr-ai::json-object
+               "type" "object"
+               "properties" (cadr-ai::json-object))))
+           (session
+             (cadr-agent:create-session
+              :directory directory
+              :cwd root
+              :id "render-session")))
+      (setf (cadr-agent:session-path session)
+            (merge-pathnames
+             "2023-11-14T22-13-20-000Z_render-session.jsonl"
+             directory))
+      (ensure-directories-exist (cadr-agent:session-path session))
+      (with-open-file
+          (stream (cadr-agent:session-path session)
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (cadr-agent::write-jsonl-object
+         stream
+         (cadr-agent::session-header-to-json session)))
+      (setf (cadr-agent::session-persisted-p session) t)
+      (cadr-agent:make-agent
+       :provider :faux
+       :model
+       (cadr-ai:make-model
+        :id "faux-1" :name "Faux" :provider :faux :api :faux)
+       :system-prompt "fixed"
+       :tools (list tool)
+       :session session)
+      (cadr-agent:session-append-model-change
+       session "faux" "faux-1")
+      (cadr-agent:session-append-thinking-level-change
+       session "high")
+      (cadr-agent:session-append-custom
+       session "marker" "not a message")
+      (cadr-agent:session-append-custom-message
+       session "note" "side channel")
+      (labels ((record ()
+                 (cadr-cli::session-to-search-record session))
+               (listed-count ()
+                 (let ((info
+                         (find "render-session"
+                               (cadr-agent:list-session-infos
+                                :directory directory
+                                :cwd (cadr-agent:session-cwd session))
+                               :key #'cadr-agent:session-list-info-id
+                               :test #'string=)))
+                   (and info
+                        (cadr-agent:session-list-info-message-count
+                         info))))
+               (row-suffix (count-text)
+                 (some
+                  (lambda (line)
+                    (and
+                     (search "(no messages)" line)
+                     (uiop:string-suffix-p
+                      (string-right-trim " " line)
+                      count-text)))
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-cli::render-session-selector
+                    (cadr-cli::make-session-selector-state
+                     :current-sessions (list (record)))
+                    80)))))
+        (is (= 0 (cadr-cli::session-search-record-message-count
+                  (record))))
+        (is (= 0 (listed-count)))
+        (is (string= "(no messages)"
+                     (cadr-cli::session-selector-record-label
+                      (record))))
+        (is (row-suffix "0 now"))
+        (cadr-agent:session-set-name session "Named empty")
+        (is (= 0 (cadr-cli::session-search-record-message-count
+                  (record))))
+        (is (= 0 (listed-count)))
+        (let ((user-id
+                (cadr-agent:session-append-message
+                 session
+                 (cadr-ai:make-user-message
+                  :content "ask" :timestamp 10))))
+          (is (= 1 (cadr-cli::session-search-record-message-count
+                    (record))))
+          (is (= 1 (listed-count)))
+          (is (string= "Named empty"
+                       (cadr-cli::session-selector-record-label
+                        (record))))
+          (cadr-agent:session-append-message
+           session
+           (cadr-ai:make-tool-result-message
+            :tool-call-id "t1" :tool-name "read"
+            :content (list (cadr-ai:make-text-content
+                            :text "file bytes"))
+            :timestamp 11))
+          (cadr-agent:session-append-message
+           session
+           (cadr-ai:make-assistant-message
+            :content (list (cadr-ai:make-text-content :text "answer"))
+            :api :faux :provider :faux :model "faux-1"
+            :stop-reason :stop :timestamp 12))
+          (is (= 3 (cadr-cli::session-search-record-message-count
+                    (record))))
+          (is (= 3 (listed-count)))
+          (cadr-agent:session-append-compaction
+           session "folded" (list user-id) user-id 3)
+          (cadr-agent:session-append-branch-summary
+           session user-id "branched aside")
+          (is (= 3 (cadr-cli::session-search-record-message-count
+                    (record))))
+          (is (= 3 (listed-count))))))))
+
 (test goal18-session-search-haystack-includes-id-and-cwd
   ;; Baseline session-selector-search.ts:27 — the haystack is
   ;; `${id} ${name ?? ""} ${allMessagesText} ${cwd}`.
