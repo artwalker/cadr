@@ -1468,3 +1468,67 @@
       (editor-event editor :text (string (code-char #xff0c)))
       (editor-autocomplete-advance editor now 20)
       (is (null (car box))))))
+
+(test editor-wrapper-triggers-backtrack-like-v140
+  ;; v1.4.0 packages/tui/src/components/editor.ts buildTriggerPattern.
+  ;; Node 22.22.0 buildTriggerPattern(["@","#",wrapper]) on 2026-10-23:
+  ;; true for the wrapper, wrapper+"foo", a doubled wrapper, space+wrapper,
+  ;; and space+wrapper+"foo"; false for "x"+wrapper and "x"+wrapper+"foo".
+  ;; Wrappers are (, [, {, <, and U+0060. Typing the wrapper then f requests
+  ;; once after 20ms with force false. "(#" and "{#" still match through #.
+  (dolist (wrapper '(#\( #\[ #\{ #\< #\`))
+    (let ((triggers (list #\@ #\# wrapper))
+          (piece (string wrapper)))
+      (dolist (text (list piece
+                          (concatenate 'string piece "foo")
+                          (concatenate 'string piece piece)
+                          (concatenate 'string " " piece)
+                          (concatenate 'string " " piece "foo")))
+        (is (cadr-tui::autocomplete-trigger-context-p triggers text)
+            text))
+      (dolist (text (list (concatenate 'string "x" piece)
+                          (concatenate 'string "x" piece "foo")))
+        (is (not (cadr-tui::autocomplete-trigger-context-p triggers text))
+            text))
+      (let ((editor (cadr-tui:make-multiline-editor)))
+        (cadr-tui:editor-set-autocomplete-provider
+         editor
+         (cadr-tui:make-autocomplete-provider
+          :trigger-characters (list wrapper)))
+        (is (equal (list #\@ #\# wrapper)
+                   (cadr-tui::editor-provider-trigger-characters editor))
+            piece))
+      (multiple-value-bind (provider box)
+          (recording-trigger-provider (list wrapper))
+        (multiple-value-bind (editor now)
+            (editor-with-trigger-clock provider)
+          (editor-event editor :text piece)
+          (editor-event editor :text "f")
+          (editor-autocomplete-advance editor now 19)
+          (is (null (car box)) piece)
+          (editor-autocomplete-advance editor now 1)
+          (is (equal
+               (list (list (concatenate 'string piece "f") nil))
+               (car box))
+              piece)
+          (is (cadr-tui:editor-autocomplete-visible-p editor) piece)
+          (cadr-tui:editor-set-text editor "")
+          (setf (car box) nil)
+          (editor-type editor (concatenate 'string "x" piece))
+          (editor-autocomplete-advance editor now 20)
+          (is (null (car box)) piece)))))
+  (dolist (text '("(#" "{#" "[#" "<#" "`#"))
+    (is (cadr-tui::autocomplete-trigger-context-p '(#\@ #\#) text)
+        text))
+  (multiple-value-bind (provider box)
+      (recording-trigger-provider '(#\())
+    (multiple-value-bind (editor now)
+        (editor-with-trigger-clock provider)
+      (editor-type editor "(#")
+      (editor-autocomplete-advance editor now 20)
+      (is (equal (list (list "(#" nil)) (car box)))
+      (cadr-tui:editor-set-text editor "")
+      (setf (car box) nil)
+      (editor-type editor "x(")
+      (editor-autocomplete-advance editor now 20)
+      (is (null (car box))))))

@@ -131,10 +131,11 @@
          (autocomplete-trigger-boundary-p text start))))
 
 (defun autocomplete-unquoted-trigger-p (triggers text)
-  ;; v1.4.0 buildTriggerPattern: boundary, optional wrappers, then
-  ;; one trigger and a non-separator suffix. A trigger may itself be
-  ;; a separator (provider U+FF0C); that character is not part of the
-  ;; suffix, and the suffix may be empty.
+  ;; v1.4.0 buildTriggerPattern. The wrapper run is greedy and
+  ;; backtracks, so a wrapper that is also a trigger counts as the
+  ;; trigger. A separator may itself be a trigger (provider U+FF0C);
+  ;; that character is not part of the suffix, and the suffix may be
+  ;; empty.
   (let ((length (length text))
         (index (length text)))
     (loop while (and (plusp index)
@@ -143,16 +144,14 @@
           do (decf index))
     (let ((token-start index))
       (or
-       (let ((cursor token-start))
-         (loop while (and (< cursor length)
-                          (autocomplete-trigger-wrapper-p
-                           (char text cursor)))
-               do (incf cursor))
-         (and (< cursor length)
-              (member (char text cursor) triggers :test #'char=)
-              (or (zerop token-start)
-                  (autocomplete-trigger-separator-p
-                   (char text (1- token-start))))))
+       (and (or (zerop token-start)
+                (autocomplete-trigger-separator-p
+                 (char text (1- token-start))))
+            (loop for cursor from token-start below length
+                  for character = (char text cursor)
+                  when (member character triggers :test #'char=)
+                    return t
+                  while (autocomplete-trigger-wrapper-p character)))
        (and (plusp token-start)
             (member (char text (1- token-start)) triggers
                     :test #'char=)
