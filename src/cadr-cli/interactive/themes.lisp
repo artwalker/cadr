@@ -82,7 +82,7 @@
                  '("$schema" "name" "appearance" "vars"
                    "colors" "export")
                  :test #'string=)
-       (error "Unknown theme property: ~A"
+       (error "Invalid theme:~%~%Other errors:~%  - /~A: schema is false~%  - /: must not have additional properties"
               name)))
    object)
   (multiple-value-bind (schema present-p)
@@ -93,11 +93,12 @@
       (error "Theme $schema must be a string")))
   (let ((name
           (cadr-ai::json-get object "name")))
-    (unless (and
-             (stringp name)
-             (plusp (length name))
-             (not (search "/" name)))
-      (error "Theme requires a valid name without '/'")))
+    (cond
+      ((and (stringp name) (search "/" name))
+       (error "Invalid theme name \"~A\": theme names cannot contain \"/\" because it is reserved for automatic light/dark theme settings."
+              name))
+      ((not (and (stringp name) (plusp (length name))))
+       (error "Theme requires a valid name without '/'"))))
   (multiple-value-bind (appearance present-p)
       (gethash "appearance" object)
     (when present-p
@@ -126,23 +127,29 @@
      (lambda (name value)
        (unless
            (member name known :test #'string=)
-         (error "Unknown theme color token: ~A"
+         (error "Invalid theme:~%~%Other errors:~%  - /colors/~A: schema is false~%  - /colors: must not have additional properties"
                 name))
        (unless (valid-tui-theme-primitive-p value)
          (error "Invalid theme color value: ~S"
                 value)))
      colors)
-    (dolist (name known)
-      (unless
-          (or
-           (string= name "thinkingMax")
-           (string= name "scrollbarThumb")
-           (string= name "searchMatchBg")
-           (string= name "searchMatchText")
-           (nth-value 1
-                      (gethash name colors)))
-        (error "Missing required theme color token: ~A"
-               name))))
+    (let ((missing nil))
+      (dolist (name known)
+        (unless
+            (or
+             (string= name "thinkingMax")
+             (string= name "scrollbarThumb")
+             (string= name "searchMatchBg")
+             (string= name "searchMatchText")
+             (nth-value 1
+                        (gethash name colors)))
+          (push name missing)))
+      (when missing
+        (error "Invalid theme:~%~%Missing required color tokens:~%~{~A~%~}~%Please add these colors to your theme's \"colors\" object.~%See the built-in themes (dark.json, light.json) for reference values."
+               (mapcar
+                (lambda (token)
+                  (format nil "  - ~A" token))
+                (sort missing #'string<))))))
   (when export-present-p
     (unless (hash-table-p export)
       (error "Theme export must be an object"))
@@ -153,7 +160,7 @@
        (lambda (name value)
          (unless
              (member name known :test #'string=)
-           (error "Unknown theme export token: ~A"
+           (error "Invalid theme:~%~%Other errors:~%  - /export/~A: schema is false~%  - /export: must not have additional properties"
                   name))
          (unless (valid-tui-theme-primitive-p value)
            (error "Invalid theme export value: ~S"

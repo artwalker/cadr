@@ -603,7 +603,53 @@
             (remhash old result)))))
     result))
 
-(defun keybinding-object-to-bindings (object)
+(defvar *keybinding-chord-scanner* nil)
+
+(defun keybinding-chord-scanner ()
+  ;; v1.4.0 schemas/keybindings.schema.json $defs.KeybindingValue.
+  ;; The loader reads the shipped pattern so the editor document and
+  ;; keybindings.json accept the same chords.
+  (or *keybinding-chord-scanner*
+      (setf *keybinding-chord-scanner*
+            (let* ((path
+                     (asdf:system-relative-pathname
+                      "cadr-cli"
+                      "schemas/keybindings.schema.json"))
+                   (schema
+                     (cadr-ai::parse-json
+                      (uiop:read-file-string
+                       path :external-format :utf-8)))
+                   (alternatives
+                     (gethash
+                      "anyOf"
+                      (gethash
+                       "KeybindingValue"
+                       (gethash "$defs" schema))))
+                   (pattern
+                     (gethash
+                      "pattern"
+                      (if (vectorp alternatives)
+                          (aref alternatives 0)
+                          (first alternatives)))))
+              (cl-ppcre:create-scanner pattern)))))
+
+(defun keybinding-chord-p (value)
+  (and (stringp value)
+       (cl-ppcre:scan
+        (keybinding-chord-scanner) value)))
+
+(defun keybinding-schema-value-p (value)
+  (cond
+    ((stringp value)
+     (keybinding-chord-p value))
+    ((vectorp value)
+     (every #'keybinding-chord-p value))
+    ((and (listp value) value)
+     (every #'keybinding-chord-p value))
+    (t nil)))
+
+(defun keybinding-object-to-bindings
+    (object &key schema-p)
   (let ((bindings nil))
     (maphash
      (lambda (name value)
@@ -617,10 +663,16 @@
                   (copy-list value))
                  (t nil))))
          (when
-             (and (or (stringp value)
-                      (vectorp value)
-                      (listp value))
-                  (every #'stringp keys))
+             (and
+              (not
+               (and schema-p
+                    (string= name "$schema")))
+              (or (stringp value)
+                  (vectorp value)
+                  (listp value))
+              (every #'stringp keys)
+              (or (not schema-p)
+                  (keybinding-schema-value-p value)))
            (push
             (cons name keys)
             bindings))))
@@ -635,10 +687,11 @@
      (empty-json-object)))))
 
 (defun keybindings-file-bindings (agent-directory)
-  "Baseline core/keybindings.ts:330-338,360-366 — load
-<agentDir>/keybindings.json, migrating legacy names.  Returns NIL when
-the file is absent, unreadable, malformed, or not a JSON object
-(baseline loadRawConfig treats all of those as no bindings)."
+  "Baseline core/keybindings.ts:269-276,330-338,360-366 — load
+<agentDir>/keybindings.json, migrating legacy names.  $schema is not
+an action.  Values that fail KeybindingValue are dropped.  Returns
+NIL when the file is absent, unreadable, malformed, or not a JSON
+object (baseline loadRawConfig treats all of those as no bindings)."
   (let ((path
           (merge-pathnames
            "keybindings.json"
@@ -651,7 +704,8 @@ the file is absent, unreadable, malformed, or not a JSON object
                 (condition () nil))))
         (and (hash-table-p parsed)
              (keybinding-object-to-bindings
-              (migrate-keybindings parsed)))))))
+              (migrate-keybindings parsed)
+              :schema-p t))))))
 
 (defun resolve-user-keybindings
     (manager agent-directory)
