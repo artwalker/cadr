@@ -644,9 +644,12 @@
                             "OpenAI Codex (legacy)"
                             (getf row :name)))))
 
-(defun ai-cli-provider-lines ()
+(defun ai-cli-provider-lines (&optional (prefix ""))
+  ;; v1.4.0 cli.ts help is `  ${id.padEnd(20)} ${name}`; list omits
+  ;; those two spaces.
   (loop for (id . name) in (ai-cli-oauth-providers)
-        collect (format nil "~A ~A" (cli-pad-right id 20) name)))
+        collect (format nil "~A~A ~A"
+                        prefix (cli-pad-right id 20) name)))
 
 (defun ai-cli-usage-text ()
   (with-output-to-string (stream)
@@ -663,7 +666,7 @@
     (terpri stream)
     (terpri stream)
     (write-string "Providers:" stream)
-    (dolist (line (ai-cli-provider-lines))
+    (dolist (line (ai-cli-provider-lines "  "))
       (terpri stream)
       (write-string line stream))))
 
@@ -994,29 +997,59 @@
         value))))
 
 (defun ai-cli-load-auth (path)
+  ;; v1.4.0 loadAuth returns JSON.parse as-is.  A missing file or a
+  ;; parse error is {}.  null, numbers, booleans, strings, and arrays
+  ;; stay what they parsed as.
   (if (not (probe-file path))
       (list :object)
       (handler-case
-          (let ((value
-                  (ai-cli-parse-json
-                   (uiop:read-file-string
-                    path :external-format :utf-8))))
-            (if (and (consp value) (eq (car value) :object))
-                value
-                (list :object)))
+          (ai-cli-parse-json
+           (uiop:read-file-string path :external-format :utf-8))
         (error ()
           (list :object)))))
 
+(defun ai-cli-js-number-text (value)
+  (if (integerp value)
+      (princ-to-string value)
+      (cadr-ai::terminating-rational-json-text value)))
+
+(defun ai-cli-assign-message (key value)
+  ;; Node strict mode, the same sentences cli.ts prints via error.message.
+  (cond
+    ((eq value :null)
+     (format nil "Cannot set properties of null (setting '~A')" key))
+    ((eq value :true)
+     (format nil "Cannot create property '~A' on boolean 'true'" key))
+    ((eq value :false)
+     (format nil "Cannot create property '~A' on boolean 'false'" key))
+    ((stringp value)
+     (format nil "Cannot create property '~A' on string '~A'" key value))
+    ((numberp value)
+     (format nil "Cannot create property '~A' on number '~A'"
+             key (ai-cli-js-number-text value)))
+    (t
+     (format nil "Cannot create property '~A'" key))))
+
 (defun ai-cli-object-put (object key value)
-  (let* ((found nil)
-         (pairs
-           (loop for pair in (cdr object)
-                 collect (if (string= (car pair) key)
-                             (progn (setf found t) (cons key value))
-                             pair))))
-    (unless found
-      (setf pairs (append pairs (list (cons key value)))))
-    (cons :object pairs)))
+  (cond
+    ((and (vectorp object) (not (stringp object)))
+     ;; JSON.stringify keeps index properties only, so a provider id
+     ;; never lands in the rewritten array.  A string is a vector in
+     ;; Lisp and a primitive in JavaScript, so it must not take this path.
+     object)
+    ((not (and (consp object) (eq (car object) :object)))
+     (error 'ai-cli-error
+            :message (ai-cli-assign-message key object)))
+    (t
+     (let* ((found nil)
+            (pairs
+              (loop for pair in (cdr object)
+                    collect (if (string= (car pair) key)
+                                (progn (setf found t) (cons key value))
+                                pair))))
+       (unless found
+         (setf pairs (append pairs (list (cons key value)))))
+       (cons :object pairs)))))
 
 (defun ai-cli-auth-path (directory)
   (merge-pathnames
@@ -1099,10 +1132,10 @@
                   (format nil "Unknown provider: ~A"
                           (or provider-id ""))))
          (let* ((path (ai-cli-auth-path directory))
-                (auth (ai-cli-load-auth path))
                 (credential
                   (ai-cli-login
-                   provider-id input output login-function)))
+                   provider-id input output login-function))
+                (auth (ai-cli-load-auth path)))
            (ai-cli-save-auth
             path (ai-cli-object-put auth provider-id credential))
            (format output "~%Credentials saved to auth.json~%")

@@ -14,15 +14,15 @@ Commands:
   list              List available providers
 
 Providers:
-anthropic            Anthropic
-github-copilot       GitHub Copilot
-kimi-coding          Kimi For Coding
-meta                 Meta
-openai               OpenAI
-openai-codex         OpenAI Codex (legacy)
-openrouter           OpenRouter
-radius               Radius
-xai                  xAI")
+  anthropic            Anthropic
+  github-copilot       GitHub Copilot
+  kimi-coding          Kimi For Coding
+  meta                 Meta
+  openai               OpenAI
+  openai-codex         OpenAI Codex (legacy)
+  openrouter           OpenRouter
+  radius               Radius
+  xai                  xAI")
 
 (defparameter +ai-cli-list-text+
   "anthropic            Anthropic
@@ -280,6 +280,82 @@ xai                  xAI")
                            (merge-pathnames "auth.json" dir)
                            :external-format :utf-8)))))
       (uiop:delete-directory-tree dir :validate t))))
+
+(defparameter +ai-cli-pretty-array+
+  "[
+  1,
+  \"a\"
+]")
+
+(test ai-cli-login-follows-json-parse-for-non-objects
+  ;; v1.4.0 loadAuth returns JSON.parse unchanged.  Strict assignment
+  ;; throws on null, numbers, booleans, and strings (Node 22 messages).
+  ;; An array accepts the property, then JSON.stringify drops it.
+  (let ((dir (ai-cli-temp-dir))
+        (calls 0))
+    (let ((login (lambda (interaction)
+                   (declare (ignore interaction))
+                   (incf calls)
+                   (ai-cli-sample-credential))))
+    (unwind-protect
+         (labels ((write-auth (text)
+                    (with-open-file (out (merge-pathnames "auth.json" dir)
+                                         :direction :output
+                                         :if-exists :supersede
+                                         :if-does-not-exist :create
+                                         :external-format :utf-8)
+                      (write-string text out)))
+                  (read-auth ()
+                    (uiop:read-file-string
+                     (merge-pathnames "auth.json" dir)
+                     :external-format :utf-8))
+                  (login-anthropic ()
+                    (ai-cli-run '("login" "anthropic")
+                                :directory dir
+                                :login-function login)))
+           (dolist (case '(("null"
+                            "Cannot set properties of null (setting 'anthropic')")
+                           ("1"
+                            "Cannot create property 'anthropic' on number '1'")
+                           ("1.5"
+                            "Cannot create property 'anthropic' on number '1.5'")
+                           ("true"
+                            "Cannot create property 'anthropic' on boolean 'true'")
+                           ("false"
+                            "Cannot create property 'anthropic' on boolean 'false'")
+                           ("\"x\""
+                            "Cannot create property 'anthropic' on string 'x'")))
+             (let ((text (first case))
+                   (message (second case)))
+               (write-auth text)
+               (setf calls 0)
+               (multiple-value-bind (status output error)
+                   (login-anthropic)
+                 (is (= 1 calls))
+                 (is (= 1 status))
+                 (is (null (search "Credentials saved" output)))
+                 (is (string= (format nil "Error: ~A~%" message) error))
+                 (is (string= text (read-auth))))))
+           (write-auth "[]")
+           (setf calls 0)
+           (multiple-value-bind (status output error)
+               (login-anthropic)
+             (is (= 1 calls))
+             (is (= 0 status))
+             (is (string= "" error))
+             (is (search (format nil "~%Credentials saved to auth.json~%")
+                         output))
+             (is (string= "[]" (read-auth)))
+             (is (null (search "anthropic" (read-auth)))))
+           (write-auth "[1,\"a\"]")
+           (multiple-value-bind (status output error)
+               (login-anthropic)
+             (declare (ignore output))
+             (is (= 0 status))
+             (is (string= "" error))
+             (is (string= +ai-cli-pretty-array+ (read-auth)))
+             (is (null (search "anthropic" (read-auth))))))
+      (uiop:delete-directory-tree dir :validate t)))))
 
 (test ai-cli-login-without-a-provider-uses-the-numbered-names
   (let ((dir (ai-cli-temp-dir)))
