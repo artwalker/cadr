@@ -17,6 +17,7 @@
    (cadr-agent:agent-session agent) session
    (cadr-agent:agent-messages agent)
    (cadr-agent:session-messages session))
+  (note-fatal-session-file session)
   (rpc-run-lifecycle
    agent :session-start
    :reason reason

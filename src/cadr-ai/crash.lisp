@@ -5,10 +5,17 @@
 
 (defvar *handling-fatal-condition-p* nil)
 
+(defvar *fatal-session-file* nil
+  "Namestring of the file-backed session, or NIL when uncaughtCrash has no sessionFile.")
+
 (defstruct fatal-condition-report
   program-name
   type-name
+  error-name
   user-message
+  frames
+  extension-hint
+  session-file
   log-path)
 
 (defparameter +credential-environment-names+
@@ -124,17 +131,110 @@
   (string-upcase
    (princ-to-string (type-of condition))))
 
+;; Node console.error prints error.name. The default is Error. These
+;; condition types are the cadr counterparts of the standard Error
+;; subclasses; every other condition stays Error.
+(defun fatal-terminal-error-name (condition)
+  (cond
+    ((typep condition 'type-error) "TypeError")
+    ((typep condition 'parse-error) "SyntaxError")
+    ((or (typep condition 'unbound-variable)
+         (typep condition 'undefined-function)
+         (typep condition 'unbound-slot))
+     "ReferenceError")
+    ((typep condition 'arithmetic-error) "RangeError")
+    (t "Error")))
+
+(defun fatal-condition-message (condition)
+  (cond
+    ((typep condition 'cadr-error)
+     (or (cadr-error-message condition) ""))
+    #+sbcl
+    ((typep condition 'sb-sys:interactive-interrupt)
+     "Interactive interrupt")
+    (t (princ-to-string condition))))
+
 (defun default-fatal-user-message (condition secrets redactor)
-  (funcall
-   redactor
-   (cond
-     ((typep condition 'cadr-error)
-      (cadr-error-message condition))
-     #+sbcl
-     ((typep condition 'sb-sys:interactive-interrupt)
-      "Interactive interrupt")
-     (t "Unexpected internal error"))
-   secrets))
+  (funcall redactor (fatal-condition-message condition) secrets))
+
+(defun fatal-reporter-frame-p (label)
+  (and label
+       (some (lambda (marker) (search marker label))
+             '("PREPARE-FATAL-CONDITION-REPORT"
+               "EMIT-FATAL-CONDITION-REPORT"
+               "FATAL-TERMINAL-FRAMES"
+               "FATAL-FRAME-"
+               "CALL-WITH-FATAL-CONDITION-BOUNDARY"
+               "REPORT-FATAL-CONDITION"
+               "FATAL-CONDITION-DIAGNOSTIC"
+               "FATAL-SOURCE-LINE"))))
+
+(defun fatal-frame-label (name)
+  (cond
+    ((null name) nil)
+    ((symbolp name) (symbol-name name))
+    ((stringp name) name)
+    (t (princ-to-string name))))
+
+(defun fatal-source-line (file position)
+  (when (and (stringp file) (integerp position) (not (minusp position))
+             (probe-file file))
+    (with-open-file (in file :external-format :utf-8)
+      (loop for line-number from 1
+            for start = 0 then (1+ end)
+            for text = (read-line in nil nil)
+            while text
+            for end = (+ start (length text))
+            when (<= start position end)
+              return line-number))))
+
+(defun fatal-frame-location (frame)
+  (handler-case
+      (let* ((location (sb-di:frame-code-location frame))
+             (source (sb-di:code-location-debug-source location))
+             (file (sb-di:debug-source-namestring source))
+             (starts (sb-di:debug-source-start-positions source))
+             (index (sb-di:code-location-toplevel-form-offset location)))
+        (when (and (stringp file)
+                   (vectorp starts)
+                   (integerp index)
+                   (<= 0 index (1- (length starts))))
+          (let ((line (fatal-source-line file (aref starts index))))
+            (when line
+              (format nil "~A:~D" file line)))))
+    (condition () nil)))
+
+(defun fatal-terminal-frames ()
+  (let ((frames nil)
+        (count 0))
+    (sb-debug:map-backtrace
+     (lambda (frame)
+       (when (>= count 100)
+         (return-from fatal-terminal-frames (nreverse frames)))
+       (let ((label
+               (fatal-frame-label
+                (ignore-errors
+                  (sb-di:debug-fun-name
+                   (sb-di:frame-debug-fun frame))))))
+         (unless (or (null label) (fatal-reporter-frame-p label))
+           (incf count)
+           (let ((location (fatal-frame-location frame)))
+             (push
+              (if location
+                  (format nil "    at ~A (~A)" label location)
+                  (format nil "    at ~A" label))
+              frames))))))
+    (nreverse frames)))
+
+(defun fatal-crash-report-instructions (program-name session-file)
+  (let ((resume
+          (if (and (stringp session-file) (plusp (length session-file)))
+              (format nil "run `~A -r` to resume the session, then"
+                      program-name)
+              (format nil "start ~A and" program-name))))
+    (format nil
+            "To report this crash: ~A run /bug. The crash details are attached automatically."
+            resume)))
 
 (defun fatal-condition-diagnostic (condition)
   (with-output-to-string (output)
@@ -166,20 +266,28 @@
                (handler-case
                    (write-private-crash-log
                     crash-directory program-name diagnostic)
-                 (condition () nil))))
+                 (condition () nil)))
+             (message
+               (funcall user-message-function
+                        condition all-secrets redactor))
+             (frames (fatal-terminal-frames))
+             (hint
+               (when diagnostic-annotation
+                 (let ((text
+                         (funcall
+                          diagnostic-annotation
+                          (format nil "Error: ~A~%~{~A~%~}"
+                                  message frames))))
+                   (when (and (stringp text) (plusp (length text)))
+                     text)))))
         (make-fatal-condition-report
          :program-name program-name
          :type-name (fatal-condition-type-name condition)
-         :user-message
-         (let ((base
-                 (funcall user-message-function
-                          condition all-secrets redactor))
-               (extra
-                 (and diagnostic-annotation
-                      (funcall diagnostic-annotation diagnostic))))
-           (if (and (stringp extra) (plusp (length extra)))
-               (format nil "~A~%~%~A" base extra)
-               base))
+         :error-name (fatal-terminal-error-name condition)
+         :user-message message
+         :frames frames
+         :extension-hint hint
+         :session-file *fatal-session-file*
          :log-path path))))
 
 (defvar *fatal-condition-side-effect* nil
@@ -187,21 +295,27 @@
 
 (defun emit-fatal-condition-report
     (report &key (exit-function #'uiop:quit))
-  (let ((*handling-fatal-condition-p* t))
-    (when *fatal-condition-side-effect*
-      (ignore-errors
-        (funcall *fatal-condition-side-effect* report)))
+  (let* ((*handling-fatal-condition-p* t)
+         (recorded
+           (when *fatal-condition-side-effect*
+             (ignore-errors
+               (funcall *fatal-condition-side-effect* report)))))
     (format *error-output*
-            "~A exiting due to uncaught ~A: ~A~%"
-            (fatal-condition-report-program-name report)
-            (fatal-condition-report-type-name report)
+            "~A exiting due to uncaughtException:~%"
+            (fatal-condition-report-program-name report))
+    (format *error-output* "~A: ~A~%"
+            (or (fatal-condition-report-error-name report) "Error")
             (fatal-condition-report-user-message report))
-    (let ((path (fatal-condition-report-log-path report)))
-      (if path
-          (format *error-output* "Crash log: ~A~%"
-                  (namestring path))
-          (format *error-output*
-                  "Crash log could not be written.~%")))
+    (dolist (frame (fatal-condition-report-frames report))
+      (write-line frame *error-output*))
+    (let ((hint (fatal-condition-report-extension-hint report)))
+      (when (and (stringp hint) (plusp (length hint)))
+        (format *error-output* "~%~A~%" hint)))
+    (when recorded
+      (format *error-output* "~%~A~%"
+              (fatal-crash-report-instructions
+               (fatal-condition-report-program-name report)
+               (fatal-condition-report-session-file report))))
     (finish-output *error-output*)
     (funcall exit-function 1)))
 

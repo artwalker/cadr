@@ -28,7 +28,8 @@
              (system-prompt "SYSTEM-PROMPT-MUST-NOT-REACH-TERMINAL")
              (session-content "SESSION-CONTENT-MUST-NOT-REACH-TERMINAL")
              (status
-               (let ((*error-output* visible))
+               (let ((*error-output* visible)
+                     (cadr-ai::*fatal-session-file* nil))
                  (cadr-cli::call-with-fatal-condition-boundary
                   (lambda ()
                     (goal13-crash-origin
@@ -41,11 +42,22 @@
                (directory
                 (merge-pathnames "cadr-crash-*.log" directory))))
         (is (= 1 status))
-        (is (search "SIMPLE-ERROR" output))
-        (is (search "Crash log:" output))
-        (is (null (search system-prompt output)))
-        (is (null (search session-content output)))
+        (is (search "cadr exiting due to uncaughtException:" output))
+        (is (search (format nil "Error: ~A ~A [REDACTED]"
+                            system-prompt session-content)
+                    output))
+        (is (null (search "Crash log:" output)))
+        (is (null (search "SIMPLE-ERROR" output)))
+        (is (search "    at GOAL13-CRASH-ORIGIN" output))
+        (dolist (line (uiop:split-string output :separator '(#\Newline)))
+          (when (uiop:string-prefix-p "    at " line)
+            (is (null (search secret line)))
+            (is (null (search system-prompt line)))
+            (is (null (search session-content line)))))
         (is (null (search secret output)))
+        (is (search
+             "To report this crash: start cadr and run /bug. The crash details are attached automatically."
+             output))
         (is (= 1 (length logs)))
         (when logs
           (is (= #o600
@@ -58,6 +70,122 @@
             (is (search session-content diagnostic))
             (is (null (search secret diagnostic)))
             (is (search "[REDACTED]" diagnostic)))))))
+
+(declaim (notinline gap72-parameter-leak))
+
+(defun gap72-parameter-leak (secret)
+  (if (stringp secret)
+      (error "gap72 parameter boom")
+      (error "gap72 parameter boom")))
+
+(defun gap72-terminal-frame-p (line)
+  (and (uiop:string-prefix-p "    at " line)
+       (multiple-value-bind (start end)
+           (cl-ppcre:scan " \\([^()[:space:]]+:[0-9]+\\)$" line)
+         (declare (ignore end))
+         (or (null start)
+             (not (search " (" (subseq line 0 start)))))))
+
+(test gap72-terminal-frames-omit-parameter-values
+  ;; v1.4.0 interactive-mode.ts uncaughtCrash prints Error: message and
+  ;; stack frames. Argument values stay in the mode-0600 log.
+  (with-test-directory (directory)
+    (let* ((visible (make-string-output-stream))
+           (secret "sk-test-SECRET")
+           (record-path (merge-pathnames "crashes.json" directory))
+           (status
+             (let ((*error-output* visible)
+                   (cadr-cli::*fatal-crash-record-path* record-path)
+                   (cadr-ai::*fatal-session-file* nil))
+               (cadr-cli::call-with-fatal-condition-boundary
+                (lambda () (gap72-parameter-leak secret))
+                :crash-directory directory
+                :exit-function #'identity)))
+           (output (get-output-stream-string visible))
+           (lines (uiop:split-string output :separator '(#\Newline)))
+           (frames
+             (remove-if-not
+              (lambda (line) (uiop:string-prefix-p "    at " line))
+              lines))
+           (logs
+             (directory
+              (merge-pathnames "cadr-crash-*.log" directory))))
+      (is (= 1 status))
+      (is (string= "cadr exiting due to uncaughtException:" (first lines)))
+      (is (string= "Error: gap72 parameter boom" (second lines)))
+      (is (find-if
+           (lambda (line)
+             (or (string= line "    at GAP72-PARAMETER-LEAK")
+                 (cl-ppcre:scan
+                  "^    at GAP72-PARAMETER-LEAK \\([^()]+\\:[0-9]+\\)$"
+                  line)))
+           frames))
+      (is (every #'gap72-terminal-frame-p frames))
+      (is (null (search secret output)))
+      (is (search
+           "To report this crash: start cadr and run /bug. The crash details are attached automatically."
+           output))
+      (is (= 1 (length logs)))
+      (when logs
+        (is (= #o600
+               (logand #o777
+                       (sb-posix:stat-mode
+                        (sb-posix:stat (first logs))))))
+        (is (search secret (read-text (first logs)))))
+      (let* ((diag (cadr-cli::crash-log-for-diagnostics record-path))
+             (bundle
+               (cadr-cli::collect-bug-report-diagnostics nil diag)))
+        (is (= 1 (length diag)))
+        (when diag
+          (is (string= "uncaught_exception" (getf (first diag) :kind)))
+          (is (string= "gap72 parameter boom" (getf (first diag) :message)))
+          (is (search "    at GAP72-PARAMETER-LEAK"
+                      (getf (first diag) :stack)))
+          (is (null (search secret (getf (first diag) :stack)))))
+        (is (search "gap72 parameter boom"
+                    (princ-to-string (getf bundle :crashes))))
+        (is (null (search secret (princ-to-string bundle))))))))
+
+(test gap72-session-file-uses-the-resume-bug-hint
+  (with-test-directory (directory)
+    (let* ((visible (make-string-output-stream))
+           (status
+             (let ((*error-output* visible)
+                   (cadr-ai::*fatal-session-file*
+                     "/tmp/cadr-gap72-session.jsonl"))
+               (cadr-cli::call-with-fatal-condition-boundary
+                (lambda () (error "gap72 session boom"))
+                :crash-directory directory
+                :exit-function #'identity)))
+           (output (get-output-stream-string visible)))
+      (is (= 1 status))
+      (is (search
+           "To report this crash: run `cadr -r` to resume the session, then run /bug. The crash details are attached automatically."
+           output))
+      (is (null (search "start cadr and" output)))
+      (is (null (search "Crash log:" output))))))
+
+(test gap72-terminal-error-name-maps-node-subclasses
+  (is (string= "Error"
+               (cadr-ai::fatal-terminal-error-name
+                (make-condition 'simple-error :format-control "x"))))
+  (is (string= "TypeError"
+               (cadr-ai::fatal-terminal-error-name
+                (make-condition 'simple-type-error
+                                :format-control "x"
+                                :datum 1
+                                :expected-type 'string))))
+  (is (string= "SyntaxError"
+               (cadr-ai::fatal-terminal-error-name
+                (make-condition 'parse-error))))
+  (handler-case (eval 'gap72-no-such-variable)
+    (unbound-variable (condition)
+      (is (string= "ReferenceError"
+                   (cadr-ai::fatal-terminal-error-name condition)))))
+  (handler-case (/ 1 0)
+    (division-by-zero (condition)
+      (is (string= "RangeError"
+                   (cadr-ai::fatal-terminal-error-name condition))))))
 
 (test goal13-cli-configuration-objects-never-print-secret-material
   (with-test-directory (directory)
@@ -124,8 +252,10 @@
                 :exit-function #'identity)))
            (output (get-output-stream-string visible)))
       (is (= 1 status))
-      (is (search "INTERACTIVE-INTERRUPT" output))
-      (is (search "Interactive interrupt" output))
+      (is (search "cadr exiting due to uncaughtException:" output))
+      (is (search "Error: Interactive interrupt" output))
+      (is (null (search "uncaught INTERACTIVE-INTERRUPT" output)))
+      (is (null (search "Crash log:" output)))
       (is (null (search "Backtrace for:" output)))
       (is (= 1
              (length

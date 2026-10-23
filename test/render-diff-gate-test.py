@@ -871,6 +871,54 @@ class RenderDiffGateTest(unittest.TestCase):
             RENDER_DIFF.normalized_screen(leftover_wrap, "pi"), leftover_wrap
         )
 
+    def test_crash_page_frames_collapse_to_one_line(self) -> None:
+        pi = (
+            b"pi exiting due to uncaughtException:\n"
+            b"Error: render-diff crash sentinel\n"
+            b"    at Timeout.<anonymous> (goal15-render-driver.ts:1087:12)\n"
+            b"    at listOnTimeout (node:internal/timers:588:17)\n"
+            b"    at process.processTimers (node:internal/timers:523:7)\n"
+            b"\n"
+            b"To report this crash: start pi and run /bug. "
+            b"The crash details are attached automatically.\n"
+        )
+        cadr = (
+            b"cadr exiting due to uncaughtException:\n"
+            b"Error: render-diff crash sentinel\n"
+            b"\x1b[90m    at GAP72-LEAK (build-test.lisp:10)\x1b[39m\n"
+            b"    at SB-INT:SIMPLE-EVAL-IN-LEXENV\n"
+            b"\n"
+            b"To report this crash: start cadr and run /bug. "
+            b"The crash details are attached automatically.\n"
+        )
+        expected = (
+            b"<PRODUCT> exiting due to uncaughtException:\n"
+            b"Error: render-diff crash sentinel\n"
+            b"<FRAME>\n"
+            b"\n"
+            b"To report this crash: start <PRODUCT> and run /bug. "
+            b"The crash details are attached automatically.\n"
+        )
+        self.assertEqual(RENDER_DIFF.normalize_crash_page(pi), expected)
+        self.assertEqual(RENDER_DIFF.normalize_crash_page(cadr), expected)
+        self.assertEqual(
+            RENDER_DIFF.normalize_crash_page(pi),
+            RENDER_DIFF.normalize_crash_page(cadr),
+        )
+        leftover = b"    at listOnTimeout (node:internal/timers:588:17)\n"
+        self.assertEqual(RENDER_DIFF.normalize_crash_page(leftover), leftover)
+        resume = (
+            b"cadr exiting due to uncaughtException:\n"
+            b"Error: boom\n"
+            b"    at ONE\n"
+            b"\n"
+            b"To report this crash: run `cadr -r` to resume the session, then run /bug.\n"
+        )
+        self.assertIn(b"run `<PRODUCT> -r`", RENDER_DIFF.normalize_crash_page(resume))
+        self.assertEqual(
+            RENDER_DIFF.normalize_crash_page(resume).count(b"<FRAME>"), 1
+        )
+
     def test_wrapped_fatal_crash_values_are_normalized_only_in_crash_output(self) -> None:
         cadr = (
             b"Fatal error: forced render crash\n"

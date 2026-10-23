@@ -1598,6 +1598,9 @@ render loopback login received
                   (cadr-tui:terminal-capabilities-true-color-p capabilities)
                   :hyperlinks-p
                   (not (null (json-get setup "hyperlinks"))))))))
+          (setf cadr-ai::*fatal-session-file*
+                (when persistent-p
+                  (namestring (cadr-agent:session-path session))))
           (cadr-cli:run-tui
            (lambda (line)
              (cadr-agent:agent-prompt

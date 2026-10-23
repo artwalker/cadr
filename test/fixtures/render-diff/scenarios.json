@@ -5738,7 +5738,7 @@
         {
           "waitForSide": {
             "pi": "render-diff crash sentinel",
-            "cadr": "cadr exiting due to uncaught SIMPLE-ERROR"
+            "cadr": "render-diff crash sentinel"
           }
         },
         {

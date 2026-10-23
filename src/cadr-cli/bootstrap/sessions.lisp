@@ -1890,6 +1890,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
   (setf (cadr-agent:agent-session agent) session
         (cadr-agent:agent-messages agent)
         (cadr-agent:session-messages session))
+  (note-fatal-session-file session)
   session)
 
 (defun session-export-basename (session)

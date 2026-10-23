@@ -40,6 +40,17 @@
              (car rule) redacted (cdr rule))))
     redacted))
 
+(defvar *fatal-crash-record-path* nil)
+
+(defun note-fatal-session-file (session)
+  (setf cadr-ai::*fatal-session-file*
+        (let ((path (and session (cadr-agent:session-path session))))
+          (when (and path
+                     (or (cadr-agent::session-persisted-p session)
+                         (probe-file path)))
+            (namestring path))))
+  cadr-ai::*fatal-session-file*)
+
 (defun call-with-fatal-condition-boundary
     (function &key
                 (program-name "cadr")
@@ -50,11 +61,21 @@
   (let ((cadr-ai::*fatal-condition-side-effect*
           (lambda (report)
             (record-crash
-             :kind "fatal_error"
+             :kind "uncaught_exception"
              :message
-             (cadr-ai::fatal-condition-report-user-message
-              report)
-             :cwd (uiop:getcwd)))))
+             (cadr-ai::fatal-condition-report-user-message report)
+             :stack
+             (format nil "~A: ~A~%~{~A~%~}"
+                     (or (cadr-ai::fatal-condition-report-error-name
+                          report)
+                         "Error")
+                     (cadr-ai::fatal-condition-report-user-message
+                      report)
+                     (cadr-ai::fatal-condition-report-frames report))
+             :session-file
+             (cadr-ai::fatal-condition-report-session-file report)
+             :cwd (uiop:getcwd)
+             :path (or *fatal-crash-record-path* (crash-log-path))))))
     (cadr-ai::call-with-fatal-condition-boundary
      function
      :program-name program-name

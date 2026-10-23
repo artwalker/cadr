@@ -10,7 +10,12 @@
     "I02": {
       "kind": "intentional-difference",
       "textCovering": true,
-      "summary": "The approved Goal 13 fatal boundary redacts the backtrace and writes a private crash log instead of dumping pi's uncaught-exception stack to the terminal."
+      "summary": "Terminal crash frames omit parameter values and local variables. The full backtrace, parameters included, is written only to the mode-0600 private crash log."
+    },
+    "I06": {
+      "kind": "intentional-difference",
+      "textCovering": true,
+      "summary": "SBCL and Node crash-page stack frames differ in function names and source locations. Lines whose visible text begins with four spaces and at are normalized to one <FRAME> line before comparison."
     },
     "I03": {
       "kind": "intentional-difference",
@@ -281,20 +286,19 @@
       ],
       "classes": [
         "I01",
-        "I02",
         "I04"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9cdcaef2d4948f390117ec2ae43bdc9d92f3048abf9be0b398cf7c836adac832",
-          "cadr": "15d83eafe4fc0cc5eb671fb6fbbda5b9c9f0ae0f81f615d113ee727b29e1a28d"
+          "pi": "67c0fba517fcc4bb70d9c18b6148141f5680bd99d57d4ae74706858e43b4b114",
+          "cadr": "e2b832f59c1be32db4a145e6cecdbf354b72193c520682375227a5c4b24be810"
         },
         "narrow": {
-          "pi": "ca68c64ab71fa9cf1b6c54dcb60240eaf4c44c79ef41d14807eb48adec75012d",
-          "cadr": "8befc1e641a828b04cba1ae0a4d82ad8851dc0206f2d4c68d1671ca1e017f6f0"
+          "pi": "c707a7b15062fbe1dc9b5b39a9d9ec55a99d400bf719f060eab085068034718a",
+          "cadr": "ed1da978af700315c5b9bcb6eda3815f802beebb9732ed26d32e137beeb0f1ee"
         }
       },
-      "note": "At fatal-crash/fatal-crash [wide+narrow] the crash fires from a driver-file trigger after the settled footer sync, so the capture is deterministic across runs; cadr applies the adjudicated Goal 13 fatal boundary: a one-line sanitized summary plus a private 0600 crash log path replaces pi's uncaughtException stack dump (I02); the settled footer shows usage and model exactly like pi; banner identity follows I04 and ANSI segmentation differs (I01). The crash log now lands under the agent layer (~/.cadr/agent/crash/), which the fixed normalization maps to the same <PRODUCT_CONFIG> placeholder."
+      "note": "At fatal-crash/fatal-crash [wide+narrow] the crash page matches after 栈帧文本 normalization: both panes show <PRODUCT> exiting due to uncaughtException:, Error: render-diff crash sentinel, one <FRAME> line, then To report this crash: start <PRODUCT> and run /bug. The crash details are attached automatically. The residual is the startup-chrome scroll offset (I04 surfaces): cadr still shows the logo, interrupt hint, and ctrl+o help while pi has scrolled that block off, so the shared footer and crash lines sit lower and the cursor row differs. Raw ANSI segmentation and teardown still differ (I01). process-exit shares this checkpoint's byte offset, so its incremental segment is empty."
     },
     {
       "scenario": "local-status-sweep",

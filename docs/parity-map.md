@@ -252,6 +252,7 @@ and `get_commands`.
 | Tool set and mutation/runtime semantics | implemented | [tools](../src/cadr-cli/tools/), [CL-TOOLS](#cl-tools), [CL-PART-B](#cl-part-b) |
 | Session JSONL format | implemented | v3 header, entry union, delayed persistence and v1/v2 migration are covered by [CL-WAVE2-SESSION](#cl-wave2-session) |
 | Extension capability | intentional difference | Original lifecycle/UI/runtime capabilities are covered; only the Lisp format/ecosystem differs. [CL-WAVE2-EXT](#cl-wave2-ext), [CL-PART-B](#cl-part-b) |
+| Crash-page stack frames | intentional difference | 栈帧文本: an uncaught crash prints the upstream page (title, `Error:` line, one frame per line, extension hint, `/bug` hint) and omits parameter values. SBCL frame text and Node frame text differ. Render-diff replaces crash-page lines that begin with `    at ` with one `<FRAME>` line before comparing. The full backtrace stays in the mode-0600 log. Advisor ruling 2026-10-24 GAP-72 C (`docs/adjudications.md`). |
 | Runtime Slynk REPL | intentional difference | Explicit `--slynk <port>`, loopback-only listener, live `active-agent`, cleanup and empty-HOME build isolation. [CL-GOAL10-D](#cl-goal10-d) |
 | Settings, themes, packages, context files, remote catalogs | implemented | [CL-PART-B](#cl-part-b) |
 

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Capture and compare fixed-baseline pi and Cadr terminal byte streams."""
+"""Capture and compare fixed-baseline pi and Cadr terminal byte streams.
+
+Crash pages (advisor ruling 2026-10-24, GAP-72 class 栈帧文本) normalize
+before semantic replay. Lines on that page whose visible text begins with
+``    at `` become one ``<FRAME>`` line, and the product name in the title
+and ``/bug`` hint is canonicalized so both sides wrap at the same column.
+"""
 
 from __future__ import annotations
 
@@ -3068,6 +3074,47 @@ def collapse_wrapped_cadr_root_paths(data: bytes) -> bytes:
     return _WRAPPED_CADR_ROOT_PATH.sub(join_path, data)
 
 
+_CRASH_PAGE_ANSI = re.compile(rb"\x1b\[[0-9;]*[A-Za-z]")
+
+
+def normalize_crash_page(data: bytes) -> bytes:
+    """Collapse crash-page stack frames and canonicalise the product name.
+
+    The class is 栈帧文本. SBCL frame text and Node frame text differ. Only
+    a page that contains ``exiting due to uncaughtException:`` is touched.
+    Each line whose text after CSI stripping begins with ``    at `` is
+    replaced by ``<FRAME>``, and consecutive replacements become one line.
+    ``pi`` / ``cadr`` in the title and the ``/bug`` hint become
+    ``<PRODUCT>`` first, so the hint wraps at the same column on both
+    sides (I04 product name). Other ``    at `` lines stay as they are.
+    """
+    if b"exiting due to uncaughtException:" not in data:
+        return data
+    for old, new in (
+        (b"pi exiting due to uncaughtException:", b"<PRODUCT> exiting due to uncaughtException:"),
+        (b"cadr exiting due to uncaughtException:", b"<PRODUCT> exiting due to uncaughtException:"),
+        (b"start pi and", b"start <PRODUCT> and"),
+        (b"start cadr and", b"start <PRODUCT> and"),
+        (b"run `pi -r`", b"run `<PRODUCT> -r`"),
+        (b"run `cadr -r`", b"run `<PRODUCT> -r`"),
+    ):
+        data = data.replace(old, new)
+    lines = data.splitlines(keepends=True)
+    collapsed: list[bytes] = []
+    pending_frame = False
+    for line in lines:
+        visible = _CRASH_PAGE_ANSI.sub(b"", line).replace(b"\r", b"").replace(b"\n", b"")
+        if visible.startswith(b"    at "):
+            if not pending_frame:
+                newline = b"\r\n" if line.endswith(b"\r\n") else b"\n"
+                collapsed.append(b"<FRAME>" + newline)
+                pending_frame = True
+            continue
+        pending_frame = False
+        collapsed.append(line)
+    return b"".join(collapsed)
+
+
 def strip_node_inspect_stack_colors(data: bytes) -> bytes:
     """Drop Node's FORCE_COLOR stack-frame gray so I04 path rules still match.
 
@@ -3097,6 +3144,7 @@ def strip_node_inspect_stack_colors(data: bytes) -> bytes:
 
 def normalized_screen(data: bytes, side: str) -> bytes:
     """Normalize a terminal-emulated screen without changing replay geometry."""
+    data = normalize_crash_page(data)
     data = strip_node_inspect_stack_colors(data)
     escaped_side = re.escape(("pi00" if side == "pi" else "cadr").encode())
     prefix = rb"/tmp/cadr-render-diff-[^/\r\n]+/" + escaped_side
@@ -3486,6 +3534,7 @@ def sweep_stale_render_resources(now: float | None = None) -> list[str]:
 
 
 def tmux_screen(data: bytes, columns: int, rows: int, temporary: Path) -> bytes:
+    data = normalize_crash_page(data)
     if shutil.which("tmux") is None:
         raise HarnessFailure("tmux is required for semantic render-diff analysis")
     temporary.mkdir(parents=True, exist_ok=True)

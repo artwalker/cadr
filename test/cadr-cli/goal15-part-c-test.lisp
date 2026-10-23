@@ -784,7 +784,7 @@
                 :exit-function #'identity)))
            (output (get-output-stream-string visible))
            (restored (search "TERMINAL-RESTORED" output))
-           (fatal (search "cadr exiting due to uncaught SIMPLE-ERROR" output)))
+           (fatal (search "cadr exiting due to uncaughtException:" output)))
       (is (= 1 status))
       (is (not (null restored)))
       (is (not (null fatal)))
