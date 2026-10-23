@@ -357,32 +357,10 @@
                :parallel))))
     (when extension-host
       (attach-extension-host extension-host agent))
-    (unless
-        (and
-         (agent-messages agent)
-         (cadr-ai:system-message-p
-          (first (agent-messages agent))))
-      (let ((initial
-              (cadr-ai:create-initial-system-message
-               nil
-               (mapcar
-                #'cadr-ai:to-tool-declaration
-                (registry-tools
-                 (agent-tool-registry agent))))))
-        (when initial
-          ;; Persist the seeded toolsAdded declaration so resume can
-          ;; restore the active loadout (pi@4a080252f #10785). Agent
-          ;; messages alone are not enough: declare-tool-changes treats
-          ;; in-memory tools as already declared and skips the session.
-          (when (agent-session agent)
-            (session-append-message
-             (agent-session agent) initial))
-          (let ((seeded
-                  (cons initial (agent-messages agent))))
-            (setf
-             (agent-messages agent) seeded
-             (agent-messages-tail agent) (last seeded)
-             (agent-messages-tail-head agent) seeded)))))
+    ;; pi@4a080252f AgentSession does not append a system message at
+    ;; construction. declare-tool-changes records toolsAdded on the
+    ;; first turn. Writing it here makes that entry the leaf, so /tree
+    ;; shows an extra [nil] row before any prompt.
     agent))
 
 (defstruct prepared-tool-call

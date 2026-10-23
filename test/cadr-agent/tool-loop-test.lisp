@@ -44,8 +44,12 @@
         (is (not (tool-result-message-is-error
                   (third transcript)))))
       (setf events (nreverse events))
+      ;; pi@4a080252f agent-loop.ts declareToolChanges inserts a system
+      ;; message before the user when the transcript has no loadout.
+      ;; That is one extra message_start/end ahead of the user turn.
       (is (equal
            '(:agent-start :turn-start
+             :message-start :message-end
              :message-start :message-end
              :message-start :message-end
              :message-start :message-end
@@ -58,12 +62,19 @@
               (cadr-agent:agent-event-messages
                (find :agent-end events
                      :key #'agent-event-type))))
-        (is (= 5 (length messages)))
+        (is (= 6 (length messages)))
         (is (typep (first messages) 'cadr-agent:agent-system-message))
-        (is (typep (second messages) 'cadr-ai:user-message))
-        (is (typep (third messages) 'cadr-ai:assistant-message))
-        (is (typep (fourth messages) 'cadr-ai:tool-result-message))
-        (is (typep (fifth messages) 'cadr-ai:assistant-message)))
+        (is (typep (second messages) 'cadr-ai:system-message))
+        (is (equal
+             '("echo")
+             (mapcar
+              #'cadr-ai:tool-name
+              (cadr-ai:system-message-tools-added
+               (second messages)))))
+        (is (typep (third messages) 'cadr-ai:user-message))
+        (is (typep (fourth messages) 'cadr-ai:assistant-message))
+        (is (typep (fifth messages) 'cadr-ai:tool-result-message))
+        (is (typep (sixth messages) 'cadr-ai:assistant-message)))
       (let* ((second-context (first *contexts*))
              (llm-messages
                (remove-if

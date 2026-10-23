@@ -149,6 +149,118 @@
               "  (2/2) [all]")
             plain)))))))
 
+(test gap76-seeded-transcript-tree-selects-the-assistant
+  ;; pi@4a080252f tree-selector.ts default filter hides
+  ;; thinking_level_change. AgentSession does not append a system
+  ;; message at construction, so a seeded user/assistant transcript
+  ;; plus that hidden leaf selects the assistant at (2/2).
+  ;; getEntryDisplayText writes "user: " / "assistant: " and the
+  ;; active-path marker "• ".
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_ (ensure-directories-exist
+               (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "gap76-tree"))
+           (tool
+             (cadr-ai:make-tool
+              :name "read"
+              :description "Read a file."
+              :parameters
+              (cadr-ai::json-object
+               "type" "object"
+               "properties" (cadr-ai::json-object)))))
+      (declare (ignore _))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content "overlay question" :timestamp 1))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "overlay answer"))
+        :api :faux :provider :faux :model "faux-1"
+        :stop-reason :stop :timestamp 2))
+      (cadr-agent:make-agent
+       :provider :faux
+       :model
+       (cadr-ai:make-model
+        :id "faux-1" :name "Faux" :provider :faux :api :faux)
+       :system-prompt "Render differential fixed system prompt."
+       :tools (list tool)
+       :session session)
+      (cadr-agent:session-append-thinking-level-change
+       session "high")
+      (multiple-value-bind (entries leaf-id)
+          (cadr-cli::session-tree-selector-data session)
+        (let ((plain
+                (mapcar
+                 (lambda (line)
+                   (string-right-trim
+                    " "
+                    (cadr-tui:strip-terminal-sequences line)))
+                 (cadr-cli::tree-selector-render-lines
+                  (cadr-cli::make-tree-selector-state
+                   :entries entries
+                   :current-leaf-id leaf-id)
+                  80))))
+          (is (equal
+               '("  • user: overlay question"
+                 "› • assistant: overlay answer"
+                 "  (2/2)")
+               plain))
+          (is (not (find-if
+                    (lambda (line) (search "[nil]" line))
+                    plain))))))))
+
+(test gap76-system-message-preview-uses-the-role-name
+  ;; pi@4a080252f tree-selector.ts getEntryDisplayText falls through
+  ;; to `[${role}]` for a system message. Default mode does not treat
+  ;; it as a settings entry, so the row stays visible.
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_ (ensure-directories-exist
+               (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "gap76-system")))
+      (declare (ignore _))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-system-message
+        :content ""
+        :tools-added
+        (list
+         (cadr-ai:make-tool
+          :name "read"
+          :description "Read a file."
+          :parameters
+          (cadr-ai::json-object
+           "type" "object"
+           "properties" (cadr-ai::json-object))))
+        :timestamp 1))
+      (multiple-value-bind (entries leaf-id)
+          (cadr-cli::session-tree-selector-data session)
+        (let ((plain
+                (mapcar
+                 (lambda (line)
+                   (string-right-trim
+                    " "
+                    (cadr-tui:strip-terminal-sequences line)))
+                 (cadr-cli::tree-selector-render-lines
+                  (cadr-cli::make-tree-selector-state
+                   :entries entries
+                   :current-leaf-id leaf-id)
+                  80))))
+          (is (equal '("› • [system]" "  (1/1)") plain))
+          (is (not (find-if
+                    (lambda (line) (search "[nil]" line))
+                    plain))))))))
+
 (test goal9-b3-cold-startup-content-is-top-aligned
   (let* ((version-line
           (format nil "cadr v~A" (cadr-ai::cadr-version)))

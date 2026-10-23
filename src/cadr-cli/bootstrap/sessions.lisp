@@ -770,6 +770,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
               :tool-result)
              (cadr-agent:bash-execution-message
               :bash-execution)
+             (cadr-ai:system-message :system)
              (otherwise nil)))
          (id
            (cadr-agent:session-entry-id entry))
