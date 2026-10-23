@@ -766,7 +766,8 @@
                  :code :provider
                  :message
                  (format nil "Unknown provider: ~A"
-                         (model-provider model))))
+                         (telemetry-symbol-text
+                          (model-provider model)))))
         (when deferred-supplied
           (unless (runtime-provider-fetch-deferred-function provider)
             (error 'models-runtime-error
@@ -788,7 +789,8 @@
                    :message
                    (format nil
                            "Provider is not configured: ~A"
-                           (model-provider model))))
+                           (telemetry-symbol-text
+                            (model-provider model)))))
           (let* ((request-model
                    (if (runtime-auth-result-base-url auth)
                        (copy-runtime-model-with-base-url
@@ -877,15 +879,15 @@
        (funcall finish message)
        message))))
 
-(defun models-runtime-complete
-    (runtime model context &rest options)
-  (models-runtime-request
-   runtime model context nil nil options))
-
 (defun models-runtime-stream
     (runtime model context on-event &rest options)
   (models-runtime-request
    runtime model context t on-event options))
+
+(defun models-runtime-complete
+    (runtime model context &rest options)
+  (apply #'models-runtime-stream
+         runtime model context nil options))
 
 (defun models-runtime-stream-deferred
     (runtime model handle on-event &rest options)

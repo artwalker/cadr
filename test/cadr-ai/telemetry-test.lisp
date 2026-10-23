@@ -17,6 +17,12 @@
 (defun telemetry-attr (attributes name)
   (cdr (assoc name attributes :test #'string=)))
 
+(defun telemetry-recorded-events (span)
+  (mapcar (lambda (event)
+            (cons (cadr-telemetry:recorded-telemetry-event-name event)
+                  (cadr-telemetry:recorded-telemetry-event-attributes event)))
+          (cadr-telemetry:recorded-telemetry-span-events span)))
+
 (defun telemetry-span-text (span)
   (with-output-to-string (output)
     (labels ((walk (value)
@@ -1136,40 +1142,100 @@ other (10ms)"
       (cadr-telemetry:telemetry-start-span
        quiet "caller"
        (lambda (parent)
-         (cadr-ai:models-runtime-complete
-          runtime model (cadr-ai:make-context)
-          :telemetry parent :api-key "k")))
-      (is (null (cadr-telemetry:recorded-telemetry-span-events
-                 (second (cadr-telemetry:in-memory-telemetry-spans quiet)))))
+         (is (eq message
+                 (cadr-ai:models-runtime-complete
+                  runtime model (cadr-ai:make-context)
+                  :telemetry parent :api-key "k")))))
+      (is (telemetry-same
+           '(("pi.ai.first_chunk")
+             ("pi.ai.block" ("type" . "text") ("index" . 0) ("chars" . 11))
+             ("pi.ai.block" ("type" . "thinking") ("index" . 1) ("chars" . 15))
+             ("pi.ai.block" ("type" . "tool_call") ("index" . 2) ("chars" . 27)
+              ("tool" . "lookup")))
+           (telemetry-recorded-events
+            (second (cadr-telemetry:in-memory-telemetry-spans quiet)))))
       (is (string= "stop"
                    (telemetry-attr
                     (cadr-telemetry:recorded-telemetry-span-attributes
                      (second (cadr-telemetry:in-memory-telemetry-spans quiet)))
                     "stop"))))
-    (let ((failed (cadr-telemetry:make-in-memory-telemetry))
-          (missing (cadr-ai:make-models-runtime)))
+    (let* ((failed (cadr-telemetry:make-in-memory-telemetry))
+           (completed (cadr-telemetry:make-in-memory-telemetry))
+           (missing (cadr-ai:make-models-runtime))
+           (absent (cadr-ai:make-model
+                    :id "model" :name "Model" :provider :absent :api :test
+                    :base-url "https://example.test")))
       (cadr-ai:models-runtime-set-provider missing provider)
       (cadr-telemetry:telemetry-start-span
        failed "caller"
        (lambda (parent)
          (let ((result
                  (cadr-ai:models-runtime-stream
-                  missing
-                  (cadr-ai:make-model
-                   :id "model" :name "Model" :provider :absent :api :test
-                   :base-url "https://example.test")
-                  (cadr-ai:make-context)
+                  missing absent (cadr-ai:make-context)
                   (lambda (event) (declare (ignore event)) nil)
                   :telemetry parent :api-key "k")))
            (is (eq :error (cadr-ai:assistant-message-stop-reason result)))
-           (is (string=
-                (cadr-ai:assistant-message-error-message result)
-                (cadr-telemetry:telemetry-status-error-message
-                 (cadr-telemetry:recorded-telemetry-span-status
-                  (second (cadr-telemetry:in-memory-telemetry-spans failed)))))))))
+           (is (string= "Unknown provider: absent"
+                        (cadr-ai:assistant-message-error-message result))))))
+      (let ((span (second (cadr-telemetry:in-memory-telemetry-spans failed))))
+        (is (string= "Unknown provider: absent"
+                     (cadr-telemetry:telemetry-status-error-message
+                      (cadr-telemetry:recorded-telemetry-span-status span))))
+        (is (telemetry-same '(("pi.ai.first_chunk"))
+                            (telemetry-recorded-events span))))
+      (cadr-telemetry:telemetry-start-span
+       completed "caller"
+       (lambda (parent)
+         (let ((result
+                 (cadr-ai:models-runtime-complete
+                  missing absent (cadr-ai:make-context)
+                  :telemetry parent :api-key "k")))
+           (is (eq :error (cadr-ai:assistant-message-stop-reason result)))
+           (is (string= "Unknown provider: absent"
+                        (cadr-ai:assistant-message-error-message result))))))
+      (let ((span (second (cadr-telemetry:in-memory-telemetry-spans completed))))
+        (is (string= "Unknown provider: absent"
+                     (cadr-telemetry:telemetry-status-error-message
+                      (cadr-telemetry:recorded-telemetry-span-status span))))
+        (is (telemetry-same '(("pi.ai.first_chunk"))
+                            (telemetry-recorded-events span)))))
+    (let ((failed (cadr-telemetry:make-in-memory-telemetry))
+          (missing (cadr-ai:make-models-runtime)))
+      (cadr-telemetry:telemetry-start-span
+       failed "caller"
+       (lambda (parent)
+         (let ((result
+                 (cadr-ai:models-runtime-complete
+                  missing (telemetry-model) (cadr-ai:make-context)
+                  :telemetry parent :api-key "k"
+                  :reasoning '(("effort" . "native-secret")))))
+           (is (eq :error (cadr-ai:assistant-message-stop-reason result)))
+           (is (string= "Unknown provider: test"
+                        (cadr-ai:assistant-message-error-message result))))))
+      (let ((span (second (cadr-telemetry:in-memory-telemetry-spans failed))))
+        (is (string= "pi.ai.request"
+                     (cadr-telemetry:recorded-telemetry-span-name span)))
+        (is (telemetry-same '(("pi.ai.first_chunk"))
+                            (telemetry-recorded-events span)))
+        (is (eq :error
+                (cadr-telemetry:telemetry-status-kind
+                 (cadr-telemetry:recorded-telemetry-span-status span))))
+        (is (string= "provider_error"
+                     (cadr-telemetry:telemetry-status-error-name
+                      (cadr-telemetry:recorded-telemetry-span-status span))))
+        (is (string= "Unknown provider: test"
+                     (cadr-telemetry:telemetry-status-error-message
+                      (cadr-telemetry:recorded-telemetry-span-status span))))
+        (is (null (assoc "reasoning"
+                         (cadr-telemetry:recorded-telemetry-span-attributes span)
+                         :test #'string=)))
+        (is (not (search "Unknown provider"
+                         (telemetry-span-text
+                          (cadr-telemetry:recorded-telemetry-span-attributes span)))))
+        (is (not (search "native-secret" (telemetry-span-text span))))))
     (is (not (search "pi.dev"
                      (uiop:read-file-string
                       (merge-pathnames
                        "src/cadr-telemetry/memory.lisp"
                        (asdf:system-source-directory "cadr-telemetry")))))
-        "telemetry must not phone home to pi.dev"))))
+        "telemetry must not phone home to pi.dev")))

@@ -33,9 +33,9 @@
           :source "Ambient" :type :api-key)))
    :refresh-function refresh-function
    :filter-function filter-function
-   :complete-function
-   (lambda (model context options)
-     (declare (ignore context))
+   :stream-function
+   (lambda (model context on-event &rest options)
+     (declare (ignore context on-event))
      (when calls
        (vector-push-extend
         (list model options) calls))
