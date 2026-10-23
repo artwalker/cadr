@@ -282,6 +282,7 @@
                              (:file "goal12-sdk-test")
                              (:file "goal23-in-memory-session-test")
                              (:file "goal12-examples-test")
+                             (:file "goal27-g17-status-test")
                              (:file "goal20-example-games-test")
                              (:file "tic-tac-toe-steer-test")
                              (:file "goal20-part-l-test")

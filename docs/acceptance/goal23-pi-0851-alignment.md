@@ -2,7 +2,7 @@
 
 > **状态：** 完成（gates green on tip）。Goal 20 invent/pair 已恢复
 > (`goal20-queue.json` `paused=false`)。Does not announce Goal 20
-> complete. G.17 stays `missing`.
+> complete. G.17 is `met` (2026-09-06 remesure25+26; keep `594d066a4`).
 >
 > **自：** `b79e4cc83` · `v0.84.4` +0  
 > **当前锚点：** `d981de122` · `v0.85.1` +0（pi tag `v0.85.1`）
@@ -112,4 +112,4 @@ provider 增量。在旧基线上继续 invent，ratio 与 render-diff 对照的
 ## 与 Goal 20 的关系
 
 - **G23 完成前：** 不新开 Goal 20 invent/pair（避免双次 freeze）。
-- **G23 完成后：** 恢复 invent；G.17 仍 `missing` 直至 Part P 证据足够。
+- **G23 完成后：** 恢复 invent。G.17 是 `met`（2026-09-06 remesure25+26，保留 `594d066a4`）。不宣布 Goal 20 完成。

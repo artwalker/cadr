@@ -136,39 +136,39 @@ D	packages/agent/test/harness/runtime/test-utils.ts	-	outside packages/coding-ag
 D	packages/agent/test/harness/session-test-utils.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 D	packages/agent/vitest.benchmark.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 D	packages/agent/vitest.harness.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
-A	-	packages/ai/scripts/ai-gateway-pricing.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/ai/scripts/generate-image-models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/ai/scripts/hydrate-model-catalog.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/scripts/openrouter-catalog.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/azure-openai-config.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/classifier-shared.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/cloudflare-workers-ai-system-one.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/cloudflare-workers-ai-system-one.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/llama-cpp-classify.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/llama-cpp-classify.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/openai-decisions.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/openai-decisions.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/system-one-shared.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/typesafe-system-one.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/api/typesafe-system-one.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/auth/oauth/callback-server.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/auth/oauth/openai-chatgpt.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/ai/src/image-models.generated.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/ai/src/images-models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/ai/src/providers/azure-openai-responses.models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/ai/src/providers/azure-openai-responses.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/ai/src/providers/azure.models.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/providers/azure.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/providers/compat-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/providers/model-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/providers/openrouter-api.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/ai/src/providers/openrouter-images.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/ai/src/providers/typesafe.models.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/providers/typesafe.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/ai/src/utils/assistant-message-frame.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/ai/src/utils/model-operations.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/ai/src/utils/models-error.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-R	packages/ai/src/auth/oauth/oauth-page.ts	packages/ai/src/utils/oauth-page.ts	upstream rename packages/ai/src/auth/oauth/oauth-page.ts -> packages/ai/src/utils/oauth-page.ts; retarget cadr mapping when aligning (coding-agent/tui/ai)
+A	-	packages/ai/scripts/ai-gateway-pricing.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/scripts/ai-gateway-pricing.ts
+D	packages/ai/scripts/generate-image-models.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/ai/scripts/generate-image-models.ts
+A	-	packages/ai/scripts/hydrate-model-catalog.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/scripts/hydrate-model-catalog.ts
+A	-	packages/ai/scripts/openrouter-catalog.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/scripts/openrouter-catalog.ts
+A	-	packages/ai/src/api/azure-openai-config.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/azure-openai-config.ts
+A	-	packages/ai/src/api/classifier-shared.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/classifier-shared.ts
+A	-	packages/ai/src/api/cloudflare-workers-ai-system-one.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/cloudflare-workers-ai-system-one.lazy.ts
+A	-	packages/ai/src/api/cloudflare-workers-ai-system-one.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/cloudflare-workers-ai-system-one.ts
+A	-	packages/ai/src/api/llama-cpp-classify.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/llama-cpp-classify.lazy.ts
+A	-	packages/ai/src/api/llama-cpp-classify.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/llama-cpp-classify.ts
+A	-	packages/ai/src/api/openai-decisions.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/openai-decisions.lazy.ts
+A	-	packages/ai/src/api/openai-decisions.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/openai-decisions.ts
+A	-	packages/ai/src/api/system-one-shared.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/system-one-shared.ts
+A	-	packages/ai/src/api/typesafe-system-one.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/typesafe-system-one.lazy.ts
+A	-	packages/ai/src/api/typesafe-system-one.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/api/typesafe-system-one.ts
+A	-	packages/ai/src/auth/oauth/callback-server.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/auth/oauth/callback-server.ts
+A	-	packages/ai/src/auth/oauth/openai-chatgpt.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/auth/oauth/openai-chatgpt.ts
+D	packages/ai/src/image-models.generated.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/ai/src/image-models.generated.ts
+D	packages/ai/src/images-models.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/ai/src/images-models.ts
+D	packages/ai/src/providers/azure-openai-responses.models.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/ai/src/providers/azure-openai-responses.models.ts
+D	packages/ai/src/providers/azure-openai-responses.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/ai/src/providers/azure-openai-responses.ts
+A	-	packages/ai/src/providers/azure.models.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/providers/azure.models.ts
+A	-	packages/ai/src/providers/azure.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/providers/azure.ts
+A	-	packages/ai/src/providers/compat-schema.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/providers/compat-schema.ts
+A	-	packages/ai/src/providers/model-schema.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/providers/model-schema.ts
+A	-	packages/ai/src/providers/openrouter-api.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/providers/openrouter-api.ts
+D	packages/ai/src/providers/openrouter-images.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/ai/src/providers/openrouter-images.ts
+A	-	packages/ai/src/providers/typesafe.models.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/providers/typesafe.models.ts
+A	-	packages/ai/src/providers/typesafe.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/providers/typesafe.ts
+D	packages/ai/src/utils/assistant-message-frame.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/ai/src/utils/assistant-message-frame.ts
+A	-	packages/ai/src/utils/model-operations.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/utils/model-operations.ts
+A	-	packages/ai/src/utils/models-error.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/ai/src/utils/models-error.ts
+R	packages/ai/src/auth/oauth/oauth-page.ts	packages/ai/src/utils/oauth-page.ts	retired 2026-10-23 GAP-50; old path absent from v1.4.0; new path packages/ai/src/utils/oauth-page.ts is present; the Goal 12 ledger row keeps the old path inside the frozen 686-path digest
 D	packages/chord/src/api.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 D	packages/chord/src/bundler.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 A	-	packages/chord/src/cell.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
@@ -259,118 +259,118 @@ A	-	packages/codemode/src/wasm.ts	outside packages/coding-agent, packages/tui, a
 A	-	packages/codemode/test/fixtures/raw-worker.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 A	-	packages/codemode/test/fixtures/worker-process-exit.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 R	packages/protocol/vitest.config.ts	packages/codemode/vitest.config.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
-A	-	packages/coding-agent/examples/extensions/debug-provider.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/examples/extensions/jev-router.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/coding-agent/examples/plugins/pi-example-plugin/src/contract.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/examples/plugins/pi-example-plugin/src/session.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/examples/plugins/pi-example-plugin/src/tui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/coding-agent/examples/rpc-client.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/examples/sdk/14-codemode-mcp.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/scripts/generate-schemas.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/bun/quickjs-wasm.d.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/coding-agent/src/cli/experimental/cli.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/cli/experimental/command-options.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/cli/experimental/command.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/cli/experimental/commands/client.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/cli/experimental/commands/server.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/client/index.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/core/key-id-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/core/keybindings-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/core/mcp-servers.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/core/nested-tool-calls.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/core/settings-defaults.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/core/settings-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/core/virtual-models.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/cli.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/client-runtime.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/client-tui-chat.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/client-tui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/client.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/commands.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/coordinator-entry.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/coordinator.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/micro/api.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/micro/main.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/micro/models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/micro/runtime.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/micro/sessions.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/micro/tools.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/micro/tui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/main.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/server/entry.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/server/run.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/shared/protocol.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/shared/rpc.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/shared/transport.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/tui/run.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/tui/session.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/tui/view.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/worker/entry.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/worker/lane-service.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/worker/models-service.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/mini/worker/run.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/plugin.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/plugins/bundled.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/plugins/package.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/process.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/radius-auth.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/radius-relay.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/server.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/agent-controller-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/agent-controller.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/connection.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/models-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/models.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/plugins.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/presentation-ui.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/server.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/sessions.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/slash-commands-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/slash-commands.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/transcript-provider.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/transcript.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/services/worker.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/session-worker-manager.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/src/experimental/session-worker.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/codemode/execute.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/codemode/execute.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/codemode/index.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/codemode/renderer.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/codemode/tool.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/codemode/worker.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/cli.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/cli.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/config.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/index.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/log.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/oauth.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/resources.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/runtime.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/runtime.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/tools.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/mcp/ui.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/tool-search/index.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/extensions/tool-search/tool.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/components/auth-url.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/coding-agent/src/modes/interactive/components/daxnuts.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/components/easter-egg-3d.lazy.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/components/pi-logo.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/components/radius-login-selector.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/components/themed-text.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/program-status-reporter.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/theme/system-theme.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/coding-agent/src/modes/interactive/theme/theme-json.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/theme/theme-schema.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/modes/interactive/theme/theme-tokens.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/src/utils/output-files.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-D	packages/coding-agent/test/experimental-service-binding.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/test/experimental-session-support.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/test/fixtures/faux-session-worker.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-D	packages/coding-agent/test/fixtures/keyed-service.ts	-	upstream deleted; drop or rewrite cadr mapping when aligning (coding-agent/tui/ai)
-A	-	packages/coding-agent/test/mcp-conformance/client.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/test/mcp-conformance/run.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/coding-agent/test/suite/mcp-oauth-server.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/coding-agent/examples/extensions/debug-provider.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/examples/extensions/debug-provider.ts
+A	-	packages/coding-agent/examples/extensions/jev-router.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/examples/extensions/jev-router.ts
+D	packages/coding-agent/examples/plugins/pi-example-plugin/src/contract.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/examples/plugins/pi-example-plugin/src/contract.ts
+D	packages/coding-agent/examples/plugins/pi-example-plugin/src/session.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/examples/plugins/pi-example-plugin/src/session.ts
+D	packages/coding-agent/examples/plugins/pi-example-plugin/src/tui.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/examples/plugins/pi-example-plugin/src/tui.ts
+A	-	packages/coding-agent/examples/rpc-client.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/examples/rpc-client.ts
+A	-	packages/coding-agent/examples/sdk/14-codemode-mcp.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/examples/sdk/14-codemode-mcp.ts
+A	-	packages/coding-agent/scripts/generate-schemas.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/scripts/generate-schemas.ts
+A	-	packages/coding-agent/src/bun/quickjs-wasm.d.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/bun/quickjs-wasm.d.ts
+D	packages/coding-agent/src/cli/experimental/cli.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/cli/experimental/cli.ts
+D	packages/coding-agent/src/cli/experimental/command-options.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/cli/experimental/command-options.ts
+D	packages/coding-agent/src/cli/experimental/command.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/cli/experimental/command.ts
+D	packages/coding-agent/src/cli/experimental/commands/client.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/cli/experimental/commands/client.ts
+D	packages/coding-agent/src/cli/experimental/commands/server.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/cli/experimental/commands/server.ts
+D	packages/coding-agent/src/client/index.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/client/index.ts
+A	-	packages/coding-agent/src/core/key-id-schema.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/core/key-id-schema.ts
+A	-	packages/coding-agent/src/core/keybindings-schema.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/core/keybindings-schema.ts
+A	-	packages/coding-agent/src/core/mcp-servers.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/core/mcp-servers.ts
+A	-	packages/coding-agent/src/core/nested-tool-calls.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/core/nested-tool-calls.ts
+A	-	packages/coding-agent/src/core/settings-defaults.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/core/settings-defaults.ts
+A	-	packages/coding-agent/src/core/settings-schema.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/core/settings-schema.ts
+A	-	packages/coding-agent/src/core/virtual-models.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/core/virtual-models.ts
+D	packages/coding-agent/src/experimental/cli.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/cli.ts
+D	packages/coding-agent/src/experimental/client-runtime.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/client-runtime.ts
+D	packages/coding-agent/src/experimental/client-tui-chat.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/client-tui-chat.ts
+D	packages/coding-agent/src/experimental/client-tui.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/client-tui.ts
+D	packages/coding-agent/src/experimental/client.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/client.ts
+D	packages/coding-agent/src/experimental/commands.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/commands.ts
+D	packages/coding-agent/src/experimental/coordinator-entry.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/coordinator-entry.ts
+D	packages/coding-agent/src/experimental/coordinator.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/coordinator.ts
+D	packages/coding-agent/src/experimental/micro/api.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/micro/api.ts
+D	packages/coding-agent/src/experimental/micro/main.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/micro/main.ts
+D	packages/coding-agent/src/experimental/micro/models.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/micro/models.ts
+D	packages/coding-agent/src/experimental/micro/runtime.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/micro/runtime.ts
+D	packages/coding-agent/src/experimental/micro/sessions.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/micro/sessions.ts
+D	packages/coding-agent/src/experimental/micro/tools.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/micro/tools.ts
+D	packages/coding-agent/src/experimental/micro/tui.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/micro/tui.ts
+D	packages/coding-agent/src/experimental/mini/main.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/main.ts
+D	packages/coding-agent/src/experimental/mini/server/entry.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/server/entry.ts
+D	packages/coding-agent/src/experimental/mini/server/run.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/server/run.ts
+D	packages/coding-agent/src/experimental/mini/shared/protocol.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/shared/protocol.ts
+D	packages/coding-agent/src/experimental/mini/shared/rpc.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/shared/rpc.ts
+D	packages/coding-agent/src/experimental/mini/shared/transport.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/shared/transport.ts
+D	packages/coding-agent/src/experimental/mini/tui/run.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/tui/run.ts
+D	packages/coding-agent/src/experimental/mini/tui/session.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/tui/session.ts
+D	packages/coding-agent/src/experimental/mini/tui/view.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/tui/view.ts
+D	packages/coding-agent/src/experimental/mini/worker/entry.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/worker/entry.ts
+D	packages/coding-agent/src/experimental/mini/worker/lane-service.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/worker/lane-service.ts
+D	packages/coding-agent/src/experimental/mini/worker/models-service.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/worker/models-service.ts
+D	packages/coding-agent/src/experimental/mini/worker/run.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/mini/worker/run.ts
+D	packages/coding-agent/src/experimental/plugin.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/plugin.ts
+D	packages/coding-agent/src/experimental/plugins/bundled.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/plugins/bundled.ts
+D	packages/coding-agent/src/experimental/plugins/package.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/plugins/package.ts
+D	packages/coding-agent/src/experimental/process.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/process.ts
+D	packages/coding-agent/src/experimental/radius-auth.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/radius-auth.ts
+D	packages/coding-agent/src/experimental/radius-relay.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/radius-relay.ts
+D	packages/coding-agent/src/experimental/server.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/server.ts
+D	packages/coding-agent/src/experimental/services/agent-controller-provider.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/agent-controller-provider.ts
+D	packages/coding-agent/src/experimental/services/agent-controller.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/agent-controller.ts
+D	packages/coding-agent/src/experimental/services/connection.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/connection.ts
+D	packages/coding-agent/src/experimental/services/models-provider.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/models-provider.ts
+D	packages/coding-agent/src/experimental/services/models.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/models.ts
+D	packages/coding-agent/src/experimental/services/plugins.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/plugins.ts
+D	packages/coding-agent/src/experimental/services/presentation-ui.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/presentation-ui.ts
+D	packages/coding-agent/src/experimental/services/server.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/server.ts
+D	packages/coding-agent/src/experimental/services/sessions.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/sessions.ts
+D	packages/coding-agent/src/experimental/services/slash-commands-provider.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/slash-commands-provider.ts
+D	packages/coding-agent/src/experimental/services/slash-commands.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/slash-commands.ts
+D	packages/coding-agent/src/experimental/services/transcript-provider.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/transcript-provider.ts
+D	packages/coding-agent/src/experimental/services/transcript.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/transcript.ts
+D	packages/coding-agent/src/experimental/services/worker.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/services/worker.ts
+D	packages/coding-agent/src/experimental/session-worker-manager.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/session-worker-manager.ts
+D	packages/coding-agent/src/experimental/session-worker.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/experimental/session-worker.ts
+A	-	packages/coding-agent/src/extensions/codemode/execute.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/codemode/execute.lazy.ts
+A	-	packages/coding-agent/src/extensions/codemode/execute.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/codemode/execute.ts
+A	-	packages/coding-agent/src/extensions/codemode/index.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/codemode/index.ts
+A	-	packages/coding-agent/src/extensions/codemode/renderer.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/codemode/renderer.ts
+A	-	packages/coding-agent/src/extensions/codemode/tool.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/codemode/tool.ts
+A	-	packages/coding-agent/src/extensions/codemode/worker.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/codemode/worker.ts
+A	-	packages/coding-agent/src/extensions/mcp/cli.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/cli.lazy.ts
+A	-	packages/coding-agent/src/extensions/mcp/cli.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/cli.ts
+A	-	packages/coding-agent/src/extensions/mcp/config.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/config.ts
+A	-	packages/coding-agent/src/extensions/mcp/index.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/index.ts
+A	-	packages/coding-agent/src/extensions/mcp/log.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/log.ts
+A	-	packages/coding-agent/src/extensions/mcp/oauth.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/oauth.ts
+A	-	packages/coding-agent/src/extensions/mcp/resources.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/resources.ts
+A	-	packages/coding-agent/src/extensions/mcp/runtime.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/runtime.lazy.ts
+A	-	packages/coding-agent/src/extensions/mcp/runtime.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/runtime.ts
+A	-	packages/coding-agent/src/extensions/mcp/tools.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/tools.ts
+A	-	packages/coding-agent/src/extensions/mcp/ui.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/mcp/ui.ts
+A	-	packages/coding-agent/src/extensions/tool-search/index.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/tool-search/index.ts
+A	-	packages/coding-agent/src/extensions/tool-search/tool.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/extensions/tool-search/tool.ts
+A	-	packages/coding-agent/src/modes/interactive/components/auth-url.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/components/auth-url.ts
+D	packages/coding-agent/src/modes/interactive/components/daxnuts.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/modes/interactive/components/daxnuts.ts
+A	-	packages/coding-agent/src/modes/interactive/components/easter-egg-3d.lazy.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/components/easter-egg-3d.lazy.ts
+A	-	packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/components/easter-egg-3d.ts
+A	-	packages/coding-agent/src/modes/interactive/components/pi-logo.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/components/pi-logo.ts
+A	-	packages/coding-agent/src/modes/interactive/components/radius-login-selector.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/components/radius-login-selector.ts
+A	-	packages/coding-agent/src/modes/interactive/components/themed-text.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/components/themed-text.ts
+A	-	packages/coding-agent/src/modes/interactive/program-status-reporter.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/program-status-reporter.ts
+A	-	packages/coding-agent/src/modes/interactive/theme/system-theme.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/theme/system-theme.ts
+D	packages/coding-agent/src/modes/interactive/theme/theme-json.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/src/modes/interactive/theme/theme-json.ts
+A	-	packages/coding-agent/src/modes/interactive/theme/theme-schema.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/theme/theme-schema.ts
+A	-	packages/coding-agent/src/modes/interactive/theme/theme-tokens.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/modes/interactive/theme/theme-tokens.ts
+A	-	packages/coding-agent/src/utils/output-files.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/src/utils/output-files.ts
+D	packages/coding-agent/test/experimental-service-binding.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/test/experimental-service-binding.ts
+D	packages/coding-agent/test/experimental-session-support.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/test/experimental-session-support.ts
+D	packages/coding-agent/test/fixtures/faux-session-worker.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/test/fixtures/faux-session-worker.ts
+D	packages/coding-agent/test/fixtures/keyed-service.ts	-	retired 2026-10-23 GAP-50; absent from v1.4.0 4a080252; do not restore the deleted tree; src/cadr-server stays; packages/coding-agent/test/fixtures/keyed-service.ts
+A	-	packages/coding-agent/test/mcp-conformance/client.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/test/mcp-conformance/client.ts
+A	-	packages/coding-agent/test/mcp-conformance/run.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/test/mcp-conformance/run.ts
+A	-	packages/coding-agent/test/suite/mcp-oauth-server.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/coding-agent/test/suite/mcp-oauth-server.ts
 A	-	packages/durable/src/codemode/codemode.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 A	-	packages/durable/src/codemode/describe.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 A	-	packages/durable/src/codemode/index.ts	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
@@ -581,7 +581,7 @@ D	packages/session-backends/sqlite-node/src/sqlite/storage.ts	-	outside packages
 D	packages/session-backends/sqlite-node/src/sqlite/types.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 D	packages/session-backends/sqlite-node/vitest.benchmark.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
 D	packages/session-backends/sqlite-node/vitest.config.ts	-	outside packages/coding-agent, packages/tui, and packages/ai; no cadr port on this pin
-A	-	packages/tui/src/colors.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/tui/src/oklab.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/tui/src/program-status.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
-A	-	packages/tui/src/wheel-scroll.ts	open on pin; port or adjudicate before Goal 26 close (coding-agent/tui/ai)
+A	-	packages/tui/src/colors.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/tui/src/colors.ts
+A	-	packages/tui/src/oklab.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/tui/src/oklab.ts
+A	-	packages/tui/src/program-status.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/tui/src/program-status.ts
+A	-	packages/tui/src/wheel-scroll.ts	retired 2026-10-23 GAP-50; still at v1.4.0 4a080252; not an open port queue; missing behavior is a Goal 27 GAP row; packages/tui/src/wheel-scroll.ts

@@ -1,6 +1,6 @@
 # Goal 27：pi 能做的，cadr 都要能做
 
-> **状态：** Goal 27 开工。队列已开，行为尚未落地。不宣布 Goal 20、24、25 或 26 完成。G.17 的状态字由 GAP-50 处理，本文件不开口宣布。
+> **状态：** Goal 27 开工。队列已开，行为尚未落地。不宣布 Goal 20、24、25 或 26 完成。G.17 是 `met`（GAP-50，2026-09-06 remesure25+26）。
 >
 > **目标原话（用户 2026-10-23）：** pi 能做的，cadr 都要能做，并持续对齐 pi 最新稳定版（现为 v1.4.0，4a080252）。
 >
@@ -143,4 +143,4 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-50 G.17 status | `docs/acceptance/goal-v20-part-g.md` → those acceptance files | open |
+| GAP-50 G.17 status | `docs/acceptance/goal-v20-part-g.md` → those acceptance files | done：G.17 是 met。remesure25 四条是 0.98×、0.97×、0.66×、0.86×，remesure26 四条是 0.65×、0.87×、0.73×、0.76×，保留 `594d066a4`，不宣布 Goal 20 完成。37 条已不在 v1.4.0 的账本行不再待裁决，v1.3.0 的 75/73/1 不再是开放队列。`management-http.ts` 仍在 v1.4.0，cadr 的版本检查和工具版本各发一次请求。 |

@@ -1,6 +1,6 @@
 # Goal 24：pi 基线推进至 v0.86.0
 
-> **状态：** 进行中。用户 2026-09-20 裁决把钉点从 v0.85.1 推到已发布的 v0.86.0。不宣布 Goal 20 完成。G.17 保持 `missing`。
+> **状态：** 进行中。用户 2026-09-20 裁决把钉点从 v0.85.1 推到已发布的 v0.86.0。不宣布 Goal 20 完成。G.17 是 `met`（2026-09-06 remesure25+26，保留 `594d066a4`）。
 >
 > **自：** `d981de122` · `v0.85.1` +0
 > **目标锚点：** `ecac0a9c4edad3dac5d9f8b40e0c7db7a56471fc` · `v0.86.0` +0（pi tag `v0.86.0`，提交说明 `Release v0.86.0`，2026-09-20 01:00:41 +0200）
@@ -27,7 +27,7 @@ v0.85.1 上尚未落地的用户可见缺口仍然有效。新钉点不把它们
 
 | 在范围内 | 不在范围内 |
 |---|---|
-| 机械锚点：`BASELINE`、`scripts/set-baseline.sh`、fixture `baselineCommit` | Goal 20 invent / pair 燃尽。G.17 不标 `met` |
+| 机械锚点：`BASELINE`、`scripts/set-baseline.sh`、fixture `baselineCommit` | Goal 20 invent / pair 燃尽。G.17 已是 `met`，本表不把它改回 `missing`，也不宣布 Goal 20 完成 |
 | `render-diff` 基线 checkout 重建，以及 `scripts/render-diff.py` 里的 `PI_AI_MODEL_DATA_PACKAGE` / `PI_AI_MODEL_DATA_SHA256` | 把 Node 原生 `.node` 二进制抄进 Lisp |
 | `enumerate-baseline-diff.py` 与 `check-source-parity-drift.sh` 的处置 | 为过关而抬 pairing ceiling，或新造 intentional-difference 类 |
 | 下表用户可见增量。每一项要么有可重放的行为证据，要么是用户已经裁过的例外 | 与本 bump 无关的重构 |
@@ -94,7 +94,7 @@ Node 侧延迟加载 jiti 与虚拟模块、以及 Windows `.node` 二进制，�
    ./scripts/verify.sh
    ./scripts/test-cl.sh
    ```
-9. **恢复 Goal 20。** `paused` 设回 `false`。受影响的 metric 重跑。不把 G.17 标成 `met`。
+9. **恢复 Goal 20。** `paused` 设回 `false`。受影响的 metric 重跑。G.17 已是 `met`，不把它改回 `missing`，也不宣布 Goal 20 完成。
 
 ## 验收
 
@@ -105,8 +105,8 @@ Node 侧延迟加载 jiti 与虚拟模块、以及 Windows `.node` 二进制，�
 - [ ] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
 - [ ] `CHANGELOG.md` 记录 `cadr … · aligned with pi v0.86.0 (+0, ecac0a9c4)`（全量对齐后再写；钉点提交只记 pin）
 - [ ] Goal 20 `paused=false` 只在钉点与枚举落地之后恢复（钉点期间 `paused=true`）
-- [ ] 不标记 G.17 `met`，不宣布 Goal 20 完成
+- [x] G.17 是 `met`（`docs/acceptance/goal-v20-part-g.md` 第 17 行，2026-09-06）。不宣布 Goal 20 完成
 
 ## 与 Goal 20 的关系
 
-钉点与枚举落地之前，不新开 Goal 20 invent / pair。完成后恢复 invent。G.17 仍 `missing`。
+钉点与枚举落地之前，不新开 Goal 20 invent / pair。完成后恢复 invent。G.17 是 `met`（2026-09-06）。不宣布 Goal 20 完成。

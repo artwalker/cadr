@@ -35,7 +35,7 @@ Do it **one PR at a time**: leftover PRs all patch the same harness files.
 Rebase the next PR onto the new tip before merging it. After a source
 file's leftover slugs are on tip, refresh inventory
 (`python3 scripts/goal20-unpaired-paths.py --write && --check`). Do not
-announce Goal 20 complete. Do not mark G.17 `met`. Do not bump
+announce Goal 20 complete. G.17 is `met` (2026-09-06 remesure25+26; keep `594d066a4`). Do not reopen it. Do not bump
 `nextPairNum` for leftover IDs.
 
 Tags, releases, force-push, and spend still require **Ethan**.

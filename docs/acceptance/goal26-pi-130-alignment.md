@@ -2,7 +2,7 @@
 
 > **状态：** 进行中（钉点改靶）。用户 2026-10-20 明确要求从已发布的
 > v0.87.0 改钉到已发布的 **v1.3.0**（major leap）。不宣布 Goal 20、24 或 25
-> 完成。G.17 保持 `missing`。`version.sexp` 仍是 `0.2.0`，直到这一版对齐被接受。
+> 完成。G.17 是 `met`（2026-09-06 remesure25+26，保留 `594d066a4`）。`version.sexp` 仍是 `0.2.0`，直到这一版对齐被接受。
 > Goal 20 invent 的 `paused` 置为 `true`，直至机械钉点与门禁可跑。
 >
 > **自：** `16787ad5b2dc748047f314ca1bfe7708f30f54f3` · `v0.87.0` +0
@@ -54,9 +54,9 @@ v0.87.0 时代的「按 leftover PR 逐条 cherry-pick」对 ~482 commits / 1.x 
 | 桶 | 约数 | 处置 |
 |---|---|---|
 | 范围外包（durable/chord/mcp/codemode/…） | 437 | 本钉不 port |
-| coding-agent/tui/ai 新增 | 75 | open；对齐前必须 port 或裁决 |
-| coding-agent/tui/ai 删除 | 73 | open；对齐时 drop/rewrite |
-| ai oauth-page 重命名 | 1 | open；改映射 |
+| coding-agent/tui/ai 新增 | 75 | retired 2026-10-23（GAP-50）。75/75 仍在 v1.4.0 `4a080252`。其中 2 条在 Goal 12 账本里是 `implemented`，73 条不在那份 686 路径清单里。缺的行为在 `docs/reviews/2026-10-23-pi-parity-gap-inventory.md`，不是这张表 |
+| coding-agent/tui/ai 删除 | 73 | retired 2026-10-23（GAP-50）。73/73 都不在 v1.4.0。不把删掉的树装回来。`src/cadr-server/` 留下 |
+| ai oauth-page 重命名 | 1 | retired 2026-10-23（GAP-50）。旧路径不在 v1.4.0，新路径 `packages/ai/src/utils/oauth-page.ts` 在。Goal 12 账本行仍写旧路径，因为 686 路径摘要钉着它 |
 
 ### 枚举注意
 
@@ -178,7 +178,7 @@ v0.87.0 钉上尚未关闭的缺口与 leftover 行为，在 v1.3.0 上重新对
 ## 硬约束
 
 - `version.sexp` = `"0.2.0"` 直到对齐被接受
-- 不标 Goals 20/24/25/26 完成；G.17 保持 `missing`
+- 不标 Goals 20/24/25/26 完成。G.17 是 `met`（2026-09-06 remesure25+26，保留 `594d066a4`）
 - 不 merge PR 855；leftover PR 用「已改钉 v1.3.0，勿合」关闭或搁置
 - 不 force-push；显式 path staging
 - Live probes：仅 xAI；OpenCode 计费失败不是产品缺陷
