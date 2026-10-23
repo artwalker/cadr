@@ -2326,3 +2326,26 @@ The gray `Working` status rule is canonicalized in
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-43, GAP-43a, and
   GAP-43b. The parent status cell keeps the previous blocked text after
   the split prefix.
+
+## 2026-10-23 — GAP-48 gets a third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-48 (sequential batch) is open for a third repair under the already
+  recorded 条件 S. Two acceptances failed. Keep the row whole. If the
+  third acceptance fails, write the status `blocked` and hand the row
+  to the advisor.
+- **Why:** each acceptance found new defects. The implementation was
+  following review comments instead of starting from the upstream test
+  surface.
+- **Second failure:** a before hook that returned a list was treated as
+  a block. The tool body did not run. The lock test failed. This may
+  interact with GAP-20's third repair (`d08ed0931`, `prepareToolCall`
+  order and `tool_call` block semantics).
+- **Repair:** the third repair follows the already recorded 条件 S
+  (the 2026-10-23 entry that quotes it in full). First clarify how this
+  row relates to that GAP-20 repair. Tests for both rows must pass
+  together.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-48. The status
+  cell keeps the previous blocked text after the new open prefix. The
+  open text also requires that the repair clarify the relationship with
+  GAP-20 and that both rows' tests pass together.
