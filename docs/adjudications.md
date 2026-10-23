@@ -2244,3 +2244,22 @@ The gray `Working` status rule is canonicalized in
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-18, GAP-35,
   GAP-42, GAP-42a, and GAP-42b. The status cells keep the previous
   blocked text after the new prefix.
+
+## 2026-10-23 — GAP-32 and GAP-45 get a third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-32 and GAP-45 are open for a third repair under the already
+  recorded 条件 S. Two acceptances failed for each row. Keep each row
+  whole. If the third acceptance fails, write the status `blocked` and
+  hand that row to the advisor.
+- **Why:** each acceptance found new defects. The implementation was
+  following review comments instead of starting from the upstream test
+  surface.
+- **GAP-32:** provider-triggered wrapper characters.
+- **GAP-45:** when `timeoutMs` is explicitly 0, upstream sends one
+  request and does not retry.
+- **Repair:** the third repair follows the already recorded 条件 S
+  (the 2026-10-23 entry that quotes it in full).
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-32 and GAP-45.
+  The status cell keeps the previous blocked text after the new open
+  prefix.
