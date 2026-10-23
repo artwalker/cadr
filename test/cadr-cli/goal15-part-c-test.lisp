@@ -677,11 +677,12 @@
              (lambda (text)
                (cadr-cli::add-tui-status state text))))
       (declare (ignore _))
-      (is
-       (cadr-cli::handle-session-command
-        "/export" agent
-        :directory sessions :cwd cwd :output output
-        :status-function status-function))
+      (uiop:with-current-directory (root)
+        (is
+         (cadr-cli::handle-session-command
+          "/export" agent
+          :directory sessions :cwd cwd :output output
+          :status-function status-function)))
       (is (string= "" (get-output-stream-string output)))
       (is (= 1 (length (cadr-cli::tui-state-entries state))))
       (is

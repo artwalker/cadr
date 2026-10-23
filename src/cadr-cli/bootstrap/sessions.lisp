@@ -479,49 +479,64 @@ interrupt (baseline selectSession onExit: silent exit 0)."
 
 (defun path-command-argument
     (line command)
-  (let ((trimmed
-          (string-trim
-           '(#\Space #\Tab #\Newline #\Return)
-           line)))
-    (unless
-        (and
-         (> (length trimmed) (length command))
-         (string=
-          command trimmed
-          :end2 (length command))
-         (member
-          (char trimmed (length command))
-          '(#\Space #\Tab)))
-      (return-from path-command-argument nil))
-    (let ((arguments
-            (string-left-trim
-             '(#\Space #\Tab)
-             (subseq
-              trimmed
-              (1+ (length command))))))
-      (when (zerop (length arguments))
+  ;; pi@4a080252f interactive-mode.ts getPathCommandArgument.
+  ;; The command token is followed by U+0020. trimStart and
+  ;; search(/\s/) use Node 22's 25 JavaScript whitespace code points.
+  (labels ((javascript-whitespace-p (character)
+             (let ((value (char-code character)))
+               (or (= value #x09) (= value #x0a) (= value #x0b)
+                   (= value #x0c) (= value #x0d) (= value #x20)
+                   (= value #xa0) (= value #x1680)
+                   (<= #x2000 value #x200a)
+                   (= value #x2028) (= value #x2029)
+                   (= value #x202f) (= value #x205f)
+                   (= value #x3000) (= value #xfeff))))
+           (trim-start (text)
+             (let ((start 0))
+               (loop while (and (< start (length text))
+                                (javascript-whitespace-p
+                                 (char text start)))
+                     do (incf start))
+               (subseq text start))))
+    (let ((trimmed
+            (string-trim
+             '(#\Space #\Tab #\Newline #\Return)
+             line)))
+      (unless
+          (and
+           (> (length trimmed) (length command))
+           (string=
+            command trimmed
+            :end2 (length command))
+           (char= #\Space
+                  (char trimmed (length command))))
         (return-from path-command-argument nil))
-      (let ((quote
-              (and
-               (member
-                (char arguments 0)
-                '(#\' #\"))
-               (char arguments 0))))
-        (if quote
-            (let ((end
-                    (position quote arguments
-                              :start 1)))
-              (and end
-                   (subseq arguments 1 end)))
-            (let ((end
-                    (position-if
-                     (lambda (character)
-                       (member character
-                               '(#\Space #\Tab)))
-                     arguments)))
-              (if end
-                  (subseq arguments 0 end)
-                  arguments)))))))
+      (let ((arguments
+              (trim-start
+               (subseq
+                trimmed
+                (1+ (length command))))))
+        (when (zerop (length arguments))
+          (return-from path-command-argument nil))
+        (let ((quote
+                (and
+                 (member
+                  (char arguments 0)
+                  '(#\' #\"))
+                 (char arguments 0))))
+          (if quote
+              (let ((end
+                      (position quote arguments
+                                :start 1)))
+                (and end
+                     (subseq arguments 1 end)))
+              (let ((end
+                      (position-if
+                       #'javascript-whitespace-p
+                       arguments)))
+                (if end
+                    (subseq arguments 0 end)
+                    arguments))))))))
 
 (defun last-assistant-text (agent)
   (let ((message
@@ -1878,35 +1893,75 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
    (cadr-agent:session-id session)))
 
 (defun session-export-path (session argument cwd)
-  (resolve-general-path
-   (or argument (session-export-basename session))
-   cwd))
+  ;; pi@4a080252f export-html/index.ts exportSessionToHtml.
+  ;; normalizePath leaves a relative path, including "." segments.
+  ;; writeFileSync then writes that string against process.cwd().
+  ;; The same string is the status line. cwd is the session
+  ;; directory other commands receive; this export does not use it.
+  (declare (ignore cwd))
+  (if (or (null argument) (zerop (length argument)))
+      (session-export-basename session)
+      (let ((normalized (normalize-path-input argument)))
+        (if (zerop (length normalized))
+            (session-export-basename session)
+            normalized))))
 
 (defun export-session-jsonl
     (session output-path cwd &key trailing-entries)
   ;; pi@4a080252f session-export.ts exportSessionToJsonl calls
-  ;; resolvePath(outputPath, process.cwd()). resolvePath does not
-  ;; follow symlinks. Its defaults leave a leading @ and unicode
-  ;; spaces in the name. cwd is the session directory other commands
-  ;; receive; this export does not use it.
+  ;; resolvePath(outputPath, process.cwd()). path.resolve drops ".",
+  ;; "..", and empty segments and does not follow symlinks. Defaults
+  ;; leave a leading @ and unicode spaces in the name. cwd is the
+  ;; session directory other commands receive; this export does not
+  ;; use it.
   (declare (ignore cwd))
-  (let* ((header-timestamp
-           (cadr-agent::session-timestamp-json
-            (cadr-core:unix-milliseconds)))
-         (requested
-           (or output-path
-               (format
-                nil "session-~A.jsonl"
-                (cl-ppcre:regex-replace-all
-                 "[:.]"
-                 (cadr-agent::session-timestamp-json
-                  (cadr-core:unix-milliseconds))
-                 "-"))))
-         (path
-           (lexically-normalized-absolute-pathname
-            (uiop:ensure-absolute-pathname
-             (pathname (normalize-path-input requested))
-             (uiop:ensure-directory-pathname (uiop:getcwd))))))
+  (labels ((collapse-posix-path (text)
+             (let ((parts nil)
+                   (start 0))
+               (loop for index from 0 to (length text)
+                     do (when (or (= index (length text))
+                                  (char= #\/ (char text index)))
+                          (let ((segment
+                                  (subseq text start index)))
+                            (cond
+                              ((or (zerop (length segment))
+                                   (string= segment ".")))
+                              ((string= segment "..")
+                               (when parts (pop parts)))
+                              (t (push segment parts))))
+                          (setf start (1+ index))))
+               (if parts
+                   (with-output-to-string (out)
+                     (dolist (part (nreverse parts))
+                       (write-char #\/ out)
+                       (write-string part out)))
+                   "/"))))
+    (let* ((header-timestamp
+             (cadr-agent::session-timestamp-json
+              (cadr-core:unix-milliseconds)))
+           (requested
+             (or output-path
+                 (format
+                  nil "session-~A.jsonl"
+                  (cl-ppcre:regex-replace-all
+                   "[:.]"
+                   (cadr-agent::session-timestamp-json
+                    (cadr-core:unix-milliseconds))
+                   "-"))))
+           (normalized (normalize-path-input requested))
+           (base
+             (string-right-trim
+              "/"
+              (namestring
+               (uiop:ensure-directory-pathname
+                (uiop:getcwd)))))
+           (path
+             (pathname
+              (collapse-posix-path
+               (if (and (plusp (length normalized))
+                        (char= #\/ (char normalized 0)))
+                   normalized
+                   (concatenate 'string base "/" normalized))))))
     (ensure-directories-exist path)
     (with-open-file
         (stream path
@@ -1957,7 +2012,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                      (funcall trailing-entries
                               parent-id header-timestamp))
               (cadr-agent::write-jsonl-object stream object))))))
-    path))
+    path)))
 
 (defun handle-session-command
     (line agent
@@ -2251,15 +2306,15 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        ;; pi@4a080252f interactive-mode.ts handleExportCommand.
        ;; Only a path that ends with .jsonl is JSONL. Every other
        ;; path, including a missing path, stays HTML.
-       (let ((jsonl-path
+       (let ((parsed
                (path-command-argument line "/export")))
-         (if (and jsonl-path
-                  (uiop:string-suffix-p jsonl-path ".jsonl"))
+         (if (and parsed
+                  (uiop:string-suffix-p parsed ".jsonl"))
              (handler-case
                  (let* ((path
                           (export-session-jsonl
                            (cadr-agent:agent-session agent)
-                           jsonl-path cwd))
+                           parsed cwd))
                         (message
                           (format nil "Session exported to: ~A"
                                   (namestring path))))
@@ -2279,25 +2334,36 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                        (format output "Error: ~A~%" message))
                    (finish-output output)
                    t)))
-             (let ((path
-                     (session-export-path
-                      (cadr-agent:agent-session agent)
-                      argument cwd)))
-               (apply
-                #'cadr-agent:export-session-html
-                (cadr-agent:agent-session agent)
-                path
-                (if export-options-function
-                    (or (funcall export-options-function)
-                        nil)
-                    nil))
-               (let ((message
-                       (format nil "Session exported to: ~A"
-                               (file-namestring path))))
-                 (if status-function
-                     (funcall status-function message)
-                     (progn
-                       (format output "~A~%" message)
-                       (finish-output output))))
-               t))))
+             (handler-case
+                 (let ((path
+                         (session-export-path
+                          (cadr-agent:agent-session agent)
+                          parsed cwd)))
+                   (apply
+                    #'cadr-agent:export-session-html
+                    (cadr-agent:agent-session agent)
+                    path
+                    (if export-options-function
+                        (or (funcall export-options-function)
+                            nil)
+                        nil))
+                   (let ((message
+                           (format nil "Session exported to: ~A"
+                                   path)))
+                     (if status-function
+                         (funcall status-function message)
+                         (progn
+                           (format output "~A~%" message)
+                           (finish-output output))))
+                   t)
+               (error (condition)
+                 (let ((message
+                         (format nil
+                                 "Failed to export session: ~A"
+                                 condition)))
+                   (if status-function
+                       (funcall status-function message :error)
+                       (format output "Error: ~A~%" message))
+                   (finish-output output)
+                   t))))))
       (t nil))))

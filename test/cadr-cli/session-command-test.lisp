@@ -204,12 +204,17 @@
         (is (search "Session exported to:" text))))))
 
 (test goal13-default-html-export-name-and-status-match-the-baseline-rule
+  ;; v1.4.0 exportSessionToHtml writes the default basename with
+  ;; writeFileSync, which is relative to process.cwd(), and returns that
+  ;; basename for the status line.
   (with-test-directory (root)
     (let* ((sessions (merge-pathnames "sessions/" root))
            (cwd (merge-pathnames "project/" root))
+           (launch (merge-pathnames "launch/" root))
            (_
              (ensure-directories-exist
               (merge-pathnames "anchor" cwd)))
+           (_2 (ensure-directories-exist launch))
            (id "018f22b2-5aa0-7ab1-8a44-0123456789ab")
            (session
              (cadr-agent:create-session
@@ -226,21 +231,23 @@
               "cadr-session-1970-01-01T00-00-00-000Z_~A.html"
               id))
            (expected-path
-             (merge-pathnames expected-name cwd))
+             (merge-pathnames expected-name launch))
            (output (make-string-output-stream)))
-      (declare (ignore _))
+      (declare (ignore _ _2))
       (cadr-agent:session-append-message
        session
        (cadr-ai:make-user-message :content "export me"))
-      (is
-       (cadr-cli::handle-session-command
-        "/export" agent
-        :directory sessions :cwd cwd :output output))
-      (is (probe-file expected-path))
-      (is (string=
-           (format nil "Session exported to: ~A~%"
-                   expected-name)
-           (get-output-stream-string output))))))
+      (uiop:with-current-directory (launch)
+        (is
+         (cadr-cli::handle-session-command
+          "/export" agent
+          :directory sessions :cwd cwd :output output))
+        (is (probe-file expected-path))
+        (is (not (probe-file (merge-pathnames expected-name cwd))))
+        (is (string=
+             (format nil "Session exported to: ~A~%"
+                     expected-name)
+             (get-output-stream-string output)))))))
 
 (test goal13-session-ids-and-post-tui-resume-copy-match-the-baseline
   (with-test-directory (root)
@@ -1215,39 +1222,69 @@
 (test jsonl-export-other-paths-stay-html
   ;; v1.4.0 handleExportCommand: endsWith(".jsonl") is case sensitive.
   ;; A missing path, .JSONL, and any other suffix stay HTML.
+  ;; export-html/index.ts normalizePath leaves the relative string,
+  ;; writeFileSync writes it against process.cwd(), and that string
+  ;; is the status line. Node 22 keeps "./page.html", "../side.html",
+  ;; and "foo/./bar.html"; it does not call path.resolve on them.
   (with-test-directory (root)
     (let* ((sessions (merge-pathnames "sessions/" root))
-           (cwd (merge-pathnames "project/" root))
-           (_ (ensure-directories-exist
-               (merge-pathnames "anchor" cwd)))
+           (session-dir (merge-pathnames "project/" root))
+           (launch (merge-pathnames "launch/" root))
+           (_ (progn
+                (ensure-directories-exist
+                 (merge-pathnames "anchor" session-dir))
+                (ensure-directories-exist
+                 (merge-pathnames "anchor" launch))))
            (session
              (cadr-agent:create-session
-              :directory sessions :cwd cwd :timestamp 0))
+              :directory sessions :cwd session-dir :timestamp 0))
            (agent
              (cadr-agent:make-agent
               :provider :mock
               :model (cli-mock-model)
               :session session))
-           (output (make-string-output-stream)))
+           (output (make-string-output-stream))
+           (basename nil))
       (declare (ignore _))
       (cadr-agent:session-append-message
        session (cadr-ai:make-user-message :content "export me"))
-      (dolist (line '("/export report.JSONL"
-                      "/export report.jsonl.bak"
-                      "/export"))
-        (is (cadr-cli::handle-session-command
-             line agent
-             :directory sessions :cwd cwd :output output)))
-      (dolist (name '("report.JSONL" "report.jsonl.bak"))
-        (let ((path (merge-pathnames name cwd)))
+      (uiop:with-current-directory (launch)
+        (dolist (line '("/export report.JSONL"
+                        "/export report.jsonl.bak"
+                        "/export \"nested/report.html\""
+                        "/export ./page.html"
+                        "/export ../side.html"
+                        "/export foo/./bar.html"
+                        "/export"))
+          (is (cadr-cli::handle-session-command
+               line agent
+               :directory sessions :cwd session-dir :output output)))
+        (setf basename
+              (cadr-cli::session-export-basename session)))
+      (dolist (name '("report.JSONL" "report.jsonl.bak"
+                      "nested/report.html" "page.html"
+                      "foo/bar.html"))
+        (let ((path (merge-pathnames name launch)))
           (is (probe-file path))
+          (is (not (probe-file (merge-pathnames name session-dir))))
           (with-open-file (stream path :external-format :utf-8)
             (is (char= #\< (peek-char t stream))))))
-      (is (probe-file
-           (merge-pathnames
-            (cadr-cli::session-export-basename session) cwd)))
-      (is (search "Session exported to: report.JSONL"
-                  (get-output-stream-string output))))))
+      (is (probe-file (merge-pathnames "../side.html" launch)))
+      (is (probe-file (merge-pathnames basename launch)))
+      (is (not (probe-file (merge-pathnames basename session-dir))))
+      (let ((text (get-output-stream-string output)))
+        (is (search "Session exported to: report.JSONL" text))
+        (is (search "Session exported to: report.jsonl.bak" text))
+        (is (search "Session exported to: nested/report.html" text))
+        (is (search "Session exported to: ./page.html" text))
+        (is (search "Session exported to: ../side.html" text))
+        (is (search "Session exported to: foo/./bar.html" text))
+        (is (search (format nil "Session exported to: ~A~%" basename)
+                    text))
+        (is (not (search "Session exported to: report.html" text)))
+        (is (not (search "Session exported to: page.html" text)))
+        (is (not (search "Session exported to: side.html" text)))
+        (is (not (search "Session exported to: bar.html" text)))))))
 
 (test jsonl-export-default-name-uses-a-fresh-stamp
   ;; v1.4.0 exportSessionToJsonl omits the path and writes
@@ -1328,16 +1365,35 @@
       (is (zerop (length (get-output-stream-string output)))))))
 
 (defun jsonl-export-resolved-name (directory relative)
-  ;; Node path.posix.resolve of a relative path that contains no "."
-  ;; segment: join the directory with the relative text, then drop
-  ;; a trailing slash on the directory. path.resolve does not call
-  ;; realpath, so a symlink component in RELATIVE stays in the string.
-  (concatenate
-   'string
-   (string-right-trim "/" (namestring directory))
-   (if (char= #\/ (char relative 0))
-       relative
-       (concatenate 'string "/" relative))))
+  ;; Node 22 path.posix.resolve. Drops ".", "..", and empty segments.
+  ;; Does not call realpath, so a symlink component stays in the string.
+  ;; Checked against node path.resolve on 2026-10-23: "./out.jsonl" and
+  ;; "foo/./bar.jsonl" lose the dot segment.
+  (let* ((base (string-right-trim "/" (namestring directory)))
+         (absolute (and (plusp (length relative))
+                        (char= #\/ (char relative 0))))
+         (combined (if absolute
+                       relative
+                       (concatenate 'string base "/" relative)))
+         (parts nil)
+         (start 0))
+    (loop for index from 0 to (length combined)
+          do (when (or (= index (length combined))
+                       (char= #\/ (char combined index)))
+               (let ((segment (subseq combined start index)))
+                 (cond
+                   ((or (zerop (length segment))
+                        (string= segment ".")))
+                   ((string= segment "..")
+                    (when parts (pop parts)))
+                   (t (push segment parts))))
+               (setf start (1+ index))))
+    (if parts
+        (with-output-to-string (out)
+          (dolist (part (nreverse parts))
+            (write-char #\/ out)
+            (write-string part out)))
+        "/")))
 
 (test jsonl-export-relative-path-uses-the-process-directory
   ;; v1.4.0 exportSessionToJsonl calls resolvePath(outputPath,
@@ -1417,6 +1473,11 @@
   ;; U+2000-U+200A, U+202F, U+205F, and U+3000 only when
   ;; stripAtPrefix or normalizeUnicodeSpaces is true. Both default
   ;; to false, so /export @notes.jsonl keeps the @.
+  ;; getPathCommandArgument uses search(/\s/). Node 22.22.0 splits an
+  ;; unquoted argument on U+00A0, U+2000, U+200A, U+202F, U+205F, and
+  ;; U+3000, so the piece does not end with ".jsonl" and /export writes
+  ;; HTML whose status line is that piece. A quoted argument keeps the
+  ;; space and, when it ends with ".jsonl", stays JSONL.
   (with-test-directory (root)
     (let* ((launch (merge-pathnames "launch/" root))
            (session-dir (merge-pathnames "other-project/" root))
@@ -1434,8 +1495,6 @@
               :provider :mock
               :model (cli-mock-model)
               :session session))
-           (nbsp-name
-             (format nil "a~Cb.jsonl" (code-char #xa0)))
            (output (make-string-output-stream))
            (status nil))
       (declare (ignore _))
@@ -1459,22 +1518,278 @@
                   (merge-pathnames "notes.jsonl" launch))))
         (is (not (probe-file
                   (merge-pathnames "@notes.jsonl" session-dir))))
-        (setf status nil)
-        (is (cadr-cli::handle-session-command
-             (format nil "/export ~A" nbsp-name)
-             agent
-             :directory sessions :cwd session-dir
-             :output output
-             :status-function
-             (lambda (message &optional level)
-               (setf status (list message level)))))
-        (is (equal
-             (list
-              (format nil "Session exported to: ~A"
-                      (jsonl-export-resolved-name
-                       (uiop:getcwd) nbsp-name))
-              nil)
-             status))
-        (is (probe-file (merge-pathnames nbsp-name launch)))
-        (is (not (probe-file
-                  (merge-pathnames "a b.jsonl" launch))))))))
+        (dolist (code '(#x09 #x0a #x0b #x0c #x0d #x20
+                        #xa0 #x1680
+                        #x2000 #x2001 #x2002 #x2003 #x2004
+                        #x2005 #x2006 #x2007 #x2008 #x2009 #x200a
+                        #x2028 #x2029 #x202f #x205f #x3000 #xfeff))
+          (let* ((gap (code-char code))
+                 (jsonl-name (format nil "a~Cb.jsonl" gap))
+                 (html (merge-pathnames "a" launch))
+                 (quoted (merge-pathnames jsonl-name launch)))
+            (setf status nil)
+            (is (cadr-cli::handle-session-command
+                 (format nil "/export a~Cb.jsonl" gap)
+                 agent
+                 :directory sessions :cwd session-dir
+                 :output output
+                 :status-function
+                 (lambda (message &optional level)
+                   (setf status (list message level)))))
+            (is (equal '("Session exported to: a" nil) status))
+            (is (probe-file html))
+            (is (not (probe-file quoted)))
+            (with-open-file (stream html :external-format :utf-8)
+              (is (char= #\< (peek-char t stream))))
+            (delete-file html)
+            (setf status nil)
+            (is (cadr-cli::handle-session-command
+                 (format nil "/export \"a~Cb.jsonl\"" gap)
+                 agent
+                 :directory sessions :cwd session-dir
+                 :output output
+                 :status-function
+                 (lambda (message &optional level)
+                   (setf status (list message level)))))
+            (is (equal
+                 (list
+                  (format nil "Session exported to: ~A"
+                          (jsonl-export-resolved-name
+                           (uiop:getcwd) jsonl-name))
+                  nil)
+                 status))
+            (is (probe-file quoted))
+            (unless (= code #x20)
+              (is (not (probe-file
+                        (merge-pathnames "a b.jsonl" launch)))))
+            (delete-file quoted)))))))
+
+(test jsonl-export-drops-dot-segments
+  ;; Node 22.22.0 path.resolve("./out.jsonl") and
+  ;; path.resolve("foo/./bar.jsonl") drop the "." segment. The status
+  ;; line is that absolute path. "foo/../baz.jsonl" drops the parent
+  ;; segment the same way. Symlinks are still not followed.
+  (with-test-directory (root)
+    (let* ((launch (merge-pathnames "launch/" root))
+           (session-dir (merge-pathnames "other-project/" root))
+           (_ (progn
+                (ensure-directories-exist
+                 (merge-pathnames "anchor" launch))
+                (ensure-directories-exist
+                 (merge-pathnames "anchor" session-dir))))
+           (sessions (merge-pathnames "sessions/" root))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd session-dir :timestamp 0))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (output (make-string-output-stream))
+           (status nil))
+      (declare (ignore _))
+      (uiop:with-current-directory (launch)
+        (is (string=
+             (concatenate
+              'string
+              (string-right-trim "/" (namestring (uiop:getcwd)))
+              "/out.jsonl")
+             (jsonl-export-resolved-name (uiop:getcwd) "./out.jsonl")))
+        (is (string=
+             (concatenate
+              'string
+              (string-right-trim "/" (namestring (uiop:getcwd)))
+              "/foo/bar.jsonl")
+             (jsonl-export-resolved-name
+              (uiop:getcwd) "foo/./bar.jsonl")))
+        (dolist (relative '("./out.jsonl" "foo/./bar.jsonl"
+                            "foo/../baz.jsonl"))
+          (setf status nil)
+          (is (cadr-cli::handle-session-command
+               (format nil "/export ~A" relative)
+               agent
+               :directory sessions :cwd session-dir
+               :output output
+               :status-function
+               (lambda (message &optional level)
+                 (setf status (list message level)))))
+          (is (equal
+               (list
+                (format nil "Session exported to: ~A"
+                        (jsonl-export-resolved-name
+                         (uiop:getcwd) relative))
+                nil)
+               status))
+          (is (not (search "/./" (first status))))
+          (is (not (search "/../" (first status))))
+          (is (probe-file
+               (jsonl-export-resolved-name (uiop:getcwd) relative))))))))
+
+(test jsonl-export-resolve-path-matches-v140
+  ;; v1.4.0 paths.test.ts resolvePath, which exportSessionToJsonl calls.
+  ;; Node 22.22.0: ~/ joins and collapses, ~draft stays a relative name,
+  ;; fileURLToPath collapses "." and decodes %20, a bad percent throws
+  ;; "URI malformed", and a native absolute path keeps a literal %20.
+  ;; HTML uses normalizePath, so ~/foo/./bar.html is the joined absolute
+  ;; path (path.join collapses) while the status is that string.
+  (with-test-directory (root)
+    (let* ((launch (merge-pathnames "launch/" root))
+           (session-dir (merge-pathnames "other-project/" root))
+           (_ (progn
+                (ensure-directories-exist
+                 (merge-pathnames "anchor" launch))
+                (ensure-directories-exist
+                 (merge-pathnames "anchor" session-dir))))
+           (sessions (merge-pathnames "sessions/" root))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd session-dir :timestamp 0))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (output (make-string-output-stream))
+           (home (user-homedir-pathname))
+           (home-jsonl
+             (merge-pathnames "cadr-g27g-tilde.jsonl" home))
+           (status nil))
+      (declare (ignore _))
+      (uiop:with-current-directory (launch)
+        (unwind-protect
+             (progn
+               (setf status nil)
+               (is (cadr-cli::handle-session-command
+                    "/export ~/cadr-g27g-tilde.jsonl" agent
+                    :directory sessions :cwd session-dir
+                    :output output
+                    :status-function
+                    (lambda (message &optional level)
+                      (setf status (list message level)))))
+               (is (equal
+                    (list
+                     (format nil "Session exported to: ~A"
+                             (jsonl-export-resolved-name
+                              home "cadr-g27g-tilde.jsonl"))
+                     nil)
+                    status))
+               (is (probe-file home-jsonl))
+               (setf status nil)
+               (is (cadr-cli::handle-session-command
+                    "/export ~draft.jsonl" agent
+                    :directory sessions :cwd session-dir
+                    :output output
+                    :status-function
+                    (lambda (message &optional level)
+                      (setf status (list message level)))))
+               (is (equal
+                    (list
+                     (format nil "Session exported to: ~A"
+                             (jsonl-export-resolved-name
+                              (uiop:getcwd) "~draft.jsonl"))
+                     nil)
+                    status))
+               (is (probe-file (merge-pathnames "~draft.jsonl" launch)))
+               (is (not (probe-file
+                         (merge-pathnames "~draft.jsonl" home))))
+               (let* ((base
+                        (string-right-trim
+                         "/" (namestring launch)))
+                      (url
+                        (format nil "file://~A/dir/./a%20b.jsonl" base))
+                      (written
+                        (jsonl-export-resolved-name
+                         launch "dir/a b.jsonl")))
+                 (setf status nil)
+                 (is (cadr-cli::handle-session-command
+                      (format nil "/export ~A" url) agent
+                      :directory sessions :cwd session-dir
+                      :output output
+                      :status-function
+                      (lambda (message &optional level)
+                        (setf status (list message level)))))
+                 (is (equal
+                      (list
+                       (format nil "Session exported to: ~A" written)
+                       nil)
+                      status))
+                 (is (probe-file written)))
+               (let* ((base
+                        (string-right-trim
+                         "/" (namestring launch)))
+                      (literal
+                        (format nil "~A/report%2026.jsonl" base)))
+                 (setf status nil)
+                 (is (cadr-cli::handle-session-command
+                      (format nil "/export ~A" literal) agent
+                      :directory sessions :cwd session-dir
+                      :output output
+                      :status-function
+                      (lambda (message &optional level)
+                        (setf status (list message level)))))
+                 (is (equal
+                      (list
+                       (format nil "Session exported to: ~A" literal)
+                       nil)
+                      status))
+                 (is (search "report%2026.jsonl" (first status)))
+                 (is (not (search "report 2026.jsonl" (first status))))
+                 (is (probe-file literal)))
+               (setf status nil)
+               (is (cadr-cli::handle-session-command
+                    "/export file:///%E0%A4%A.jsonl" agent
+                    :directory sessions :cwd session-dir
+                    :output output
+                    :status-function
+                    (lambda (message &optional level)
+                      (setf status (list message level)))))
+               (is (equal
+                    '("Failed to export session: URI malformed" :error)
+                    status))
+               (let ((html
+                       (jsonl-export-resolved-name
+                        home "foo/bar.html")))
+                 (setf status nil)
+                 (is (cadr-cli::handle-session-command
+                      "/export ~/foo/./bar.html" agent
+                      :directory sessions :cwd session-dir
+                      :output output
+                      :status-function
+                      (lambda (message &optional level)
+                        (setf status (list message level)))))
+                 (is (equal
+                      (list
+                       (format nil "Session exported to: ~A" html)
+                       nil)
+                      status))
+                 (is (probe-file html))
+                 (delete-file html)))
+          (when (probe-file home-jsonl)
+            (delete-file home-jsonl)))))))
+
+(test path-command-argument-matches-v140-get-path-command-argument
+  ;; v1.4.0 interactive-mode-import-command.test.ts, plus the
+  ;; getPathCommandArgument whitespace rules /export shares.
+  (is (string= "path/to/session.jsonl"
+               (cadr-cli::path-command-argument
+                "/import \"path/to/session.jsonl\"" "/import")))
+  (is (string= "path with spaces/session.jsonl"
+               (cadr-cli::path-command-argument
+                "/import \"path with spaces/session.jsonl\"" "/import")))
+  (is (string= "john's/session.jsonl"
+               (cadr-cli::path-command-argument
+                "/import john's/session.jsonl" "/import")))
+  (is (null (cadr-cli::path-command-argument
+             "/important /tmp/session.jsonl" "/import")))
+  (is (null (cadr-cli::path-command-argument
+             "/exporter out.html" "/export")))
+  (is (string= "/tmp/session.jsonl"
+               (cadr-cli::path-command-argument
+                "/import /tmp/session.jsonl" "/import")))
+  (is (null (cadr-cli::path-command-argument
+             (format nil "/export~Cout.jsonl" #\Tab) "/export")))
+  (is (string= "notes.jsonl"
+               (cadr-cli::path-command-argument
+                (format nil "/export ~Cnotes.jsonl" (code-char #xa0))
+                "/export"))))

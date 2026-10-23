@@ -66,11 +66,11 @@
           do (if (char= #\% (char text index))
                  (progn
                    (when (> (+ index 3) (length text))
-                     (error "Invalid percent escape in file URL"))
+                     (error "URI malformed"))
                    (let ((high (digit-char-p (char text (1+ index)) 16))
                          (low (digit-char-p (char text (+ index 2)) 16)))
                      (unless (and high low)
-                       (error "Invalid percent escape in file URL"))
+                       (error "URI malformed"))
                      (vector-push-extend (+ (ash high 4) low) octets))
                    (incf index 3))
                  (progn
@@ -83,29 +83,69 @@
 (defun normalize-path-input
     (input &key trim-p (expand-tilde-p t) home-directory
                 strip-at-prefix-p normalize-unicode-spaces-p)
-  (let ((value (if trim-p
-                   (string-trim '(#\Space #\Tab #\Newline #\Return) input)
-                   input)))
-    (when normalize-unicode-spaces-p
-      (setf value (normalize-unicode-path-spaces value)))
-    (when (and strip-at-prefix-p (uiop:string-prefix-p "@" value))
-      (setf value (subseq value 1)))
-    (when expand-tilde-p
-      (let ((home (or home-directory (namestring (user-homedir-pathname)))))
-        (cond
-          ((string= value "~") (setf value home))
-          ((or (uiop:string-prefix-p "~/" value)
-               (uiop:string-prefix-p "~\\" value))
-           (setf value (namestring
-                        (merge-pathnames (subseq value 2)
-                                         (uiop:ensure-directory-pathname home))))))))
-    (when (uiop:string-prefix-p "file://" value)
-      (let ((rest (subseq value 7)))
-        (setf value
-              (if (find #\% rest)
-                  (decode-file-url-path rest)
-                  rest))))
-    value))
+  ;; pi@4a080252f paths.ts normalizePath. path.join and fileURLToPath
+  ;; drop ".", "..", and empty segments. A relative path that is not a
+  ;; tilde shortcut or a file URL is returned unchanged.
+  (labels ((collapse-posix-path (text)
+             (let ((parts nil)
+                   (start 0))
+               (loop for index from 0 to (length text)
+                     do (when (or (= index (length text))
+                                  (char= #\/ (char text index)))
+                          (let ((segment (subseq text start index)))
+                            (cond
+                              ((or (zerop (length segment))
+                                   (string= segment ".")))
+                              ((string= segment "..")
+                               (when parts (pop parts)))
+                              (t (push segment parts))))
+                          (setf start (1+ index))))
+               (if parts
+                   (with-output-to-string (out)
+                     (dolist (part (nreverse parts))
+                       (write-char #\/ out)
+                       (write-string part out)))
+                   "/")))
+           (file-url-to-path (text)
+             ;; Node fileURLToPath on Linux. An empty host or
+             ;; "localhost" is the local path. Any other host throws.
+             (let* ((rest (subseq text 7))
+                    (slash (position #\/ rest)))
+               (unless slash
+                 (error "File URL host must be \"localhost\" or empty on linux"))
+               (let ((host (if (plusp slash) (subseq rest 0 slash) "")))
+                 (unless (or (zerop (length host))
+                             (string= host "localhost"))
+                   (error "File URL host must be \"localhost\" or empty on linux"))
+                 (let ((path (subseq rest slash)))
+                   (collapse-posix-path
+                    (if (find #\% path)
+                        (decode-file-url-path path)
+                        path)))))))
+    (let ((value (if trim-p
+                     (string-trim '(#\Space #\Tab #\Newline #\Return) input)
+                     input)))
+      (when normalize-unicode-spaces-p
+        (setf value (normalize-unicode-path-spaces value)))
+      (when (and strip-at-prefix-p (uiop:string-prefix-p "@" value))
+        (setf value (subseq value 1)))
+      (when expand-tilde-p
+        (let ((home (or home-directory
+                        (namestring (user-homedir-pathname)))))
+          (cond
+            ((string= value "~")
+             (setf value (collapse-posix-path home)))
+            ((or (uiop:string-prefix-p "~/" value)
+                 (uiop:string-prefix-p "~\\" value))
+             (setf value
+                   (collapse-posix-path
+                    (namestring
+                     (merge-pathnames
+                      (subseq value 2)
+                      (uiop:ensure-directory-pathname home)))))))))
+      (when (uiop:string-prefix-p "file://" value)
+        (setf value (file-url-to-path value)))
+      value)))
 
 (defun resolve-path-input
     (input &optional (base-directory (uiop:getcwd)) &rest options)
