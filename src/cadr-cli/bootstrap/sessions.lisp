@@ -1627,7 +1627,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
     ("ctrl+d" . "Exit when the editor is empty")
     ("ctrl+z" . "Suspend to background")
     ("ctrl+o" . "Toggle tool output")
-    ("ctrl+v" . "Paste image or text from clipboard")
+    ("ctrl+v" . "Paste files on macOS, images, or text from clipboard")
     ("/" . "Slash commands")
     ("!" . "Run bash command")
     ("!!" . "Run bash command without adding it to context")))
@@ -1669,14 +1669,18 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
      ("Copy selection or last assistant message" "app.message.copy")
      ("Queue follow-up message" "app.message.followUp")
      ("Restore queued messages" "app.message.dequeue")
-     ("Paste image or text from clipboard" "app.clipboard.pasteImage")
+     ("Paste files on macOS, images, or text from clipboard"
+      "app.clipboard.pasteImage")
      (:literal "/" "Slash commands")
      (:literal "!" "Run bash command")
      (:literal "!!" "Run bash command (excluded from context)"))))
 
 (defun hotkeys-command-markdown
     (&optional user-bindings
-     (definitions cadr-tui::+tui-keybinding-definitions+))
+     (definitions cadr-tui::+tui-keybinding-definitions+)
+     (platform (cadr-tui:keybinding-host-platform)))
+  ;; v1.4.0 interactive-mode.ts appends the Windows Terminal note only
+  ;; when the host platform string is win32. WSL stays linux and omits it.
   (let ((manager
           (cadr-tui:make-keybindings-manager
            :definitions definitions
@@ -1685,7 +1689,12 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
         ((display (name)
            (format-key-text*
             (cadr-tui:keybinding-keys manager name)
-            :capitalize-p t)))
+            :capitalize-p t))
+         (action (row)
+           (if (and (string= platform "win32")
+                    (equal (first row) "New line"))
+               "New line (Ctrl+Enter on Windows Terminal)"
+               (first row))))
       (with-output-to-string (out)
         (loop for (title . rows) in +hotkeys-markdown-sections+
               for rest-sections on +hotkeys-markdown-sections+
@@ -1702,7 +1711,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
                                 (second row) (third row))
                         (format nil "| ~{`~A`~^ / ~} | ~A |"
                                 (mapcar #'display (rest row))
-                                (first row)))
+                                (action row)))
                     do
                     (write-string line out)
                     (when (or (cdr rest-rows) (cdr rest-sections))

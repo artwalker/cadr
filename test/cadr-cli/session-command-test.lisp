@@ -777,12 +777,64 @@
             lines)))
     (is
      (find
-      " │ Ctrl+P / Shift+Ctrl+P │ Cycle models                             │"
+      " │ Ctrl+P / Shift+Ctrl+P │ Cycle models                                         │"
       plain :test #'string=))
     (is
      (find
-      " │ !!                    │ Run bash command (excluded from context) │"
+      " │ !!                    │ Run bash command (excluded from context)             │"
       plain :test #'string=))))
+
+(test hotkeys-paste-and-newline-copy-match-v140
+  ;; v1.4.0 interactive-mode.ts hotkeys template (fd889a274): the paste
+  ;; action is one sentence on every platform. The new-line row appends
+  ;; the Windows Terminal note only when process.platform is win32.
+  (labels ((markdown (platform environment)
+             (cadr-cli::hotkeys-command-markdown
+              nil
+              (cadr-tui:default-keybinding-definitions
+               :platform platform
+               :environment environment)
+              platform)))
+    (let ((linux (markdown "linux" nil))
+          (darwin (markdown "darwin" nil))
+          (wsl
+            (markdown
+             "linux"
+             '(("WSL_DISTRO_NAME" . "Ubuntu"))))
+          (win32 (markdown "win32" nil))
+          (plain
+            (with-output-to-string (output)
+              (cadr-cli::write-hotkeys-command output))))
+      (dolist (text (list linux darwin wsl win32 plain))
+        (is (search
+             "Paste files on macOS, images, or text from clipboard"
+             text))
+        (is (not (search "Paste image or text from clipboard" text))))
+      (is (search
+           "| `Ctrl+V` | Paste files on macOS, images, or text from clipboard |"
+           linux))
+      (is (search
+           "| `Ctrl+V` | Paste files on macOS, images, or text from clipboard |"
+           darwin))
+      (is (search
+           "| `Alt+V` | Paste files on macOS, images, or text from clipboard |"
+           wsl))
+      (is (search
+           "| `Alt+V` | Paste files on macOS, images, or text from clipboard |"
+           win32))
+      (is (search "| `Shift+Enter/Ctrl+J` | New line |" linux))
+      (is (search "| `Shift+Enter/Ctrl+J` | New line |" darwin))
+      (is (search "| `Shift+Enter/Ctrl+J` | New line |" wsl))
+      (is (not (search "Ctrl+Enter on Windows Terminal" linux)))
+      (is (not (search "Ctrl+Enter on Windows Terminal" darwin)))
+      (is (not (search "Ctrl+Enter on Windows Terminal" wsl)))
+      (is (search
+           "| `Shift+Enter/Ctrl+J` | New line (Ctrl+Enter on Windows Terminal) |"
+           win32))
+      (is (search
+           "ctrl+v  Paste files on macOS, images, or text from clipboard"
+           plain))
+      (is (not (search "New line" plain))))))
 
 (test fork-during-active-tool-keeps-only-the-tool-baseline
   ;; Baseline #8724: fork while a tool is running settles that turn on
