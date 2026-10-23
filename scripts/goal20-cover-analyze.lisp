@@ -32,6 +32,7 @@
       (*compile-verbose* nil))
   (load (or (uiop:getenv "QUICKLISP_SETUP") "/root/quicklisp/setup.lisp")))
 (dolist (name '("cadr-core.asd"
+                "cadr-telemetry.asd"
                 "cadr-ai.asd"
                 "cadr-agent.asd"
                 "cadr-tui.asd"

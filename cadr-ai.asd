@@ -3,7 +3,8 @@
   :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cl+ssl"
-               "cadr-core")
+               "cadr-core"
+               "cadr-telemetry")
   :serial t
   :components ((:module "src/cadr-ai"
                 :serial t
@@ -50,7 +51,8 @@
                                            (:file "openai-anthropic")))
                              (:module "runtime"
                               :serial t
-                              :components ((:file "models")
+                              :components ((:file "telemetry")
+                                           (:file "models")
                                            (:file "faux-provider")))
                              (:file "crypto")
                              (:file "model-data")
@@ -169,7 +171,8 @@
                              (:file "goal24-system-message-replay-test")
                              (:file "goal24-transcript-context-stream-test")
                              (:file "goal24-prompt-cache-metadata-test")
-                             (:file "v140-responses-deferred-prefix-test"))))
+                             (:file "v140-responses-deferred-prefix-test")
+                             (:file "telemetry-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-ai/tests :run-tests)

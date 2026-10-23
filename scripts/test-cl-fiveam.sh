@@ -47,6 +47,7 @@ run_sbcl_tests() {
     --load "$QUICKLISP_SETUP" \
     --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-core.asd\"))" \
     --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-chord.asd\"))" \
+    --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-telemetry.asd\"))" \
     --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-ai.asd\"))" \
     --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-agent.asd\"))" \
     --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-tui.asd\"))" \

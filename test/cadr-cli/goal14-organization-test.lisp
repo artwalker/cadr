@@ -1465,7 +1465,8 @@
     ;; +4 Goal 26 v1.4.0 retry: status-code boundary and the node-fetch
     ;; request-failure matcher in support/retry.lisp.
     ;; +1 Goal 27 GAP-08: models-runtime-available-classifiers.
-    (is (= 296 definition-count)
+    ;; +1 Goal 27 GAP-43: models-runtime-request-body.
+    (is (= 297 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
@@ -1534,7 +1535,9 @@
               ;; +1 Goal 24: #:model-prompt-cache.
               ;; Goal 26: classifier catalog exports in package.lisp.
               ;; OpenRouter image catalog exports already in package.lisp.
-              "a6f7d8bb1f2e12dfc48501c482c96e072737a1d6c790fc885969cedb48219dd4"
+              ;; +2 Goal 27 GAP-43: *ai-telemetry-schema* and
+              ;; call-with-observed-model-request.
+              "8b08581488db839adee0618fd25a93ddfc97527ac30f0278d00ddc0ed6ba343a"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

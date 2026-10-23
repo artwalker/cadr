@@ -1266,7 +1266,7 @@
             (merge-pathnames "docs/lisp-idiom-audit.md" root)))
          (systems
            '(("cadr-core" 7)
-             ("cadr-ai" 69)
+             ("cadr-ai" 70)
              ("cadr-agent" 49)
              ("cadr-cli" 126)
              ("cadr-tui" 53)
@@ -1274,11 +1274,12 @@
              ("cadr-server" 11)
              ("cadr-protocol" 5)
              ("cadr-evals" 8)
-             ("cadr-chord" 11)))
+             ("cadr-chord" 11)
+             ("cadr-telemetry" 6)))
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=341 systems=10 axes=6 rewrite=1 keep=9"
+      "GOAL13_LISP_IDIOM_AUDIT files=348 systems=11 axes=6 rewrite=1 keep=10"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1296,7 +1297,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 341 total))
+    (is (= 348 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1327,7 +1328,8 @@
            "src/cadr-agent/extensions/*.lisp"
            "src/cadr-tui/threads.lisp"
            "src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time,paths}.lisp"
-           "src/cadr-chord/{package,errors,json,schema,contract,delta,link,host,manager,sqlite,child-entry}.lisp"))
+           "src/cadr-chord/{package,errors,json,schema,contract,delta,link,host,manager,sqlite,child-entry}.lisp"
+           "src/cadr-telemetry/{package,clock,noop,memory,render,schema}.lisp"))
       (is (search path audit)
           "Post-audit source addition has no disposition: ~A"
           path))))

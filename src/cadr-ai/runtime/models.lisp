@@ -753,7 +753,7 @@
    :headers (model-headers model)
    :compat (model-compat model)))
 
-(defun models-runtime-request
+(defun models-runtime-request-body
     (runtime model context stream-p on-event options)
   (handler-case
       (let ((provider
@@ -840,6 +840,22 @@
             :reason
             (assistant-message-stop-reason message))))
         message))))
+
+(defun models-runtime-request
+    (runtime model context stream-p on-event options)
+  (call-with-observed-model-request
+   model options nil
+   (lambda (observe finish)
+     (let ((message
+            (models-runtime-request-body
+             runtime model context stream-p
+             (lambda (event)
+               (funcall observe event)
+               (when on-event
+                 (funcall on-event event)))
+             options)))
+       (funcall finish message)
+       message))))
 
 (defun models-runtime-complete
     (runtime model context &rest options)

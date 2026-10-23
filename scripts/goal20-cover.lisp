@@ -68,6 +68,7 @@
 
 ;;; Same asd registration order as scripts/test-cl.sh.
 (dolist (name '("cadr-core.asd"
+                "cadr-telemetry.asd"
                 "cadr-ai.asd"
                 "cadr-agent.asd"
                 "cadr-tui.asd"

@@ -17,6 +17,7 @@
     (truename *load-truename*))))
 
 (asdf:load-asd (truename (merge-pathnames "cadr-core.asd" *root*)))
+(asdf:load-asd (truename (merge-pathnames "cadr-telemetry.asd" *root*)))
 (asdf:load-asd (truename (merge-pathnames "cadr-ai.asd" *root*)))
 (asdf:load-system "cadr-ai")
 

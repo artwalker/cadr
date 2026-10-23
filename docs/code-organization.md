@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=323 lines=144388 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=161 in-progress=0 done=157 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=330 lines=145919 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=168 in-progress=0 done=157 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -156,6 +156,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/providers/runtime-projection.lisp` | 368 | 18 | Project provider declarations into session-local auth, OAuth, model, and dispatch callbacks. | pass | done | +api-key-auth-strategy-table+. I0: one strategy set. | 20 |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 601 | 34 | Implement the deterministic faux provider, queued responses, and transcript serializer. | pass | done | faux-stream-block. I0: one emit skeleton. | 20 |
 | `src/cadr-ai/runtime/models.lisp` | 824 | 51 | Own mutable provider/model/auth state, refresh, lookup, and request dispatch. | pass · large | done | call-with-models-runtime-error. I0: one wrap. | 20 |
+| `src/cadr-ai/runtime/telemetry.lisp` | 240 | 9 | Record pi.ai.request and pi.ai.poll when the caller passes a span. | pass | no-rewrite | Attributes stay an alist, so order is the contract. One metrics object caches its instruments. The default span records nothing. | 27 |
 | `src/cadr-ai/sse.lisp` | 267 | 7 | Parse Server-Sent Events from text or binary streams. | pass | no-rewrite | Sentinel read loop transcribes the WHATWG line protocol; field dispatch has one owner and failures signal typed errors. Binary data/event/id lines decode payload octets only. File-stream READ-SEQUENCE scans newlines in the 8192 chunk; sockets stay on READ-BYTE. | 20 |
 | `src/cadr-ai/support/attribution.lisp` | 18 | 2 | Emit OpenCode session and client headers for provider requests. | pass | done | opencode-request-headers. I0: host+session. | 20 |
 | `src/cadr-ai/support/grammar-coercion.lisp` | 279 | 15 | Coerce and validate grammar-tool JSON values against schemas. | pass | no-rewrite | string= type dispatch at :57-66/:80-121 is external JSON Schema vocabulary the baseline compares verbatim. | 20 |
@@ -456,6 +457,12 @@ unified requirements 7–9.
 | `src/cadr-chord/package.lisp` | 169 | 1 | Declare the public chord package surface. | pass | no-rewrite | defpackage is the boundary. The export list is the library's public surface. | 27 |
 | `src/cadr-chord/schema.lisp` | 267 | 29 | Canonicalize schemas, fingerprint them, and test structural fits. | pass | no-rewrite | The fingerprint is a pure function of canonical JSON, so it stays a function. | 27 |
 | `src/cadr-chord/sqlite.lisp` | 236 | 36 | Apply SQLite migrations and adapt Durable Object SQL cursors. | pass | no-rewrite | The driver is a mutex around one connection. The cursor adapter is a pair of functions. | 27 |
+| `src/cadr-telemetry/clock.lisp` | 173 | 21 | Copy attributes, compare them, and format trace ids and cursors. | pass | no-rewrite | Alists keep attribute order. Missing keys stay missing, so false does not match an absent attribute. | 27 |
+| `src/cadr-telemetry/memory.lisp` | 617 | 48 | Record spans, metrics, and carriers in one in-memory store. | pass | no-rewrite | The mutex covers recorder mutations only. A settled parent does not record a new child, and the callback still runs. | 27 |
+| `src/cadr-telemetry/noop.lisp` | 165 | 25 | Share one no-op span, its instruments, and its context. | pass | no-rewrite | Child spans are the same object. Inject writes nothing. Errors propagate as the same condition. | 27 |
+| `src/cadr-telemetry/package.lisp` | 125 | 1 | Declare the public telemetry package surface. | pass | no-rewrite | defpackage is the boundary. The export list is the library's public surface. | 27 |
+| `src/cadr-telemetry/render.lisp` | 84 | 4 | Render a trace forest from stored spans. | pass | no-rewrite | An explicit stack prints a deep forest. The input list is not modified. | 27 |
+| `src/cadr-telemetry/schema.lisp` | 84 | 11 | Attach metric and span definitions without changing the values. | pass | no-rewrite | The schema is identity data. Typed children close over the same definitions. | 27 |
 
 ## 3. Verdict summary and expected distribution
 

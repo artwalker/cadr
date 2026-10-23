@@ -125,7 +125,7 @@ GAP-06 只在本表出现一行，覆盖 mcp、codemode、tool-search 三个内�
 
 | 面 | 出处 | 状态 |
 |---|---|---|
-| GAP-43 Telemetry spans | `packages/telemetry/src/index.ts`，`packages/ai/README.md` → none | open |
+| GAP-43 Telemetry spans | `packages/telemetry/src/index.ts`，`packages/ai/README.md` → `src/cadr-telemetry/`，`src/cadr-ai/runtime/telemetry.lisp` | done：默认 span 是同一个 no-op，子 span 仍是它，什么都不记录，也不访问 pi.dev。调用方传入 in-memory span 时，models runtime 记下 `pi.ai.request`（轮询是 `pi.ai.poll`）：属性只有 provider、api、model、可选的 reasoning 字符串、stop、usage、cost.total 和 response.id，事件是 first_chunk 与不含正文的 block。stop 为 error 时状态是 provider_error，message 最多 500 个 UTF-16 码元；aborted 仍是 ok。span 带 metrics 才记 duration、tokens 和 cost，仪器按 metrics 对象只建一次。 |
 
 ### P11. Durable
 

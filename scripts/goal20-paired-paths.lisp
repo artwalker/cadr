@@ -1161,6 +1161,7 @@
    (or (uiop:getenv "QUICKLISP_SETUP")
        (error "QUICKLISP_SETUP is not set")))
   (dolist (name '("cadr-core.asd"
+                  "cadr-telemetry.asd"
                   "cadr-ai.asd"
                   "cadr-agent.asd"
                   "cadr-tui.asd"

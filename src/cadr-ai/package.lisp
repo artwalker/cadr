@@ -560,7 +560,9 @@
    #:classifier-result-usage
    #:find-classifier-model
    #:list-classifier-models
-   #:classify-model))
+   #:classify-model
+   #:*ai-telemetry-schema*
+   #:call-with-observed-model-request))
 
 (in-package #:cadr-ai)
 

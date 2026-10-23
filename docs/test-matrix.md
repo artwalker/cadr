@@ -98,6 +98,7 @@ above are unchanged. Measured 2026-10-23: 210 listed files
 | live provider | `test/cadr-ai/live-provider-test.lisp` |
 | opencode-go live | `test/cadr-ai/opencode-go-live-test.lisp` |
 | models runtime | `test/cadr-ai/models-runtime-test.lisp` |
+| telemetry spans | `test/cadr-ai/telemetry-test.lisp` |
 | meta oauth | `test/cadr-ai/meta-oauth-test.lisp` |
 | typesafe credentials | `test/cadr-ai/typesafe-credentials-test.lisp` |
 | anthropic federation | `test/cadr-ai/anthropic-federation-test.lisp` |

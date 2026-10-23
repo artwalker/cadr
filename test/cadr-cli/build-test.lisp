@@ -162,7 +162,7 @@
                  "cadr ~A · aligned with pi v1.4.0 (+0, 4a080252f)"
                  version))))
     (dolist (asd
-              '("cadr-core.asd" "cadr-ai.asd" "cadr-agent.asd"
+              '("cadr-core.asd" "cadr-telemetry.asd" "cadr-ai.asd" "cadr-agent.asd"
                 "cadr-tui.asd" "cadr-cli.asd" "cadr-storage.asd"
                 "cadr-server.asd" "cadr-evals.asd" "cadr-protocol.asd"))
       (asdf:load-asd (merge-pathnames asd root)))

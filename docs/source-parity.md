@@ -1,6 +1,6 @@
 # Source parity ledger
 
-<!-- GOAL12_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 source=686/515/168/3 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 source=686/518/165/3 examples=99/99/0 -->
 
 ## 0. Resolved defect: 108 stale cadr-side mappings (advisor, 2026-08-13; healed 2026-08-16)
 
@@ -157,10 +157,10 @@ will be routed with this rule.)
 | `evals` | 10 | 8 | 2 | 0 |
 | `protocol` | 9 | 8 | 1 | 0 |
 | `client` | 12 | 0 | 12 | 0 |
-| `telemetry` | 6 | 0 | 6 | 0 |
-| **Total** | **686** | **515** | **168** | **3** |
+| `telemetry` | 6 | 3 | 3 | 0 |
+| **Total** | **686** | **518** | **165** | **3** |
 
-All 686 baseline source files have a disposition: 515 implemented, 168 intentional difference,
+All 686 baseline source files have a disposition: 518 implemented, 165 intentional difference,
 3 missing.
 All 99 fixed-baseline examples have functionally equivalent Lisp sources and
 behavior tests. Parts C1–C5 closed all 19 reusable TUI composition rows, both Apple
@@ -963,12 +963,12 @@ against the 670 reason rows (development-policy section 5.4).
 
 | Baseline file | Exported/top-level function, class, constant, and type surface | Function | Cadr mapping | Verdict | Evidence / reason |
 |---|---|---|---|---|---|
-| `packages/telemetry/src/index.ts` | AttributeValue; SpanAttributes; SpanOptions; SpanStatus; TelemetryContext; TelemetrySpan; TelemetryAttributeType; TelemetryAttributeMetadata; … (+22) | Telemetry package surface | no cadr telemetry package | `intentional difference` | Baseline packages/telemetry/src/index.ts. cadr has no telemetry egress (goal 16 adjudication). |
-| `packages/telemetry/src/memory.ts` | RecordedTelemetryEvent; RecordedTelemetrySpan; InMemoryTelemetryContext | Telemetry backend (memory/noop/testing) | no cadr telemetry package | `intentional difference` | Baseline packages/telemetry/src/memory.ts. cadr has no telemetry egress (goal 16 adjudication). |
-| `packages/telemetry/src/noop.ts` | NOOP_TELEMETRY_CONTEXT | Telemetry backend (memory/noop/testing) | no cadr telemetry package | `intentional difference` | Baseline packages/telemetry/src/noop.ts. cadr has no telemetry egress (goal 16 adjudication). |
-| `packages/telemetry/src/testing/conformance.ts` | createTelemetryAdapterConformance | Telemetry backend (memory/noop/testing) | no cadr telemetry package | `intentional difference` | Baseline packages/telemetry/src/testing/conformance.ts. cadr has no telemetry egress (goal 16 adjudication). |
-| `packages/telemetry/src/testing/index.ts` | [no module exports] | Telemetry package surface | no cadr telemetry package | `intentional difference` | Baseline packages/telemetry/src/testing/index.ts. cadr has no telemetry egress (goal 16 adjudication). |
-| `packages/telemetry/src/testing/types.ts` | TelemetryAdapterFixture; TelemetryAdapterFixtureFactory; TelemetryAdapterConformanceCase | Telemetry backend (memory/noop/testing) | no cadr telemetry package | `intentional difference` | Baseline packages/telemetry/src/testing/types.ts. cadr has no telemetry egress (goal 16 adjudication). |
+| `packages/telemetry/src/index.ts` | AttributeValue; SpanAttributes; SpanOptions; SpanStatus; TelemetryContext; TelemetrySpan; TelemetryAttributeType; TelemetryAttributeMetadata; … (+22) | Telemetry package surface | src/cadr-telemetry/package.lisp | `implemented` | Baseline packages/telemetry/src/index.ts. The default span is the shared no-op. Locked by `telemetry-noop-is-one-span-and-rethrows-the-same-condition` in `test/cadr-ai/telemetry-test.lisp`. No exporter and no pi.dev request. |
+| `packages/telemetry/src/memory.ts` | RecordedTelemetryEvent; RecordedTelemetrySpan; InMemoryTelemetryContext | Telemetry backend (memory/noop/testing) | src/cadr-telemetry/memory.lisp | `implemented` | Baseline packages/telemetry/src/memory.ts. In-memory spans, metrics, carriers, and trace queries. Locked by `telemetry-memory-records-attributes-links-and-settlement` and `telemetry-store-filters-pages-and-detaches-snapshots` in `test/cadr-ai/telemetry-test.lisp`. |
+| `packages/telemetry/src/noop.ts` | NOOP_TELEMETRY_CONTEXT | Telemetry backend (memory/noop/testing) | src/cadr-telemetry/noop.lisp | `implemented` | Baseline packages/telemetry/src/noop.ts. One shared span; inject writes nothing; the same condition propagates. Locked by `telemetry-noop-is-one-span-and-rethrows-the-same-condition` in `test/cadr-ai/telemetry-test.lisp`. |
+| `packages/telemetry/src/testing/conformance.ts` | createTelemetryAdapterConformance | Telemetry backend (memory/noop/testing) | test/cadr-ai/telemetry-test.lisp | `intentional difference` | Baseline packages/telemetry/src/testing/conformance.ts. The TypeScript conformance harness is not a runtime module. The same cases are locked by the `telemetry-*` tests in `test/cadr-ai/telemetry-test.lisp`. |
+| `packages/telemetry/src/testing/index.ts` | [no module exports] | Telemetry package surface | test/cadr-ai/telemetry-test.lisp | `intentional difference` | Baseline packages/telemetry/src/testing/index.ts. Test barrel, not a runtime module. |
+| `packages/telemetry/src/testing/types.ts` | TelemetryAdapterFixture; TelemetryAdapterFixtureFactory; TelemetryAdapterConformanceCase | Telemetry backend (memory/noop/testing) | test/cadr-ai/telemetry-test.lisp | `intentional difference` | Baseline packages/telemetry/src/testing/types.ts. Fixture types for the TypeScript harness. The runtime store is `src/cadr-telemetry/memory.lisp`. |
 
 ## 5. Audit boundary
 

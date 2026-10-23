@@ -384,6 +384,12 @@
                      nil
                      "(asdf:load-asd (truename ~S))"
                      (namestring
+                      (merge-pathnames "cadr-telemetry.asd" root)))
+                    "--eval"
+                    (format
+                     nil
+                     "(asdf:load-asd (truename ~S))"
+                     (namestring
                       (merge-pathnames "cadr-ai.asd" root)))
                     "--eval"
                     (format
