@@ -2,7 +2,7 @@
   :description "Remote execution environment daemon and its framed client."
   :version (:read-file-form "version.sexp")
   :license "MIT"
-  :depends-on ("sb-posix")
+  :depends-on ("cadr-core" "sb-posix")
   :serial t
   :components ((:module "src/cadr-env"
                 :serial t

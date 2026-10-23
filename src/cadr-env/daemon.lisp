@@ -175,7 +175,7 @@
                     (handle-frame server frame))
         (setf (server-closed server) t)
         (kill-server-processes server)
-        (ignore-errors (sb-thread:join-thread worker :timeout 1))))))
+        (cadr-core:stop-thread-for-cleanup worker :timeout 1d0)))))
 
 (defun write-text-line (stream text)
   (if (subtypep (stream-element-type stream) 'character)

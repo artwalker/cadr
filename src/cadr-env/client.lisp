@@ -91,7 +91,8 @@
   (ignore-errors (close (connection-output connection)))
   (ignore-errors (close (connection-input connection)))
   (when (connection-reader connection)
-    (ignore-errors (sb-thread:join-thread (connection-reader connection) :timeout 2))))
+    (cadr-core:stop-thread-for-cleanup
+     (connection-reader connection) :timeout 2d0)))
 
 (defun make-pipe-connection (&key (token "test-token"))
   (let ((up (multiple-value-list (sb-posix:pipe)))
