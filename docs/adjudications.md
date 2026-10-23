@@ -2397,3 +2397,17 @@ The gray `Working` status rule is canonicalized in
   successful export must lock that ENOENT.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-18. The status
   cell keeps the previous text after the new open prefix.
+
+## 2026-10-23 — GAP-39 gets a narrow third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-39's second acceptance left one defect. The row is open for a
+  third repair limited to that defect. The previous blocked text stays
+  after the new prefix.
+- **Second failure:** theme colors are hardcoded, and the frame SHA256
+  is pinned to cadr's colors.
+- **Scope:** 第三次返修，范围只限第二次验收的一条（"escape to return" 与
+  3D Armin 的颜色必须取自当前主题，按 v1.4.0 dark 主题的颜色值），帧
+  SHA256 必须对着用上游 dark 主题颜色渲染的结果锁死，不得锁 cadr 写死的颜色。
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-39. The status
+  cell starts with `open：顾问裁决 2026-10-23 第三次返修，范围只限第二次验收的一条（"escape to return" 与 3D Armin 的颜色必须取自当前主题，按 v1.4.0 dark 主题的颜色值），帧 SHA256 必须对着用上游 dark 主题颜色渲染的结果锁死，不得锁 cadr 写死的颜色；原 blocked 记录：` and keeps the previous blocked text.
