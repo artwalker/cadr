@@ -248,7 +248,7 @@
      :protocols (:anthropic-messages :openai-completions)
      :base-url "https://api.fireworks.ai/inference"
      :auth-types (:api-key)
-     :default-model "accounts/fireworks/models/kimi-k2p6"
+     :default-model "accounts/fireworks/models/kimi-k3"
      :key-environment "FIREWORKS_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -622,7 +622,7 @@
      :protocols (:anthropic-messages :google-generative-ai :openai-completions :openai-responses)
      :base-url "https://opencode.ai/inference/go/v1"
      :auth-types (:api-key)
-     :default-model "kimi-k2.6"
+     :default-model "kimi-k3"
      :key-environment "OPENCODE_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -822,7 +822,7 @@
      :protocols (:openai-completions :openai-responses)
      :base-url "https://api.x.ai/v1"
      :auth-types (:api-key :oauth)
-     :default-model "grok-4.5"
+     :default-model "grok-4.7"
      :key-environment "XAI_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -932,7 +932,7 @@
      :protocols (:openai-completions)
      :base-url "https://api.z.ai/api/coding/paas/v4"
      :auth-types (:api-key)
-     :default-model "glm-5.1"
+     :default-model "glm-5.3"
      :key-environment "ZAI_API_KEY"
      :required-environment nil
      :dynamic-models-p nil
@@ -954,7 +954,7 @@
      :protocols (:openai-completions)
      :base-url "https://open.bigmodel.cn/api/coding/paas/v4"
      :auth-types (:api-key)
-     :default-model "glm-5.1"
+     :default-model "glm-5.3"
      :key-environment "ZAI_CODING_CN_API_KEY"
      :required-environment nil
      :dynamic-models-p nil

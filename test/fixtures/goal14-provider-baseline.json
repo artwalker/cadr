@@ -301,7 +301,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "accounts/fireworks/models/kimi-k2p6",
+      "defaultModel": "accounts/fireworks/models/kimi-k3",
       "keyEnvironment": "FIREWORKS_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -820,7 +820,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "kimi-k2.6",
+      "defaultModel": "kimi-k3",
       "keyEnvironment": "OPENCODE_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -1047,7 +1047,7 @@
         "api-key",
         "oauth"
       ],
-      "defaultModel": "grok-4.5",
+      "defaultModel": "grok-4.7",
       "keyEnvironment": "XAI_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -1203,7 +1203,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "glm-5.1",
+      "defaultModel": "glm-5.3",
       "keyEnvironment": "ZAI_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,
@@ -1233,7 +1233,7 @@
       "authTypes": [
         "api-key"
       ],
-      "defaultModel": "glm-5.1",
+      "defaultModel": "glm-5.3",
       "keyEnvironment": "ZAI_CODING_CN_API_KEY",
       "requiredEnvironment": [],
       "dynamicModels": false,

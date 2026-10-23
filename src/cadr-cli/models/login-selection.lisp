@@ -6,7 +6,7 @@
 ;;; when the configured default is absent. An empty or missing-default
 ;;; catalog defers once for an authenticated refresh before erroring.
 ;;; cadr used to collapse the first two into :no-default-model, so xAI
-;;; (which has default-model grok-4.5) printed "no default model is
+;;; (which has a non-empty default model) printed "no default model is
 ;;; configured" when the snapshot was empty.
 
 (defun provider-default-model-id (provider)

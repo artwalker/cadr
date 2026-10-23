@@ -3,13 +3,13 @@
 (in-suite cadr-cli-suite)
 
 (test goal20-l-xai-has-default-model-and-empty-snapshot-is-not-unconfigured
-  ;; L0/L2/M2: xAI ships grok-4.5. An empty available-models snapshot
-  ;; after login must be "no models are available", not the
-  ;; unconfigured-default branch.
+  ;; L0/L2/M2: xAI ships a chat default (v1.4.0 grok-4.7). An empty
+  ;; available-models snapshot after login must be "no models are
+  ;; available", not the unconfigured-default branch.
   (let ((definition (cadr-ai:find-provider-definition :xai)))
-    (is (string= "grok-4.5"
+    (is (string= "grok-4.7"
                  (cadr-ai:provider-definition-default-model definition)))
-    (is (string= "grok-4.5" (cadr-cli:provider-default-model-id :xai))))
+    (is (string= "grok-4.7" (cadr-cli:provider-default-model-id :xai))))
   (multiple-value-bind (model kind extra)
       (cadr-cli:classify-post-login-model :xai '())
     (declare (ignore extra))

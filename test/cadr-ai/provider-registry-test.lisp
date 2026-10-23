@@ -23,7 +23,8 @@
                (sort (set-difference all excluded) #'string< :key #'symbol-name)))
     (is (<= (length excluded) (length compared)))
     (is (= (length reasons) (length (remove-duplicates reasons :test #'string=))))
-    (is (string= "grok-4.5"
+    ;; v1.4.0 model-resolver.ts defaultModelPerProvider.xai
+    (is (string= "grok-4.7"
                  (cadr-ai:provider-definition-default-model
                   (cadr-ai:find-provider-definition :xai))))))
 

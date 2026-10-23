@@ -25,7 +25,7 @@ without that answer is an undeclared denominator.
 | `baseline-string-reachability.py` | Named baseline literals have a cadr producer | cadr-only leaks; "is this the right picture" | Each listed literal is live in the named file | cadr-visible-output-origin |
 | `cadr-visible-output-origin.py` | Unformatted Lisp tokens on cadr screens | Baseline-string presence | No NIL / `#<` / `#S(` on scanned cadr screens | FiveAM goal20-l-custom-entry-* |
 | `cadr-compile-warnings.py` | cadr-owned compile WARNING == 0; unallowlisted muffle | STYLE-WARNING fail-closed; notes; third-party | No new cadr WARNING | STYLE-WARNING ledger (count only) |
-| provider slot enum (FiveAM) | Every `provider-definition` slot compared or uniquely excluded; `default-model` compared; xAI is `grok-4.5` | Login *control flow* | Table fields are complete | `classify-post-login-model` FiveAM |
+| provider slot enum (FiveAM) | Every `provider-definition` slot compared or uniquely excluded; `default-model` compared; xAI is `grok-4.7` | Login *control flow* | Table fields are complete | `classify-post-login-model` FiveAM |
 
 provider-matrix after N1: compared slots come from `sb-mop:class-slots`. Exclusion count is 1 (`baseline-source`). Compared count is the rest. Exclusion count is not allowed to exceed compared count.
 
