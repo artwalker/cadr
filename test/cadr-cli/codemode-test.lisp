@@ -9,6 +9,40 @@
   (cadr-ai::content-text content (string #\Newline)))
 
 (test codemode-source-options-match-upstream
+  ;; packages/codemode/test/source.test.ts at v1.4.0.
+  (multiple-value-bind (code options)
+      (cadr-cli::codemode-parse-source "text('hi')")
+    (is (string= "text('hi')" code))
+    (is (null options)))
+  (multiple-value-bind (code options)
+      (cadr-cli::codemode-parse-source (format nil "// just a comment~%return 1"))
+    (is (string= (format nil "// just a comment~%return 1") code))
+    (is (null options)))
+  (multiple-value-bind (code options)
+      (cadr-cli::codemode-parse-source
+       (format nil "// @optionsx {}~%text(1)"))
+    (is (string= (format nil "// @optionsx {}~%text(1)") code))
+    (is (null options)))
+  (multiple-value-bind (code options)
+      (cadr-cli::codemode-parse-source "text(\"// @options: {}\")")
+    (is (string= "text(\"// @options: {}\")" code))
+    (is (null options)))
+  (multiple-value-bind (code options)
+      (cadr-cli::codemode-parse-source
+       (format nil "// @options: {\"timeout_ms\": 10}~%const a = 1;~%text(a)"))
+    (is (string= (format nil "~%const a = 1;~%text(a)") code))
+    (is (= 10 (getf options :timeout-ms))))
+  (multiple-value-bind (code options)
+      (cadr-cli::codemode-parse-source
+       (format nil "  // @options:{\"max_output_tokens\":0,\"timeout_ms\":1500}~C~%text(1)" #\Return))
+    (declare (ignore code))
+    (is (= 0 (getf options :max-output-tokens)))
+    (is (= 1500 (getf options :timeout-ms))))
+  (multiple-value-bind (code options)
+      (cadr-cli::codemode-parse-source
+       (format nil "// @options: {}~%text(1)"))
+    (is (string= (format nil "~%text(1)") code))
+    (is (null options)))
   (multiple-value-bind (code options)
       (cadr-cli::codemode-parse-source
        (format nil "// @options: {\"max_output_tokens\": 2000, \"timeout_ms\": 30000}~%return 1;"))
@@ -32,7 +66,38 @@
              (fail "zero timeout was accepted"))
     (cadr-cli::codemode-source-error (condition)
       (is (search "positive integer up to 2147483647"
-                  (cadr-cli::codemode-source-error-text condition))))))
+                  (cadr-cli::codemode-source-error-text condition)))))
+  (dolist (pair (list
+                 (list (format nil "// count things~%// @options: {\"timeout_ms\": 1000}~%while (true) {}")
+                       "found one on line 2")
+                 (list (format nil "~%  // @options: {\"timeout_ms\": 1000}~%while (true) {}")
+                       "found one on line 2")
+                 (list (format nil "text(1)~C~%// @options: {\"timeout_ms\": 1}" #\Return)
+                       "found one on line 2")
+                 (list (format nil "// @options: {\"timeout_ms\": 1}~%text(1)~%// @options: {\"timeout_ms\": 2}")
+                       "found one on line 3")
+                 (list "" "Expected JavaScript source text (non-empty)")
+                 (list (format nil "  ~%") "Expected JavaScript source text (non-empty)")
+                 (list (format nil "// @options:~%text(1)")
+                       "@options must be a JSON object with supported fields")
+                 (list (format nil "// @options: {timeout_ms: 1}~%text(1)")
+                       "@options must be valid JSON with supported fields")
+                 (list (format nil "// @options: [1]~%text(1)")
+                       "@options must be a JSON object with supported fields")
+                 (list (format nil "// @options: {\"yield\": 1}~%text(1)")
+                       "@options only supports `max_output_tokens` and `timeout_ms`; got `yield`")
+                 (list (format nil "// @options: {\"max_output_tokens\": 1.5}~%text(1)")
+                       "@options field `max_output_tokens` must be a non-negative safe integer")
+                 (list "// @options: {\"timeout_ms\": 1}"
+                       "The @options line must be followed by JavaScript source on subsequent lines")
+                 (list (format nil "// @options: {\"timeout_ms\": 1}~%  ~%")
+                       "The @options line must be followed by JavaScript source on subsequent lines")))
+    (handler-case
+        (progn (cadr-cli::codemode-parse-source (first pair))
+               (fail (format nil "accepted ~S" (first pair))))
+      (cadr-cli::codemode-source-error (condition)
+        (is (search (second pair)
+                    (cadr-cli::codemode-source-error-text condition)))))))
 
 (test codemode-identifiers-replace-non-js-characters
   (is (string= "my_tool" (cadr-cli::codemode-identifier "my-tool")))
@@ -155,12 +220,31 @@
       (is (hash-table-p info))
       (is (string= "jev-latest" (gethash "id" info)))
       (is (string= "typesafe" (gethash "provider" info)))
+      (is (string= "classifier" (gethash "type" info)))
+      (is (= 64000 (gethash "contextWindow" info)))
       (is (cadr-ai::json-present-p info "input"))
-      (is (not (cadr-ai::json-present-p info "headers"))))
+      (is (not (cadr-ai::json-present-p info "headers")))
+      (let ((cost (gethash "cost" info))
+            (compat (gethash "compat" info)))
+        (is (hash-table-p cost))
+        (is (= 0 (gethash "input" cost)))
+        (is (= 0 (gethash "output" cost)))
+        (is (= 0 (gethash "cacheRead" cost)))
+        (is (= 0 (gethash "cacheWrite" cost)))
+        (is (string= "assets" (gethash "imageInput" compat)))
+        (is (eq t (gethash "sendImageOptInHeader" compat)))))
     (is (eq :codemode-undefined
             (cadr-cli::codemode-model-call
              "models.getModelOfType"
              (vector "classifier" "typesafe" "missing"))))
+    (let ((image (cadr-cli::codemode-model-call
+                  "models.getModelOfType"
+                  (vector "image" "openrouter" "black-forest-labs/flux-3-image"))))
+      (is (string= "image" (gethash "type" image)))
+      (is (find "image" (gethash "output" image) :test #'string=))
+      (is (hash-table-p (gethash "cost" image)))
+      (is (not (cadr-ai::json-present-p image "headers")))
+      (is (not (cadr-ai::json-present-p image "contextWindow"))))
     (is (zerop (length (cadr-cli::codemode-model-call
                         "models.getAvailableOfType"
                         (vector "classifier")))))
@@ -293,6 +377,23 @@
                      (cadr-cli::codemode-discovery
                       tools "searchTools"
                       (cadr-cli::codemode-parse-ordered "[\"widget\",{\"namespace\":1}]"))))))
+      (let* ((stats (cadr-ai:make-tool
+                     :name "stats" :description "Count files"
+                     :parameters (cadr-ai::json-object "type" "object")
+                     :output-schema (cadr-ai::json-object "type" "object")))
+             (bare (cadr-ai:make-tool
+                    :name "bare" :description "No schema"
+                    :parameters (cadr-ai::json-object "type" "object")))
+             (typed (cadr-cli::codemode-discovery
+                     (list stats bare) "searchTools" (vector "stats")))
+             (plain (cadr-cli::codemode-discovery
+                     (list bare) "searchTools" (vector "bare"))))
+        (is (search "Promise<{ [key: string]: unknown; }>"
+                    (gethash "description" (aref typed 0))))
+        (is (not (search "Promise<string>"
+                         (gethash "description" (aref typed 0)))))
+        (is (search "Promise<unknown>"
+                    (gethash "description" (aref plain 0)))))
       (is (= 8 (length (cadr-cli::codemode-discovery
                         tools "searchTools" (vector "widget")))))
       (is (= 8 (length (cadr-cli::codemode-discovery
@@ -360,16 +461,228 @@
                   (cadr-cli::codemode-script-value
                    (cadr-ai:make-tool :name "stats" :output-schema schema)
                    t "disk full" (cadr-ai::json-object "files" 2))))
-      (is (search "Tool \"bare\" failed"
+      (is (string= "Tool \"bare\" failed"
                   (codemode-signal-text
                    (lambda ()
                      (cadr-cli::codemode-script-value
                       (cadr-ai:make-tool :name "bare")
                       t nil nil)))))
+      (is (string= "disk full"
+                  (codemode-signal-text
+                   (lambda ()
+                     (cadr-cli::codemode-script-value
+                      (cadr-ai:make-tool :name "bash")
+                      t "disk full" nil)))))
       (is (string= "hello-text"
                    (cadr-cli::codemode-script-value
                     (cadr-ai:make-tool :name "plain")
                     nil "hello-text" (cadr-ai::json-object "hidden" t)))))))))
+
+(defun codemode-schema (text)
+  (cadr-ai::parse-json text))
+
+(test codemode-declarations-match-v140
+  ;; packages/codemode/test/declarations.test.ts at v1.4.0.
+  (let ((type #'cadr-cli::codemode-schema-type))
+    (is (string= "string" (funcall type (codemode-schema "{\"type\":\"string\"}"))))
+    (is (string= "number" (funcall type (codemode-schema "{\"type\":\"integer\"}"))))
+    (is (string= "string | null" (funcall type (codemode-schema "{\"type\":[\"string\",\"null\"]}"))))
+    (is (string= "\"a\"" (funcall type (codemode-schema "{\"const\":\"a\"}"))))
+    (is (string= "\"a\" | 1 | null" (funcall type (codemode-schema "{\"enum\":[\"a\",1,null]}"))))
+    (is (string= "string | number"
+                 (funcall type (codemode-schema "{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"number\"}]}"))))
+    (is (string= "unknown" (funcall type (codemode-schema "{\"anyOf\":[{\"type\":\"string\"},{}]}"))))
+    (is (string= "(string | number) & 1"
+                 (funcall type (codemode-schema "{\"allOf\":[{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"number\"}]},{\"const\":1}]}"))))
+    (is (string= "unknown" (funcall type (codemode-schema "{\"$ref\":\"#/defs/x\"}"))))
+    (is (string= "unknown" (funcall type t)))
+    (is (string= "never" (funcall type nil)))
+    (is (string= "{ city: string; \"max-lines\"?: number; }"
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\"},\"max-lines\":{\"type\":\"number\"}},\"required\":[\"city\"],\"additionalProperties\":false}"))))
+    (is (string= "{ [key: string]: number; }"
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"additionalProperties\":{\"type\":\"number\"}}"))))
+    (is (string= "{ [key: string]: unknown; }"
+                 (funcall type (codemode-schema "{\"type\":\"object\"}"))))
+    (is (string= "{}"
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}"))))
+    (is (string= (format nil "{~%  // look up weather for a given list of locations~%  weather: Array<{ location: string; }>;~%}")
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"weather\":{\"type\":\"array\",\"description\":\"look up weather for a given list of locations\",\"items\":{\"type\":\"object\",\"properties\":{\"location\":{\"type\":\"string\"}},\"required\":[\"location\"]}}},\"required\":[\"weather\"]}"))))
+    (is (string= (format nil "{~%  // Outer~%  outer?: {~%    // Inner~%    inner?: string;~%  };~%}")
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"outer\":{\"type\":\"object\",\"description\":\"Outer\",\"properties\":{\"inner\":{\"type\":\"string\",\"description\":\"Inner\"}}}}}"))))
+    (is (string= (format nil "{~%  // @maxLength 8 @pattern ^[a-z]+$~%  id: string;~%  name?: string;~%  // @maxItems 5 @uniqueItems @deprecated~%  tags?: Array<string>;~%  // Wait in milliseconds.~%  // @integer @minimum 0 @maximum 30000 @default 0~%  timeoutMs?: number;~%}")
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"timeoutMs\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":30000,\"default\":0,\"description\":\"Wait in milliseconds.\"},\"id\":{\"type\":\"string\",\"pattern\":\"^[a-z]+$\",\"maxLength\":8},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"maxItems\":5,\"uniqueItems\":true,\"deprecated\":true},\"name\":{\"type\":\"string\"}},\"required\":[\"id\"]}"))))
+    (is (string= (format nil "{~%  // @integer @minimum 1 @maximum 100~%  limit?: number | null;~%}")
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"limit\":{\"anyOf\":[{\"type\":\"integer\",\"minimum\":1,\"maximum\":100},{\"type\":\"null\"}],\"default\":null,\"title\":\"Limit\"}}}"))))
+    (is (string= (format nil "{~%  // @integer @minimum 10 @maximum 20 @format port @format int32~%  n?: number | null;~%}")
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"n\":{\"anyOf\":[{\"type\":\"integer\",\"minimum\":10,\"maximum\":50,\"format\":\"int32\"},{\"type\":\"null\"}],\"minimum\":0,\"maximum\":20,\"format\":\"port\"}}}"))))
+    (is (string= (format nil "{~%  // @maximum 8 @exclusiveMaximum 5~%  m?: number | null;~%  // @integer @exclusiveMinimum 0 @maximum 10~%  n?: number;~%}")
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"n\":{\"type\":\"integer\",\"minimum\":0,\"exclusiveMinimum\":true,\"maximum\":10,\"exclusiveMaximum\":false},\"m\":{\"anyOf\":[{\"type\":\"number\",\"maximum\":5,\"exclusiveMaximum\":true},{\"type\":\"null\"}],\"maximum\":8}}}"))))
+    (is (string= "{ config?: { [key: string]: unknown; }; }"
+                 (funcall type (codemode-schema (format nil "{\"type\":\"object\",\"properties\":{\"config\":{\"type\":\"object\",\"default\":{\"text\":\"~A\"}}}}" (make-string 100 :initial-element #\x))))))
+    (is (string= (format nil "{~%  // a~%  // b~%  // @pattern ^[\\u000d\\u000a\\u2028\\u2029]$ @default \"\\u2028\"~%  sep?: string;~%}")
+                 (funcall type (let ((sep (cadr-ai::json-object
+                                           "type" "string"
+                                           "pattern" (format nil "^[~C~C~C~C]$"
+                                                             #\Return #\Newline
+                                                             (code-char #x2028)
+                                                             (code-char #x2029))
+                                           "default" (string (code-char #x2028))
+                                           "description" (format nil "a~Cb" (code-char #x2028)))))
+                                 (cadr-ai::json-object
+                                  "type" "object"
+                                  "properties" (cadr-ai::json-object "sep" sep))))))
+    (let ((budget (codemode-schema "{\"type\":\"object\",\"properties\":{\"n\":{\"type\":\"integer\",\"minimum\":1}}}")))
+      (is (string= (format nil "{~%  // @integer @minimum 1~%  n?: number;~%}") (funcall type budget)))
+      (is (string= "{ n?: number; }" (funcall type budget :max-chars 20)))
+      (is (string= "unknown" (funcall type budget :max-chars 10))))
+    (is (string= "{ item: { id: string; parent?: unknown; }; legacy?: \"a\" | \"b\"; remote?: unknown; }"
+                 (funcall type (codemode-schema "{\"type\":\"object\",\"properties\":{\"item\":{\"$ref\":\"#/$defs/Item\"},\"legacy\":{\"$ref\":\"#/definitions/Legacy\"},\"remote\":{\"$ref\":\"https://example.com/schema.json\"}},\"required\":[\"item\"],\"$defs\":{\"Item\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"parent\":{\"$ref\":\"#/$defs/Item\"}},\"required\":[\"id\"]}},\"definitions\":{\"Legacy\":{\"enum\":[\"a\",\"b\"]}}}"))))
+    (is (string= "Array<string>" (funcall type (codemode-schema "{\"type\":\"array\",\"items\":{\"type\":\"string\"}}"))))
+    (is (string= "[string, number]" (funcall type (codemode-schema "{\"type\":\"array\",\"prefixItems\":[{\"type\":\"string\"},{\"type\":\"number\"}]}"))))
+    (is (string= "unknown[]" (funcall type (codemode-schema "{\"type\":\"array\"}"))))
+    (let ((wide (cadr-ai::json-object "type" "object" "properties" (cadr-ai::json-object))))
+      (dotimes (index 50)
+        (setf (gethash (format nil "field~A" index) (gethash "properties" wide))
+              (cadr-ai::json-object "type" "string")))
+      (is (string= "unknown" (funcall type wide :max-chars 100)))
+      (is (search "field49?: string;" (funcall type wide)))))
+  (is (string= "hidden_dynamic_tool(args: { city: string; }): Promise<{ ok: boolean; }>;"
+               (cadr-cli::codemode-render-signature
+                "hidden-dynamic-tool"
+                :input (codemode-schema "{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\"}},\"required\":[\"city\"],\"additionalProperties\":false}")
+                :output (codemode-schema "{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"}},\"required\":[\"ok\"]}"))))
+  (is (string= "free(args: unknown): Promise<unknown>;"
+               (cadr-cli::codemode-render-signature "free")))
+  (is (string= "plain(args: { [key: string]: unknown; }): Promise<{ _meta?: { [key: string]: unknown; }; content: Array<{ [key: string]: unknown; }>; isError?: boolean; }>;"
+               (cadr-cli::codemode-render-signature
+                "plain"
+                :input (codemode-schema "{\"type\":\"object\",\"properties\":{}}")
+                :output (codemode-schema "{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"isError\":{\"type\":\"boolean\"},\"_meta\":{\"type\":\"object\"}},\"required\":[\"content\"]}"))))
+  (is (string= (format nil "bar~%~%codemode tool declaration:~%```ts~%declare const tools: { foo(args: string): Promise<unknown>; };~%```")
+               (cadr-cli::codemode-tool-sample
+                "foo" "bar" (codemode-schema "{\"type\":\"string\"}"))))
+  (is (string= (format nil "declare const tools: {~%  /**~%   * Read a file.~%   * Second line.~%   */~%  read(args: { path: string; }): Promise<string>;~%  remote_api(args: unknown): Promise<unknown>;~%};~%~%/** Attach it. */~%declare function attach(args: string): Promise<unknown>;")
+               (cadr-cli::codemode-render-declarations
+                :tools (list (cadr-cli::make-codemode-decl-item
+                              :name "read"
+                              :description (format nil "Read a file.~%Second line.")
+                              :input (codemode-schema "{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}")
+                              :input-p t
+                              :output (codemode-schema "{\"type\":\"string\"}")
+                              :output-p t)
+                             (cadr-cli::make-codemode-decl-item :name "remote-api"))
+                :globals (list (cadr-cli::make-codemode-decl-item
+                                :name "attach"
+                                :description "Attach it."
+                                :input (codemode-schema "{\"type\":\"string\"}")
+                                :input-p t)))))
+  (is (string= (format nil "declare function plain(): void;~%~%declare const models: {~%  /** List models. */~%  list(type: string): Promise<string[]>;~%  get(args: string): Promise<unknown>;~%};")
+               (cadr-cli::codemode-render-declarations
+                :globals (list (cadr-cli::make-codemode-decl-item
+                                :name "models.list"
+                                :description "List models."
+                                :signature "(type: string): Promise<string[]>")
+                               (cadr-cli::make-codemode-decl-item
+                                :name "models.get"
+                                :input (codemode-schema "{\"type\":\"string\"}")
+                                :input-p t)
+                               (cadr-cli::make-codemode-decl-item
+                                :name "plain"
+                                :signature "(): void")))))
+  (is (search "/** a *\\/ b */"
+              (cadr-cli::codemode-render-declarations
+               :tools (list (cadr-cli::make-codemode-decl-item
+                             :name "x"
+                             :description "a */ b"))))))
+
+(test codemode-classify-usage-and-per-script-limiter-match-v140
+  ;; packages/coding-agent/test/suite/agent-session-codemode.test.ts
+  ;; "lists models and classifies": call row and summed usage.
+  (let* ((usage (cadr-ai:make-usage
+                 :input 300 :output 0 :cache-read 0 :cache-write 0 :total 300
+                 :cost (cadr-ai:make-cost :input 0d0 :output 0d0 :cache-read 0d0
+                                          :cache-write 0d0 :total 0.001d0)))
+         (cadr-cli::*codemode-model-runtime*
+           (cadr-cli::make-codemode-model-backend
+            :models (list (cadr-cli::make-codemode-resolved-model
+                           :type "classifier" :provider "scorer" :id "judge"
+                           :name "Judge" :api "test-classifier" :input '("text")))
+            :classify-function
+            (lambda (model context)
+              (declare (ignore model context))
+              (cadr-ai::make-classifier-result
+               :api :test-classifier :provider :scorer :model "judge"
+               :answers (cadr-ai::json-object)
+               :stop-reason :stop
+               :usage usage))))
+         (cadr-cli::*codemode-collect-usage* t)
+         (cadr-cli::*codemode-script-usage* nil)
+         (record (cadr-ai::json-object "name" "models.classify" "status" "running"))
+         (arguments "[{\"provider\":\"scorer\",\"id\":\"judge\"},{\"state\":{},\"questions\":{\"approved\":{\"type\":\"bool\",\"instructions\":\"Approval?\",\"criteria\":{\"true\":\"yes\",\"false\":\"no\"}}}}]"))
+    (let ((result (cadr-cli::codemode-handle-call
+                   nil nil (list :call 1 "global" "models.classify" arguments)
+                   (list 0) record)))
+      (is (string= "ok" (third result)))
+      (is (< (abs (- 0.001d0
+                     (coerce (gethash "total"
+                                      (gethash "cost"
+                                               (gethash "usage"
+                                                        (cadr-ai::parse-json
+                                                         (second result)))))
+                             'double-float)))
+             1d-12)))
+    (cadr-cli::codemode-handle-call
+     nil nil (list :call 2 "global" "models.classify" arguments) (list 0) record)
+    (is (string= "scorer/judge" (gethash "args" record)))
+    (is (< (abs (- 0.001d0 (coerce (gethash "cost" record) 'double-float))) 1d-12))
+    (is (= 600 (cadr-ai:usage-input cadr-cli::*codemode-script-usage*)))
+    (is (< (abs (- 0.002d0 (cadr-ai:cost-total
+                            (cadr-ai:usage-cost cadr-cli::*codemode-script-usage*))))
+           1d-12)))
+  (let ((first (cadr-cli::make-codemode-call-limiter))
+        (second (cadr-cli::make-codemode-call-limiter))
+        (release (sb-thread:make-semaphore :name "codemode-release"))
+        (entered (sb-thread:make-semaphore :name "codemode-entered"))
+        (finished (sb-thread:make-semaphore :name "codemode-finished"))
+        (other (sb-thread:make-semaphore :name "codemode-other"))
+        (threads nil))
+    (unwind-protect
+         (progn
+           (loop repeat 4
+                 do (push (sb-thread:make-thread
+                           (lambda ()
+                             (cadr-cli::codemode-limiter-call
+                              first
+                              (lambda ()
+                                (sb-thread:signal-semaphore entered)
+                                (sb-thread:wait-on-semaphore release)))))
+                          threads))
+           (loop repeat 4
+                 do (is (not (null (sb-thread:wait-on-semaphore entered :timeout 2)))))
+           (push (sb-thread:make-thread
+                  (lambda ()
+                    (cadr-cli::codemode-limiter-call
+                     first
+                     (lambda () (sb-thread:signal-semaphore finished)))))
+                 threads)
+           (push (sb-thread:make-thread
+                  (lambda ()
+                    (cadr-cli::codemode-limiter-call
+                     second
+                     (lambda () (sb-thread:signal-semaphore other)))))
+                 threads)
+           (is (not (null (sb-thread:wait-on-semaphore other :timeout 2))))
+           (sleep 0.05)
+           (is (= 4 (cadr-cli::codemode-call-limiter-active first)))
+           (is (= 1 (length (cadr-cli::codemode-call-limiter-queue first))))
+           (is (zerop (cadr-cli::codemode-call-limiter-active second)))
+           (is (null (sb-thread:wait-on-semaphore finished :timeout 0.05)))
+           (sb-thread:signal-semaphore release)
+           (is (not (null (sb-thread:wait-on-semaphore finished :timeout 2)))))
+      (loop repeat 4 do (sb-thread:signal-semaphore release))
+      (dolist (thread threads)
+        (when (sb-thread:thread-alive-p thread)
+          (sb-thread:join-thread thread :timeout 2))))))
 
 (defun codemode-quickjs-contract ()
   (let ((cadr-cli::*codemode-script-tools*
@@ -422,6 +735,15 @@
                               :content nil
                               :is-error t)))
                 (cadr-ai:make-tool
+                 :name "bash"
+                 :description "Fails with text"
+                 :parameters (cadr-ai::json-object "type" "object")
+                 :executor (lambda (id arguments)
+                             (declare (ignore id arguments))
+                             (cadr-ai:make-tool-result-message
+                              :content (list (cadr-ai:make-text-content :text "disk full"))
+                              :is-error t)))
+                (cadr-ai:make-tool
                  :name "mcp__docs__search"
                  :description "Search the docs"
                  :parameters (cadr-ai::json-object "type" "object"))))
@@ -439,7 +761,15 @@
              (declare (ignore context))
              (cadr-ai::json-object
               "label" (cadr-cli::codemode-resolved-model-id model)
-              "stopReason" "stop"))
+              "provider" (cadr-cli::codemode-resolved-model-provider model)
+              "model" (cadr-cli::codemode-resolved-model-id model)
+              "stopReason" "stop"
+              "usage" (cadr-ai::json-object
+                       "input" 300 "output" 0 "cacheRead" 0 "cacheWrite" 0
+                       "totalTokens" 300
+                       "cost" (cadr-ai::json-object
+                               "input" 0 "output" 0 "cacheRead" 0
+                               "cacheWrite" 0 "total" 0.001d0))))
            :images-function
            (lambda (model context)
              (declare (ignore model context))
@@ -456,7 +786,7 @@
              (check (name code needle)
                (multiple-value-bind (content details terminate structured usage is-error)
                    (run-script code)
-                 (declare (ignore details terminate structured usage))
+                 (declare (ignore terminate structured))
                  (let* ((text (codemode-result-text content))
                         (at (search "Output:" text))
                         (body (if at (subseq text at) text)))
@@ -464,35 +794,40 @@
                                 (or (search "Script completed" text)
                                     (search "Script failed" text)))
                      (push (format nil "~A: ~A" name text) failures))
-                   (list text is-error)))))
+                   (list text is-error details usage)))))
       (check "return" "return 1 + 1;" "2")
       (unless (codemode-wasm-call "LAST-COMPILE-CACHED-P")
         (push "first script compiled the quickjs module on the default heap" failures))
       (check "tool" "return await tools.echo({ text: \"hi\" });" "hi")
       (check "store" (format nil "store(\"k\", 7); return load(\"k\");") "7")
-      (let ((text (first
-                   (check "contract"
-                          (concatenate 'string
-                           "const lines = [];"
-                           "async function grab(label, fn) {"
-                           "  try { lines.push(label + \"=\" + JSON.stringify(await fn())); }"
-                           "  catch (e) { lines.push(label + \"=\" + e.message); }"
-                           "}"
-                           "await grab(\"classify\", () => models.classify({ provider: \"test\", id: \"c\" }, { prompt: \"x\" }));"
-                           "await grab(\"images\", () => models.generateImages({ provider: \"test\", id: \"img\" }, { prompt: \"x\" }));"
-                           "await grab(\"search\", () => searchTools(1));"
-                           "await grab(\"ns\", () => describeNamespace(\"mcp__docs\"));"
-                           "await grab(\"missing\", () => describeNamespace(\"no-such\"));"
-                           "await grab(\"stats\", () => tools.stats({}));"
-                           "await grab(\"broken\", () => tools.broken({}));"
-                           "await grab(\"plain\", () => tools.plain({}));"
-                           "try { await tools.nope({}); lines.push(\"nope=unexpected\"); }"
-                           "catch (e) { lines.push(\"nope=\" + e.message); }"
-                           "const ok = await models.classify({ provider: \"test\", id: \"c\" }, { state: {}, questions: { k: { type: \"bool\", instructions: \"q\", criteria: { true: \"y\", false: \"n\" } } } });"
-                           "lines.push(\"ok=\" + ok.label);"
-                           "await models.generateImages({ provider: \"test\", id: \"img\" }, { input: [{ type: \"text\", text: \"x\" }] });"
-                           "return lines.join(\"\\n\");")
-                          "ok=c"))))
+      (let* ((report (check "contract"
+                                 (concatenate 'string
+                                  "const lines = [];"
+                                  "async function grab(label, fn) {"
+                                  "  try { lines.push(label + \"=\" + JSON.stringify(await fn())); }"
+                                  "  catch (e) { lines.push(label + \"=\" + e.message); }"
+                                  "}"
+                                  "await grab(\"classify\", () => models.classify({ provider: \"test\", id: \"c\" }, { prompt: \"x\" }));"
+                                  "await grab(\"images\", () => models.generateImages({ provider: \"test\", id: \"img\" }, { prompt: \"x\" }));"
+                                  "await grab(\"search\", () => searchTools(1));"
+                                  "await grab(\"ns\", () => describeNamespace(\"mcp__docs\"));"
+                                  "await grab(\"missing\", () => describeNamespace(\"no-such\"));"
+                                  "await grab(\"decl\", () => describeTool(\"stats\"));"
+                                  "await grab(\"stats\", () => tools.stats({}));"
+                                  "await grab(\"broken\", () => tools.broken({}));"
+                                  "await grab(\"plain\", () => tools.plain({}));"
+                                  "await grab(\"failtext\", () => tools.bash({}));"
+                                  "try { await tools.nope({}); lines.push(\"nope=unexpected\"); }"
+                                  "catch (e) { lines.push(\"nope=\" + e.message); }"
+                                  "const ok = await models.classify({ provider: \"test\", id: \"c\" }, { state: {}, questions: { k: { type: \"bool\", instructions: \"q\", criteria: { true: \"y\", false: \"n\" } } } });"
+                                  "lines.push(\"ok=\" + ok.label);"
+                                  "lines.push(\"cost=\" + ok.usage.cost.total);"
+                                  "await models.generateImages({ provider: \"test\", id: \"img\" }, { input: [{ type: \"text\", text: \"x\" }] });"
+                                  "return lines.join(\"\\n\");")
+                                 "ok=c"))
+             (text (first report))
+             (details (third report))
+             (usage (fourth report)))
         (dolist (needle '("models.classify() context.state must be an object, got undefined."
                           "models.generateImages() context.input must be a non-empty array of blocks, got undefined."
                           "searchTools() expects a query string"
@@ -503,11 +838,28 @@
                           "\"code\":\"full\""
                           "hello-text"
                           "Tool \"nope\" failed"
+                          "failtext=disk full"
+                          "cost=0.001"
+                          "Promise<{ [key: string]: unknown; }>"
                           "Note: models.generateImages() returned 1 image"))
           (unless (search needle text)
             (push (format nil "missing ~A in ~A" needle text) failures)))
+        (when (search "Tool \"bash\" failed" text)
+          (push (format nil "failure text was prefixed: ~A" text) failures))
         (when (search "hidden" text)
-          (push (format nil "plain tool leaked structured content: ~A" text) failures)))
+          (push (format nil "plain tool leaked structured content: ~A" text) failures))
+        (let ((row (find-if (lambda (call)
+                              (and (string= (gethash "name" call) "models.classify")
+                                   (string= (gethash "status" call) "ok")))
+                            (gethash "calls" details))))
+          (unless (and row
+                       (string= "test/c" (gethash "args" row))
+                       (< (abs (- 0.001d0 (coerce (gethash "cost" row) 'double-float))) 1d-12))
+            (push (format nil "classify call row: ~A" details) failures)))
+        (unless (and usage
+                     (= 300 (cadr-ai:usage-input usage))
+                     (< (abs (- 0.001d0 (cadr-ai:cost-total (cadr-ai:usage-cost usage)))) 1d-12))
+          (push (format nil "script usage: ~A" usage) failures)))
       (let ((text (first
                    (check "image"
                           "image(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==\"); return \"shown\";"

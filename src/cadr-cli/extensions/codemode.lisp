@@ -21,11 +21,18 @@
 (defvar *codemode-worker-waiters* nil)
 (defvar *codemode-base-descriptions* (make-hash-table :test #'eq))
 (defvar *codemode-model-runtime* nil)
-(defvar *codemode-model-in-flight* 0)
-(defvar *codemode-model-lock* (sb-thread:make-mutex :name "codemode-models"))
-(defvar *codemode-model-wait* (sb-thread:make-waitqueue :name "codemode-models"))
+(defvar *codemode-model-limiter* nil)
+(defvar *codemode-script-usage* nil)
+(defvar *codemode-collect-usage* nil)
 (defvar *codemode-script-tools* nil)
 (defvar *codemode-tool-namespaces* nil)
+
+(defstruct codemode-call-limiter
+  (active 0 :type fixnum)
+  (limit 4 :type fixnum)
+  (queue nil :type list)
+  (lock (sb-thread:make-mutex :name "codemode-model-limit")
+        :type sb-thread:mutex))
 
 (defstruct codemode-namespace
   (name "" :type string)
@@ -142,60 +149,471 @@
 (defun codemode-json-string (value key)
   (and (hash-table-p value) (cadr-ai::json-get value key)))
 
-(defun codemode-schema-type (schema)
+(defparameter +codemode-input-schema-max-chars+ 16000)
+(defparameter +codemode-max-ref-expansions+ 32)
+(defparameter +codemode-max-tag-chars+ 80)
+(defparameter +codemode-tag-keywords+
+  '(("minimum" . :lower) ("exclusiveMinimum" . :lower)
+    ("maximum" . :upper) ("exclusiveMaximum" . :upper)
+    ("multipleOf" . nil) ("minLength" . :lower) ("maxLength" . :upper)
+    ("pattern" . nil) ("format" . nil)
+    ("minItems" . :lower) ("maxItems" . :upper)))
+
+(defstruct codemode-schema-context
+  root
+  (resolving nil :type list)
+  (expansions 0 :type fixnum)
+  (tags t))
+
+(defun codemode-schema-copy (schema)
+  (let ((copy (cadr-ai::json-object)))
+    (maphash (lambda (key value) (setf (gethash key copy) value)) schema)
+    copy))
+
+(defun codemode-js-identifier-p (name)
+  (and (stringp name)
+       (plusp (length name))
+       (let ((first (char name 0)))
+         (and (or (and (alpha-char-p first) (< (char-code first) 128))
+                  (char= first #\_)
+                  (char= first #\$))
+              (every (lambda (char)
+                       (or (and (alphanumericp char) (< (char-code char) 128))
+                           (char= char #\_)
+                           (char= char #\$)))
+                     name)))))
+
+(defun codemode-property-key (name)
+  (if (codemode-js-identifier-p name)
+      name
+      (cadr-ai::stringify-json name)))
+
+(defun codemode-line-terminator-p (char)
+  (member (char-code char) '(#x000d #x000a #x2028 #x2029)))
+
+(defun codemode-escape-line-terminators (text)
+  (with-output-to-string (output)
+    (loop for char across text
+          do (if (codemode-line-terminator-p char)
+                 (format output "\\u~A"
+                         (string-downcase
+                          (format nil "~4,'0X" (char-code char))))
+                 (write-char char output)))))
+
+(defun codemode-split-line-terminators (text)
+  (let ((parts nil)
+        (start 0))
+    (loop for index from 0 below (length text)
+          when (codemode-line-terminator-p (char text index))
+            do (push (subseq text start index) parts)
+               (setf start (1+ index)))
+    (push (subseq text start) parts)
+    (nreverse parts)))
+
+(defun codemode-union (types)
+  (let ((unique nil))
+    (dolist (type types)
+      (unless (member type unique :test #'string=)
+        (push type unique)))
+    (setf unique (nreverse unique))
+    (cond ((find "unknown" unique :test #'string=) "unknown")
+          ((null unique) "never")
+          (t (format nil "~{~A~^ | ~}" unique)))))
+
+(defun codemode-ref-key (segment)
+  (with-output-to-string (output)
+    (loop for index from 0 below (length segment)
+          do (cond
+               ((and (< index (1- (length segment)))
+                     (char= (char segment index) #\~)
+                     (char= (char segment (1+ index)) #\1))
+                (write-char #\/ output)
+                (incf index))
+               ((and (< index (1- (length segment)))
+                     (char= (char segment index) #\~)
+                     (char= (char segment (1+ index)) #\0))
+                (write-char #\~ output)
+                (incf index))
+               (t (write-char (char segment index) output))))))
+
+(defun codemode-ref-segments (ref)
+  (let ((body (if (>= (length ref) 2) (subseq ref 2) "")))
+    (remove "" (uiop:split-string body :separator '(#\/)) :test #'string=)))
+
+(defun codemode-resolve-ref (ref root)
+  (unless (or (string= ref "#")
+              (and (>= (length ref) 2) (string= (subseq ref 0 2) "#/")))
+    (return-from codemode-resolve-ref (values nil nil)))
+  (let ((current root))
+    (dolist (segment (codemode-ref-segments ref))
+      (let ((key (codemode-ref-key segment)))
+        (unless (and (hash-table-p current)
+                     (nth-value 1 (gethash key current)))
+          (return-from codemode-resolve-ref (values nil nil)))
+        (setf current (gethash key current))))
+    (values current t)))
+
+(defun codemode-schema-number-p (value)
+  (and (realp value)
+       (not (sb-ext:float-infinity-p (float value 1.0d0)))
+       (not (sb-ext:float-nan-p (float value 1.0d0)))))
+
+(defun codemode-tag-number (value)
+  (let ((number (coerce value 'double-float)))
+    (if (= number (fround number))
+        (princ-to-string (round number))
+        (princ-to-string value))))
+
+(defun codemode-rewrite-exclusive (schema)
+  (let ((copy (codemode-schema-copy schema)))
+    (when (eq (gethash "exclusiveMinimum" copy) t)
+      (setf (gethash "exclusiveMinimum" copy) (gethash "minimum" copy))
+      (remhash "minimum" copy))
+    (when (eq (gethash "exclusiveMaximum" copy) t)
+      (setf (gethash "exclusiveMaximum" copy) (gethash "maximum" copy))
+      (remhash "maximum" copy))
+    copy))
+
+(defun codemode-non-null-branch (schema)
+  (let ((variants (or (and (vectorp (gethash "anyOf" schema)) (gethash "anyOf" schema))
+                      (and (vectorp (gethash "oneOf" schema)) (gethash "oneOf" schema)))))
+    (when (vectorp variants)
+      (let ((kept (remove-if (lambda (variant)
+                               (and (hash-table-p variant)
+                                    (equal (gethash "type" variant) "null")))
+                             (coerce variants 'list))))
+        (when (= (length kept) 1)
+          (first kept))))))
+
+(defun codemode-integer-type-p (type)
+  (or (equal type "integer")
+      (and (vectorp type) (find "integer" type :test #'equal))))
+
+(defun codemode-constraint-tags (schema)
+  (unless (hash-table-p schema)
+    (return-from codemode-constraint-tags ""))
+  (let* ((branch (codemode-non-null-branch schema))
+         (schemas (mapcar #'codemode-rewrite-exclusive
+                          (if (hash-table-p branch)
+                              (list schema branch)
+                              (list schema))))
+         (tags nil))
+    (flet ((add (tag)
+             (setf tags (append tags (list tag)))))
+      (when (some (lambda (item) (codemode-integer-type-p (gethash "type" item))) schemas)
+        (add "@integer"))
+      (dolist (keyword +codemode-tag-keywords+)
+        (let* ((name (car keyword))
+               (bound (cdr keyword))
+               (values (mapcar (lambda (item) (gethash name item)) schemas)))
+          (cond
+            (bound
+             (let ((numbers (remove-if-not #'codemode-schema-number-p values)))
+               (when numbers
+                 (add (format nil "@~A ~A" name
+                              (codemode-tag-number
+                               (if (eq bound :lower)
+                                   (reduce #'max numbers)
+                                   (reduce #'min numbers))))))))
+            (t
+             (let ((seen nil))
+               (dolist (value values)
+                 (unless (member value seen :test #'equal)
+                   (push value seen)
+                   (when (or (codemode-schema-number-p value) (stringp value))
+                     (add (format nil "@~A ~A" name
+                                  (if (stringp value)
+                                      value
+                                      (codemode-tag-number value))))))))))))
+      (when (some (lambda (item) (eq (gethash "uniqueItems" item) t)) schemas)
+        (add "@uniqueItems"))
+      (let ((default (gethash "default" schema)))
+        (when (and (cadr-ai::json-present-p schema "default")
+                   (not (codemode-json-null-p default)))
+          (add (format nil "@default ~A" (cadr-ai::stringify-json default)))))
+      (when (eq (gethash "deprecated" schema) t)
+        (add "@deprecated"))
+      (format nil "~{~A~^ ~}"
+              (remove-if (lambda (tag) (> (length tag) +codemode-max-tag-chars+))
+                         (mapcar #'codemode-escape-line-terminators tags))))))
+
+(defun codemode-description-lines (schema)
+  (let ((description (and (hash-table-p schema) (gethash "description" schema))))
+    (unless (stringp description)
+      (return-from codemode-description-lines nil))
+    (let ((trimmed (string-trim '(#\Space #\Tab #\Newline #\Return #\Linefeed) description)))
+      (remove "" 
+              (mapcar (lambda (line)
+                        (string-trim '(#\Space #\Tab) line))
+                      (codemode-split-line-terminators trimmed))
+              :test #'string=))))
+
+(defun codemode-indent-member (member)
+  (concatenate 'string "  "
+               (with-output-to-string (output)
+                 (loop for index from 0 below (length member)
+                       for char = (char member index)
+                       do (write-char char output)
+                          (when (char= char #\Newline)
+                            (write-string "  " output))))))
+
+(defun codemode-object-type (schema context)
+  (let* ((properties (gethash "properties" schema))
+         (table (if (hash-table-p properties) properties (cadr-ai::json-object)))
+         (required (gethash "required" schema))
+         (names (sort (loop for key being the hash-keys of table collect key) #'string<))
+         (name-members
+           (mapcar (lambda (name)
+                     (format nil "~A~A: ~A;"
+                             (codemode-property-key name)
+                             (if (and (vectorp required)
+                                      (find name required :test #'string=))
+                                 ""
+                                 "?")
+                             (codemode-to-type (gethash name table) context)))
+                   names))
+         (extra nil))
+    (multiple-value-bind (additional present) (gethash "additionalProperties" schema)
+      (cond
+        ((and present (not (null additional)))
+         (setf extra
+               (list (format nil "[key: string]: ~A;"
+                             (if (eq additional t)
+                                 "unknown"
+                                 (codemode-to-type additional context))))))
+        ((and (not present) (null names))
+         (setf extra (list "[key: string]: unknown;")))))
+    (let ((members (append name-members extra)))
+      (if (null members)
+          "{}"
+          (let ((comments
+                  (mapcar (lambda (name)
+                            (let ((lines (codemode-description-lines (gethash name table)))
+                                  (tags (when (codemode-schema-context-tags context)
+                                          (codemode-constraint-tags (gethash name table)))))
+                              (if (and tags (plusp (length tags)))
+                                  (append lines (list tags))
+                                  lines)))
+                          names)))
+            (if (not (some #'identity comments))
+                (format nil "{ ~{~A~^ ~} }" members)
+                (with-output-to-string (output)
+                  (write-line "{" output)
+                  (loop for comment in comments
+                        for member in name-members
+                        do (dolist (line comment)
+                             (format output "  // ~A~%" line))
+                           (write-line (codemode-indent-member member) output))
+                  (dolist (member extra)
+                    (format output "  ~A~%" member))
+                  (write-char #\} output))))))))
+
+(defun codemode-array-type (schema context)
+  (multiple-value-bind (items present) (gethash "items" schema)
+    (when (and present (not (vectorp items)))
+      (return-from codemode-array-type
+        (format nil "Array<~A>" (codemode-to-type items context)))))
+  (let ((tuple (cond ((vectorp (gethash "prefixItems" schema))
+                      (gethash "prefixItems" schema))
+                     ((vectorp (gethash "items" schema))
+                      (gethash "items" schema))
+                     (t #()))))
+    (if (plusp (length tuple))
+        (format nil "[~{~A~^, ~}]"
+                (map 'list (lambda (item) (codemode-to-type item context)) tuple))
+        "unknown[]")))
+
+(defun codemode-to-type (schema context)
   (cond
     ((eq schema t) "unknown")
     ((eq schema nil) "never")
     ((not (hash-table-p schema)) "unknown")
+    ((stringp (gethash "$ref" schema))
+     (let ((ref (gethash "$ref" schema)))
+       (if (or (member ref (codemode-schema-context-resolving context) :test #'string=)
+               (>= (codemode-schema-context-expansions context)
+                   +codemode-max-ref-expansions+))
+           "unknown"
+           (multiple-value-bind (target found) (codemode-resolve-ref ref (codemode-schema-context-root context))
+             (if (not found)
+                 "unknown"
+                 (progn
+                   (incf (codemode-schema-context-expansions context))
+                   (push ref (codemode-schema-context-resolving context))
+                   (unwind-protect (codemode-to-type target context)
+                     (pop (codemode-schema-context-resolving context)))))))))
+    ((cadr-ai::json-present-p schema "const")
+     (or (cadr-ai::stringify-json (gethash "const" schema)) "unknown"))
+    ((vectorp (gethash "enum" schema))
+     (codemode-union
+      (map 'list (lambda (value) (or (cadr-ai::stringify-json value) "unknown"))
+           (gethash "enum" schema))))
+    ((or (vectorp (gethash "anyOf" schema)) (vectorp (gethash "oneOf" schema)))
+     (codemode-union
+      (map 'list (lambda (variant) (codemode-to-type variant context))
+           (or (gethash "anyOf" schema) (gethash "oneOf" schema)))))
+    ((vectorp (gethash "allOf" schema))
+     (let ((parts (remove "unknown"
+                          (map 'list (lambda (part) (codemode-to-type part context))
+                               (gethash "allOf" schema))
+                          :test #'string=)))
+       (if (null parts)
+           "unknown"
+           (format nil "~{~A~^ & ~}"
+                   (mapcar (lambda (part)
+                             (if (search " | " part) (format nil "(~A)" part) part))
+                           parts)))))
     (t
      (let ((type (gethash "type" schema)))
        (cond
-         ((and (stringp type) (member type '("string" "number" "integer" "boolean" "null") :test #'string=))
-          (if (string= type "integer") "number" type))
-         ((and (stringp type) (string= type "array"))
-          (let ((items (gethash "items" schema)))
-            (if (hash-table-p items)
-                (format nil "Array<~A>" (codemode-schema-type items))
-                "unknown[]")))
-         ((or (and (stringp type) (string= type "object"))
-              (gethash "properties" schema))
-          (codemode-object-type schema))
+         ((and (vectorp type) (not (stringp type)))
+          (codemode-union
+           (map 'list
+                (lambda (entry)
+                  (let ((copy (codemode-schema-copy schema)))
+                    (setf (gethash "type" copy) entry)
+                    (codemode-to-type copy context)))
+                type)))
+         ((stringp type)
+          (cond
+            ((member type '("string" "number" "boolean" "null") :test #'string=) type)
+            ((string= type "integer") "number")
+            ((string= type "array") (codemode-array-type schema context))
+            ((string= type "object") (codemode-object-type schema context))
+            (t "unknown")))
+         ((or (cadr-ai::json-present-p schema "properties")
+              (cadr-ai::json-present-p schema "additionalProperties")
+              (cadr-ai::json-present-p schema "required"))
+          (codemode-object-type schema context))
+         ((or (cadr-ai::json-present-p schema "items")
+              (cadr-ai::json-present-p schema "prefixItems"))
+          (codemode-array-type schema context))
          (t "unknown"))))))
 
-(defun codemode-object-type (schema)
-  (let* ((properties (gethash "properties" schema))
-         (required (gethash "required" schema))
-         (names (when (hash-table-p properties)
-                  (sort (loop for key being the hash-keys of properties collect key) #'string<))))
-    (if (null names)
-        "{}"
-        (format nil "{ ~{~A~^ ~} }"
-                (mapcar (lambda (name)
-                          (format nil "~A~A: ~A;"
-                                  name
-                                  (if (and (vectorp required)
-                                           (find name required :test #'string=))
-                                      ""
-                                      "?")
-                                  (codemode-schema-type (gethash name properties))))
-                        names)))))
+(defun codemode-schema-type (schema &key max-chars)
+  (flet ((render (tags)
+           (codemode-to-type
+            schema
+            (make-codemode-schema-context :root schema :tags tags))))
+    (let ((type (render t)))
+      (if (or (null max-chars) (<= (length type) max-chars))
+          type
+          (let ((untagged (render nil)))
+            (if (<= (length untagged) max-chars) untagged "unknown"))))))
 
-(defun codemode-tool-sample (name description parameters)
-  (let ((input (if (hash-table-p parameters)
-                   (codemode-schema-type parameters)
-                   "unknown")))
-    (format nil "~A~%~%codemode tool declaration:~%```ts~%declare const tools: { ~A(args: ~A): Promise<string>; };~%```"
-            (string-trim '(#\Space #\Tab #\Newline #\Return) (or description ""))
-            (codemode-identifier name)
-            input)))
+(defun codemode-render-signature (name &key (input nil input-p) (output nil output-p))
+  (format nil "~A(args: ~A): Promise<~A>;"
+          (codemode-identifier name)
+          (if input-p
+              (codemode-schema-type input :max-chars +codemode-input-schema-max-chars+)
+              "unknown")
+          (if output-p (codemode-schema-type output) "unknown")))
 
-(defun codemode-section (name description parameters)
+(defun codemode-tool-sample (name description parameters &optional output)
+  (format nil "~A~%~%codemode tool declaration:~%```ts~%declare const tools: { ~A };~%```"
+          (string-trim '(#\Space #\Tab #\Newline #\Return) (or description ""))
+          (apply #'codemode-render-signature
+                 name
+                 (append (when parameters (list :input parameters))
+                         (when output (list :output output))))))
+
+(defun codemode-doc-comment (description indent)
+  (let ((text (and (stringp description)
+                   (string-trim '(#\Space #\Tab #\Newline #\Return) description))))
+    (unless (and text (plusp (length text)))
+      (return-from codemode-doc-comment ""))
+    (let ((lines (codemode-split (substitute #\Newline #\Return
+                                             (with-output-to-string (output)
+                                               (loop for index from 0 below (length text)
+                                                     do (let ((char (char text index)))
+                                                          (if (and (char= char #\*)
+                                                                   (< index (1- (length text)))
+                                                                   (char= (char text (1+ index)) #\/))
+                                                              (progn (write-string "*\\/" output)
+                                                                     (incf index))
+                                                              (write-char char output))))))
+                                 (string #\Newline))))
+      (if (= (length lines) 1)
+          (format nil "~A/** ~A */~%" indent (first lines))
+          (format nil "~A/**~%~{~A~%~}~A */~%"
+                  indent
+                  (mapcar (lambda (line)
+                            (format nil "~A *~@[ ~A~]" indent (and (plusp (length line)) line)))
+                          lines)
+                  indent)))))
+
+(defstruct codemode-decl-item
+  (name "" :type string)
+  (description nil)
+  (input nil)
+  (output nil)
+  (signature nil)
+  (input-p nil)
+  (output-p nil))
+
+(defun codemode-render-global (head item indent)
+  (concatenate 'string
+               (codemode-doc-comment (codemode-decl-item-description item) indent)
+               indent head
+               (if (codemode-decl-item-signature item)
+                   (codemode-decl-item-signature item)
+                   (format nil "(args: ~A): Promise<~A>"
+                           (if (codemode-decl-item-input-p item)
+                               (codemode-schema-type (codemode-decl-item-input item))
+                               "unknown")
+                           (if (codemode-decl-item-output-p item)
+                               (codemode-schema-type (codemode-decl-item-output item))
+                               "unknown")))
+               ";"))
+
+(defun codemode-render-declarations (&key tools globals)
+  (let ((sections nil)
+        (namespaces nil))
+    (when tools
+      (push (format nil "declare const tools: {~%~{~A~%~}};"
+                    (mapcar (lambda (tool)
+                              (concatenate 'string
+                                           (codemode-doc-comment
+                                            (codemode-decl-item-description tool) "  ")
+                                           "  "
+                                           (apply #'codemode-render-signature
+                                                  (codemode-decl-item-name tool)
+                                                  (append
+                                                   (when (codemode-decl-item-input-p tool)
+                                                     (list :input (codemode-decl-item-input tool)))
+                                                   (when (codemode-decl-item-output-p tool)
+                                                     (list :output (codemode-decl-item-output tool)))))))
+                            tools))
+            sections))
+    (dolist (global globals)
+      (let* ((name (codemode-decl-item-name global))
+             (dot (position #\. name)))
+        (if (null dot)
+            (push (codemode-render-global (format nil "declare function ~A" name) global "")
+                  sections)
+            (let* ((namespace (subseq name 0 dot))
+                   (member (subseq name (1+ dot)))
+                   (cell (assoc namespace namespaces :test #'string=)))
+              (unless cell
+                (setf cell (cons namespace nil))
+                (setf namespaces (append namespaces (list cell))))
+              (setf (cdr cell)
+                    (append (cdr cell)
+                            (list (codemode-render-global member global "  "))))))))
+    (dolist (cell namespaces)
+      (push (format nil "declare const ~A: {~%~{~A~%~}};"
+                    (car cell) (cdr cell))
+            sections))
+    (format nil "~{~A~^~%~%~}" (nreverse sections))))
+
+(defun codemode-section (name description parameters &optional output)
   (let* ((id (codemode-identifier name))
          (heading (if (string= id name)
                       (format nil "### `~A`" id)
                       (format nil "### `~A` (`~A`)" id name))))
     (format nil "~A~%~A" heading
-            (string-trim '(#\Newline) (codemode-tool-sample name description parameters)))))
+            (string-trim '(#\Newline)
+                         (codemode-tool-sample name description parameters output)))))
 
 (defun codemode-docs-path ()
   (cadr-agent::mcp-join (cadr-ai::cadr-docs-directory) "codemode.md"))
@@ -210,7 +628,8 @@
                             (let ((section (codemode-section
                                             (cadr-ai:tool-name tool)
                                             (cadr-ai:tool-description tool)
-                                            (cadr-ai:tool-parameters tool))))
+                                            (cadr-ai:tool-parameters tool)
+                                            (cadr-ai::tool-output-schema tool))))
                               (list (cadr-ai:tool-name tool)
                                     section
                                     (ceiling (length section) +codemode-chars-per-token+))))
@@ -573,9 +992,10 @@
   (if (and tool (cadr-ai::tool-output-schema tool) structured)
       structured
       (if is-error
-          (error "Tool \"~A\" failed~@[~%~A~]"
-                 (cadr-ai:tool-name tool)
-                 (and (stringp text) (plusp (length text)) text))
+          (error "~A"
+                 (if (and (stringp text) (plusp (length text)))
+                     text
+                     (format nil "Tool \"~A\" failed" (cadr-ai:tool-name tool))))
           (or text ""))))
 
 (defun codemode-tool-result-value (tool outcome)
@@ -654,15 +1074,30 @@
       (when api
         (cadr-agent:extension-api-append-entry api +codemode-store-type+ data)))))
 
+(defun codemode-limiter-call (limiter function)
+  (let ((gate nil)
+        (lock (codemode-call-limiter-lock limiter)))
+    (sb-thread:with-mutex (lock)
+      (if (>= (codemode-call-limiter-active limiter)
+              (codemode-call-limiter-limit limiter))
+          (progn
+            (setf gate (sb-thread:make-semaphore :name "codemode-model-gate"))
+            (setf (codemode-call-limiter-queue limiter)
+                  (append (codemode-call-limiter-queue limiter) (list gate))))
+          (incf (codemode-call-limiter-active limiter))))
+    (when gate
+      (sb-thread:wait-on-semaphore gate))
+    (unwind-protect (funcall function)
+      (sb-thread:with-mutex (lock)
+        (let ((next (pop (codemode-call-limiter-queue limiter))))
+          (if next
+              (sb-thread:signal-semaphore next)
+              (decf (codemode-call-limiter-active limiter))))))))
+
 (defun codemode-with-model-slot (function)
-  (sb-thread:with-mutex (*codemode-model-lock*)
-    (loop while (>= *codemode-model-in-flight* 4)
-          do (sb-thread:condition-wait *codemode-model-wait* *codemode-model-lock*))
-    (incf *codemode-model-in-flight*))
-  (unwind-protect (funcall function)
-    (sb-thread:with-mutex (*codemode-model-lock*)
-      (decf *codemode-model-in-flight*)
-      (sb-thread:condition-broadcast *codemode-model-wait*))))
+  (if *codemode-model-limiter*
+      (codemode-limiter-call *codemode-model-limiter* function)
+      (funcall function)))
 
 (defun codemode-to-model-type (value)
   (if (and (stringp value)
@@ -754,17 +1189,133 @@
                   (string= (codemode-resolved-model-id model) id)))
            (codemode-models-of-type type provider)))
 
+(defun codemode-json-number (value)
+  (let ((number (coerce value 'double-float)))
+    (if (= number (fround number))
+        (round number)
+        number)))
+
+(defun codemode-camel-name (symbol)
+  (let ((parts (uiop:split-string (string-downcase (symbol-name symbol))
+                                  :separator '(#\-))))
+    (format nil "~A~{~:(~A~)~}" (or (first parts) "") (rest parts))))
+
+(defun codemode-plist-json (plist)
+  (let ((object (cadr-ai::json-object)))
+    (loop for (key value) on plist by #'cddr
+          do (setf (gethash (codemode-camel-name key) object)
+                   (cond
+                     ((and (listp value) value (keywordp (first value)))
+                      (codemode-plist-json value))
+                     ((keywordp value) (string-downcase (symbol-name value)))
+                     ((floatp value) (codemode-json-number value))
+                     (t value))))
+    object))
+
+(defun codemode-alist-json (cells &key null-as-false)
+  (let ((object (cadr-ai::json-object)))
+    (dolist (cell cells object)
+      (when (consp cell)
+        (setf (gethash (codemode-camel-name (car cell)) object)
+              (let ((value (cdr cell)))
+                (cond ((null value) (if null-as-false nil 'null))
+                      ((keywordp value) (string-downcase (symbol-name value)))
+                      ((floatp value) (codemode-json-number value))
+                      (t value))))))))
+
+(defun codemode-tier-json (tier)
+  (cadr-ai::json-object
+   "inputTokensAbove" (cadr-ai:model-cost-tier-input-tokens-above tier)
+   "input" (codemode-json-number (cadr-ai:model-cost-tier-input-price tier))
+   "output" (codemode-json-number (cadr-ai:model-cost-tier-output-price tier))
+   "cacheRead" (codemode-json-number (cadr-ai:model-cost-tier-cache-read-price tier))
+   "cacheWrite" (codemode-json-number (cadr-ai:model-cost-tier-cache-write-price tier))))
+
+(defun codemode-cost-json (input output cache-read cache-write &optional tiers)
+  (let ((cost (cadr-ai::json-object
+               "input" (codemode-json-number input)
+               "output" (codemode-json-number output)
+               "cacheRead" (codemode-json-number cache-read)
+               "cacheWrite" (codemode-json-number cache-write))))
+    (when tiers
+      (setf (gethash "tiers" cost) (map 'vector #'codemode-tier-json tiers)))
+    cost))
+
+(defun codemode-put-compat (info compat)
+  (when compat
+    (setf (gethash "compat" info)
+          (if (and (consp (first compat)) (consp (car (first compat))))
+              (codemode-alist-json compat :null-as-false t)
+              (if (consp (first compat))
+                  (codemode-alist-json compat :null-as-false t)
+                  (codemode-plist-json compat))))))
+
 (defun codemode-model-info (model)
-  (let ((info (cadr-ai::json-object
+  (let ((source (codemode-resolved-model-source model))
+        (info (cadr-ai::json-object
+               "type" (codemode-resolved-model-type model)
                "provider" (codemode-resolved-model-provider model)
                "id" (codemode-resolved-model-id model)
                "name" (codemode-resolved-model-name model)
                "api" (codemode-resolved-model-api model)
                "baseUrl" (codemode-resolved-model-base-url model)
                "input" (coerce (codemode-resolved-model-input model) 'vector))))
-    (when (codemode-resolved-model-context-window model)
-      (setf (gethash "contextWindow" info)
-            (codemode-resolved-model-context-window model)))
+    (cond
+      ((typep source 'cadr-ai:classifier-model)
+       (setf (gethash "cost" info)
+             (codemode-cost-json
+              (cadr-ai:classifier-model-input-price source)
+              (cadr-ai:classifier-model-output-price source)
+              (cadr-ai::classifier-model-cache-read-price source)
+              (cadr-ai::classifier-model-cache-write-price source)
+              (cadr-ai::classifier-model-cost-tiers source)))
+       (setf (gethash "contextWindow" info)
+             (cadr-ai:classifier-model-context-window source))
+       (let ((compat (cadr-ai:classifier-model-compat source)))
+         (when compat
+           (setf (gethash "compat" info)
+                 (codemode-alist-json compat :null-as-false t)))))
+      ((typep source 'cadr-ai:image-model)
+       (setf (gethash "output" info)
+             (map 'vector (lambda (item)
+                            (if (symbolp item)
+                                (string-downcase (symbol-name item))
+                                item))
+                  (cadr-ai:image-model-output source)))
+       (setf (gethash "cost" info)
+             (codemode-cost-json
+              (cadr-ai:image-model-input-price source)
+              (cadr-ai:image-model-output-price source)
+              (cadr-ai::image-model-cache-read-price source)
+              (cadr-ai::image-model-cache-write-price source)))
+       (when (cadr-ai::image-model-input-limits source)
+         (setf (gethash "inputLimits" info)
+               (codemode-plist-json (cadr-ai::image-model-input-limits source)))))
+      ((typep source 'cadr-ai:model-metadata)
+       (setf (gethash "reasoning" info)
+             (cadr-ai:model-metadata-reasoning-p source))
+       (setf (gethash "contextWindow" info)
+             (cadr-ai::model-metadata-context-window source))
+       (setf (gethash "maxTokens" info)
+             (cadr-ai::model-metadata-max-output-tokens source))
+       (setf (gethash "cost" info)
+             (codemode-cost-json
+              (cadr-ai:model-metadata-input-price source)
+              (cadr-ai::model-metadata-output-price source)
+              (cadr-ai::model-metadata-cache-read-price source)
+              (cadr-ai::model-metadata-cache-write-price source)
+              (cadr-ai::model-metadata-cost-tiers source)))
+       (when (cadr-ai::model-metadata-thinking-level-map source)
+         (setf (gethash "thinkingLevelMap" info)
+               (codemode-alist-json
+                (cadr-ai::model-metadata-thinking-level-map source))))
+       (codemode-put-compat info (cadr-ai::model-metadata-compat source))
+       (when (cadr-ai::model-metadata-input-limits source)
+         (setf (gethash "inputLimits" info)
+               (codemode-plist-json (cadr-ai::model-metadata-input-limits source)))))
+      ((codemode-resolved-model-context-window model)
+       (setf (gethash "contextWindow" info)
+             (codemode-resolved-model-context-window model))))
     info))
 
 (defun codemode-provider-available-p (provider)
@@ -970,6 +1521,109 @@
    "stopReason" "error"
    "errorMessage" message))
 
+(defun codemode-usage-json (usage)
+  (let* ((cost (cadr-ai:usage-cost usage))
+         (object
+           (cadr-ai::json-object
+            "input" (cadr-ai:usage-input usage)
+            "output" (cadr-ai:usage-output usage)
+            "cacheRead" (cadr-ai:usage-cache-read usage)
+            "cacheWrite" (cadr-ai:usage-cache-write usage)
+            "totalTokens" (cadr-ai:usage-total usage)
+            "cost"
+            (cadr-ai::json-object
+             "input" (codemode-json-number (cadr-ai:cost-input cost))
+             "output" (codemode-json-number (cadr-ai:cost-output cost))
+             "cacheRead" (codemode-json-number (cadr-ai:cost-cache-read cost))
+             "cacheWrite" (codemode-json-number (cadr-ai:cost-cache-write cost))
+             "total" (codemode-json-number (cadr-ai:cost-total cost))))))
+    (when (cadr-ai:usage-cache-write-1h usage)
+      (setf (gethash "cacheWrite1h" object) (cadr-ai:usage-cache-write-1h usage)))
+    (when (cadr-ai:usage-reasoning usage)
+      (setf (gethash "reasoning" object) (cadr-ai:usage-reasoning usage)))
+    object))
+
+(defun codemode-json-count (object key &optional (default 0))
+  (let ((value (and (hash-table-p object) (gethash key object))))
+    (if (numberp value) (round value) default)))
+
+(defun codemode-usage-from-json (object)
+  (unless (hash-table-p object)
+    (return-from codemode-usage-from-json nil))
+  (let ((cost (gethash "cost" object)))
+    (cadr-ai:make-usage
+     :input (codemode-json-count object "input")
+     :output (codemode-json-count object "output")
+     :cache-read (codemode-json-count object "cacheRead")
+     :cache-write (codemode-json-count object "cacheWrite")
+     :total (codemode-json-count object "totalTokens"
+                                 (codemode-json-count object "total"))
+     :cost (if (hash-table-p cost)
+               (cadr-ai:make-cost
+                :input (coerce (or (gethash "input" cost) 0) 'double-float)
+                :output (coerce (or (gethash "output" cost) 0) 'double-float)
+                :cache-read (coerce (or (gethash "cacheRead" cost) 0) 'double-float)
+                :cache-write (coerce (or (gethash "cacheWrite" cost) 0) 'double-float)
+                :total (coerce (or (gethash "total" cost) 0) 'double-float))
+               (cadr-ai:make-cost)))))
+
+(defun codemode-combine-usage (first second)
+  (let ((left (cadr-ai:usage-cost first))
+        (right (cadr-ai:usage-cost second)))
+    (cadr-ai:make-usage
+     :input (+ (cadr-ai:usage-input first) (cadr-ai:usage-input second))
+     :output (+ (cadr-ai:usage-output first) (cadr-ai:usage-output second))
+     :cache-read (+ (cadr-ai:usage-cache-read first) (cadr-ai:usage-cache-read second))
+     :cache-write (+ (cadr-ai:usage-cache-write first) (cadr-ai:usage-cache-write second))
+     :cache-write-1h (when (or (cadr-ai:usage-cache-write-1h first)
+                               (cadr-ai:usage-cache-write-1h second))
+                       (+ (or (cadr-ai:usage-cache-write-1h first) 0)
+                          (or (cadr-ai:usage-cache-write-1h second) 0)))
+     :reasoning (when (or (cadr-ai:usage-reasoning first)
+                          (cadr-ai:usage-reasoning second))
+                  (+ (or (cadr-ai:usage-reasoning first) 0)
+                     (or (cadr-ai:usage-reasoning second) 0)))
+     :total (+ (cadr-ai:usage-total first) (cadr-ai:usage-total second))
+     :cost (cadr-ai:make-cost
+            :input (+ (cadr-ai:cost-input left) (cadr-ai:cost-input right))
+            :output (+ (cadr-ai:cost-output left) (cadr-ai:cost-output right))
+            :cache-read (+ (cadr-ai:cost-cache-read left) (cadr-ai:cost-cache-read right))
+            :cache-write (+ (cadr-ai:cost-cache-write left) (cadr-ai:cost-cache-write right))
+            :total (+ (cadr-ai:cost-total left) (cadr-ai:cost-total right))))))
+
+(defun codemode-add-script-usage (usage)
+  (when (and usage *codemode-collect-usage*)
+    (setf *codemode-script-usage*
+          (if *codemode-script-usage*
+              (codemode-combine-usage *codemode-script-usage* usage)
+              usage))))
+
+(defun codemode-note-model-row (record value)
+  (when (and record (hash-table-p value))
+    (let ((provider (gethash "provider" value))
+          (id (gethash "model" value)))
+      (when (and (stringp provider) (stringp id))
+        (setf (gethash "args" record) (format nil "~A/~A" provider id))))
+    (let ((usage (gethash "usage" value)))
+      (when (hash-table-p usage)
+        (let ((cost (gethash "cost" usage)))
+          (when (hash-table-p cost)
+            (multiple-value-bind (total present) (gethash "total" cost)
+              (when present
+                (setf (gethash "cost" record) total)))))))))
+
+(defun codemode-take-model-value (value)
+  (cond
+    ((typep value 'cadr-ai:classifier-result)
+     (values (codemode-classifier-json value)
+             (cadr-ai::classifier-result-usage value)))
+    ((typep value 'cadr-ai:assistant-images)
+     (values (codemode-image-json value)
+             (cadr-ai::assistant-images-usage value)))
+    ((hash-table-p value)
+     (values value (codemode-usage-from-json (gethash "usage" value))))
+    (t (values value nil))))
+
 (defun codemode-classifier-json (result)
   (let ((object (cadr-ai::json-object
                  "api" (codemode-wire-name (cadr-ai::classifier-result-api result))
@@ -978,6 +1632,9 @@
                  "answers" (cadr-ai::classifier-result-answers result)
                  "stopReason" (codemode-stop-name
                                (cadr-ai::classifier-result-stop-reason result)))))
+    (when (cadr-ai::classifier-result-usage result)
+      (setf (gethash "usage" object)
+            (codemode-usage-json (cadr-ai::classifier-result-usage result))))
     (when (cadr-ai::classifier-result-error-message result)
       (setf (gethash "errorMessage" object)
             (cadr-ai::classifier-result-error-message result)))
@@ -994,6 +1651,9 @@
                            'vector)
                  "stopReason" (codemode-stop-name
                                (cadr-ai::assistant-images-stop-reason result)))))
+    (when (cadr-ai::assistant-images-usage result)
+      (setf (gethash "usage" object)
+            (codemode-usage-json (cadr-ai::assistant-images-usage result))))
     (when (cadr-ai::assistant-images-error-message result)
       (setf (gethash "errorMessage" object)
             (cadr-ai::assistant-images-error-message result)))
@@ -1154,7 +1814,8 @@
                "description" (codemode-tool-sample
                               (cadr-ai:tool-name tool)
                               (cadr-ai:tool-description tool)
-                              (cadr-ai:tool-parameters tool))))
+                              (cadr-ai:tool-parameters tool)
+                              (cadr-ai::tool-output-schema tool))))
             tools)
     'vector)))
 
@@ -1237,7 +1898,8 @@
            (if tool
                (codemode-tool-sample (cadr-ai:tool-name tool)
                                      (cadr-ai:tool-description tool)
-                                     (cadr-ai:tool-parameters tool))
+                                     (cadr-ai:tool-parameters tool)
+                                     (cadr-ai::tool-output-schema tool))
                :codemode-undefined))))
       ((string= name "searchTools")
        (let ((query (if (plusp (length args)) (aref args 0) :codemode-absent)))
@@ -1285,7 +1947,8 @@
                      "description" (codemode-tool-sample
                                     (cadr-ai:tool-name tool)
                                     (cadr-ai:tool-description tool)
-                                    (cadr-ai:tool-parameters tool)))))
+                                    (cadr-ai:tool-parameters tool)
+                                    (cadr-ai::tool-output-schema tool)))))
                 ranked))))
       ((string= name "describeNamespace")
        (let ((wanted (if (plusp (length args)) (aref args 0) :codemode-absent)))
@@ -1456,7 +2119,7 @@
       (codemode-parse-ordered args-json)
       (cadr-ai::parse-json args-json)))
 
-(defun codemode-handle-call (context tools call generated)
+(defun codemode-handle-call (context tools call generated &optional record)
   (destructuring-bind (kind id target name args-json) call
     (declare (ignore kind id))
     (handler-case
@@ -1472,7 +2135,12 @@
                              (t (error "Unknown tool \"~A\"" name)))))
                (list t (codemode-payload value))))
             ((and (stringp name) (eql 0 (search "models." name)))
-             (let ((value (codemode-model-call name arguments)))
+             (multiple-value-bind (value usage)
+                 (codemode-take-model-value (codemode-model-call name arguments))
+               (codemode-add-script-usage usage)
+               (when (member name '("models.classify" "models.generateImages")
+                             :test #'string=)
+                 (codemode-note-model-row record value))
                (when (and (string= name "models.generateImages")
                           (hash-table-p value))
                  (let ((output (gethash "output" value)))
@@ -1528,7 +2196,10 @@
                (format nil "Script error:~%~A~%~%The script did not start." reason)
                nil))))
         (let ((calls nil)
-              (generated (list 0)))
+              (generated (list 0))
+              (*codemode-model-limiter* (make-codemode-call-limiter))
+              (*codemode-script-usage* nil)
+              (*codemode-collect-usage* t))
           (unwind-protect
                (handler-case
                    (let* ((tools (or (when context
@@ -1555,7 +2226,8 @@
                                                     "status" "running")))
                                        (push record calls)
                                        (let ((result (codemode-handle-call
-                                                      context (or tools nil) call generated)))
+                                                      context (or tools nil) call generated
+                                                      record)))
                                          (setf (gethash "status" record)
                                                (or (third result)
                                                    (if (first result) "ok" "error")))
@@ -1566,7 +2238,8 @@
                        (codemode-finish-script
                         started ok value writes output error-text kind
                         (nreverse calls) (car generated) api
-                        (or (getf options :max-output-tokens) 10000))))
+                        (or (getf options :max-output-tokens) 10000)
+                        *codemode-script-usage*)))
                  (error (condition)
                    (let ((loaded *codemode-wasm-ready*))
                      (codemode-failure
@@ -1594,7 +2267,7 @@
            error-text
            "Error"))))
 
-(defun codemode-finish-script (started ok value writes output error-text kind calls images api max-tokens)
+(defun codemode-finish-script (started ok value writes output error-text kind calls images api max-tokens usage)
   (let ((items (codemode-format-output output)))
     (if ok
         (progn
@@ -1629,7 +2302,7 @@
                             (codemode-wall-time started)))
              body)
        (cadr-ai::json-object "calls" (coerce calls 'vector))
-       nil nil nil (not ok)))))
+       nil nil usage (not ok)))))
 
 (defun codemode-value-text (json)
   (when json
