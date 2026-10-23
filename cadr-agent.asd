@@ -96,6 +96,7 @@
                              (:file "retry-test")
                              (:file "tool-loop-test")
                              (:file "virtual-models-test")
+                             (:file "virtual-model-registration-test")
                              (:file "tool-search-test")
                              (:file "mcp-config-test")
                              (:file "mcp-oauth-test")

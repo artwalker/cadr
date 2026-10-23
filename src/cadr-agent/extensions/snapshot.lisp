@@ -346,6 +346,10 @@ types add a method here instead of a second etypecase."))
       (refresh-agent-extension-tools
        (extension-host-agent host))
       (apply-extension-provider-overlays host))
+    ;; v1.4.0 runner.ts bindCore flushes queued virtual models
+    ;; once the extension set is installed. Failures are reported and
+    ;; do not drop the rest of the set.
+    (install-extension-virtual-models host snapshot)
     (copy-list
      (extension-snapshot-conflicts snapshot))))
 

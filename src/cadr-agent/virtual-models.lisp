@@ -14,7 +14,10 @@
   previous
   failed
   state
-  messages)
+  messages
+  ;; v1.4.0 ModelRouteRequest.signal. The request abort signal,
+  ;; checked with extension-cancellation-aborted-p.
+  signal)
 
 (defstruct virtual-model-route
   model
@@ -91,13 +94,23 @@
      :context-window (or context-window 0)
      :max-tokens (or max-tokens 0))))
 
+(defun virtual-model-blank-text-p (value)
+  ;; v1.4.0 model-runtime.ts registerVirtualModel trims before
+  ;; rejecting an empty provider or id. The stored text stays as given.
+  (or (not (stringp value))
+      (zerop
+       (length
+        (string-trim
+         '(#\Space #\Tab #\Newline #\Return #\Page #\Vt)
+         value)))))
+
 (defun register-virtual-model
     (&key provider id name route thinking-levels context-window
           max-tokens input physical-model)
   (unless (and (functionp route)
-               (plusp (length (virtual-model-provider-name provider)))
-               (stringp id)
-               (plusp (length id)))
+               (not (virtual-model-blank-text-p
+                     (virtual-model-provider-name provider)))
+               (not (virtual-model-blank-text-p id)))
     (error "Virtual model provider and id must not be empty."))
   (when (and physical-model (not (virtual-model-p physical-model)))
     (error "Virtual model ~A/~A conflicts with a physical model."
@@ -138,7 +151,7 @@
    :api (or (cadr-ai:assistant-message-api message) :openai-completions)))
 
 (defun resolve-virtual-model
-    (model messages &key reason thinking-level failed state
+    (model messages &key reason thinking-level failed state signal
                          get-model has-auth-p)
   (let* ((name
            (format nil "Virtual model ~A/~A"
@@ -190,8 +203,11 @@
                (and failed-model failed
                     (list :model failed-model
                           :message failed))
-               :state state
-               :messages messages)))
+               ;; v1.4.0 docs/virtual-models.md. direct requests
+               ;; have no router state.
+               :state (unless (eq (or reason :direct) :direct) state)
+               :messages messages
+               :signal signal)))
            (target (virtual-model-route-model route)))
       (unless (and (typep target 'cadr-ai:model)
                    (not (virtual-model-p target)))
@@ -417,6 +433,12 @@
                     :thinking-level (agent-thinking-level agent)
                     :failed (and (eq reason :retry) failed)
                     :state previous-state
+                    :signal
+                    (make-extension-cancellation-signal
+                     :aborted-function
+                     (lambda () (agent-aborted-p agent))
+                     :abort-function
+                     (lambda () (agent-abort agent)))
                     :has-auth-p
                     (lambda (physical)
                       (agent-provider-has-auth-p agent physical)))))

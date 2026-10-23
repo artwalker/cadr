@@ -46,6 +46,7 @@ Registration forms:
 | `define-flag` | `--flag` CLI flag |
 | `define-prompt-template` | reusable prompt template |
 | `define-provider` / `define-native-provider` | model provider |
+| `define-virtual-model` | selectable model that routes each request to a physical model |
 | `define-message-renderer` / `define-entry-renderer` / `define-tool-renderer` | custom rendering |
 | `define-markdown-transformer` | markdown preprocessing |
 

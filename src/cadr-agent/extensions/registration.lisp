@@ -904,3 +904,217 @@
     (tool-name &key call result)
   `(register-extension-tool-renderer
     ,tool-name :call ,call :result ,result))
+
+;; v1.4.0 loader.ts pendingVirtualModelRegistrations. Definitions
+;; stay on the bundle until replace-extension-bundles flushes them.
+;; A weak key drops the queue when the bundle itself is gone.
+(defvar *extension-virtual-models*
+  (make-hash-table :test #'eq :weakness :key))
+
+(defstruct extension-virtual-model
+  provider
+  id
+  name
+  thinking-levels
+  context-window
+  max-tokens
+  input
+  route-function
+  bundle
+  ;; Set once bind has put this definition in the catalog. A later
+  ;; snapshot install must not register it again: unregister only
+  ;; removes the catalog entry, and a provider refresh reinstalls
+  ;; the same bundles.
+  (installed-p nil :type boolean))
+
+(defun extension-virtual-model-same-p (definition provider id)
+  (and (string-equal
+        (virtual-model-provider-name
+         (extension-virtual-model-provider definition))
+        (virtual-model-provider-name provider))
+       (string= (extension-virtual-model-id definition) id)))
+
+(defun remember-extension-virtual-model (bundle definition)
+  (setf (gethash bundle *extension-virtual-models*)
+        (nconc
+         (remove-if
+          (lambda (existing)
+            (extension-virtual-model-same-p
+             existing
+             (extension-virtual-model-provider definition)
+             (extension-virtual-model-id definition)))
+          (gethash bundle *extension-virtual-models*))
+         (list definition)))
+  definition)
+
+(defun forget-extension-virtual-model (bundle provider id)
+  (setf (gethash bundle *extension-virtual-models*)
+        (remove-if
+         (lambda (existing)
+           (extension-virtual-model-same-p existing provider id))
+         (gethash bundle *extension-virtual-models*))))
+
+(defun extension-bundle-live-p (host bundle)
+  (member bundle
+          (extension-snapshot-bundles
+           (extension-host-snapshot host))
+          :test #'eq))
+
+(defun extension-catalog-model (host provider id)
+  (let ((function (extension-host-action-function host)))
+    (when function
+      (handler-case
+          (funcall function :model-registry-find (list provider id))
+        (error () nil)))))
+
+(defun extension-virtual-model-route (host bundle route)
+  (lambda (request)
+    (let ((context
+            (%make-extension-context
+             :host host
+             :source-path (extension-bundle-path bundle)
+             :bundle bundle
+             :kind :provider)))
+      (unwind-protect
+          (funcall route request context)
+        (setf (%extension-context-active-p context) nil)))))
+
+(defun install-extension-virtual-model (host definition)
+  (let* ((provider (extension-virtual-model-provider definition))
+         (id (extension-virtual-model-id definition))
+         (bundle (extension-virtual-model-bundle definition))
+         (existing (extension-catalog-model host provider id)))
+    (register-virtual-model
+     :provider provider
+     :id id
+     :name (extension-virtual-model-name definition)
+     :route
+     (extension-virtual-model-route
+      host bundle
+      (extension-virtual-model-route-function definition))
+     :thinking-levels
+     (extension-virtual-model-thinking-levels definition)
+     :context-window
+     (extension-virtual-model-context-window definition)
+     :max-tokens (extension-virtual-model-max-tokens definition)
+     :input (extension-virtual-model-input definition)
+     :physical-model
+     (and existing
+          (not (virtual-model-p existing))
+          existing))))
+
+(defun install-extension-virtual-models (host snapshot)
+  (dolist (bundle (extension-snapshot-bundles snapshot))
+    (dolist (definition
+             (copy-list
+              (gethash bundle *extension-virtual-models*)))
+      (unless (extension-virtual-model-installed-p definition)
+        (handler-case
+            (progn
+              (install-extension-virtual-model host definition)
+              (setf (extension-virtual-model-installed-p definition) t))
+          (error (condition)
+            (forget-extension-virtual-model
+             bundle
+             (extension-virtual-model-provider definition)
+             (extension-virtual-model-id definition))
+            (funcall
+             (extension-host-notify-function host)
+             (format nil "Extension ~S error: ~A"
+                     (extension-bundle-path bundle)
+                     condition)
+             :error)))))))
+
+(defun queue-extension-virtual-model
+    (host bundle provider id route
+     &key name thinking-levels context-window max-tokens input)
+  (let ((definition
+          (make-extension-virtual-model
+           :provider provider
+           :id id
+           :name name
+           :thinking-levels thinking-levels
+           :context-window context-window
+           :max-tokens max-tokens
+           :input input
+           :route-function route
+           :bundle bundle)))
+    (when (and host (extension-bundle-live-p host bundle))
+      (install-extension-virtual-model host definition)
+      (setf (extension-virtual-model-installed-p definition) t))
+    (remember-extension-virtual-model bundle definition)))
+
+(defun register-extension-virtual-model
+    (provider id &key name thinking-levels context-window
+                      max-tokens input route)
+  (queue-extension-virtual-model
+   (and *extension-registration-api*
+        (%extension-api-host *extension-registration-api*))
+   (require-extension-registration-bundle)
+   provider id route
+   :name name
+   :thinking-levels thinking-levels
+   :context-window context-window
+   :max-tokens max-tokens
+   :input input))
+
+(defun extension-api-register-virtual-model
+    (api provider id &key name thinking-levels context-window
+                          max-tokens input route)
+  (assert-active-extension-api api)
+  (queue-extension-virtual-model
+   (%extension-api-host api)
+   (%extension-api-bundle api)
+   provider id route
+   :name name
+   :thinking-levels thinking-levels
+   :context-window context-window
+   :max-tokens max-tokens
+   :input input))
+
+(defun drop-extension-virtual-model (host bundle provider id)
+  (forget-extension-virtual-model bundle provider id)
+  (when (and host (extension-bundle-live-p host bundle))
+    (unregister-virtual-model provider id))
+  nil)
+
+(defun extension-api-unregister-virtual-model (api provider id)
+  (assert-active-extension-api api)
+  (drop-extension-virtual-model
+   (%extension-api-host api)
+   (%extension-api-bundle api)
+   provider id))
+
+(defun extension-context-register-virtual-model
+    (context provider id &key name thinking-levels context-window
+                              max-tokens input route)
+  (assert-active-extension-context context)
+  (queue-extension-virtual-model
+   (%extension-context-host context)
+   (%extension-context-bundle context)
+   provider id route
+   :name name
+   :thinking-levels thinking-levels
+   :context-window context-window
+   :max-tokens max-tokens
+   :input input))
+
+(defun extension-context-unregister-virtual-model
+    (context provider id)
+  (assert-active-extension-context context)
+  (drop-extension-virtual-model
+   (%extension-context-host context)
+   (%extension-context-bundle context)
+   provider id))
+
+(defmacro define-virtual-model
+    (provider id &key name thinking-levels context-window
+                      max-tokens input route)
+  `(register-extension-virtual-model
+    ,provider ,id
+    :name ,name
+    :thinking-levels ,thinking-levels
+    :context-window ,context-window
+    :max-tokens ,max-tokens
+    :input ,input
+    :route ,route))

@@ -1265,7 +1265,9 @@
     ;; Measured 2026-10-23: 274 def forms in these eight owners.
     ;; +1 GAP-19: emit-cache-warming-decision (lifecycle.lisp).
     ;; Measured 2026-10-23 after that function: 275.
-    (is (= 275 definition-count)
+    ;; +18 GAP-21: virtual-model registration queue and macros
+    ;; (registration.lisp). Measured 2026-10-23: 293.
+    (is (= 293 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))
@@ -1316,9 +1318,13 @@
       ;; #:update-mcp-server-config. Parent freeze was
       ;; f52b974189f593b4abc2d46ce05885345f743663a8ea1498958daceef3764cb1.
       ;; MCP client and resource exports sit in the same span.
+      ;; GAP-21 adds define-virtual-model and the register/unregister
+      ;; virtual-model exports inside this span.
+      ;; Measured 2026-10-23:
+      ;; c6d41827447c6004e2bb56d0e1842ac7ed21205c0e704223b729a95d59b29210.
       (is (and exports
                (string=
-                "5ee2540df7db49a20ad75a53cb3e305306134819752d20577cb3b17b31e790e6"
+                "c6d41827447c6004e2bb56d0e1842ac7ed21205c0e704223b729a95d59b29210"
                 (goal14-sha256 exports)))
           "B9 changed the frozen extension export text")
       (is (and events

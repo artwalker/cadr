@@ -45,6 +45,7 @@
    #:virtual-model-route-request-messages
    #:virtual-model-route-request-previous
    #:virtual-model-route-request-failed
+   #:virtual-model-route-request-signal
    #:branch-selection
    #:branch-selection-provider
    #:branch-selection-model-id
@@ -187,6 +188,7 @@
    #:define-event-hook
    #:define-prompt-template
    #:define-provider
+   #:define-virtual-model
    #:define-native-provider
    #:define-shortcut
    #:define-flag
@@ -216,6 +218,8 @@
    #:extension-api-events-emit
    #:extension-api-register-mcp-server
    #:extension-api-unregister-mcp-server
+   #:extension-api-register-virtual-model
+   #:extension-api-unregister-virtual-model
    #:extension-api-get-mcp-servers
    #:validate-mcp-server-config
    #:mcp-tool-exposure
@@ -384,6 +388,8 @@
    #:extension-context-tools-expanded-p
    #:extension-context-set-tools-expanded
    #:extension-context-register-provider
+   #:extension-context-register-virtual-model
+   #:extension-context-unregister-virtual-model
    #:extension-context-register-tool
    #:extension-context-execute-tool
    #:extension-context-send-message
