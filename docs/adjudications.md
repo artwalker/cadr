@@ -2384,3 +2384,16 @@ The gray `Working` status rule is canonicalized in
   is converging, so this pass stays inside that scope.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-41. The status
   cell starts with `open：顾问裁决 2026-10-23 第四次返修，范围只限第三次验收的一条（offset/limit 续读时，文件以换行结尾的末尾空行要按上游计入行数），并把钉死 40/80 more lines 的测试改为对着上游 v1.4.0 的计数锁死；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-23 — GAP-18 gets a narrow fourth repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-18's third acceptance left one defect. The defect count is
+  converging, so the row is open for a fourth repair limited to that
+  defect.
+- **Scope:** when the parent directory does not exist,
+  `/export nested/report.html` and `foo/./bar.html` report ENOENT
+  upstream. cadr must not create the directory. Tests that locked a
+  successful export must lock that ENOENT.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-18. The status
+  cell keeps the previous text after the new open prefix.
