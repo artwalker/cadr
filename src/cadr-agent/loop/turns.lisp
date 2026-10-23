@@ -387,10 +387,16 @@
             ((null messages) nil)
             ((listp messages) messages)
             (t (list messages)))))
+    (apply-tool-prepare-loadouts agent)
     (setf pending
           (declare-tool-changes
            (agent-messages agent)
-           (registry-tools (agent-tool-registry agent))
+           (remove-if
+            (lambda (tool)
+              (member (cadr-ai:tool-name tool)
+                      (agent-codemode-hidden-declarations agent)
+                      :test #'string=))
+            (registry-tools (agent-tool-registry agent)))
            pending))
     (when pending
       (let ((session (agent-session agent)))

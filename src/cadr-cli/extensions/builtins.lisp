@@ -408,9 +408,8 @@ Globals:
     parameters))
 
 (defun codemode-extension-factory (api)
-  ;; The QuickJS worker is GAP-05. This factory still registers the
-  ;; inactive model-only tool so another extension can replace it.
-  (declare (ignore api))
+  ;; pi@4a080252f createCodemodeExtension. Inactive until --tools or
+  ;; defaultTools names it. The QuickJS module loads on the first script.
   (cadr-agent::register-rich-extension-tool
    "codemode"
    :label "codemode"
@@ -422,12 +421,14 @@ Globals:
    :execution-mode :parallel
    :exposure :model-only
    :default-active nil
+   :prepare-loadout #'codemode-prepare-loadout
    :handler
    (lambda (call-id arguments signal update context)
-     (declare (ignore call-id arguments signal update context))
-     (error 'cadr-agent:extension-execution-error
-            :message
-            "codemode sandbox is not available"))))
+     (handler-case
+         (execute-codemode api call-id arguments signal update context)
+       (codemode-source-error (condition)
+         (error 'cadr-agent:extension-execution-error
+                :message (codemode-source-error-text condition)))))))
 
 (defparameter +mcp-command-usage+
   "Usage: /mcp, /mcp login [server], /mcp logout [server], /mcp reconnect [server]")

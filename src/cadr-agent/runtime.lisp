@@ -113,7 +113,9 @@
   (tool-allowlist nil :type list)
   (tool-allowlist-p nil :type boolean)
   (tool-allowlist-filters-mcp-p nil :type boolean)
-  (excluded-tool-names nil :type list))
+  (excluded-tool-names nil :type list)
+  ;; pi@4a080252f prepareLoadout hiddenDeclarations. These stay callable.
+  (codemode-hidden-declarations nil :type list))
 
 (defun emit-agent-event (agent type
                          &key

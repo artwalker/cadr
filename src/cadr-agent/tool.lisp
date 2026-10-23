@@ -135,7 +135,19 @@
     (setf
      (agent-tool-registry agent)
      (make-tool-registry effective)))
+  (apply-tool-prepare-loadouts agent)
   agent)
+
+(defun apply-tool-prepare-loadouts (agent)
+  ;; pi@4a080252f agent-session.ts _applyToolLoadout prepareLoadout.
+  (let ((host (agent-extension-host agent)))
+    (when host
+      (dolist (definition
+               (extension-snapshot-tools
+                (extension-host-current-snapshot host)))
+        (let ((prepare (extension-tool-definition-prepare-loadout definition)))
+          (when prepare
+            (funcall prepare agent)))))))
 
 (defun recorded-tool-name (entry)
   (cond
@@ -616,7 +628,7 @@
                          (cadr-ai:tool-call-id call))))
                (multiple-value-bind
                      (content details terminate-p
-                      structured-content usage)
+                      structured-content usage is-error)
                    (funcall
                     (cadr-ai:tool-executor tool)
                     (cadr-ai:tool-call-id call)
@@ -637,7 +649,7 @@
                    :details details
                    :structured-content structured-content
                    :usage usage
-                   :is-error nil
+                   :is-error (eq is-error t)
                    :duration-ms
                    (tool-elapsed-ms started)))))))
       (sb-thread:with-recursive-lock

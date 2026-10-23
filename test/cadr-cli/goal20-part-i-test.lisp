@@ -3,7 +3,7 @@
 (in-suite cadr-cli-suite)
 
 (defparameter *goal20-lispification-identity*
-  "GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=339 lines=148160 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=177 in-progress=0 done=157")
+  "GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=341 lines=149564 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=177 in-progress=0 done=159")
 
 (defun goal20-part-i-ledger ()
   (uiop:read-file-string
@@ -38,7 +38,7 @@
            (count-substring "| no-rewrite |" section-2)))
     (is (= 0
            (count-substring "| needs-rewrite |" section-2)))
-    (is (= 157
+    (is (= 159
            (count-substring "| done |" section-2)))
     (is (= 5
            (count-substring

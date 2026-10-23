@@ -48,6 +48,9 @@
   ;; does not declare a reach. A function returns "all" or a list of
   ;; tool names for one call's input.
   reaches-tools
+  ;; pi@4a080252f ToolDefinition.prepareLoadout. Called with the agent
+  ;; after the registry is rebuilt and at the start of a turn.
+  prepare-loadout
   ;; pi@4a080252f extensions/types.ts defaultActive. Nil keeps the tool
   ;; registered without activating it. Naming it still activates it.
   (default-active t :type boolean)
@@ -274,6 +277,7 @@
             handler render-call render-result
             (exposure :direct)
             reaches-tools
+            prepare-loadout
             (default-active t))
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
@@ -319,6 +323,10 @@
       (error 'extension-registration-error
              :message
              (format nil "Tool ~A reaches-tools must be a function or NIL" name)))
+    (unless (or (null prepare-loadout) (functionp prepare-loadout))
+      (error 'extension-registration-error
+             :message
+             (format nil "Tool ~A prepare-loadout must be a function or NIL" name)))
     (ensure-unique-extension-definition
      (extension-bundle-tools bundle) name
      #'extension-tool-definition-name "Tool")
@@ -339,6 +347,7 @@
         :handler handler :render-call render-call :render-result render-result
         :exposure exposure
         :reaches-tools reaches-tools
+        :prepare-loadout prepare-loadout
         :default-active (not (null default-active))
         :bundle bundle)))))
   name)

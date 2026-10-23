@@ -461,7 +461,8 @@
                 #'cadr-ai:tool-name
                 (registry-tools
                  (agent-tool-registry agent))))
-             (hidden (active-hidden-tool-names agent)))
+             (hidden (append (active-hidden-tool-names agent)
+                             (agent-codemode-hidden-declarations agent))))
         (setf
          (getf prompt-options :selected-tools)
          (append

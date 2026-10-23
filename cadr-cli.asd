@@ -108,6 +108,8 @@
                              (:module "extensions"
                               :serial t
                               :components ((:file "discovery")
+                                           (:file "codemode-vm")
+                                           (:file "codemode")
                                            (:file "builtins")
                                            (:file "loader")
                                            (:file "commands")
@@ -277,6 +279,7 @@
                              (:file "session-command-test")
                              (:file "extensions-test")
                              (:file "builtin-extensions-test")
+                             (:file "codemode-test")
                              (:file "llama-extension-test")
                              (:file "goal12-tui-composition-test")
                              (:file "goal12-core-capabilities-test")

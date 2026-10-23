@@ -826,9 +826,11 @@
          (cli-tool-modifiers
            (tool-modifiers cli-tools-option))
          (cli-default-tool-names
-           (or
-            (settings-default-tools settings-manager)
-            +default-coding-tool-names+))
+           (progn
+             (setf *codemode-settings-manager* settings-manager)
+             (or
+              (settings-default-tools settings-manager)
+              +default-coding-tool-names+)))
          (cli-uses-default-tools-p
            ;; pi@4a080252f sdk.ts usesDefaultTools; --no-tools and
            ;; --no-builtin-tools both map to a noTools mode.

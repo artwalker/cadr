@@ -10,6 +10,7 @@
   (clrhash *compile-cache*)
   nil)
 
+;; quickjs-wasi@3.6.2 quickjs.wasm. MIT license, Fabrice Bellard and contributors.
 (defparameter +quickjs-wasm-sha256+
   "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9")
 
