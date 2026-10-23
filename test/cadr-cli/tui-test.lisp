@@ -4815,13 +4815,17 @@
                             #\Escape)
                     (cadr-tui:theme-foreground-ansi
                      :accent)))
+               (cadr-tui:set-terminal-default-colors)
                (write-theme
                 (goal9-complete-theme-json
                  :name "watch"
                  :accent ""))
                (is (settle))
+               (is (eq :dark
+                       (cadr-tui:terminal-theme-name
+                        (cadr-tui:current-theme))))
                (is (string=
-                    ""
+                    "#e5e5e7"
                     (cadr-tui:theme-color-value
                      :accent)))
                (is (string=
@@ -4829,6 +4833,7 @@
                             #\Escape)
                     (cadr-tui:theme-foreground-ansi
                      :accent))))
+          (cadr-tui:set-terminal-default-colors)
           (cadr-tui:reset-current-theme))))))
 
 (test goal9-custom-theme-requires-complete-schema-and-falls-back-thinking-max

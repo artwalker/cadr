@@ -365,8 +365,7 @@
      :dim-keys
      (mapcar #'canonical-theme-color-key dim-keys))))
 
-(defun theme-color-value
-    (key &key (theme (current-theme)))
+(defun theme-stored-color (key theme)
   (let ((canonical-key
           (canonical-theme-color-key key)))
     (multiple-value-bind (value present-p)
@@ -374,7 +373,69 @@
                  (terminal-theme-colors theme))
       (unless present-p
         (error "Unknown semantic theme color: ~S" key))
-      value)))
+      (values value canonical-key))))
+
+(defun guessed-default-color (appearance slot)
+  ;; v1.4.0 theme.ts GUESSED_DEFAULT_COLORS (567469096). Empty tokens
+  ;; still render as SGR 39/49; this table is only the concrete color.
+  (ecase appearance
+    (:dark
+     (ecase slot
+       (:foreground "#e5e5e7")
+       (:background "#000000")))
+    (:light
+     (ecase slot
+       (:foreground "#000000")
+       (:background "#ffffff")))))
+
+(defvar *terminal-default-colors*
+  '(:foreground nil :background nil))
+
+(defun copy-terminal-default-channel (channels)
+  (when channels
+    (unless (and (listp channels)
+                 (= (length channels) 3)
+                 (every (lambda (channel)
+                          (and (integerp channel)
+                               (<= 0 channel 255)))
+                        channels))
+      (error "Terminal default color must be three integers from 0 through 255: ~S"
+             channels))
+    (copy-list channels)))
+
+(defun set-terminal-default-colors (&key foreground background)
+  (setf *terminal-default-colors*
+        (list :foreground
+              (copy-terminal-default-channel foreground)
+              :background
+              (copy-terminal-default-channel background))))
+
+(defun reported-terminal-default-hex (slot)
+  (let ((channels (getf *terminal-default-colors* slot)))
+    (when channels
+      (format nil "#~(~2,'0x~2,'0x~2,'0x~)"
+              (first channels)
+              (second channels)
+              (third channels)))))
+
+(defun resolved-empty-theme-color (theme canonical-key)
+  (let ((slot
+          (if (member canonical-key
+                      +background-theme-color-keys+)
+              :background
+              :foreground)))
+    (or (reported-terminal-default-hex slot)
+        (guessed-default-color
+         (terminal-theme-name theme)
+         slot))))
+
+(defun theme-color-value
+    (key &key (theme (current-theme)))
+  (multiple-value-bind (value canonical-key)
+      (theme-stored-color key theme)
+    (if (and (stringp value) (string= value ""))
+        (resolved-empty-theme-color theme canonical-key)
+        value)))
 
 (defun effective-theme-enabled-p
     (theme enabled-p enabled-p-supplied-p)
@@ -390,8 +451,7 @@
            (member canonical-key
                    +background-theme-color-keys+))
          (value
-           (theme-color-value canonical-key
-                              :theme theme)))
+           (theme-stored-color canonical-key theme)))
     (unless (eq (not (null background-p))
                 (not (null background-key-p)))
       (error "Semantic theme color ~S is not a ~A token"

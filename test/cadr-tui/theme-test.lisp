@@ -305,3 +305,100 @@
   (is (eq :dark (cadr-tui::ensure-theme-keyword "dark")))
   (is (eq :thinking-high
           (cadr-tui::theme-thinking-color-key "high"))))
+
+(test empty-theme-tokens-use-guessed-terminal-defaults
+  ;; v1.4.0 theme-style.test.ts: empty tokens render as SGR 39/49.
+  ;; theme.colors uses GUESSED_DEFAULT_COLORS until setTerminalColors.
+  (let ((capabilities
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-terminal-default-colors)
+           (dolist (entry
+                    '((:dark "#e5e5e7" "#000000")
+                      (:light "#000000" "#ffffff")))
+             (let ((theme
+                     (cadr-tui:make-terminal-theme
+                      (first entry)
+                      :capabilities capabilities
+                      :overrides
+                      '((:text . "")
+                        (:user-message-bg . "")
+                        (:accent . "#010203")))))
+               (is (string= (second entry)
+                            (cadr-tui:theme-color-value
+                             :text :theme theme)))
+               (is (string= (third entry)
+                            (cadr-tui:theme-color-value
+                             :user-message-bg :theme theme)))
+               (is (string= "#010203"
+                            (cadr-tui:theme-color-value
+                             :accent :theme theme)))
+               (is (string= (csi "39m")
+                            (cadr-tui:theme-foreground-ansi
+                             :text :theme theme)))
+               (is (string= (csi "49m")
+                            (cadr-tui:theme-background-ansi
+                             :user-message-bg :theme theme)))
+               (is (string=
+                    (concatenate 'string
+                                 (csi "39m") "x" (csi "39m"))
+                    (cadr-tui:theme-foreground
+                     :text "x" :theme theme)))
+               (is (string=
+                    (concatenate 'string
+                                 (csi "49m") "x" (csi "49m"))
+                    (cadr-tui:theme-background
+                     :user-message-bg "x" :theme theme)))))
+           (cadr-tui:set-terminal-default-colors
+            :foreground '(200 210 220)
+            :background '(10 20 30))
+           (dolist (name '(:dark :light))
+             (let ((theme
+                     (cadr-tui:make-terminal-theme
+                      name
+                      :capabilities capabilities
+                      :overrides
+                      '((:text . "")
+                        (:user-message-bg . "")))))
+               (is (string= "#c8d2dc"
+                            (cadr-tui:theme-color-value
+                             :text :theme theme)))
+               (is (string= "#0a141e"
+                            (cadr-tui:theme-color-value
+                             :user-message-bg :theme theme)))
+               (is (string= (csi "39m")
+                            (cadr-tui:theme-foreground-ansi
+                             :text :theme theme)))))
+           (cadr-tui:set-terminal-default-colors
+            :background '(250 250 250))
+           (let ((theme
+                   (cadr-tui:make-terminal-theme
+                    :dark
+                    :capabilities capabilities
+                    :overrides
+                    '((:text . "")
+                      (:user-message-bg . "")))))
+             (is (string= "#e5e5e7"
+                          (cadr-tui:theme-color-value
+                           :text :theme theme)))
+             (is (string= "#fafafa"
+                          (cadr-tui:theme-color-value
+                           :user-message-bg :theme theme))))
+           (cadr-tui:set-terminal-default-colors
+            :foreground '(200 210 220))
+           (let ((theme
+                   (cadr-tui:make-terminal-theme
+                    :light
+                    :capabilities capabilities
+                    :overrides
+                    '((:text . "")
+                      (:page-bg . "")))))
+             (is (string= "#c8d2dc"
+                          (cadr-tui:theme-color-value
+                           :text :theme theme)))
+             (is (string= "#ffffff"
+                          (cadr-tui:theme-color-value
+                           :page-bg :theme theme)))))
+      (cadr-tui:set-terminal-default-colors))))

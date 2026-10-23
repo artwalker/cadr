@@ -88,8 +88,9 @@
 (test dynamic-resources-example-theme-scrollbar-colors
   ;; v1.4.0 examples/extensions/dynamic-resources/dynamic.json
   ;; (457ae8c79). scrollbarTrack names vars.darkGray "#505050".
-  ;; scrollbarThumb "" stays the terminal-default token. Omitting it
-  ;; would fall back to selectedBg "#3a3a4a".
+  ;; scrollbarThumb "" stays a terminal-default token. Omitting it
+  ;; would fall back to selectedBg "#3a3a4a". With no reported
+  ;; terminal color, the concrete dark background is "#000000".
   (let* ((path
            (merge-pathnames
             "examples/extensions/dynamic-resources/dynamic.json"
@@ -120,17 +121,26 @@
                  (cdr (assoc :scrollbar-thumb overrides))))
     (unwind-protect
          (progn
+           (cadr-tui:set-terminal-default-colors)
            (cadr-cli::apply-tui-theme-summary
             (list :name "dynamic-resources" :object object)
             :capabilities
             (cadr-tui:make-terminal-capabilities
              :images nil :true-color-p t))
+           (is (eq :dark
+                   (cadr-tui:terminal-theme-name
+                    (cadr-tui:current-theme))))
            (is (string= "#505050"
                         (cadr-tui:theme-color-value :scrollbar-track)))
-           (is (string= ""
+           (is (string= "#000000"
                         (cadr-tui:theme-color-value :scrollbar-thumb)))
+           (is (string=
+                (format nil "~C[49m" #\Escape)
+                (cadr-tui:theme-background-ansi
+                 :scrollbar-thumb :enabled-p t)))
            (is (string=
                 (format nil "~C[48;2;80;80;80m" #\Escape)
                 (cadr-tui:theme-background-ansi
                  :scrollbar-track :enabled-p t))))
+      (cadr-tui:set-terminal-default-colors)
       (cadr-tui:set-current-theme previous))))

@@ -202,4 +202,5 @@
            (is (search (format nil "~C[38;2;" #\Escape)
                        (cadr-tui:theme-foreground-ansi :error))))
       (setf cadr-cli::*system-terminal-colors* nil)
+      (cadr-tui:set-terminal-default-colors)
       (cadr-tui:set-current-theme previous))))

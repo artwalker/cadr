@@ -345,7 +345,10 @@
                       (getf previous :background))
                   :palette
                   (or (getf reported :palette)
-                      (getf previous :palette))))))
+                      (getf previous :palette))))
+      (cadr-tui:set-terminal-default-colors
+       :foreground (getf *system-terminal-colors* :foreground)
+       :background (getf *system-terminal-colors* :background))))
   *system-terminal-colors*)
 
 (defun system-theme-document ()

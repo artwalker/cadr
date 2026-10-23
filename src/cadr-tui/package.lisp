@@ -115,6 +115,7 @@
    #:okhsl-to-rgb
    #:oklch-to-rgb
    #:theme-color-value
+   #:set-terminal-default-colors
    #:theme-foreground-ansi
    #:theme-background-ansi
    #:theme-foreground
