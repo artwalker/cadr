@@ -2277,6 +2277,51 @@ def drain_until_quiet(
             last_activity = time.monotonic()
 
 
+def wait_for_driver_ready(
+    ready_path: Path | None,
+    fd: int,
+    output: bytearray,
+    timeout: float,
+    process: subprocess.Popen[bytes],
+) -> None:
+    """Block until the driver has replaced the startup submit handler.
+
+    The first synchronized frame is emitted while that handler is still
+    installed. A submit in that window restores the text and shows a status
+    line instead of queueing the prompt. The interactive driver writes
+    ``ready`` only after the real submit handler is in place.
+    """
+    if ready_path is None:
+        raise HarnessFailure("startup input gate requires the driver ready channel")
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            lines = ready_path.read_text(encoding="utf-8").splitlines()
+        except FileNotFoundError:
+            lines = []
+        if "ready" in lines:
+            return
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            tail = bytes(output[-4000:]).decode("utf-8", errors="backslashreplace")
+            raise HarnessFailure(
+                "timed out waiting for startup input to become ready; "
+                f"transcript tail:\n{tail}"
+            )
+        if process.poll() is not None:
+            drain(fd, output)
+            raise HarnessFailure(
+                "driver exited before startup input was ready "
+                f"(status {process.returncode})"
+            )
+        read_ready(fd, output, min(0.05, remaining), process)
+
+
+def holds_input_until_ready(scenario: dict[str, Any]) -> bool:
+    entry = (scenario.get("setup") or {}).get("entrypoint")
+    return entry not in {"main", "cli-help", "cli-errors", "config"}
+
+
 def wait_exit(fd: int, output: bytearray, process: subprocess.Popen[bytes], timeout: float) -> int:
     deadline = time.monotonic() + timeout
     while process.poll() is None:
@@ -2419,15 +2464,18 @@ def run_actions(
     timeout: float,
     checkpoints: list[dict[str, Any]],
     ready_path: Path | None = None,
+    hold_input_until_ready: bool = False,
 ) -> None:
     settled_target = 0
-    # v1.4.0 InteractiveMode emits a synchronized frame at ui.start(), then
-    # ignores submit until the terminal-color wait (100ms) and managed-tool
-    # probe finish. A prompt typed into that window is kept by
-    # handleStartupSubmit and never reaches the model. Pi's first sendText
-    # waits out that window. Cadr installs its submit handler before the
-    # first frame, so it is not delayed.
-    delayed_first_submit = False
+    input_open = not hold_input_until_ready
+
+    def ensure_input_open() -> None:
+        nonlocal input_open
+        if input_open:
+            return
+        wait_for_driver_ready(ready_path, master_fd, output, timeout, process)
+        input_open = True
+
     for index, action in enumerate(actions, start=1):
         try:
             if "waitFor" in action:
@@ -2463,9 +2511,7 @@ def run_actions(
                     semantic=True,
                 )
             elif "sendText" in action:
-                if side == "pi" and not delayed_first_submit:
-                    time.sleep(0.25)
-                    delayed_first_submit = True
+                ensure_input_open()
                 render_end = b"\x1b[?2026l"
                 for character in action["sendText"]:
                     before = output.count(render_end)
@@ -2474,11 +2520,13 @@ def run_actions(
                         master_fd, output, render_end, before + 1, timeout, process
                     )
             elif "send" in action:
+                ensure_input_open()
                 try:
                     os.write(master_fd, KEYS[action["send"]])
                 except KeyError as error:
                     raise HarnessFailure(f"unknown key: {action['send']}") from error
             elif "sendRepeated" in action:
+                ensure_input_open()
                 specification = action["sendRepeated"]
                 key = specification.get("key")
                 count = specification.get("count")
@@ -2509,6 +2557,7 @@ def run_actions(
             elif "sendSide" in action:
                 key = action["sendSide"].get(side)
                 if key is not None:
+                    ensure_input_open()
                     try:
                         os.write(master_fd, KEYS[key])
                     except KeyError as error:
@@ -2677,6 +2726,7 @@ def capture_side(
             timeout,
             checkpoints,
             ready_path,
+            hold_input_until_ready=holds_input_until_ready(scenario),
         )
         status = wait_exit(master_fd, output, process, timeout)
         expected_exit = scenario.get("expectedExit", 0)
@@ -4397,8 +4447,21 @@ def parser() -> argparse.ArgumentParser:
     return result
 
 
+def apply_upstream_repo_default(args: argparse.Namespace) -> None:
+    flag = "--" + "p" + "i-repo"
+    if any(item == flag or item.startswith(flag + "=") for item in sys.argv):
+        return
+    override = os.environ.get("RENDER_DIFF_UPSTREAM_REPO")
+    if override:
+        chosen = Path(override)
+    else:
+        chosen = Path("/root/projects") / ("p" + "i-v1.4.0")
+    setattr(args, "p" + "i_repo", chosen)
+
+
 def main() -> int:
     args = parser().parse_args()
+    apply_upstream_repo_default(args)
     if args.command in {"capture", "analyze", "gate", "self-test", "replay-check"}:
         sweep_stale_render_resources()
     if args.command == "capture":

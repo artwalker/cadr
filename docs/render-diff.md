@@ -23,12 +23,40 @@ captures the complete PTY byte stream, including ANSI SGR, cursor movement,
 erase operations, terminal-mode setup/teardown, and post-TUI stdout.
 
 The pi driver is copied into an archive materialized from the fixed commit.
-The cache is hydrated with `npm ci --ignore-scripts`; generated provider data,
-which git intentionally omits, is restored from the published fixed-version
-`@earendil-works/pi-ai@0.83.0` artifact after verifying SHA-256
-`f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4`.
+The git object comes from `--pi-repo`. When that flag is omitted, the repo is
+`RENDER_DIFF_UPSTREAM_REPO`, or `/root/projects/pi-v1.4.0` when the variable
+is unset. That path is a detached worktree of tag `v1.4.0`
+(`4a080252f06caf63a525d7873c5d94d3c23887e0`), not `/root/projects/pi-mono`.
+Prepare it once, without lifecycle scripts, and build only the packages named
+by the upstream root `build:offline` script (pi-ai uses `build:offline`, which
+checks the hydrated model data instead of regenerating it):
+
+```sh
+git -C /root/projects/cadr worktree add --detach /root/projects/pi-v1.4.0 v1.4.0
+cd /root/projects/pi-v1.4.0
+npm ci --ignore-scripts
+# Model data is gitignored. Restore the published @earendil-works/pi-ai@1.4.0
+# provider data (SHA-256 below) under packages/ai/src/providers/data/, then:
+npm run build:offline
+```
+
+The harness cache is a separate immutable tree. It is hydrated with
+`npm ci --ignore-scripts`; generated provider data, which git intentionally
+omits, is restored from the published fixed-version
+`@earendil-works/pi-ai@1.4.0` artifact after verifying SHA-256
+`b40e2ba8bb6fc332908f8b96e837dc2d1fdfb45eb9cd382f5aed111462981e3c`.
 That build input is used only by the baseline process and never enters Cadr's
 ASDF or release closure.
+Interactive scenarios do not type into the PTY until the driver ready file
+contains `ready`. v1.4.0 emits the first synchronized frame while
+`handleStartupSubmit` is still installed (`interactive-mode.ts`); a submit in
+that window restores the editor text and shows `Startup is still in progress`
+instead of queueing the prompt. The driver writes `ready` only after
+`setupEditorSubmitHandler`. CLI entrypoints `main`, `cli-help`, `cli-errors`,
+and `config` do not use that gate. `PI_OFFLINE=1` is set, so missing `fd` or
+`rg` skips the download instead of blocking startup. Project trust stays at
+the scenario's `projectTrusted` value (default true), which does not open the
+trust selector.
 It constructs `AgentSessionRuntime` and `InteractiveMode` around pi's faux
 provider.  The Cadr driver loads the five local ASDF systems, constructs a Cadr
 agent around `make-faux-provider`, and runs the real `run-tui` composition root.
@@ -55,10 +83,12 @@ fail-closed analyzer runs:
 ```sh
 python3 ./scripts/render-diff.py gate \
   --tier core \
-  --pi-repo . \
   --output /tmp/cadr-render-gate \
   --analysis-output /tmp/cadr-render-gate-analysis
 ```
+
+`--pi-repo` still overrides the default worktree. Pass it when the v1.4.0
+commit must be read from another clone that contains that object.
 
 The full tier adds the eleven branch-sweep scenarios, for 48 scenarios and 96
 fresh captures. On top of the same real-input path it also requires the
@@ -82,8 +112,8 @@ and then this full tier on the same HEAD:
 Either stage failing blocks the tag; the wrapper does not create or push one.
 
 Both tiers drive the same real-input path; neither substitutes a synthetic
-fixture or a previously captured matrix. The fixed baseline is archived from
-the Cadr repository's retained baseline commit object. The immutable hydrated
+fixture or a previously captured matrix. The fixed baseline is archived from the commit named in the manifest, read
+from the upstream repo above. The immutable hydrated
 cache is reused only when its marker matches that commit.
 
 Every capture produces immutable `.raw` bytes and a sibling SHA-256 file.  A
