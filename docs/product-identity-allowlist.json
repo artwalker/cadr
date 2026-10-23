@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1815,
+  "expected_findings": 1816,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -3153,6 +3153,14 @@
       "line": "cp \"$SCRIPT_DIRECTORY/doomgeneric_pi.c\" \\",
       "occurrences": 1,
       "reason": "Fixed-baseline DOOM example adapter filename is an internal pinned build input and produces no Cadr identity output."
+    },
+    {
+      "path": "examples/extensions/dynamic-resources/dynamic.json",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"$schema\": \"https://pi.dev/schemas/theme.schema.json\",",
+      "occurrences": 1,
+      "reason": "v1.4.0 example theme $schema is the published document at https://pi.dev/schemas/theme.schema.json; the host names that schema, not Cadr product identity."
     },
     {
       "path": "examples/extensions/tic-tac-toe.lisp",

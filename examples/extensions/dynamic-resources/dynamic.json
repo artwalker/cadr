@@ -1,4 +1,5 @@
 {
+  "$schema": "https://pi.dev/schemas/theme.schema.json",
   "name": "dynamic-resources",
   "vars": {
     "cyan": "#00d7ff",
@@ -29,6 +30,8 @@
     "dim": "dimGray",
     "text": "",
     "thinkingText": "gray",
+    "scrollbarTrack": "darkGray",
+    "scrollbarThumb": "",
     "selectedBg": "selectedBg",
     "userMessageBg": "userMsgBg",
     "userMessageText": "",

@@ -84,3 +84,53 @@
                       (sample-theme-object :appearance "sideways"))))))
              (is (typep condition 'error))))
       (cadr-tui:set-current-theme previous))))
+
+(test dynamic-resources-example-theme-scrollbar-colors
+  ;; v1.4.0 examples/extensions/dynamic-resources/dynamic.json
+  ;; (457ae8c79). scrollbarTrack names vars.darkGray "#505050".
+  ;; scrollbarThumb "" stays the terminal-default token. Omitting it
+  ;; would fall back to selectedBg "#3a3a4a".
+  (let* ((path
+           (merge-pathnames
+            "examples/extensions/dynamic-resources/dynamic.json"
+            (asdf:system-source-directory "cadr-cli")))
+         (object
+           (cadr-ai::parse-json
+            (uiop:read-file-string path :external-format :utf-8)))
+         (colors (gethash "colors" object))
+         (variables (gethash "vars" object))
+         (export (gethash "export" object))
+         (overrides (cadr-cli::theme-object-overrides object))
+         (previous (cadr-tui:current-theme)))
+    (is (string= "https://pi.dev/schemas/theme.schema.json"
+                 (gethash "$schema" object)))
+    (is (string= "dynamic-resources" (gethash "name" object)))
+    (is (string= "darkGray" (gethash "scrollbarTrack" colors)))
+    (is (string= "" (gethash "scrollbarThumb" colors)))
+    (is (string= "#505050" (gethash "darkGray" variables)))
+    (is (string= "#3a3a4a" (gethash "selectedBg" variables)))
+    (is (string= "#808080" (gethash "gray" variables)))
+    (is (string= "gray" (gethash "muted" colors)))
+    (is (string= "#18181e" (gethash "pageBg" export)))
+    (is (string= "#1e1e24" (gethash "cardBg" export)))
+    (is (string= "#3c3728" (gethash "infoBg" export)))
+    (is (string= "#505050"
+                 (cdr (assoc :scrollbar-track overrides))))
+    (is (string= ""
+                 (cdr (assoc :scrollbar-thumb overrides))))
+    (unwind-protect
+         (progn
+           (cadr-cli::apply-tui-theme-summary
+            (list :name "dynamic-resources" :object object)
+            :capabilities
+            (cadr-tui:make-terminal-capabilities
+             :images nil :true-color-p t))
+           (is (string= "#505050"
+                        (cadr-tui:theme-color-value :scrollbar-track)))
+           (is (string= ""
+                        (cadr-tui:theme-color-value :scrollbar-thumb)))
+           (is (string=
+                (format nil "~C[48;2;80;80;80m" #\Escape)
+                (cadr-tui:theme-background-ansi
+                 :scrollbar-track :enabled-p t))))
+      (cadr-tui:set-current-theme previous))))
