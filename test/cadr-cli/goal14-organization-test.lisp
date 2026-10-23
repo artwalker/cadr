@@ -29,7 +29,7 @@
 (test goal16-c3-production-environment-names-are-cadr-only
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (contracts
-           '(("src/cadr-ai/providers/bedrock.lisp"
+           '(("src/cadr-ai/provider.lisp"
               "CADR_CACHE_RETENTION" "PI_CACHE_RETENTION")
              ("src/cadr-server/config.lisp"
               "CADR_CONFIG_DIR" "PI_CONFIG_DIR")

@@ -77,6 +77,7 @@ above are unchanged. Measured 2026-10-23: 208 listed files
 |---|---|
 | auth | `test/cadr-ai/auth-test.lisp` |
 | bedrock error metadata | `test/cadr-ai/bedrock-error-metadata-test.lisp` |
+| cache retention env | `test/cadr-ai/cache-retention-env-test.lisp` |
 | faux provider | `test/cadr-ai/faux-provider-test.lisp` |
 | auth lock | `test/cadr-ai/goal12-auth-test.lisp` |
 | provider capabilities lock | `test/cadr-ai/goal12-capabilities-test.lisp` |

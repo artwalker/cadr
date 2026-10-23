@@ -827,7 +827,16 @@
        (model-compat-value model :supports-strict-mode nil)
        :supports-openai-grammar-tools supports-grammar)))
     (let* ((retention
-             (normalize-cache-retention cache-retention))
+             ;; Codex and Azure Responses do not consult the cache
+             ;; retention variable. The shared Responses builder still
+             ;; serves those requests.
+             (if (or (responses-codex-api-p model)
+                     (member (model-provider model)
+                             '(:azure :azure-openai-responses)))
+                 (normalize-cache-retention cache-retention)
+                 (resolve-cache-retention
+                  cache-retention
+                  (getf (provider-options provider) :environment))))
            (explicit-p
              (model-compat-value
               model :supports-explicit-prompt-cache-mode nil))

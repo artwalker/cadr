@@ -95,7 +95,7 @@ play it down.
 
 | Old variable | Location | Current precedence | Target name | Verdict and impact |
 |---|---|---|---|---|
-| `PI_CACHE_RETENTION` | `src/cadr-ai/providers/bedrock.lisp:338-348` | sole name | `CADR_CACHE_RETENTION` | `must replace`; Bedrock long cache configuration. |
+| `PI_CACHE_RETENTION` | `src/cadr-ai/provider.lisp:287-311` | sole name | `CADR_CACHE_RETENTION` | `must replace`; long cache fallback for Anthropic, Bedrock, completions, responses, and pi-messages. `src/cadr-cli/cache-warmer.lisp` reads the same name for the warming TTL. |
 | `PI_CONFIG_DIR` | `src/cadr-server/config.lisp:16-24` | fallback behind `CADR_CONFIG_DIR` | `CADR_CONFIG_DIR` | `must replace`; the old name is compatibility only. |
 | `PI_EVAL_ARTIFACT_DIR` | `src/cadr-evals/reporter.lisp:23-31` | fallback behind `CADR_EVAL_ARTIFACT_DIR` | `CADR_EVAL_ARTIFACT_DIR` | `must replace`; the old name is compatibility only. |
 | `PI_EXPERIMENTAL` | `src/cadr-cli/support/html.lisp:46-51` | fallback behind `CADR_EXPERIMENTAL` | `CADR_EXPERIMENTAL` | `must replace`; the old name is compatibility only. |

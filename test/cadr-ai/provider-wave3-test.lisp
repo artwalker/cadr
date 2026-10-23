@@ -2,15 +2,35 @@
 (in-suite cadr-ai-suite)
 
 (test goal16-bedrock-cache-retention-uses-only-cadr-environment
-  (is (eq :long
-          (cadr-ai::bedrock-cache-retention
-           nil
-           '(("CADR_CACHE_RETENTION" . "long")
-             ("PI_CACHE_RETENTION" . "ignored")))))
-  (is (eq :short
-          (cadr-ai::bedrock-cache-retention
-           nil
-           '(("PI_CACHE_RETENTION" . "long"))))))
+  (let ((saved (uiop:getenv "CADR_CACHE_RETENTION")))
+    (unwind-protect
+         (progn
+           (sb-posix:unsetenv "CADR_CACHE_RETENTION")
+           (is (eq :long
+                   (cadr-ai::bedrock-cache-retention
+                    nil
+                    '(("CADR_CACHE_RETENTION" . "long")
+                      ("PI_CACHE_RETENTION" . "ignored")))))
+           (is (eq :short
+                   (cadr-ai::bedrock-cache-retention
+                    nil
+                    '(("PI_CACHE_RETENTION" . "long")))))
+           (is (eq :short
+                   (cadr-ai::bedrock-cache-retention
+                    nil
+                    '(("CADR_CACHE_RETENTION" . "")))))
+           (setf (uiop:getenv "CADR_CACHE_RETENTION") "long")
+           (is (eq :long
+                   (cadr-ai::bedrock-cache-retention
+                    nil
+                    '(("PI_CACHE_RETENTION" . "short")))))
+           (is (eq :long
+                   (cadr-ai::bedrock-cache-retention
+                    nil
+                    '(("CADR_CACHE_RETENTION" . ""))))))
+      (if saved
+          (setf (uiop:getenv "CADR_CACHE_RETENTION") saved)
+          (sb-posix:unsetenv "CADR_CACHE_RETENTION")))))
 
 (defparameter *baseline-provider-counts*
   '((:amazon-bedrock . 193)

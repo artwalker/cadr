@@ -419,17 +419,7 @@
     result))
 
 (defun bedrock-cache-retention (value environment)
-  (normalize-cache-retention
-   (or value
-       (and
-        (string=
-         "long"
-         (or
-          (environment-value
-           environment "CADR_CACHE_RETENTION")
-          ""))
-        :long)
-       :short)))
+  (resolve-cache-retention value environment))
 
 (defun bedrock-cache-point (retention)
   (json-object

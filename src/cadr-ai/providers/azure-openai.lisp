@@ -242,7 +242,10 @@
          (deployment (azure-deployment-for provider model))
          (delegate
            (make-openai-completions-provider
-            :api-key (require-api-key provider)))
+            :api-key (require-api-key provider)
+            :options
+            (list :environment
+                  (option-value provider :environment))))
          (request
            (apply #'build-request
                   delegate

@@ -284,6 +284,32 @@ completed assistant message."))
              (format nil "Invalid cache retention: ~A" retention)))
     retention))
 
+(defun cache-retention-environment-value (environment)
+  ;; pi@4a080252f getProviderEnvValue: a non-empty scoped value wins.
+  ;; An empty string falls through to the process environment.
+  (let ((scoped
+          (and (listp environment)
+               (assoc "CADR_CACHE_RETENTION"
+                      environment
+                      :test #'string=))))
+    (if (and scoped (non-empty-string-p (cdr scoped)))
+        (cdr scoped)
+        (uiop:getenv "CADR_CACHE_RETENTION"))))
+
+(defun resolve-cache-retention (value environment &key (default :short))
+  ;; pi@4a080252f resolveCacheRetention. A passed retention wins.
+  ;; Otherwise only the exact value "long" selects long retention.
+  ;; Anthropic, Bedrock, completions, and responses default to :short.
+  ;; pi-messages passes :default nil and omits the field.
+  (cond
+    (value (normalize-cache-retention value))
+    ((let ((env-value
+             (cache-retention-environment-value environment)))
+       (and (stringp env-value) (string= env-value "long")))
+     :long)
+    (default (normalize-cache-retention default))
+    (t nil)))
+
 (defun clamp-openai-cache-key (value)
   (when (non-empty-string-p value)
     (subseq value 0 (min 64 (length value)))))

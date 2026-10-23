@@ -102,10 +102,14 @@
       (when reasoning
         (json-put options "reasoning"
                   (string-downcase (symbol-name reasoning))))
-      (when cache-retention
-        (json-put options "cacheRetention"
-                  (string-downcase
-                   (symbol-name cache-retention))))
+      (let ((retention
+              (resolve-cache-retention
+               cache-retention
+               (getf (provider-options provider) :environment)
+               :default nil)))
+        (when retention
+          (json-put options "cacheRetention"
+                    (string-downcase (symbol-name retention)))))
       (when session-id
         (json-put options "sessionId" session-id))
       (when tool-choice

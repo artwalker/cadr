@@ -131,6 +131,7 @@
                              (:file "provider-registry-test")
                              (:file "provider-wave1-test")
                              (:file "provider-wave3-test")
+                             (:file "cache-retention-env-test")
                              (:file "goal24-radius-offline-catalog-test")
                              (:file "bedrock-error-metadata-test")
                              (:file "bedrock-openai-thinking-test")

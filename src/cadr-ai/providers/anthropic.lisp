@@ -420,7 +420,11 @@
   (multiple-value-bind (key oauth-token federation-p header-overlay)
       (anthropic-request-auth provider model headers)
     (let* ((cache-control
-             (anthropic-cache-control model cache-retention))
+             (anthropic-cache-control
+              model
+              (resolve-cache-retention
+               cache-retention
+               (getf (provider-options provider) :environment))))
          (immediate-tools nil)
          (deferred-tools nil)
          (preferred-strict-p nil)

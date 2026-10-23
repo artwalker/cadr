@@ -775,7 +775,9 @@
         (when (and field thinking-budget)
           (json-put payload field thinking-budget))))
     (let ((retention
-            (normalize-cache-retention cache-retention))
+            (resolve-cache-retention
+             cache-retention
+             (getf (provider-options provider) :environment)))
           (supports-long
             (model-compat-value
              model :supports-long-cache-retention t)))
