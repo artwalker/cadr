@@ -688,7 +688,10 @@
     ;; interactive-right-click-paste-target (interactive/controller.lisp).
     ;; GAP-39 replaces daxnuts (19 defs) with the 3D egg owners
     ;; (easter-egg-3d 74, easter-egg-show 5, easter-egg-play 30).
-    (is (= 443 definition-count)
+    ;; +3 GAP-39 overlay swallow: egg-visible-overlay-p,
+    ;; egg-logo-mouse-claim, and egg-mouse-after-widget
+    ;; (interactive/components/easter-egg-play.lisp).
+    (is (= 446 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

@@ -690,6 +690,40 @@ Not alt-screen -> NIL. Overlay or already playing -> T with no animation."
               :start-p t)))
       (values t animation))))
 
+(defun egg-visible-overlay-p (overlay)
+  "v1.4.0 Tui.hasOverlay: any visible overlay, including nonCapturing.
+Hidden entries do not count. A nil overlay does not count."
+  (and overlay
+       (or (not (extension-custom-ui-state-p overlay))
+           (not (extension-custom-ui-state-overlay-p overlay))
+           (extension-custom-ui-visible-p overlay))))
+
+(defun egg-logo-mouse-claim
+    (gesture lines &key (logo-supported-p t) selector-handled-p)
+  "BuiltInHeader.handleMouse. A selector that already handled the point
+wins, the same way an overlay hit is not forwarded to the header.
+Otherwise a click on the 4x2 half-block mark returns
+(values T column row)."
+  (when (or selector-handled-p
+            (not logo-supported-p)
+            (not (eq (getf gesture :type) :click)))
+    (return-from egg-logo-mouse-claim nil))
+  (let ((x (getf gesture :x))
+        (y (getf gesture :y)))
+    (when (and x y)
+      (multiple-value-bind (column row)
+          (pi-logo-click-origin lines x y)
+        (when column
+          (values t column row))))))
+
+(defun egg-mouse-after-widget
+    (handled gesture lines &key (logo-supported-p t))
+  "Keep a widget hit. A miss falls through to the header logo."
+  (if handled
+      handled
+      (egg-logo-mouse-claim
+       gesture lines :logo-supported-p logo-supported-p)))
+
 (defun play-pi-logo-3d
     (terminal renderer screen column row
      &key request-render on-done overlay-check rows)

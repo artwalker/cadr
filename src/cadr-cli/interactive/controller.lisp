@@ -2472,7 +2472,9 @@ interactive-mode.ts:5956-5960).")
                       (cadr-tui::terminal-renderer-previous-lines
                        renderer))
                      :request-render #'request-render
-                     :overlay-check #'overlay-captures-input-p
+                     :overlay-check
+                     (lambda ()
+                       (egg-visible-overlay-p overlay))
                      :on-done
                      (lambda ()
                        (sb-thread:with-mutex (lock)
@@ -3518,7 +3520,6 @@ interactive-mode.ts:5956-5960).")
                (lambda (gesture)
                  (let* ((origin list-mouse-origin)
                         (y (getf gesture :y))
-                        (x (getf gesture :x))
                         (content-line
                           (and y
                                (+ (cadr-tui::terminal-renderer-scroll-top
@@ -3529,97 +3530,109 @@ interactive-mode.ts:5956-5960).")
                                (- (+ (cadr-tui::terminal-renderer-scroll-top
                                       renderer)
                                      y)
-                                  origin))))
-                   (cond
-                     (easter-egg
-                      (when (eq (getf gesture :type) :click)
-                        (egg-anim-close easter-egg)
-                        (request-render))
-                      t)
-                     ((and (eq (getf gesture :type) :click)
-                           (not (overlay-captures-input-p))
-                           (startup-logo-supported-p)
-                           x y)
-                      (multiple-value-bind (column row)
-                          (pi-logo-click-origin
-                           (cadr-tui::terminal-renderer-previous-lines
-                            renderer)
-                           x y)
-                        (when column
-                          (multiple-value-bind (swallowed animation)
-                              (play-pi-logo-3d
-                               terminal renderer
-                               (copy-list
-                                (cadr-tui::terminal-renderer-previous-lines
-                                 renderer))
-                               column row
-                               :request-render #'request-render
-                               :overlay-check #'overlay-captures-input-p
-                               :on-done
-                               (lambda ()
-                                 (sb-thread:with-mutex (lock)
-                                   (setf easter-egg nil))
-                                 (request-render)))
-                            (declare (ignore swallowed))
-                            (when animation
-                              (sb-thread:with-mutex (lock)
-                                (setf easter-egg animation))
-                              (request-render)))
-                          t)))
-                     ((and content-line
-                           (not (overlay-captures-input-p))
-                           (transcript-summary-click
-                            state gesture content-line))
-                      (request-render)
-                      t)
-                     ((or (null local) (minusp local))
-                      nil)
-                     ((settings-selector-state-p overlay)
-                      (multiple-value-bind (handled action value)
-                          (settings-selector-handle-mouse
-                           overlay gesture local)
-                        (when action
-                          (handle-overlay-action action value))
-                        handled))
-                     ((thinking-selector-state-p overlay)
-                      (multiple-value-bind (handled action value)
-                          (thinking-selector-handle-mouse
-                           overlay gesture local)
-                        (when action
-                          (handle-overlay-action action value))
-                        handled))
-                     ((model-selector-state-p overlay)
-                      (model-selector-handle-mouse
-                       overlay gesture local))
-                     ((session-selector-state-p overlay)
-                      (session-selector-handle-mouse
-                       overlay gesture local))
-                     ((login-dialog-state-p overlay)
-                      (login-dialog-handle-mouse
-                       overlay gesture local))
-                     ((api-key-input-state-p overlay)
-                      (api-key-input-handle-mouse
-                       overlay gesture local))
-                     ((runtime-auth-input-state-p overlay)
-                      (runtime-auth-input-handle-mouse
-                       overlay gesture local))
-                     ((and (extension-custom-ui-state-p overlay)
-                           (typep
-                            (extension-custom-ui-state-component overlay)
-                            'extension-input-dialog))
-                      (extension-input-dialog-handle-mouse
-                       (extension-custom-ui-state-component overlay)
-                       gesture local))
-                     ((and (null overlay)
-                           (typep (current-editor)
-                                  'cadr-tui:multiline-editor))
-                      (cadr-tui::editor-handle-mouse
-                       (current-editor) local
-                       :type (getf gesture :type)
-                       :button (getf gesture :button)
-                       :x (getf gesture :x)
-                       :wheel-delta (getf gesture :wheel-delta)))
-                     (t nil)))))
+                                  origin)))
+                        (lines
+                          (cadr-tui::terminal-renderer-previous-lines
+                           renderer)))
+                   (labels ((play-logo (column row)
+                              (multiple-value-bind (swallowed animation)
+                                  (play-pi-logo-3d
+                                   terminal renderer
+                                   (copy-list lines)
+                                   column row
+                                   :request-render #'request-render
+                                   :overlay-check
+                                   (lambda ()
+                                     (egg-visible-overlay-p overlay))
+                                   :on-done
+                                   (lambda ()
+                                     (sb-thread:with-mutex (lock)
+                                       (setf easter-egg nil))
+                                     (request-render)))
+                                (declare (ignore swallowed))
+                                (when animation
+                                  (sb-thread:with-mutex (lock)
+                                    (setf easter-egg animation))
+                                  (request-render))
+                                t))
+                            (finish (handled)
+                              (multiple-value-bind (claim column row)
+                                  (egg-mouse-after-widget
+                                   handled gesture lines
+                                   :logo-supported-p
+                                   (startup-logo-supported-p))
+                                (if (and (eq claim t) column)
+                                    (play-logo column row)
+                                    claim))))
+                     (cond
+                       (easter-egg
+                        (when (eq (getf gesture :type) :click)
+                          (egg-anim-close easter-egg)
+                          (request-render))
+                        t)
+                       ((and content-line
+                             (not (overlay-captures-input-p))
+                             (transcript-summary-click
+                              state gesture content-line))
+                        (request-render)
+                        t)
+                       ((or (null local) (minusp local))
+                        (finish nil))
+                       ((settings-selector-state-p overlay)
+                        (finish
+                         (multiple-value-bind (handled action value)
+                             (settings-selector-handle-mouse
+                              overlay gesture local)
+                           (when action
+                             (handle-overlay-action action value))
+                           handled)))
+                       ((thinking-selector-state-p overlay)
+                        (finish
+                         (multiple-value-bind (handled action value)
+                             (thinking-selector-handle-mouse
+                              overlay gesture local)
+                           (when action
+                             (handle-overlay-action action value))
+                           handled)))
+                       ((model-selector-state-p overlay)
+                        (finish
+                         (model-selector-handle-mouse
+                          overlay gesture local)))
+                       ((session-selector-state-p overlay)
+                        (finish
+                         (session-selector-handle-mouse
+                          overlay gesture local)))
+                       ((login-dialog-state-p overlay)
+                        (finish
+                         (login-dialog-handle-mouse
+                          overlay gesture local)))
+                       ((api-key-input-state-p overlay)
+                        (finish
+                         (api-key-input-handle-mouse
+                          overlay gesture local)))
+                       ((runtime-auth-input-state-p overlay)
+                        (finish
+                         (runtime-auth-input-handle-mouse
+                          overlay gesture local)))
+                       ((and (extension-custom-ui-state-p overlay)
+                             (typep
+                              (extension-custom-ui-state-component overlay)
+                              'extension-input-dialog))
+                        (finish
+                         (extension-input-dialog-handle-mouse
+                          (extension-custom-ui-state-component overlay)
+                          gesture local)))
+                       ((and (null overlay)
+                             (typep (current-editor)
+                                    'cadr-tui:multiline-editor))
+                        (finish
+                         (cadr-tui::editor-handle-mouse
+                          (current-editor) local
+                          :type (getf gesture :type)
+                          :button (getf gesture :button)
+                          :x (getf gesture :x)
+                          :wheel-delta (getf gesture :wheel-delta))))
+                       (t (finish nil)))))))
               (setf
                (cadr-tui::terminal-renderer-right-click-paste-function
                 renderer)

@@ -133,6 +133,85 @@
       (is (null animation)))
     (setf cadr-cli::*easter-egg-playing* nil)))
 
+(defun egg-test-logo-lines ()
+  (multiple-value-bind (top bottom)
+      (cadr-cli::pi-logo-lines :mode :truecolor)
+    (list (concatenate 'string " " top)
+          (concatenate 'string " " bottom)
+          "prompt")))
+
+(test egg-visible-overlay-swallows-logo-and-armin
+  ;; v1.4.0 playEasterEgg3d: not TuiAltScreen -> false, even with an
+  ;; overlay. hasOverlay (any visible overlay, including nonCapturing)
+  ;; -> true and does not play. handleArminSaysHi returns on true, so
+  ;; no inline Armin. BuiltInHeader still claims the 4x2 click.
+  (setf cadr-cli::*easter-egg-playing* nil)
+  (let* ((visible
+           (cadr-cli::make-extension-custom-ui-state
+            :overlay-p t
+            :overlay-options '(:non-capturing t)))
+         (hidden
+           (cadr-cli::make-extension-custom-ui-state
+            :overlay-p t
+            :overlay-options '(:visible nil)))
+         (selector (cadr-cli::make-settings-selector-state))
+         (lines (egg-test-logo-lines))
+         (on-logo '(:type :click :x 1 :y 0))
+         (off-logo '(:type :click :x 0 :y 0))
+         (terminal (cadr-tui:make-process-terminal))
+         (main (cadr-tui:make-terminal-renderer terminal :alt-p nil))
+         (alt (cadr-tui:make-terminal-renderer terminal :alt-p t))
+         (check (lambda () (cadr-cli::egg-visible-overlay-p visible))))
+    (is-true (cadr-cli::egg-visible-overlay-p visible))
+    (is-true (cadr-cli::egg-visible-overlay-p selector))
+    (is (null (cadr-cli::egg-visible-overlay-p hidden)))
+    (is (null (cadr-cli::egg-visible-overlay-p nil)))
+    (multiple-value-bind (ok animation)
+        (cadr-cli::play-pi-logo-3d
+         terminal alt lines 1 0
+         :overlay-check check)
+      (is-true ok)
+      (is (null animation)))
+    (is (null cadr-cli::*easter-egg-playing*))
+    (multiple-value-bind (ok animation)
+        (cadr-cli::play-armin-3d
+         terminal alt lines
+         :overlay-check check)
+      (is-true ok)
+      (is (null animation)))
+    (is (null cadr-cli::*easter-egg-playing*))
+    (multiple-value-bind (ok animation)
+        (cadr-cli::play-armin-3d
+         terminal main lines
+         :overlay-check check)
+      (is (null ok))
+      (is (null animation)))
+    (multiple-value-bind (claim column row)
+        (cadr-cli::egg-mouse-after-widget nil on-logo lines)
+      (is (eq t claim))
+      (is (= 1 column))
+      (is (= 0 row)))
+    (multiple-value-bind (claim column row)
+        (cadr-cli::egg-mouse-after-widget t on-logo lines)
+      (is-true claim)
+      (is (null column))
+      (is (null row)))
+    (is (null (cadr-cli::egg-mouse-after-widget nil off-logo lines)))
+    (is (null
+         (cadr-cli::egg-logo-mouse-claim
+          on-logo lines :logo-supported-p nil)))
+    (let ((controller
+            (uiop:read-file-string
+             (merge-pathnames
+              "src/cadr-cli/interactive/controller.lisp"
+              (asdf:system-source-directory "cadr-cli")))))
+      (is (search "(egg-visible-overlay-p overlay)" controller))
+      (is (search "egg-mouse-after-widget" controller))
+      (is (null
+           (search ":overlay-check #'overlay-captures-input-p"
+                   controller))))
+    (setf cadr-cli::*easter-egg-playing* nil)))
+
 (test egg-second-close-finishes-immediately
   (let* ((done 0)
          (animation
