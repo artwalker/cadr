@@ -10,6 +10,7 @@
   (diagnostics nil :type list)
   (skill-diagnostics nil :type list)
   (prompt-diagnostics nil :type list)
+  (theme-diagnostics nil :type list)
   (skill-collisions nil :type list)
   (prompt-collisions nil :type list)
   cwd
@@ -249,35 +250,31 @@ Returns the deduped list and a list of collision records
     (append global project)))
 
 (defun load-themes-at-paths (paths)
-  (let ((items nil))
+  (let ((items nil)
+        (diagnostics nil))
     (dolist (raw paths)
       (let ((path (pathname raw)))
         (cond
           ((uiop:directory-exists-p path)
-           (setf items
-                 (nconc items
-                        (load-theme-summaries path))))
+           (multiple-value-bind (loaded warnings)
+               (load-theme-summaries path)
+             (setf items (nconc items loaded)
+                   diagnostics
+                   (nconc diagnostics warnings))))
           ((probe-file path)
-           (let ((object
-                   (handler-case
-                       (cadr-ai::parse-json
-                        (uiop:read-file-string
-                         path
-                         :external-format :utf-8))
-                     (condition () nil))))
-             (when (hash-table-p object)
-               (push
-                (list
-                 :name
-                 (or
-                  (cadr-ai::json-get object "name")
-                  (pathname-name path))
-                 :path (truename path)
-                 :object object)
-                items)))))))
-    (sort items #'string<
-          :key (lambda (entry)
-                 (getf entry :name)))))
+           (multiple-value-bind (summary warning)
+               (read-theme-summary path)
+             (when summary
+               (push summary items))
+             (when warning
+               (setf diagnostics
+                     (nconc diagnostics
+                            (list warning)))))))))
+    (values
+     (sort items #'string<
+           :key (lambda (entry)
+                  (getf entry :name)))
+     diagnostics)))
 
 (defstruct git-footer-paths
   repo-directory
@@ -536,13 +533,13 @@ Returns the deduped list and a list of collision records
                    global-prompts project-prompts
                    #'cadr-agent::prompt-template-name
                    #'cadr-agent::prompt-template-file-path)
+            (multiple-value-bind (themes theme-warnings)
+                (load-themes-at-paths theme-paths)
             (let ((snapshot
                     (make-resource-snapshot
                      :skills skills
                      :prompts prompts
-                     :themes
-                     (load-themes-at-paths
-                      theme-paths)
+                     :themes themes
                      :context-files
                      (unless
                          (default-resource-loader-no-context-files-p
@@ -565,7 +562,8 @@ Returns the deduped list and a list of collision records
                       global-skill-warnings
                       project-skill-warnings
                       global-prompt-warnings
-                      project-prompt-warnings)
+                      project-prompt-warnings
+                      (copy-list theme-warnings))
                      :skill-diagnostics
                      (nconc
                       global-skill-warnings
@@ -574,6 +572,8 @@ Returns the deduped list and a list of collision records
                      (nconc
                       global-prompt-warnings
                       project-prompt-warnings)
+                     :theme-diagnostics
+                     theme-warnings
                      :skill-collisions skill-collisions
                      :prompt-collisions prompt-collisions
                      :cwd (default-resource-loader-cwd loader)
@@ -582,7 +582,7 @@ Returns the deduped list and a list of collision records
               (setf
                (default-resource-loader-snapshot loader)
                snapshot)
-              snapshot))))))))))
+              snapshot)))))))))))
 
 (defvar *loader-package-sources*
   (make-hash-table :test #'eq :weakness :key))

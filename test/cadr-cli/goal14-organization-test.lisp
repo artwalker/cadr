@@ -697,7 +697,8 @@
     ;; +6 GAP-57: announcement image filename, max width, relative
     ;; path, load cache, reader, and loader
     ;; (interactive/components/announcement.lisp).
-    (is (= 452 definition-count)
+    ;; +1 GAP-63: theme-file-summary (interactive/themes.lisp).
+    (is (= 453 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

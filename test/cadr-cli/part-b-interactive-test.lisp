@@ -1000,9 +1000,17 @@
          (cadr-cli:theme-export-colors
           theme))))
   (with-test-directory (root)
-    (write-json
-     (merge-pathnames "odd-file.json" root)
-     (args "name" "content-name"))
+    (let ((object
+            (cadr-ai::parse-json
+             (uiop:read-file-string
+              (merge-pathnames
+               "test/fixtures/v140-theme/dark.json"
+               (asdf:system-source-directory "cadr-cli"))
+              :external-format :utf-8))))
+      (setf (gethash "name" object) "content-name")
+      (write-json
+       (merge-pathnames "odd-file.json" root)
+       object))
     (is (string=
          "content-name"
          (getf

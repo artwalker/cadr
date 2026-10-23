@@ -221,7 +221,22 @@
                 (setf (gethash "name" object) "invalid/name"))))))))
     (is (search
          "theme names cannot contain"
-         (goal27-schema-text condition))))
+         (goal27-schema-text condition)))
+    (is (null
+         (search
+          "Invalid theme \""
+          (goal27-schema-text condition)))))
+  (let* ((without-track
+           (goal27-copy-theme
+            (lambda (object)
+              (remhash "scrollbarTrack"
+                       (gethash "colors" object)))))
+         (overrides
+           (cadr-cli::theme-object-overrides
+            without-track)))
+    (is (string=
+         (cdr (assoc :muted overrides))
+         (cdr (assoc :scrollbar-track overrides)))))
   (let ((condition
           (nth-value
            1
@@ -232,13 +247,21 @@
                 (setf (gethash "colors" object)
                       (cadr-ai::json-object)))))))))
     (is (search
+         "Invalid theme \"dark\":"
+         (goal27-schema-text condition)))
+    (is (search
          "Missing required color tokens"
          (goal27-schema-text condition)))
     (is (search "  - accent" (goal27-schema-text condition)))
-    (is (null
-         (search
-          "  - thinkingMax"
-          (goal27-schema-text condition)))))
+    (dolist (token
+             '("scrollbarTrack" "scrollbarThumb"
+               "searchMatchBg" "searchMatchText"
+               "thinkingMax"))
+      (is (null
+           (search
+            (format nil "  - ~A" token)
+            (goal27-schema-text condition)))
+          token)))
   (dolist (mutate
            (list
             (lambda (object)
@@ -258,7 +281,114 @@
               (cadr-cli::theme-object-overrides
                (goal27-copy-theme mutate))))))
       (is (search
+           "Invalid theme \"dark\":"
+           (goal27-schema-text condition)))
+      (is (search
            "must not have additional properties"
            (goal27-schema-text condition)))
       (is (search "schema is false"
                   (goal27-schema-text condition))))))
+
+(test goal27-theme-load-drops-invalid-documents
+  ;; v1.4.0 resource-loader-theme.test.ts: additional properties stay
+  ;; out of the theme list. The warning is validateThemeJson's text,
+  ;; and the label is the file path.
+  (with-test-directory (root)
+    (let* ((path (merge-pathnames "bad-theme.json" root))
+           (object
+             (goal27-copy-theme
+              (lambda (theme)
+                (setf (gethash "name" theme) "bad-theme"
+                      (gethash "unsupported" theme) t)))))
+      (write-json path object)
+      (let ((label (namestring (truename path))))
+        (multiple-value-bind (themes diagnostics)
+            (cadr-cli::load-themes-at-paths (list path))
+          (is (null themes))
+          (is (= 1 (length diagnostics)))
+          (is (eq :warning
+                  (cadr-agent::resource-diagnostic-type
+                   (first diagnostics))))
+          (is (string=
+               label
+               (cadr-agent::resource-diagnostic-path
+                (first diagnostics))))
+          (let ((message
+                  (cadr-agent::resource-diagnostic-message
+                   (first diagnostics))))
+            (is (search
+                 (format nil "Invalid theme \"~A\":" label)
+                 message))
+            (is (search "/unsupported" message))
+            (is (search
+                 "must not have additional properties"
+                 message)))))
+      (remhash "unsupported" object)
+      (write-json path object)
+      (multiple-value-bind (themes diagnostics)
+          (cadr-cli::load-themes-at-paths (list path))
+        (is (null diagnostics))
+        (is (string=
+             "bad-theme"
+             (getf (first themes) :name))))
+      (setf (gethash "unsupported" object) t)
+      (write-json path object)
+      (multiple-value-bind (themes diagnostics)
+          (cadr-cli::load-themes-at-paths (list path))
+        (is (null themes))
+        (is (= 1 (length diagnostics))))
+      (setf (gethash "colors" object) (cadr-ai::json-object))
+      (remhash "unsupported" object)
+      (write-json path object)
+      (multiple-value-bind (themes diagnostics)
+          (cadr-cli::load-themes-at-paths (list path))
+        (is (null themes))
+        (let ((message
+                (cadr-agent::resource-diagnostic-message
+                 (first diagnostics))))
+          (is (search "Missing required color tokens" message))
+          (dolist (token
+                   '("scrollbarTrack" "scrollbarThumb"
+                     "searchMatchBg" "searchMatchText"
+                     "thinkingMax"))
+            (is (null
+                 (search
+                  (format nil "  - ~A" token)
+                  message))
+                token)))))
+    (let* ((path (merge-pathnames "applied.json" root))
+           (previous (cadr-tui:current-theme))
+           (object
+             (goal27-copy-theme
+              (lambda (theme)
+                (setf (gethash "name" theme) "bad-theme"
+                      (gethash "unsupported" theme) t))))
+           (summary
+             (list :name "bad-theme" :path path :object object))
+           (label (namestring path)))
+      (unwind-protect
+           (progn
+             (is (null
+                  (cadr-cli::apply-tui-theme-summary
+                   summary
+                   :keep-current-on-error-p t
+                   :capabilities
+                   (cadr-tui:make-terminal-capabilities))))
+             (let ((condition
+                     (nth-value
+                      1
+                      (ignore-errors
+                       (cadr-cli::apply-tui-theme-summary
+                        summary
+                        :capabilities
+                        (cadr-tui:make-terminal-capabilities))))))
+               (is (search
+                    (format nil "Invalid theme \"~A\":" label)
+                    (goal27-schema-text condition)))
+               (is (search
+                    "/unsupported"
+                    (goal27-schema-text condition)))
+               (is (search
+                    "must not have additional properties"
+                    (goal27-schema-text condition)))))
+        (cadr-tui:set-current-theme previous)))))

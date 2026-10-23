@@ -692,10 +692,15 @@
        (format nil
                "---~%name: skill~%description: Explicit~%---~%body"))
       (write-text prompt "Review explicitly")
-      (write-json
-       theme
-       (args "name" "custom"
-             "colors" (args "text" "#fff")))
+      (let ((object
+              (cadr-ai::parse-json
+               (uiop:read-file-string
+                (merge-pathnames
+                 "test/fixtures/v140-theme/dark.json"
+                 (asdf:system-source-directory "cadr-cli"))
+                :external-format :utf-8))))
+        (setf (gethash "name" object) "custom")
+        (write-json theme object))
       (ensure-directories-exist
        (merge-pathnames "anchor" cwd))
       (let* ((loader

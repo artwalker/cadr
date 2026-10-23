@@ -187,29 +187,32 @@
       (cadr-ai::json-get export "infoBg")
       variables))))
 
+(defun read-theme-summary (path)
+  (let ((object
+          (handler-case
+              (cadr-ai::parse-json
+               (uiop:read-file-string
+                path :external-format :utf-8))
+            (condition () nil))))
+    (if (hash-table-p object)
+        (theme-file-summary path object)
+        (values nil nil))))
+
 (defun load-theme-summaries (directory)
-  (sort
-   (loop
-     for path in
-     (uiop:directory-files
-      (uiop:ensure-directory-pathname directory)
-      "*.json")
-     for object =
-     (handler-case
-         (cadr-ai::parse-json
-          (uiop:read-file-string
-           path :external-format :utf-8))
-       (condition () nil))
-     when (hash-table-p object)
-       collect
-       (list
-        :name
-        (or
-         (cadr-ai::json-get object "name")
-         (pathname-name path))
-        :path path
-        :object object))
-   #'string<
-   :key (lambda (entry)
-          (getf entry :name))))
+  (let ((items nil)
+        (diagnostics nil))
+    (dolist (path
+             (uiop:directory-files
+              (uiop:ensure-directory-pathname directory)
+              "*.json"))
+      (multiple-value-bind (summary diagnostic)
+          (read-theme-summary path)
+        (cond
+          (summary (push summary items))
+          (diagnostic (push diagnostic diagnostics)))))
+    (values
+     (sort items #'string<
+           :key (lambda (entry)
+                  (getf entry :name)))
+     (nreverse diagnostics))))
 

@@ -73,9 +73,18 @@
              (goal28-themes-search-namestrings loader))
            (loaded
              (progn
-               (write-text
-                expected-extra
-                "{\"name\":\"g28-custom\",\"colors\":{\"text\":\"#fff\"}}")
+               (let ((object
+                       (cadr-ai::parse-json
+                        (uiop:read-file-string
+                         (merge-pathnames
+                          "test/fixtures/v140-theme/dark.json"
+                          (asdf:system-source-directory
+                           "cadr-cli"))
+                         :external-format :utf-8))))
+                 (setf (gethash "name" object) "g28-custom")
+                 (write-text
+                  expected-extra
+                  (cadr-ai::stringify-json object)))
                (cadr-cli::load-themes-at-paths
                 (cadr-cli::default-resource-loader-theme-search-paths
                  loader)))))

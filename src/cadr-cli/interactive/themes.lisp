@@ -73,7 +73,8 @@
 
 (defun validate-tui-theme-object
     (object variables variables-present-p
-     colors export export-present-p)
+     colors export export-present-p
+     &key (label "theme"))
   (maphash
    (lambda (name value)
      (declare (ignore value))
@@ -82,8 +83,8 @@
                  '("$schema" "name" "appearance" "vars"
                    "colors" "export")
                  :test #'string=)
-       (error "Invalid theme:~%~%Other errors:~%  - /~A: schema is false~%  - /: must not have additional properties"
-              name)))
+       (error "Invalid theme \"~A\":~%~%Other errors:~%  - /~A: schema is false~%  - /: must not have additional properties"
+              label name)))
    object)
   (multiple-value-bind (schema present-p)
       (gethash "$schema" object)
@@ -127,8 +128,8 @@
      (lambda (name value)
        (unless
            (member name known :test #'string=)
-         (error "Invalid theme:~%~%Other errors:~%  - /colors/~A: schema is false~%  - /colors: must not have additional properties"
-                name))
+         (error "Invalid theme \"~A\":~%~%Other errors:~%  - /colors/~A: schema is false~%  - /colors: must not have additional properties"
+                label name))
        (unless (valid-tui-theme-primitive-p value)
          (error "Invalid theme color value: ~S"
                 value)))
@@ -139,13 +140,15 @@
             (or
              (string= name "thinkingMax")
              (string= name "scrollbarThumb")
+             (string= name "scrollbarTrack")
              (string= name "searchMatchBg")
              (string= name "searchMatchText")
              (nth-value 1
                         (gethash name colors)))
           (push name missing)))
       (when missing
-        (error "Invalid theme:~%~%Missing required color tokens:~%~{~A~%~}~%Please add these colors to your theme's \"colors\" object.~%See the built-in themes (dark.json, light.json) for reference values."
+        (error "Invalid theme \"~A\":~%~%Missing required color tokens:~%~{~A~%~}~%Please add these colors to your theme's \"colors\" object.~%See the built-in themes (dark.json, light.json) for reference values."
+               label
                (mapcar
                 (lambda (token)
                   (format nil "  - ~A" token))
@@ -160,8 +163,8 @@
        (lambda (name value)
          (unless
              (member name known :test #'string=)
-           (error "Invalid theme:~%~%Other errors:~%  - /export/~A: schema is false~%  - /export: must not have additional properties"
-                  name))
+           (error "Invalid theme \"~A\":~%~%Other errors:~%  - /export/~A: schema is false~%  - /export: must not have additional properties"
+                  label name))
          (unless (valid-tui-theme-primitive-p value)
            (error "Invalid theme export value: ~S"
                   value)))
@@ -213,7 +216,7 @@
         (if (string= appearance "light") :light :dark)
         (detect-theme-appearance color-overrides))))
 
-(defun theme-object-overrides (object)
+(defun theme-object-overrides (object &key label)
   (when (hash-table-p object)
     (multiple-value-bind (raw-variables variables-present-p)
         (gethash "vars" object)
@@ -225,10 +228,20 @@
                     (make-hash-table :test #'equal)))
               (colors
                 (cadr-ai::json-get object "colors"))
-              (overrides nil))
+              (overrides nil)
+              (label
+                (or label
+                    (let ((name
+                            (cadr-ai::json-get
+                             object "name")))
+                      (and (stringp name)
+                           (plusp (length name))
+                           name))
+                    "theme")))
           (validate-tui-theme-object
            object variables variables-present-p
-           colors export export-present-p)
+           colors export export-present-p
+           :label label)
       (labels
           ((collect-values (container mapping)
              (when (hash-table-p container)
@@ -313,6 +326,31 @@
            (theme-resolved-appearance
             object color-overrides)))))))))
 
+(defun theme-file-summary (path object)
+  ;; v1.4.0 loadThemeFromPath labels validateThemeJson with the file path
+  ;; and loadThemeFromFile drops the theme when that signal fires.
+  (let* ((resolved (truename path))
+         (label (namestring resolved)))
+    (handler-case
+        (progn
+          (theme-object-overrides object :label label)
+          (values
+           (list
+            :name
+            (or
+             (cadr-ai::json-get object "name")
+             (pathname-name resolved))
+            :path resolved
+            :object object)
+           nil))
+      (error (condition)
+        (values
+         nil
+         (cadr-agent::make-resource-diagnostic
+          :type :warning
+          :message (princ-to-string condition)
+          :path label))))))
+
 (defvar *system-terminal-colors* nil)
 
 (defun merge-reported-terminal-colors (reported)
@@ -368,6 +406,13 @@
          (object
            (and (listp summary)
                 (getf summary :object)))
+         (label
+           (or
+            (and (listp summary)
+                 (getf summary :path)
+                 (namestring (getf summary :path)))
+            (and (stringp name) name)
+            "theme"))
          (background
            (or
             background
@@ -392,17 +437,18 @@
               (setf object generated
                     dim generated-dim)))
           (multiple-value-bind (overrides appearance)
-              (theme-object-overrides object)
+              (theme-object-overrides object :label label)
             (cadr-tui:set-current-theme
              (or appearance base)
              :overrides overrides
              :dim-keys dim
              :capabilities capabilities)))
-      (condition ()
+      (error (condition)
         (unless keep-current-on-error-p
           (cadr-tui:set-current-theme
            :dark
-           :capabilities capabilities))
+           :capabilities capabilities)
+          (error condition))
         nil))))
 
 (defstruct (tui-theme-watcher
