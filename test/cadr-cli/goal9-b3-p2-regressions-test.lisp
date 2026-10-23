@@ -288,7 +288,7 @@
            (is
             (equal
              (list
-              (format nil "~C[38;2;95;135;255m~A~C[39m"
+              (format nil "~C[38;2;95;168;204m~A~C[39m"
                       #\Escape
                       (make-string width :initial-element #\─)
                       #\Escape)
@@ -299,18 +299,18 @@
                (make-string 37 :initial-element #\Space))
               ""
               (format nil
-                      "~C[38;2;138;190;183m→ ~C[39m~C[38;2;138;190;183mAuto-compact~C[39m  ~C[38;2;138;190;183mtrue~C[39m"
+                      "~C[38;2;167;152;215m→ ~C[39m~C[38;2;167;152;215mAuto-compact~C[39m  ~C[38;2;167;152;215mtrue~C[39m"
                       #\Escape #\Escape #\Escape #\Escape
                       #\Escape #\Escape)
               ""
               (format nil
-                      "~C[38;2;102;102;102m  Automatically compact context~C[39m"
+                      "~C[38;2;126;136;142m  Automatically compact context~C[39m"
                       #\Escape #\Escape)
               ""
               (format nil
-                      "~C[38;2;102;102;102m  Type to search · Enter/Space to cha~C[0m...~C[0m"
+                      "~C[38;2;126;136;142m  Type to search · Enter/Space to cha~C[0m...~C[0m"
                       #\Escape #\Escape #\Escape)
-              (format nil "~C[38;2;95;135;255m~A~C[39m"
+              (format nil "~C[38;2;95;168;204m~A~C[39m"
                       #\Escape
                       (make-string width :initial-element #\─)
                       #\Escape))

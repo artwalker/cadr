@@ -106,6 +106,7 @@
    #:parse-theme-hex-color
    #:rgb-to-ansi-256
    #:normalize-theme-color
+   #:resolve-theme-color-value
    #:theme-color-lightness
    #:color-lightness
    #:oklab-to-okhsl-lightness

@@ -111,7 +111,7 @@ rows, preventing another audit that silently covers only successful execution.
 
 The baseline schema contains 55 semantic colors
 (`packages/coding-agent/src/modes/interactive/theme/theme.ts:31-103`); Cadr has
-the same 55 names and values (`src/cadr-tui/theme.lisp:3-126`).  Equal values
+the same token names (`src/cadr-tui/theme.lisp:3-62`). Built-in dark and light values are v1.4.0 `dark.json` and `light.json` after variable resolution. Equal values
 are not enough: the rows below compare the elements to which each token is
 applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 `src/cadr-tui/components/markdown.lisp:557-908`; syntax mappings are at baseline
@@ -164,14 +164,14 @@ applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 | `syntaxType` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components/tool-block.lisp:328-362`) | mismatch (corrected) |
 | `syntaxOperator` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components/tool-block.lisp:328-362`) | mismatch (corrected) |
 | `syntaxPunctuation` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components/tool-block.lisp:328-362`) | mismatch (corrected) |
-| `thinkingOff` | editor border at thinking `off` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
-| `thinkingMinimal` | editor border at thinking `minimal` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
-| `thinkingLow` | editor border at thinking `low` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
-| `thinkingMedium` | editor border at thinking `medium` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
-| `thinkingHigh` | editor border at thinking `high` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
-| `thinkingXhigh` | editor border at thinking `xhigh` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
-| `thinkingMax` | editor border at thinking `max` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
-| `bashMode` | user-bash editor/execution emphasis (`bash-execution.ts:130-151`) | same user-bash emphasis (`src/cadr-tui/theme.lisp:526-534`; `src/cadr-cli/tui.lisp:790-835`) | match |
+| `thinkingOff` | editor border at thinking `off` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:669-688`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
+| `thinkingMinimal` | editor border at thinking `minimal` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:669-688`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
+| `thinkingLow` | editor border at thinking `low` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:669-688`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
+| `thinkingMedium` | editor border at thinking `medium` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:669-688`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
+| `thinkingHigh` | editor border at thinking `high` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:669-688`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
+| `thinkingXhigh` | editor border at thinking `xhigh` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:669-688`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
+| `thinkingMax` | editor border at thinking `max` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:669-688`; `src/cadr-tui/editor.lisp:1900-1932`) | match |
+| `bashMode` | user-bash editor/execution emphasis (`bash-execution.ts:130-151`) | same user-bash emphasis (`src/cadr-tui/theme.lisp:763-771`; `src/cadr-cli/tui.lisp:790-835`) | match |
 | `pageBg` | exported session page background (`core/export-html/index.ts:108-167`) | active interactive theme and explicit `pageBg` flow into the template body background (`src/cadr-cli/main.lisp:3293-3348`; `src/cadr-agent/session.lisp:2440-2534`) | mismatch (corrected) |
 | `cardBg` | exported session card background (`core/export-html/index.ts:108-167`) | active `cardBg`, or the baseline-derived fallback, becomes the template container background (`src/cadr-cli/main.lisp:3293-3348`; `src/cadr-agent/session.lisp:2440-2534`) | mismatch (corrected) |
 | `infoBg` | emitted as `--exportInfoBg` and injected as `--info-bg`; the fixed template currently has no `var(--info-bg)` consumer (`core/export-html/index.ts:108-167`; `export-html/template.css:1-5`) | same exported declarations and deliberate non-consumption in the byte-identical fixed template (`src/cadr-agent/session.lisp:2307-2405`; `src/cadr-agent/export-html/template.css:1-5`) | mismatch (corrected) |

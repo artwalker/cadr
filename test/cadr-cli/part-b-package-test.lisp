@@ -1211,6 +1211,6 @@
                       (format nil "~C[1m" #\Escape)
                       row)))
             (is (search
-                 (format nil "~C[38;2;102;102;102m" #\Escape)
+                 (format nil "~C[38;2;126;136;142m" #\Escape)
                  row)))))))
     (cadr-tui:reset-current-theme)))

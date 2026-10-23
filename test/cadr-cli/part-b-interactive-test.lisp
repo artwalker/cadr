@@ -2657,19 +2657,19 @@
               "x"))))
       (dolist
           (rgb
-           '("106;153;85"
-             "86;156;214"
-             "220;220;170"
-             "156;220;254"
-             "206;145;120"
-             "181;206;168"
-             "78;201;176"))
+           '("157;165;169"
+             "105;173;208"
+             "205;154;34"
+             "93;179;186"
+             "222;141;90"
+             "104;183;141"
+             "167;152;215"))
         (is (search
              (format nil "~C[38;2;~Am"
                      #\Escape rgb)
              rendered)))
       (dolist
-          (rgb '("212;212;212"))
+          (rgb '("222;224;225"))
         (is (null
              (search
               (format nil "~C[38;2;~Am"
@@ -2683,32 +2683,32 @@
               "https://example.com"))))
       (is (string=
            (format nil
-                   "~C[38;2;204;102;102m-old~C[39m~%~C[38;2;181;189;104m+new~C[39m~%"
+                   "~C[38;2;234;127;129m-old~C[39m~%~C[38;2;104;183;141m+new~C[39m~%"
                    #\Escape #\Escape
                    #\Escape #\Escape)
            (cadr-cli::tui-syntax-highlight
             "diff" (format nil "-old~%+new~%"))))
       (is (search
            (format nil
-                   "~C[38;2;206;145;120m/foo+/gi~C[39m"
+                   "~C[38;2;222;141;90m/foo+/gi~C[39m"
                    #\Escape #\Escape)
            (cadr-cli::tui-syntax-highlight
             "javascript" "const re = /foo+/gi;")))
       (is (string=
            (format nil
-                   "~C[38;2;128;128;128m@decorator~C[39m"
+                   "~C[38;2;157;165;169m@decorator~C[39m"
                    #\Escape #\Escape)
            (cadr-cli::tui-syntax-highlight
             "python" "@decorator")))
       (is (search
            (format nil
-                   "~C[38;2;86;156;214mdiv~C[39m"
+                   "~C[38;2;105;173;208mdiv~C[39m"
                    #\Escape #\Escape)
            (cadr-cli::tui-syntax-highlight
             "html" "<div></div>")))
       (is (search
            (format nil
-                   "~C[38;2;86;156;214m+~C[39m"
+                   "~C[38;2;105;173;208m+~C[39m"
                    #\Escape #\Escape)
            (cadr-cli::tui-syntax-highlight
             "lisp" "(+ 1 2)"))))))
@@ -2784,18 +2784,18 @@
              width))
       (dolist (line (list selected-session selected-tree))
         (is (uiop:string-prefix-p
-             (format nil "~C[48;2;58;58;74m"
+             (format nil "~C[48;2;33;59;73m"
                      #\Escape)
              line))
         (is (search
              (format nil "~C[49m" #\Escape)
              line)))
       (is (search
-           (format nil "~C[38;2;102;102;102m"
+           (format nil "~C[38;2;126;136;142m"
                    #\Escape)
            (format nil "~{~A~^~%~}" session-lines)))
       (is (search
-           (format nil "~C[38;2;128;128;128m"
+           (format nil "~C[38;2;157;165;169m"
                    #\Escape)
            (format nil "~{~A~^~%~}" tree-lines))))))
 
@@ -2937,15 +2937,15 @@ user question"
            "Enter to select"
            (nth (- (length plain) 2) plain)))
       (is (search
-           (format nil "~C[38;2;138;190;183m"
+           (format nil "~C[38;2;167;152;215m"
                    #\Escape)
            selected-line))
       (is (search
-           (format nil "~C[38;2;128;128;128m"
+           (format nil "~C[38;2;157;165;169m"
                    #\Escape)
            selected-line))
       (is (search
-           (format nil "~C[38;2;181;189;104m ✓"
+           (format nil "~C[38;2;104;183;141m ✓"
                    #\Escape)
            selected-line))
       (is (every
@@ -3004,23 +3004,23 @@ user question"
         (let ((rendered
                 (format nil "~{~A~^~%~}" lines)))
           (is (search
-               (format nil "~C[38;2;138;190;183m"
+               (format nil "~C[38;2;167;152;215m"
                        #\Escape)
                rendered))
           ;; Input owns plain text/cursor styling in the baseline; muted text
           ;; is optional per selector content and is not a shell invariant.
           (is (search
-               (format nil "~C[38;2;102;102;102m"
+               (format nil "~C[38;2;126;136;142m"
                        #\Escape)
                rendered))
           (if selected-background-p
               (is (search
-                   (format nil "~C[48;2;58;58;74m"
+                   (format nil "~C[48;2;33;59;73m"
                            #\Escape)
                    rendered))
               (is (null
                    (search
-                    (format nil "~C[48;2;58;58;74m"
+                    (format nil "~C[48;2;33;59;73m"
                             #\Escape)
                     rendered))))))))))
 

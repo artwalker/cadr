@@ -288,10 +288,10 @@
     (unwind-protect
          (let* ((escape (string #\Escape))
                 (error-prefix
-                  (format nil "~A[38;2;204;102;102m"
+                  (format nil "~A[38;2;234;127;129m"
                           escape))
                 (dim-prefix
-                  (format nil "~A[38;2;128;128;128m"
+                  (format nil "~A[38;2;126;136;142m"
                           escape))
                 (status
                   (cadr-tui:theme-foreground

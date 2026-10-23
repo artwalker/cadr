@@ -104,7 +104,9 @@ Baseline sources:
 
 Cadr implementation and gates:
 
-- `src/cadr-tui/theme.lisp:3-529`
+- `src/cadr-tui/theme.lisp:3-799`
+- `src/cadr-tui/theme/dark.json`
+- `src/cadr-tui/theme/light.json`
 - `src/cadr-cli/interactive-services.lisp:2079-2184`
 - `src/cadr-cli/tui.lisp:2250-2591,2810-2940`
 - `test/cadr-tui/theme-test.lisp:135-308`

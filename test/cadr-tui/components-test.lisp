@@ -396,15 +396,15 @@
                    80 :ansi-theme-p t
                    :capabilities caps))))
            (is (search
-                (format nil "~C[38;2;240;198;116m"
+                (format nil "~C[38;2;205;154;34m"
                         #\Escape)
                 rendered))
            (is (search
-                (format nil "~C[38;2;128;128;128m"
+                (format nil "~C[38;2;157;165;169m"
                         #\Escape)
                 rendered))
            (is (search
-                (format nil "~C[38;2;138;190;183m"
+                (format nil "~C[38;2;167;152;215m"
                         #\Escape)
                 rendered))
            (is (search
@@ -448,7 +448,7 @@
                              (third plain))))
            (is (search "one" joined))
            (is (search
-                (format nil "~C[48;2;40;40;50m"
+                (format nil "~C[48;2;52;56;58m"
                         #\Escape)
                 joined))
            (is (every
@@ -604,7 +604,7 @@
                              block 72 :ansi-theme-p t))))
              (is (search
                   (format nil
-                          "~C[38;2;128;128;128m... (1 earlier lines"
+                          "~C[38;2;157;165;169m... (1 earlier lines"
                           #\Escape)
                   rendered)))
         (cadr-tui:reset-current-theme)))))
@@ -694,15 +694,15 @@
                          (cadr-tui:render-tool-block
                           block 80 :ansi-theme-p t))))
            (is (search
-                (format nil "~C[38;2;204;102;102m"
+                (format nil "~C[38;2;234;127;129m"
                         #\Escape)
                 rendered))
            (is (search
-                (format nil "~C[38;2;181;189;104m"
+                (format nil "~C[38;2;104;183;141m"
                         #\Escape)
                 rendered))
            (is (search
-                (format nil "~C[38;2;128;128;128m"
+                (format nil "~C[38;2;157;165;169m"
                         #\Escape)
                 rendered))
            (is (search
@@ -744,24 +744,24 @@
                          (cadr-tui:render-tool-block
                           warning-block 50 :ansi-theme-p t))))
            (is (search
-                (format nil "~C[48;2;60;40;40m"
+                (format nil "~C[48;2;91;40;42m"
                         #\Escape)
                 error-rendered))
            (is (search
-                (format nil "~C[38;2;128;128;128m"
+                (format nil "~C[38;2;157;165;169m"
                         #\Escape)
                 error-rendered))
            (is (null
                 (search
-                 (format nil "~C[38;2;204;102;102m"
+                 (format nil "~C[38;2;234;127;129m"
                          #\Escape)
                  error-rendered)))
            (is (search
-                (format nil "~C[48;2;40;50;40m"
+                (format nil "~C[48;2;37;65;49m"
                         #\Escape)
                 warning-rendered))
            (is (search
-                (format nil "~C[38;2;128;128;128m"
+                (format nil "~C[38;2;157;165;169m"
                         #\Escape)
                 warning-rendered))
            (is (null
@@ -857,12 +857,12 @@
            (is (find "- [ ] todo" plain :test #'string=))
            (is (search
                 (format nil
-                        "~C[38;2;138;190;183m3. ~C[39m"
+                        "~C[38;2;167;152;215m3. ~C[39m"
                         #\Escape #\Escape)
                 rendered))
            (is (search
                 (format nil
-                        "~C[38;2;138;190;183m- [x] ~C[39m"
+                        "~C[38;2;167;152;215m- [x] ~C[39m"
                         #\Escape #\Escape)
                 rendered)))
       (cadr-tui:reset-current-theme))))
@@ -970,7 +970,7 @@
                        nil)))))
              (is (search
                   (format nil
-                          "~C[38;2;181;189;104mtext~C[39m"
+                          "~C[38;2;104;183;141mtext~C[39m"
                           #\Escape #\Escape)
                   fallback))))
       (cadr-tui:reset-current-theme))))
@@ -1000,7 +1000,7 @@
                   (format nil "~{~A~^~%~}" lines))
                 (heading-prefix
                   (format nil
-                          "~C[38;2;240;198;116m~C[1m"
+                          "~C[38;2;205;154;34m~C[1m"
                           #\Escape #\Escape)))
            (is (string= "### Head code tail"
                         (first plain)))
@@ -1074,7 +1074,7 @@
                     :capabilities caps)))
                 (quote-prefix
                   (format nil
-                          "~C[38;2;128;128;128m~C[3m"
+                          "~C[38;2;157;165;169m~C[3m"
                           #\Escape #\Escape)))
            (is (>=
                 (count-substring

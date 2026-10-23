@@ -470,3 +470,68 @@
                     (okhsl-to-rgb
                      (parse-color-number h) saturation lightness))))
          (error "Invalid color value: ~A" value)))))))
+
+(defun resolve-theme-color-value
+    (value variables &optional seen)
+  (cond
+    ((integerp value)
+     (unless (<= 0 value 255)
+       (error "Theme color index is outside 0..255: ~S"
+              value))
+     value)
+    ((not (stringp value))
+     (error "Theme color must be a string or integer: ~S"
+            value))
+    ((zerop (length value))
+     "")
+    ((or (char= (char value 0) #\#)
+         (and (>= (length value) 5)
+              (or (string-equal value "oklch" :end1 5)
+                  (string-equal value "okhsl" :end1 5))))
+     (normalize-theme-color value))
+    ((member value seen :test #'string=)
+     (error "Cyclic theme variable reference: ~A" value))
+    (t
+     (multiple-value-bind (resolved present-p)
+         (gethash value variables)
+       (unless present-p
+         (error "Unknown theme variable: ~A" value))
+       (resolve-theme-color-value
+        resolved variables (cons value seen))))))
+
+(defun builtin-theme-color-alist (document)
+  (let ((variables
+          (or (gethash "vars" document)
+              (make-hash-table :test #'equal)))
+        (colors (gethash "colors" document))
+        (export (gethash "export" document)))
+    (unless (hash-table-p variables)
+      (error "Theme vars must be an object"))
+    (mapcar
+     (lambda (key)
+       (let* ((name (theme-json-name key))
+              (raw
+                (or (and (hash-table-p colors)
+                         (nth-value 0 (gethash name colors)))
+                    (and (hash-table-p export)
+                         (nth-value 0 (gethash name export))))))
+         (unless raw
+           (error "Built-in theme is missing ~A" name))
+         (cons key
+               (resolve-theme-color-value raw variables))))
+     +builtin-theme-color-keys+)))
+
+(defun install-builtin-theme-colors ()
+  (unless (and +dark-theme-colors+ +light-theme-colors+)
+    (setf +dark-theme-colors+
+          (builtin-theme-color-alist
+           (read-theme-json (builtin-theme-json-text :dark)))
+          +light-theme-colors+
+          (builtin-theme-color-alist
+           (read-theme-json (builtin-theme-json-text :light)))))
+  nil)
+
+(setf *install-builtin-theme-colors*
+      #'install-builtin-theme-colors)
+
+(install-builtin-theme-colors)

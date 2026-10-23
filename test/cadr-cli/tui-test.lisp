@@ -3908,7 +3908,7 @@
                      (cadr-tui:visible-width line)))
                 user-lines))
            (is (search
-                (format nil "~C[48;2;52;53;65m"
+                (format nil "~C[48;2;33;59;73m"
                         #\Escape)
                 user-ansi))
            (is (string=
@@ -3930,7 +3930,7 @@
                         #\Escape)
                 assistant-ansi))
            (is (search
-                (format nil "~C[38;2;128;128;128m"
+                (format nil "~C[38;2;150;160;164m"
                         #\Escape)
                 assistant-ansi)))
       (cadr-tui:reset-current-theme))))
@@ -4056,22 +4056,22 @@
                 (cadr-tui:strip-terminal-sequences
                  working-ansi)))
            (is (search
-                (format nil "~C[38;2;138;190;183m"
+                (format nil "~C[38;2;167;152;215m"
                         #\Escape)
                 working-ansi))
            (is (search
-                (format nil "~C[38;2;128;128;128m"
+                (format nil "~C[38;2;157;165;169m"
                         #\Escape)
                 working-ansi))
            (is (search
-                (format nil "~C[38;2;255;255;0m"
+                (format nil "~C[38;2;205;154;34m"
                         #\Escape)
                 retry-ansi))
            (dolist (message
                     '("Compacting context..."
                       "Summarizing branch..."))
              (is (search
-                  (format nil "~C[38;2;138;190;183m"
+                  (format nil "~C[38;2;167;152;215m"
                           #\Escape)
                   (second
                    (cadr-cli::render-tui-status-indicator
@@ -4859,7 +4859,7 @@
                  :keep-current-on-error-p t
                  :capabilities caps)))
            (is (string=
-                "#8abeb7"
+                "#a798d7"
                 (cadr-tui:theme-color-value
                  :accent)))
            (is
@@ -4906,7 +4906,7 @@
                    :keep-current-on-error-p t
                    :capabilities caps)))
              (is (string=
-                  "#8abeb7"
+                  "#a798d7"
                   (cadr-tui:theme-color-value
                    :accent)))))
       (cadr-tui:reset-current-theme))))

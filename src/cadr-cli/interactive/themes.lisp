@@ -163,33 +163,8 @@
 
 (defun resolve-tui-theme-value
     (value variables &optional seen)
-  (cond
-    ((integerp value)
-     (unless (<= 0 value 255)
-       (error "Theme color index is outside 0..255: ~S"
-              value))
-     value)
-    ((not (stringp value))
-     (error "Theme color must be a string or integer: ~S"
-            value))
-    ((zerop (length value))
-     "")
-    ((or (char= (char value 0) #\#)
-         (and (>= (length value) 5)
-              (or (string-equal value "oklch" :end1 5)
-                  (string-equal value "okhsl" :end1 5))))
-     (cadr-tui:normalize-theme-color value))
-    ((member value seen :test #'string=)
-     (error "Cyclic theme variable reference: ~A"
-            value))
-    (t
-     (multiple-value-bind (resolved present-p)
-         (gethash value variables)
-       (unless present-p
-         (error "Unknown theme variable: ~A"
-                value))
-       (resolve-tui-theme-value
-        resolved variables (cons value seen))))))
+  (cadr-tui:resolve-theme-color-value
+   value variables seen))
 
 (defun theme-background-token-p (key)
   (member key

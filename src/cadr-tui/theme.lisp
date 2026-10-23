@@ -1,126 +1,289 @@
 (in-package #:cadr-tui)
 
-(defparameter +dark-theme-colors+
-  '((:accent . "#8abeb7")
-    (:border . "#5f87ff")
-    (:border-accent . "#00d7ff")
-    (:border-muted . "#505050")
-    (:success . "#b5bd68")
-    (:error . "#cc6666")
-    (:warning . "#ffff00")
-    (:muted . "#808080")
-    (:dim . "#666666")
-    (:text . "#d4d4d4")
-    (:thinking-text . "#808080")
-    (:selected-bg . "#3a3a4a")
-    (:scrollbar-track . "#1e1e24")
-    (:scrollbar-thumb . "#3a3a4a")
-    (:search-match-bg . "#3a3a4a")
-    (:search-match-text . "#d4d4d4")
-    (:user-message-bg . "#343541")
-    (:user-message-text . "#d4d4d4")
-    (:custom-message-bg . "#2d2838")
-    (:custom-message-text . "#d4d4d4")
-    (:custom-message-label . "#9575cd")
-    (:tool-pending-bg . "#282832")
-    (:tool-success-bg . "#283228")
-    (:tool-error-bg . "#3c2828")
-    (:tool-title . "#d4d4d4")
-    (:tool-output . "#808080")
-    (:md-heading . "#f0c674")
-    (:md-link . "#81a2be")
-    (:md-link-url . "#666666")
-    (:md-code . "#8abeb7")
-    (:md-code-block . "#b5bd68")
-    (:md-code-block-border . "#808080")
-    (:md-quote . "#808080")
-    (:md-quote-border . "#808080")
-    (:md-hr . "#808080")
-    (:md-list-bullet . "#8abeb7")
-    (:tool-diff-added . "#b5bd68")
-    (:tool-diff-removed . "#cc6666")
-    (:tool-diff-context . "#808080")
-    (:syntax-comment . "#6A9955")
-    (:syntax-keyword . "#569CD6")
-    (:syntax-function . "#DCDCAA")
-    (:syntax-variable . "#9CDCFE")
-    (:syntax-string . "#CE9178")
-    (:syntax-number . "#B5CEA8")
-    (:syntax-type . "#4EC9B0")
-    (:syntax-operator . "#D4D4D4")
-    (:syntax-punctuation . "#D4D4D4")
-    (:thinking-off . "#505050")
-    (:thinking-minimal . "#6e6e6e")
-    (:thinking-low . "#5f87af")
-    (:thinking-medium . "#81a2be")
-    (:thinking-high . "#b294bb")
-    (:thinking-xhigh . "#d183e8")
-    (:thinking-max . "#ff5fff")
-    (:bash-mode . "#b5bd68")
-    (:page-bg . "#18181e")
-    (:card-bg . "#1e1e24")
-    (:info-bg . "#3c3728")))
+(defparameter +builtin-theme-color-keys+
+  '(:accent
+    :border
+    :border-accent
+    :border-muted
+    :success
+    :error
+    :warning
+    :muted
+    :dim
+    :text
+    :thinking-text
+    :selected-bg
+    :scrollbar-track
+    :scrollbar-thumb
+    :search-match-bg
+    :search-match-text
+    :user-message-bg
+    :user-message-text
+    :custom-message-bg
+    :custom-message-text
+    :custom-message-label
+    :tool-pending-bg
+    :tool-success-bg
+    :tool-error-bg
+    :tool-title
+    :tool-output
+    :md-heading
+    :md-link
+    :md-link-url
+    :md-code
+    :md-code-block
+    :md-code-block-border
+    :md-quote
+    :md-quote-border
+    :md-hr
+    :md-list-bullet
+    :tool-diff-added
+    :tool-diff-removed
+    :tool-diff-context
+    :syntax-comment
+    :syntax-keyword
+    :syntax-function
+    :syntax-variable
+    :syntax-string
+    :syntax-number
+    :syntax-type
+    :syntax-operator
+    :syntax-punctuation
+    :thinking-off
+    :thinking-minimal
+    :thinking-low
+    :thinking-medium
+    :thinking-high
+    :thinking-xhigh
+    :thinking-max
+    :bash-mode
+    :page-bg
+    :card-bg
+    :info-bg))
 
-(defparameter +light-theme-colors+
-  '((:accent . "#5a8080")
-    (:border . "#547da7")
-    (:border-accent . "#5a8080")
-    (:border-muted . "#b0b0b0")
-    (:success . "#588458")
-    (:error . "#aa5555")
-    (:warning . "#9a7326")
-    (:muted . "#6c6c6c")
-    (:dim . "#767676")
-    (:text . "#1f2328")
-    (:thinking-text . "#6c6c6c")
-    (:selected-bg . "#d0d0e0")
-    (:scrollbar-track . "#e8e8e8")
-    (:scrollbar-thumb . "#d0d0e0")
-    (:search-match-bg . "#d0d0e0")
-    (:search-match-text . "#1f2328")
-    (:user-message-bg . "#e8e8e8")
-    (:user-message-text . "#1f2328")
-    (:custom-message-bg . "#ede7f6")
-    (:custom-message-text . "#1f2328")
-    (:custom-message-label . "#7e57c2")
-    (:tool-pending-bg . "#e8e8f0")
-    (:tool-success-bg . "#e8f0e8")
-    (:tool-error-bg . "#f0e8e8")
-    (:tool-title . "#1f2328")
-    (:tool-output . "#6c6c6c")
-    (:md-heading . "#9a7326")
-    (:md-link . "#547da7")
-    (:md-link-url . "#767676")
-    (:md-code . "#5a8080")
-    (:md-code-block . "#588458")
-    (:md-code-block-border . "#6c6c6c")
-    (:md-quote . "#6c6c6c")
-    (:md-quote-border . "#6c6c6c")
-    (:md-hr . "#6c6c6c")
-    (:md-list-bullet . "#588458")
-    (:tool-diff-added . "#588458")
-    (:tool-diff-removed . "#aa5555")
-    (:tool-diff-context . "#6c6c6c")
-    (:syntax-comment . "#008000")
-    (:syntax-keyword . "#0000FF")
-    (:syntax-function . "#795E26")
-    (:syntax-variable . "#001080")
-    (:syntax-string . "#A31515")
-    (:syntax-number . "#098658")
-    (:syntax-type . "#267F99")
-    (:syntax-operator . "#000000")
-    (:syntax-punctuation . "#000000")
-    (:thinking-off . "#b0b0b0")
-    (:thinking-minimal . "#767676")
-    (:thinking-low . "#547da7")
-    (:thinking-medium . "#5a8080")
-    (:thinking-high . "#875f87")
-    (:thinking-xhigh . "#8b008b")
-    (:thinking-max . "#af005f")
-    (:bash-mode . "#588458")
-    (:page-bg . "#f8f8f8")
-    (:card-bg . "#ffffff")
-    (:info-bg . "#fffae6")))
+(defparameter +dark-theme-colors+ nil)
+
+(defparameter +light-theme-colors+ nil)
+
+(defvar *install-builtin-theme-colors* nil)
+
+(defun ensure-builtin-theme-colors ()
+  (when *install-builtin-theme-colors*
+    (funcall *install-builtin-theme-colors*)))
+
+(defun theme-json-name (key)
+  (let ((parts
+          (uiop:split-string
+           (string-downcase (symbol-name key))
+           :separator '(#\-))))
+    (with-output-to-string (output)
+      (write-string (first parts) output)
+      (dolist (part (rest parts))
+        (unless (zerop (length part))
+          (write-char (char-upcase (char part 0)) output)
+          (write-string (subseq part 1) output))))))
+
+(defun builtin-theme-json-text (name)
+  (let ((text
+          (uiop:read-file-string
+           (asdf:system-relative-pathname
+            "cadr-tui"
+            (format nil
+                    "src/cadr-tui/theme/~(~A~).json"
+                    name))
+           :external-format :utf-8)))
+    (if (and (plusp (length text))
+             (char= (char text 0) #\ufeff))
+        (subseq text 1)
+        text)))
+
+(defun skip-json-whitespace (text index)
+  (loop while (and (< index (length text))
+                   (member (char text index)
+                           '(#\Space #\Tab #\Newline #\Return)))
+        do (incf index))
+  index)
+
+(defun read-json-hex4 (text index)
+  (unless (<= (+ index 4) (length text))
+    (error "Truncated JSON unicode escape at ~D" index))
+  (values
+   (parse-integer text :start index :end (+ index 4) :radix 16)
+   (+ index 4)))
+
+(defun read-json-string (text index)
+  (unless (char= (char text index) #\")
+    (error "JSON string expected at ~D" index))
+  (let ((output (make-string-output-stream)))
+    (incf index)
+    (loop
+      (when (>= index (length text))
+        (error "Unterminated JSON string"))
+      (let ((character (char text index)))
+        (cond
+          ((char= character #\")
+           (return (values (get-output-stream-string output)
+                           (1+ index))))
+          ((char= character #\\)
+           (incf index)
+           (when (>= index (length text))
+             (error "Truncated JSON string escape"))
+           (let ((escaped (char text index)))
+             (case escaped
+               (#\" (write-char #\" output))
+               (#\\ (write-char #\\ output))
+               (#\/ (write-char #\/ output))
+               (#\b (write-char #\Backspace output))
+               (#\f (write-char #\Page output))
+               (#\n (write-char #\Newline output))
+               (#\r (write-char #\Return output))
+               (#\t (write-char #\Tab output))
+               (#\u
+                (multiple-value-bind (code next)
+                    (read-json-hex4 text (1+ index))
+                  (write-char (code-char code) output)
+                  (setf index (1- next))))
+               (otherwise
+                (error "Invalid JSON string escape ~S" escaped))))
+           (incf index))
+          (t
+           (write-char character output)
+           (incf index)))))))
+
+(defun read-json-number (text index)
+  (let ((start index)
+        (limit (length text)))
+    (when (and (< index limit) (char= (char text index) #\-))
+      (incf index))
+    (unless (and (< index limit)
+                 (digit-char-p (char text index)))
+      (error "Invalid JSON number at ~D" start))
+    (if (char= (char text index) #\0)
+        (incf index)
+        (loop while (and (< index limit)
+                         (digit-char-p (char text index)))
+              do (incf index)))
+    (when (and (< index limit) (char= (char text index) #\.))
+      (incf index)
+      (unless (and (< index limit)
+                   (digit-char-p (char text index)))
+        (error "Invalid JSON number at ~D" start))
+      (loop while (and (< index limit)
+                       (digit-char-p (char text index)))
+            do (incf index)))
+    (when (and (< index limit)
+               (member (char text index) '(#\e #\E)))
+      (incf index)
+      (when (and (< index limit)
+                 (member (char text index) '(#\+ #\-)))
+        (incf index))
+      (unless (and (< index limit)
+                   (digit-char-p (char text index)))
+        (error "Invalid JSON number at ~D" start))
+      (loop while (and (< index limit)
+                       (digit-char-p (char text index)))
+            do (incf index)))
+    (let ((token (subseq text start index)))
+      (values
+       (if (every (lambda (character)
+                    (or (digit-char-p character)
+                        (char= character #\-)))
+                  token)
+           (parse-integer token)
+           (let ((*read-default-float-format* 'double-float))
+             (float (read-from-string token) 1d0)))
+       index))))
+
+(defun read-json-literal (text index expected value)
+  (let ((end (+ index (length expected))))
+    (unless (and (<= end (length text))
+                 (string= text expected :start1 index :end1 end))
+      (error "Invalid JSON literal at ~D" index))
+    (values value end)))
+
+(defun read-json-value (text index)
+  (setf index (skip-json-whitespace text index))
+  (when (>= index (length text))
+    (error "Unexpected end of JSON"))
+  (let ((character (char text index)))
+    (cond
+      ((char= character #\")
+       (read-json-string text index))
+      ((char= character #\{)
+       (read-json-object text index))
+      ((char= character #\[)
+       (read-json-array text index))
+      ((or (digit-char-p character) (char= character #\-))
+       (read-json-number text index))
+      ((char= character #\t)
+       (read-json-literal text index "true" t))
+      ((char= character #\f)
+       (read-json-literal text index "false" nil))
+      ((char= character #\n)
+       (read-json-literal text index "null" nil))
+      (t
+       (error "Invalid JSON value at ~D" index)))))
+
+(defun read-json-array (text index)
+  (let ((values nil))
+    (incf index)
+    (setf index (skip-json-whitespace text index))
+    (unless (and (< index (length text))
+                 (char= (char text index) #\]))
+      (loop
+        (multiple-value-bind (value next)
+            (read-json-value text index)
+          (push value values)
+          (setf index (skip-json-whitespace text next)))
+        (when (>= index (length text))
+          (error "Unterminated JSON array"))
+        (cond
+          ((char= (char text index) #\])
+           (return))
+          ((char= (char text index) #\,)
+           (incf index))
+          (t
+           (error "JSON array expected comma or ] at ~D" index)))))
+    (values (coerce (nreverse values) 'vector) (1+ index))))
+
+(defun read-json-object (text index)
+  (let ((object (make-hash-table :test #'equal)))
+    (incf index)
+    (setf index (skip-json-whitespace text index))
+    (unless (and (< index (length text))
+                 (char= (char text index) #\}))
+      (loop
+        (setf index (skip-json-whitespace text index))
+        (multiple-value-bind (key next)
+            (read-json-string text index)
+          (setf index (skip-json-whitespace text next))
+          (unless (and (< index (length text))
+                       (char= (char text index) #\:))
+            (error "JSON object expected : at ~D" index))
+          (multiple-value-bind (value after)
+              (read-json-value text (1+ index))
+            (setf (gethash key object) value
+                  index (skip-json-whitespace text after))))
+        (when (>= index (length text))
+          (error "Unterminated JSON object"))
+        (cond
+          ((char= (char text index) #\})
+           (return))
+          ((char= (char text index) #\,)
+           (incf index))
+          (t
+           (error "JSON object expected comma or } at ~D" index)))))
+    (values object (1+ index))))
+
+(defun read-theme-json (text)
+  (multiple-value-bind (value index)
+      (read-json-value text 0)
+    (setf index (skip-json-whitespace text index))
+    (unless (= index (length text))
+      (error "Trailing JSON at ~D" index))
+    (unless (hash-table-p value)
+      (error "Theme JSON must be an object"))
+    value))
 
 (defparameter +background-theme-color-keys+
   '(:selected-bg
@@ -159,6 +322,7 @@
 
 (defun terminal-theme-color-keys (theme)
   (declare (ignore theme))
+  (ensure-builtin-theme-colors)
   (mapcar #'car +dark-theme-colors+))
 
 (defun parse-theme-hex-color (text)
@@ -333,6 +497,7 @@
                (capabilities (get-terminal-capabilities))
                (enabled-p t)
                dim-keys)
+  (ensure-builtin-theme-colors)
   (let* ((canonical-name (canonical-theme-name name))
          (base
            (ecase canonical-name

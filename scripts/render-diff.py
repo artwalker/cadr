@@ -2421,6 +2421,13 @@ def run_actions(
     ready_path: Path | None = None,
 ) -> None:
     settled_target = 0
+    # v1.4.0 InteractiveMode emits a synchronized frame at ui.start(), then
+    # ignores submit until the terminal-color wait (100ms) and managed-tool
+    # probe finish. A prompt typed into that window is kept by
+    # handleStartupSubmit and never reaches the model. Pi's first sendText
+    # waits out that window. Cadr installs its submit handler before the
+    # first frame, so it is not delayed.
+    delayed_first_submit = False
     for index, action in enumerate(actions, start=1):
         try:
             if "waitFor" in action:
@@ -2456,6 +2463,9 @@ def run_actions(
                     semantic=True,
                 )
             elif "sendText" in action:
+                if side == "pi" and not delayed_first_submit:
+                    time.sleep(0.25)
+                    delayed_first_submit = True
                 render_end = b"\x1b[?2026l"
                 for character in action["sendText"]:
                     before = output.count(render_end)
