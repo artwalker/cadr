@@ -168,6 +168,18 @@
                           (push (format nil "~A malformed ~A wanted ~A"
                                         index (wasm-message condition) (fourth command))
                                 failures)))))
+                   (:assert-malformed-quote
+                    (let ((text (map 'string #'code-char (decode-module (second command)))))
+                      (handler-case
+                          (progn (parse-module-text text)
+                                 (push (format nil "~A missing quote malformed ~A"
+                                               index (third command))
+                                       failures))
+                        (wasm-malformed (condition)
+                          (unless (check-message condition (third command))
+                            (push (format nil "~A quote malformed ~A wanted ~A"
+                                          index (wasm-message condition) (third command))
+                                  failures))))))
                    (:assert-invalid
                     (handler-case
                         (progn (compile-module (decode-module (third command)))
@@ -220,11 +232,77 @@
                                (asdf:system-source-directory "cadr-wasm"))))
         #'string< :key #'file-namestring))
 
+(defun fixture-commands (name)
+  (with-open-file (stream (merge-pathnames
+                           (format nil "test/fixtures/wasm-spec/~A" name)
+                           (asdf:system-source-directory "cadr-wasm")))
+    (read stream)))
+
+(test wasm-2-0-quote-malformed-fixtures-cover-the-empty-files
+  (is (= 176 (length (fixture-commands "utf8-invalid-encoding.lisp"))))
+  (is (= 11 (length (fixture-commands "obsolete-keywords.lisp"))))
+  (is (every (lambda (command)
+               (and (eq (first command) :assert-malformed-quote)
+                    (string= (third command) "malformed UTF-8 encoding")))
+             (fixture-commands "utf8-invalid-encoding.lisp")))
+  (is (equal '("unknown operator current_memory"
+               "unknown operator grow_memory"
+               "unknown operator get_local"
+               "unknown operator set_local"
+               "unknown operator tee_local"
+               "unknown operator anyfunc"
+               "unknown operator get_global"
+               "unknown operator set_global"
+               "unknown operator i32.wrap/i64"
+               "unknown operator i32.trunc_s:sat/f32"
+               "unknown operator f32x4.convert_s/i32x4")
+             (mapcar #'third (fixture-commands "obsolete-keywords.lisp")))))
+
+(defun run-fixture-isolated (path)
+  "Compile one spec fixture in a fresh default-heap SBCL.
+skip-stack-guard-page's compiler temporary alone is about 400MB, and
+running every fixture in one image exhausts the 1GB heap."
+  (let* ((setup (or (uiop:getenv "QUICKLISP_SETUP")
+                    (namestring (merge-pathnames "quicklisp/setup.lisp"
+                                                 (user-homedir-pathname)))))
+         (output (make-string-output-stream))
+         ;; The child reads every --eval form before running any of them, so
+         ;; this form cannot mention the test package until load-system has run.
+         (form (format nil
+                       "(progn ~
+                          (asdf:load-asd ~S) ~
+                          (asdf:load-system \"cadr-wasm/tests\") ~
+                          (let ((fails (funcall (find-symbol \"RUN-FIXTURE\" \"CADR-WASM/TESTS\") ~S))) ~
+                            (dolist (item fails) (write-line item)) ~
+                            (sb-ext:exit :code (if fails 1 0))))"
+                       (namestring (asdf:system-source-file "cadr-wasm"))
+                       (namestring path)))
+         (process
+           (sb-ext:run-program
+            (or (uiop:getenv "SBCL") "sbcl")
+            (list "--noinform" "--disable-debugger" "--non-interactive"
+                  "--load" setup
+                  "--eval" form)
+            :output output
+            :error output
+            :search t))
+         (text (get-output-stream-string output)))
+    (if (zerop (sb-ext:process-exit-code process))
+        nil
+        (list (format nil "~A ~A"
+                      (file-namestring path)
+                      (if (> (length text) 600)
+                          (subseq text (- (length text) 600))
+                          text))))))
+
 (test wasm-2-0-core-suite-except-simd
   (dolist (path (spec-fixtures))
-    (let ((fails (run-fixture path)))
-      (is (null fails)
-          "~A ~A ~A"
-          (file-namestring path)
-          (length fails)
-          (subseq fails 0 (min 5 (length fails)))))))
+    (let ((fails (run-fixture-isolated path)))
+      (is (null fails) "~A" fails))))
+
+(test quickjs-wasm-loads-the-ahead-of-time-image
+  (let ((compiled (ensure-compiled (quickjs-wasm-bytes))))
+    (is (last-compile-cached-p))
+    (is (= 0d0 (last-compile-seconds)))
+    (is (= 1698 (length (cadr-wasm::compiled-module-funcs compiled))))
+    (is (eq compiled (ensure-compiled (quickjs-wasm-bytes))))))

@@ -1,3 +1,13 @@
 (
-
+(:assert-malformed-quote "KG1lbW9yeSAxKShmdW5jIChkcm9wIChjdXJyZW50X21lbW9yeSkpKQ==" "unknown operator current_memory")
+(:assert-malformed-quote "KG1lbW9yeSAxKShmdW5jIChkcm9wIChncm93X21lbW9yeSAoaTMyLmNvbnN0IDApKSkp" "unknown operator grow_memory")
+(:assert-malformed-quote "KGZ1bmMgKGxvY2FsICRpIGkzMikgKGRyb3AgKGdldF9sb2NhbCAkaSkpKQ==" "unknown operator get_local")
+(:assert-malformed-quote "KGZ1bmMgKGxvY2FsICRpIGkzMikgKHNldF9sb2NhbCAkaSAoaTMyLmNvbnN0IDApKSk=" "unknown operator set_local")
+(:assert-malformed-quote "KGZ1bmMgKGxvY2FsICRpIGkzMikgKGRyb3AgKHRlZV9sb2NhbCAkaSAoaTMyLmNvbnN0IDApKSkp" "unknown operator tee_local")
+(:assert-malformed-quote "KGdsb2JhbCAkZyBhbnlmdW5jIChyZWYubnVsbCBmdW5jKSk=" "unknown operator anyfunc")
+(:assert-malformed-quote "KGdsb2JhbCAkZyBpMzIgKGkzMi5jb25zdCAwKSkoZnVuYyAoZHJvcCAoZ2V0X2dsb2JhbCAkZykpKQ==" "unknown operator get_global")
+(:assert-malformed-quote "KGdsb2JhbCAkZyAobXV0IGkzMikgKGkzMi5jb25zdCAwKSkoZnVuYyAoc2V0X2dsb2JhbCAkZyAoaTMyLmNvbnN0IDApKSk=" "unknown operator set_global")
+(:assert-malformed-quote "KGZ1bmMgKGRyb3AgKGkzMi53cmFwL2k2NCAoaTY0LmNvbnN0IDApKSkp" "unknown operator i32.wrap/i64")
+(:assert-malformed-quote "KGZ1bmMgKGRyb3AgKGkzMi50cnVuY19zOnNhdC9mMzIgKGYzMi5jb25zdCAwKSkpKQ==" "unknown operator i32.trunc_s:sat/f32")
+(:assert-malformed-quote "KGZ1bmMgKGRyb3AgKGYzMng0LmNvbnZlcnRfcy9pMzJ4NCAodjEyOC5jb25zdCBpNjR4MiAwIDApKSkp" "unknown operator f32x4.convert_s/i32x4")
 )

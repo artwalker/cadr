@@ -98,19 +98,27 @@
                 (aref h 7) (logand (+ (aref h 7) hh) #xffffffff)))))
     (string-downcase (format nil "~{~8,'0x~}" (coerce h 'list)))))
 
+(defun monotonic-seconds ()
+  (multiple-value-bind (seconds microseconds) (sb-ext:get-time-of-day)
+    (+ seconds (/ microseconds 1000000d0))))
+
 (defun ensure-compiled (octets)
   (let* ((key (sha256-hex octets))
          (cached (gethash key *compile-cache*)))
-    (if cached
-        (progn
-          (setf *last-compile-cached-p* t
-                *last-compile-seconds* 0d0)
-          cached)
-        (let* ((start (get-internal-real-time))
-               (compiled (compile-module octets))
-               (elapsed (/ (- (get-internal-real-time) start)
-                           internal-time-units-per-second)))
-          (setf *last-compile-cached-p* nil
-                *last-compile-seconds* (float elapsed 1.0d0)
-                (gethash key *compile-cache*) compiled)
-          compiled))))
+    (cond
+      ((string= key +quickjs-wasm-sha256+)
+       (setf *last-compile-cached-p* t
+             *last-compile-seconds* 0d0)
+       (ensure-quickjs-aot))
+      (cached
+       (setf *last-compile-cached-p* t
+             *last-compile-seconds* 0d0)
+       cached)
+      (t
+       (let* ((start (monotonic-seconds))
+              (compiled (compile-module octets))
+              (elapsed (- (monotonic-seconds) start)))
+         (setf *last-compile-cached-p* nil
+               *last-compile-seconds* (float elapsed 1.0d0)
+               (gethash key *compile-cache*) compiled)
+         compiled)))))

@@ -3,6 +3,7 @@
 /cadr-server
 *.core
 *.fasl
+!src/cadr-wasm/vendor/quickjs-aot.fasl
 
 # Local configuration and logs
 .cadr/

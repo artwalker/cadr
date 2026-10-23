@@ -9,11 +9,13 @@
                              (:file "module")
                              (:file "value")
                              (:file "binary")
+                             (:file "text")
                              (:file "validate")
                              (:file "compile")
                              (:file "instance")
                              (:file "wasi")
-                             (:file "cache"))))
+                             (:file "cache")
+                             (:file "aot"))))
   :in-order-to ((test-op (test-op "cadr-wasm/tests"))))
 
 (asdf:defsystem "cadr-wasm/tests"

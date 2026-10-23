@@ -15,6 +15,32 @@
 (defun wasi-load-u32 (address)
   (load-le (wasi-memory) address 0 4))
 
+(defvar *wasi-random-stream* nil)
+
+(defun wasi-realtime-nanoseconds ()
+  ;; quickjs-wasi@3.6.2 dist/wasi-shim.js writes
+  ;; BigInt(Date.now()) * 1000000n for clock ids 0 and 1.
+  (multiple-value-bind (seconds microseconds) (sb-ext:get-time-of-day)
+    (* (+ (* seconds 1000) (floor microseconds 1000)) 1000000)))
+
+(defun wasi-random-stream ()
+  (let ((stream *wasi-random-stream*))
+    (if (and (streamp stream) (open-stream-p stream))
+        stream
+        (setf *wasi-random-stream*
+              (open #p"/dev/urandom"
+                    :direction :input
+                    :element-type '(unsigned-byte 8)
+                    :if-does-not-exist :error)))))
+
+(defun wasi-random-bytes (count)
+  ;; Same source Node uses for crypto.getRandomValues on Linux.
+  (let ((out (make-array count :element-type '(unsigned-byte 8))))
+    (let ((read (read-sequence out (wasi-random-stream))))
+      (unless (= read count)
+        (error "wasi random_get: /dev/urandom returned ~A of ~A bytes" read count)))
+    out))
+
 (defun make-wasi-imports (&key (clock nil) (random-bytes nil) discard-output)
   "WASI preview1 subset used by quickjs-wasi 3.6.2.
 
@@ -22,10 +48,7 @@ clock and random replace the host clock and byte source. discard-output
 keeps the fd_write byte count and drops the text, which the codemode host
 does on top of this shim."
   (let ((table (make-hash-table :test #'equal))
-        (clock (or clock (lambda ()
-                           (* (floor (get-internal-real-time)
-                                     (/ internal-time-units-per-second 1000))
-                              1000000)))))
+        (clock (or clock #'wasi-realtime-nanoseconds)))
     (flet ((bind (name sig function)
              (setf (gethash (cons "wasi_snapshot_preview1" name) table)
                    (make-wasm-extern :kind :func :value function :type sig))))
@@ -45,9 +68,9 @@ does on top of this shim."
                              (buffer (wasi-load-u32 base))
                              (length (wasi-load-u32 (+ base 4))))
                         (unless discard-output
-                          (write-string (map 'string #'code-char
-                                             (subseq (wasm-memory-bytes (wasi-memory))
-                                                     buffer (+ buffer length)))
+                          (write-string (utf8-replace-string
+                                         (wasm-memory-bytes (wasi-memory))
+                                         buffer (+ buffer length))
                                         stream))
                         (incf written length)))
                     (wasi-store-u32 result written)
@@ -73,11 +96,7 @@ does on top of this shim."
       (bind "random_get" (wasi-sig '(:i32 :i32) '(:i32))
             (lambda (buffer length)
               (let ((bytes (wasm-memory-bytes (wasi-memory)))
-                    (source (or random-bytes
-                                (lambda (count)
-                                  (let ((out (make-array count :element-type '(unsigned-byte 8))))
-                                    (dotimes (i count out)
-                                      (setf (aref out i) (cl:random 256))))))))
+                    (source (or random-bytes #'wasi-random-bytes)))
                 (let ((fill (funcall source (i32 length))))
                   (replace bytes fill :start1 (i32 buffer)))
                 0))))

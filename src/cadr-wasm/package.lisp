@@ -2,6 +2,7 @@
   (:use #:cl)
   (:export
    #:parse-module
+   #:parse-module-text
    #:validate-module
    #:compile-module
    #:instantiate
@@ -14,6 +15,7 @@
    #:make-wasi-imports
    #:quickjs-wasm-bytes
    #:quickjs-wasm-sha256
+   #:ensure-quickjs-aot
    #:module-opcode-histogram
    #:module-import-list
    #:wasm-message

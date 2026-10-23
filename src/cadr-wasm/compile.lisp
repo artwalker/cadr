@@ -62,7 +62,7 @@
         ((and (consp bt) (eq (car bt) :val)) (cons #() (vector (cdr bt))))
         (t (type-at module (cdr bt)))))
 
-(defun compile-function (module sig locals body)
+(defun translate-function (module sig locals body)
   (let* ((code nil)
         (frames nil)
         (hoisted nil)
@@ -398,10 +398,16 @@
                           (error 'wasm-exhaustion :message "call stack exhausted"))
                         (block wasm-fn
                           (tagbody ,@(nreverse code)))))))
-        (values (handler-bind ((style-warning #'muffle-warning)
-                               (sb-ext:compiler-note #'muffle-warning))
-                  (compile nil form))
-                max-ht)))))
+        form))))
+
+(defun compile-function (module sig locals body)
+  (let ((form (translate-function module sig locals body)))
+    ;; A large spec function's copy propagation fills the default 1GB heap
+    ;; if earlier modules are still tenured. Callers that must stay inside
+    ;; that heap compile one module per process. Warnings are noise there.
+    (handler-bind ((warning #'muffle-warning)
+                   (sb-ext:compiler-note #'muffle-warning))
+      (compile nil form))))
 
 (defun load-name (op)
   (case op

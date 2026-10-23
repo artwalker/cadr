@@ -13,7 +13,7 @@
     (error "QUICKLISP_SETUP does not name a readable file"))
   (load quicklisp-setup))
 
-(dolist (system '("cadr-core" "cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"))
+(dolist (system '("cadr-core" "cadr-telemetry" "cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"))
   (asdf:load-asd
    (truename
     (build-path (format nil "~A.asd" system)))))
@@ -21,6 +21,9 @@
 (let ((*debug-io* (make-broadcast-stream)))
   (asdf:load-system "slynk/mrepl"))
 (asdf:load-system "cadr-cli")
+(asdf:load-asd (truename (build-path "cadr-wasm.asd")))
+(asdf:load-system "cadr-wasm")
+(cadr-wasm:ensure-quickjs-aot)
 
 (unless (member :sb-core-compression *features*)
   (format *error-output*
