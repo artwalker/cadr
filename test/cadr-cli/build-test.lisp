@@ -146,24 +146,113 @@
                     (princ-to-string (getf bundle :crashes))))
         (is (null (search secret (princ-to-string bundle))))))))
 
+(defun gap72-fatal-page (directory)
+  (let* ((visible (make-string-output-stream))
+         (status
+           (let ((*error-output* visible))
+             (cadr-cli::call-with-fatal-condition-boundary
+              (lambda () (error "gap72 session boom"))
+              :crash-directory directory
+              :exit-function #'identity)))
+         (output (get-output-stream-string visible)))
+    (values status output)))
+
 (test gap72-session-file-uses-the-resume-bug-hint
+  ;; v1.4.0 newSession sets sessionFile when persist is true, before
+  ;; the file exists. crashReportInstructions then uses the resume sentence.
   (with-test-directory (directory)
-    (let* ((visible (make-string-output-stream))
-           (status
-             (let ((*error-output* visible)
-                   (cadr-ai::*fatal-session-file*
-                     "/tmp/cadr-gap72-session.jsonl"))
-               (cadr-cli::call-with-fatal-condition-boundary
-                (lambda () (error "gap72 session boom"))
-                :crash-directory directory
-                :exit-function #'identity)))
-           (output (get-output-stream-string visible)))
-      (is (= 1 status))
-      (is (search
-           "To report this crash: run `cadr -r` to resume the session, then run /bug. The crash details are attached automatically."
-           output))
-      (is (null (search "start cadr and" output)))
-      (is (null (search "Crash log:" output))))))
+    (let* ((session
+             (cadr-agent:create-session
+              :directory directory
+              :cwd directory))
+           (path (cadr-agent:session-path session)))
+      (is (pathnamep path))
+      (is (null (probe-file path)))
+      (is (not (cadr-agent:session-persisted-p session)))
+      (let ((cadr-ai::*fatal-session-file* nil))
+        (is (string= (namestring path)
+                     (cadr-cli::note-fatal-session-file session)))
+        (multiple-value-bind (status output)
+            (gap72-fatal-page directory)
+          (is (= 1 status))
+          (is (search
+               "To report this crash: run `cadr -r` to resume the session, then run /bug. The crash details are attached automatically."
+               output))
+          (is (null (search "start cadr and" output)))
+          (is (null (search "Crash log:" output)))))
+      (let ((memory
+              (cadr-agent:create-session
+               :directory directory
+               :cwd directory
+               :persist-p nil)))
+        (is (null (cadr-agent:session-path memory)))
+        (let ((cadr-ai::*fatal-session-file* "stale-session.jsonl"))
+          (is (null (cadr-cli::note-fatal-session-file memory)))
+          (multiple-value-bind (status output)
+              (gap72-fatal-page directory)
+            (is (= 1 status))
+            (is (search
+                 "To report this crash: start cadr and run /bug. The crash details are attached automatically."
+                 output))
+            (is (null (search "run `cadr -r`" output)))))))))
+
+(defun gap72-run-print-startup (directory arguments)
+  (let ((home (merge-pathnames "home/" directory))
+        (workspace (merge-pathnames "workspace/" directory))
+        (original-home (uiop:getenv "HOME")))
+    (ensure-directories-exist (merge-pathnames "anchor" home))
+    (ensure-directories-exist (merge-pathnames "anchor" workspace))
+    (unwind-protect
+         (progn
+           (setf (uiop:getenv "HOME") (namestring home))
+           (uiop:with-current-directory (workspace)
+             (let ((*standard-input* (make-string-input-stream ""))
+                   (*standard-output* (make-string-output-stream))
+                   (*error-output* (make-string-output-stream)))
+               (cadr-cli::cli-handler
+                (cadr-cli::parse-cli-arguments arguments)))))
+      (setf (uiop:getenv "HOME") original-home))))
+
+(test gap72-startup-session-path-uses-the-resume-bug-hint
+  ;; v1.4.0 interactive startup keeps sessionFile on the session that
+  ;; newSession just created. The crash page reads that string.
+  (with-test-directory (directory)
+    (let ((sessions (merge-pathnames "sessions/" directory)))
+      (ensure-directories-exist (merge-pathnames "anchor" sessions))
+      (let ((cadr-ai::*fatal-session-file* nil))
+        (is (member
+             (gap72-run-print-startup
+              directory
+              (list "--print" "--no-extensions" "--no-skills"
+                    "--no-prompt-templates" "--no-context-files"
+                    "--no-tools"
+                    "--session-dir" (namestring sessions)))
+             '(0 1)))
+        (is (stringp cadr-ai::*fatal-session-file*))
+        (is (null (probe-file cadr-ai::*fatal-session-file*)))
+        (multiple-value-bind (status output)
+            (gap72-fatal-page directory)
+          (is (= 1 status))
+          (is (search
+               "To report this crash: run `cadr -r` to resume the session, then run /bug. The crash details are attached automatically."
+               output))
+          (is (null (search "start cadr and" output)))))
+      (let ((cadr-ai::*fatal-session-file* "stale-session.jsonl"))
+        (is (member
+             (gap72-run-print-startup
+              directory
+              (list "--print" "--no-session" "--no-extensions"
+                    "--no-skills" "--no-prompt-templates"
+                    "--no-context-files" "--no-tools"))
+             '(0 1)))
+        (is (null cadr-ai::*fatal-session-file*))
+        (multiple-value-bind (status output)
+            (gap72-fatal-page directory)
+          (is (= 1 status))
+          (is (search
+               "To report this crash: start cadr and run /bug. The crash details are attached automatically."
+               output))
+          (is (null (search "run `cadr -r`" output))))))))
 
 (test gap72-terminal-error-name-maps-node-subclasses
   (is (string= "Error"

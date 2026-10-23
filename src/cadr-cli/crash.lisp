@@ -43,12 +43,15 @@
 (defvar *fatal-crash-record-path* nil)
 
 (defun note-fatal-session-file (session)
+  ;; v1.4.0 session-manager.ts newSession assigns sessionFile as soon
+  ;; as persist is true, before the file is written.
+  ;; crashReportInstructions uses the resume sentence for any string.
   (setf cadr-ai::*fatal-session-file*
         (let ((path (and session (cadr-agent:session-path session))))
-          (when (and path
-                     (or (cadr-agent::session-persisted-p session)
-                         (probe-file path)))
-            (namestring path))))
+          (when path
+            (let ((name (namestring path)))
+              (when (plusp (length name))
+                name)))))
   cadr-ai::*fatal-session-file*)
 
 (defun call-with-fatal-condition-boundary

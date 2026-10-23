@@ -1036,6 +1036,9 @@
              _scope-diagnostic-report))
     (setf cache-warmer warmer
           (car agent-cell) agent)
+    ;; v1.4.0 interactive-mode.ts crashReportInstructions reads
+    ;; session.sessionFile, which newSession set before the file exists.
+    (note-fatal-session-file session)
     (when cli-uses-default-tools-p
       (restore-active-tools-from-transcript
        agent
