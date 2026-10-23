@@ -5313,15 +5313,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "71c218b2ffc181e47a7047bbe97b9c562f7aa0c8d5e0fc8bc0fcc0243b7bbdd5",
-          "cadr": "d95cd76b2e83b5866c479761e83bb71f2983eec550ae54498d294c7951185f1b"
+          "pi": "1feba5cec3d3d8739f709cc78cf82105f0312ec91b7bca7a629299d973d875b7",
+          "cadr": "dcfb093fafc28192db33999aef4a24b85cb9c474125c2582e7e9a59126127ab0"
         },
         "narrow": {
-          "pi": "2be537a88e2cb60376f3814ab36a2071f07db726321ba46243fc95d951b1f6c7",
-          "cadr": "9188e4f24262199d9069921818cc35d815b70f56be040aaf9a8e7d0fe151e7f8"
+          "pi": "733fd8286ddd8da10594007bbb412ea30a16711378eb889f9dd02bf1f095f324",
+          "cadr": "3fad1ab6c224dad6fa290f1752e2e3d8c66a9bf23ccdeaa7689a09a88d0e79a9"
         }
       },
-      "note": "At example-todo/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+      "note": "At example-todo/process-exit both sides still show todo add \"first\" and ✓ Added #1 first. Residual deltas are the tool box pad, footer token estimates, viewport placement, I04 identity wrapping, and I01 ANSI teardown."
     },
     {
       "scenario": "example-todo",
@@ -5336,15 +5336,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5cf1de604c89d01b396f7d8f3959b51db097aaf90dd2317f581ee2bc824b3e71",
-          "cadr": "a7bc747d31a6d4f45e602ea320fba11af402706ee19d5079aa31560f77b0bc4f"
+          "pi": "460fc2fd8761d94aeb37263cd53f7e2c14f4953e581c5e98ab79b5b9a6a1858e",
+          "cadr": "7eab03841c0ca2aa27df4184a8bf61b7a23f2241e2c2bb5d0ac072c2f8055827"
         },
         "narrow": {
-          "pi": "04365178335795c32350b73e72405de3f8002676537cdbaba9c4b5b2ff6f0290",
-          "cadr": "f24ab10237fe7c972bb896e5455a59c10600f62c9850beb62020111eca16d64b"
+          "pi": "a8698967f35625b9bda50c5522020f570f0e9119d53320ccbb5cb63da94b7cff",
+          "cadr": "2950239a7840259d31f9a502db62f977a034897085713e7a0e4a579deb60e5f5"
         }
       },
-      "note": "At example-todo/todo-added both sides record the faux todo add. Residual deltas are result chrome (pi custom renderer vs cadr tool text), I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-todo/todo-added both sides show todo add \"first\" and ✓ Added #1 first. Residual deltas are the tool box pad, footer token estimates, viewport placement, I04 identity wrapping, and I01 ANSI segmentation."
     },
     {
       "scenario": "example-todo",
@@ -5359,12 +5359,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bf39c0e527b2654b1a0381600adef19f50d19cc4236bbef584e4de3b4f3d09ab",
-          "cadr": "1b19ecb3be988eb9692b3afb4da9fd9663676bbe0119535c44f1f2e1f40dddd4"
+          "pi": "3d1008e2cce97ed31b03830f195be936e3ebda43a006b47a3b292da72ff9364f",
+          "cadr": "2dcbb3ceef7b68ba3007fe3fd79d4695bc04b507ba5224ad77b7c99a12d91e75"
         },
         "narrow": {
-          "pi": "eb1c05ebc310e47c5b0eb5729031e92be20b51e1eb8d53bf960bc17e6fda2ceb",
-          "cadr": "eaa3150bc06c293ef96ecbae4187b6865659898dcfee684679598eff37587214"
+          "pi": "71e7dde8f4e1e50283f5a88fb9295a26f97b381afdd9a0609eed4e68099223eb",
+          "cadr": "f318995c770bf4cba6f83ae0aa971342571daee43c4c04334f581004be9ccb96"
         }
       },
       "note": "At example-todo/todos-empty both sides show No todos yet. Ask the agent to add some!. Residual deltas are dialog chrome, I04 identity wrapping, and I01 ANSI segmentation."

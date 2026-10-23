@@ -222,6 +222,7 @@
                              (:file "goal27-earendil-announcement-test")
                              (:file "goal27-subagent-example-prompts-test")
                              (:file "goal27-config-schemas-test")
+                             (:file "goal27-todo-confirmation-test")
                              (:file "goal28-npm-command-settings-test")
                              (:file "goal28-npm-command-install-test")
                              (:file "goal28-packages-settings-test")

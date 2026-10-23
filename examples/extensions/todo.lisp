@@ -34,6 +34,123 @@
                *example-todos*))
       "No todos"))
 
+(defun todo-theme-bold (theme text)
+  (let ((bold (and (listp theme) (getf theme :bold))))
+    (if (functionp bold)
+        (funcall bold (or text ""))
+        (or text ""))))
+
+(defun todo-render-call (arguments theme context)
+  ;; The host calls this as (arguments theme context).
+  (declare (ignore context))
+  (let ((text
+          (concatenate
+           'string
+           (example-theme-fg
+            theme :tool-title (todo-theme-bold theme "todo "))
+           (example-theme-fg
+            theme :muted
+            (or (example-argument arguments "action" nil) ""))))
+        (arg-text (example-argument arguments "text" nil))
+        (id (example-argument arguments "id" nil)))
+    (when (and (stringp arg-text) (plusp (length arg-text)))
+      (setf text
+            (concatenate
+             'string text " "
+             (example-theme-fg
+              theme :dim (format nil "\"~A\"" arg-text)))))
+    (when id
+      (setf text
+            (concatenate
+             'string text " "
+             (example-theme-fg
+              theme :accent (format nil "#~A" id)))))
+    text))
+
+(defun todo-render-list (todos expanded-p theme)
+  (if (null todos)
+      (example-theme-fg theme :dim "No todos")
+      (let ((display
+              (if expanded-p
+                  todos
+                  (subseq todos 0 (min 5 (length todos)))))
+            (text
+              (example-theme-fg
+               theme :muted
+               (format nil "~D todo(s):" (length todos)))))
+        (dolist (todo display)
+          (let ((done-p (getf todo :done-p)))
+            (setf text
+                  (concatenate
+                   'string text
+                   (string #\Newline)
+                   (example-theme-fg
+                    theme (if done-p :success :dim)
+                    (if done-p "✓" "○"))
+                   " "
+                   (example-theme-fg
+                    theme :accent
+                    (format nil "#~A" (getf todo :id)))
+                   " "
+                   (example-theme-fg
+                    theme (if done-p :dim :muted)
+                    (or (getf todo :text) ""))))))
+        (when (and (not expanded-p) (> (length todos) 5))
+          (setf text
+                (concatenate
+                 'string text
+                 (string #\Newline)
+                 (example-theme-fg
+                  theme :dim
+                  (format nil "... ~D more" (- (length todos) 5))))))
+        text)))
+
+(defun todo-render-result (result options theme context)
+  ;; The host calls this as (result options theme context).
+  (declare (ignore context))
+  (let ((details
+          (and (typep result 'cadr-ai:tool-result-message)
+               (cadr-ai:tool-result-message-details result))))
+    (cond
+      ((null details)
+       (example-tool-result-text result))
+      ((getf details :error)
+       (example-theme-fg
+        theme :error
+        (format nil "Error: ~A" (getf details :error))))
+      (t
+       (let ((todos (getf details :todos))
+             (action (getf details :action)))
+         (case action
+           (:list
+            (todo-render-list
+             todos (getf options :expanded-p) theme))
+           (:add
+            (let ((added (car (last todos))))
+              (if (null added)
+                  (example-tool-result-text result)
+                  (concatenate
+                   'string
+                   (example-theme-fg theme :success "✓ Added ")
+                   (example-theme-fg
+                    theme :accent
+                    (format nil "#~A" (getf added :id)))
+                   " "
+                   (example-theme-fg
+                    theme :muted (or (getf added :text) ""))))))
+           (:toggle
+            (concatenate
+             'string
+             (example-theme-fg theme :success "✓ ")
+             (example-theme-fg
+              theme :muted (example-tool-result-text result))))
+           (:clear
+            (concatenate
+             'string
+             (example-theme-fg theme :success "✓ ")
+             (example-theme-fg theme :muted "Cleared all todos")))
+           (t (example-tool-result-text result))))))))
+
 (cadr-agent:define-event-hook
  :session-start
  :handler
@@ -115,17 +232,8 @@
                              (todo-details :list
                                            (format nil "unknown action: ~A"
                                                    action)))))))
- :render-call
- (lambda (arguments render-context theme)
-   (declare (ignore render-context theme))
-   (format nil "todo ~A~@[ ~S~]~@[ #~D~]"
-           (example-argument arguments "action" "list")
-           (example-argument arguments "text" nil)
-           (example-argument arguments "id" nil)))
- :render-result
- (lambda (result options render-context theme)
-   (declare (ignore options render-context theme))
-   (example-tool-result-text result)))
+ :render-call #'todo-render-call
+ :render-result #'todo-render-result)
 
 (cadr-agent:define-command
  "todos"

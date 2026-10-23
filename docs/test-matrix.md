@@ -60,7 +60,7 @@ interrupt a stream mid-flight.
 Maps every `test/**/*.lisp` and `test/**/*.py` file to a theme.
 Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
-above are unchanged. Measured 2026-10-23: 220 listed files
+above are unchanged. Measured 2026-10-23: 222 listed files
 (`rg -c '^\|[^|]*\| \x60test/.*\.(lisp|py)\x60 \|$' docs/test-matrix.md`).
 `cadr-wasm/tests` is a tenth system and is not in the `GOAL20_TEST_CHECKS`
 nine-system denominator. `cadr-env/tests` is the same kind of extra system:
@@ -228,6 +228,7 @@ the remote-execution daemon is not one of the nine.
 | presentation numbers lock | `test/cadr-cli/goal18-presentation-numbers-test.lisp` |
 | startup resources lock | `test/cadr-cli/goal18-startup-resources-test.lisp` |
 | example games | `test/cadr-cli/goal20-example-games-test.lisp` |
+| todo confirmation | `test/cadr-cli/goal27-todo-confirmation-test.lisp` |
 | tic-tac-toe steer | `test/cadr-cli/tic-tac-toe-steer-test.lisp` |
 | part B ledger | `test/cadr-cli/goal20-part-b-ledger-test.lisp` |
 | part I file verdicts | `test/cadr-cli/goal20-part-i-test.lisp` |
