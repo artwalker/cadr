@@ -458,8 +458,11 @@ each introduced by an accent scope label, with items sorted by path."
               items)))
         (when group
           (push
-           (cadr-tui:theme-foreground
-            :accent (format nil "  ~A" scope) :enabled-p t)
+           (concatenate
+            'string
+            "  "
+            (cadr-tui:theme-foreground
+             :accent scope :enabled-p t))
            lines)
           (dolist (item
                    (sort
@@ -685,7 +688,6 @@ directory-style extensions."
                      (resource-snapshot-context-files resources))))
                   (skills (resource-snapshot-skills resources))
                   (prompts (resource-snapshot-prompts resources))
-                  (themes (resource-snapshot-themes resources))
                   (extension-items
                    (mapcar
                     (lambda (extension)
@@ -802,32 +804,7 @@ directory-style extensions."
                              (lambda (item) (getf item :path))
                              extension-items))
                            #'startup-locale<))))))
-                 (when themes
-                   (emit
-                    (section-lines
-                     "Themes"
-                     (if expanded-p
-                         (startup-scope-grouped-lines
-                          (group-items
-                           (mapcar
-                            (lambda (theme)
-                              (namestring-of (getf theme :path)))
-                            themes))
-                          (lambda (item)
-                            (cadr-tui:theme-foreground
-                             :dim
-                             (format
-                              nil "    ~A"
-                              (startup-home-abbreviated
-                               (getf item :path)))
-                             :enabled-p t)))
-                         (compact-body
-                          (sort
-                           (mapcar
-                            (lambda (theme)
-                              (or (getf theme :name) "unnamed"))
-                            themes)
-                           #'startup-locale<))))))
+                 ;; v1.4.0 showLoadedResources has no Themes section.
                  (let ((skill-conflicts
                         (startup-conflict-lines
                          "Skill conflicts"

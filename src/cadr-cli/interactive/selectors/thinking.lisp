@@ -340,15 +340,16 @@
             (cadr-tui:theme-foreground :success " ✓"))))
 
 (defun thinking-selector-title-line (width)
+  ;; v1.4.0 thinking-selector.ts uses an unthemed Text, not an accent title.
   (or (gethash width *thinking-selector-title-by-width*)
       (setf (gethash width *thinking-selector-title-by-width*)
             (selector-component-text-line
-             (cadr-tui:theme-foreground
-              :accent
-              (cadr-tui:theme-bold "Thinking Level"))
+             "Thinking Level"
              width :padding-x 0))))
 
-(defun thinking-selector-footer-line (state width)
+(defun thinking-selector-footer-lines (state width)
+  ;; v1.4.0 thinking selector uses the same wrapping Text hint as
+  ;; model-selector.ts.
   (let* ((kb (thinking-selector-keybindings state))
          (confirm
            (selector-keybinding-display-text
@@ -362,7 +363,7 @@
          (cache-key (list width confirm save cancel)))
     (or (gethash cache-key *thinking-selector-footer-by-key*)
         (setf (gethash cache-key *thinking-selector-footer-by-key*)
-              (selector-component-text-line
+              (component-text-lines
                (cadr-tui:theme-foreground
                 :dim
                 (format
@@ -379,45 +380,47 @@
              width :padding-x 0))))
 
 (defun thinking-selector-cycle-line (state width)
+  ;; v1.4.0 keyDisplayText capitalizes the cycle chord.
   (let* ((key
-           (or
-            (first
-             (cadr-tui:keybinding-keys
-              (thinking-selector-keybindings state)
-              "app.thinking.cycle"))
-            "ctrl+t"))
+           (selector-keybinding-display-text
+            (thinking-selector-keybindings state)
+            "app.thinking.cycle"))
          (cache-key (cons width key)))
     (or (gethash cache-key *thinking-selector-cycle-by-key*)
         (setf (gethash cache-key *thinking-selector-cycle-by-key*)
               (selector-component-text-line
-               (thinking-selector-muted
-                (format
-                 nil
-                 "~A cycles thinking levels in-session"
-                 key))
+               (format
+                nil
+                "~A cycles thinking levels in-session"
+                key)
                width :padding-x 0)))))
 
 (defun thinking-selector-level-row
     (level selected-p current-p default width)
-  (let ((label (thinking-level-label level))
-        (description
-          (thinking-level-description-line level default)))
+  ;; v1.4.0 SelectList label is "✓ <level>" or "  <level>", primary
+  ;; column at least 12, then the description. The current marker is
+  ;; the check in that label, not a trailing glyph.
+  (let* ((label (thinking-level-label level))
+         (description
+           (thinking-level-description-line level default))
+         (primary
+           (format nil "~A~A" (if current-p "✓ " "  ") label))
+         (padded
+           (if (< (length primary) 12)
+               (concatenate
+                'string primary
+                (make-string (- 12 (length primary))
+                             :initial-element #\Space))
+               primary))
+         (body
+           (concatenate 'string
+                        (if selected-p "→ " "  ")
+                        padded
+                        description)))
     (selector-component-text-line
-     (with-output-to-string (out)
-       (write-string
-        (if selected-p
-            (thinking-selector-arrow-accent)
-            "  ")
-        out)
-       (write-string
-        (if selected-p
-            (thinking-selector-accent label)
-            label)
-        out)
-       (write-string "  " out)
-       (write-string (thinking-selector-muted description) out)
-       (when current-p
-         (write-string (thinking-selector-check-success) out)))
+     (if selected-p
+         (thinking-selector-accent body)
+         (thinking-selector-muted body))
      width :padding-x 0)))
 
 (defun render-thinking-selector (state width)
@@ -430,11 +433,6 @@
     (let* ((selected (thinking-selector-state-selected state))
            (current (thinking-selector-state-current-level state))
            (default (thinking-selector-state-default-level state))
-           (selected-level
-             (and visible
-                  (nth selected
-                       (thinking-selector-state-filtered-levels
-                        state))))
            (body-lines nil))
       (if visible
           (loop
@@ -456,16 +454,6 @@
            (format nil "  (~D/~D)" (1+ selected) total))
           width :padding-x 0)
          body-lines))
-      (when selected-level
-        (push "" body-lines)
-        (push
-         (selector-component-text-line
-          (thinking-selector-muted
-           (format nil "  ~A"
-                   (thinking-level-description-line
-                    selected-level default)))
-          width :padding-x 0)
-         body-lines))
       (setf body-lines (nreverse body-lines))
       (let* ((header
                (list
@@ -480,10 +468,13 @@
                  width
                  :cursor
                  (thinking-selector-state-query-cursor state)))))
+        ;; The frame opens with a border and a spacer, the same two
+        ;; lines v1.4.0 paints before "Thinking Level". Mouse rows
+        ;; are indexes into that full frame.
         (setf (thinking-selector-state-list-origin state)
-              (+ (length header) (length (first input)) 1)
+              (+ 2 (length header) (length (first input)) 1)
               (thinking-selector-state-input-origin state)
-              (length header)
+              (+ 2 (length header))
               (thinking-selector-state-input-width state)
               (max 1 width)
               (thinking-selector-state-list-limit state)
@@ -492,6 +483,8 @@
          (make-selector-frame
           :sections
           (list
+           :border
+           :blank
            (list :lines header)
            (list :component
                  (first input)
@@ -502,6 +495,6 @@
            :blank
            (list
             :lines
-            (list (thinking-selector-footer-line state width)))
+            (thinking-selector-footer-lines state width))
            :border))
          width)))))

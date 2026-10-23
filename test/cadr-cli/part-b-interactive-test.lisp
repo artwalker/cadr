@@ -3062,11 +3062,16 @@ user question"
            (cadr-tui:strip-terminal-sequences
             (first lines))))
       (is (string= "" (second plain)))
+      ;; v1.4.0 Text wraps the hint. At width 30 the cancel clause is
+      ;; the last content row, and a spacer sits above the first hint row.
       (is (string= ""
-                   (nth (- (length plain) 3)
+                   (nth (- (length plain) 5)
                         plain)))
       (is (search
            "Enter to select"
+           (nth (- (length plain) 4) plain)))
+      (is (search
+           "to cancel"
            (nth (- (length plain) 2) plain)))
       (is (search
            (format nil "~C[38;2;167;152;215m"

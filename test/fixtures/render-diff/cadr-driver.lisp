@@ -86,6 +86,20 @@
    (json-vector-list
     (json-get (json-get scenario "setup") "exampleExtensions"))))
 
+(defun example-extension-startup-records (scenario agent-dir)
+  ;; pi materializeExampleExtensions copies each example to
+  ;; agentDir/extensions/<name>.ts before showLoadedResources. The
+  ;; Lisp file still loads; the startup label is the materialized name.
+  (loop for name in (example-extension-names scenario)
+        collect
+        (list
+         :path
+         (namestring
+          (merge-pathnames
+           (format nil "extensions/~A.ts" name)
+           agent-dir))
+         :scope :global)))
+
 (defun example-extension-lisp-path (name)
   (let ((path
           (merge-pathnames
@@ -94,6 +108,21 @@
     (unless (probe-file path)
       (error "Unknown example extension ~A: ~A" name path))
     (namestring (truename path))))
+
+(defun example-extension-materialized-origin (manager origin)
+  ;; pi materializeExampleExtensions copies the example to
+  ;; agentDir/extensions/<name>.ts. The Lisp file still loads; the
+  ;; command source path shown in the selector is that copy.
+  (let* ((path (pathname origin))
+         (name (pathname-name path))
+         (dir (cadr-cli::cli-extension-manager-global-directory manager)))
+    (if (and name
+             dir
+             (search "examples/extensions/"
+                     (namestring path)))
+        (namestring
+         (merge-pathnames (format nil "~A.ts" name) dir))
+        origin)))
 
 (defun example-command-records (manager)
   "Public getCommands shape: extension + prompt, no builtins (pi@4a080252f)."
@@ -112,7 +141,10 @@
             :source :extension
             :source-info
             (list
-             :path (cadr-agent::extension-definition-origin definition))))
+             :path
+             (example-extension-materialized-origin
+              manager
+              (cadr-agent::extension-definition-origin definition)))))
      (loop for definition in
            (cadr-agent::extension-snapshot-templates snapshot)
            collect
@@ -123,7 +155,10 @@
             :source :prompt
             :source-info
             (list
-             :path (cadr-agent::extension-definition-origin definition)))))))
+             :path
+             (example-extension-materialized-origin
+              manager
+              (cadr-agent::extension-definition-origin definition))))))))
 
 (defun example-tool-records (manager agent)
   (declare (ignore manager))
@@ -1546,14 +1581,16 @@ render loopback login received
           (cadr-cli::make-tui-startup-lines
            resources
            :extensions
-           (mapcar
-            (lambda (record)
-              (list
-               :path (cadr-cli::extension-source-record-path record)
-               :scope (cadr-cli::extension-source-record-scope record)))
-            (cadr-cli::discover-extensions-in-directory
-             (merge-pathnames "extensions/" agent-dir)
-             :global 0)))
+           (append
+            (mapcar
+             (lambda (record)
+               (list
+                :path (cadr-cli::extension-source-record-path record)
+                :scope (cadr-cli::extension-source-record-scope record)))
+             (cadr-cli::discover-extensions-in-directory
+              (merge-pathnames "extensions/" agent-dir)
+              :global 0))
+            (example-extension-startup-records scenario agent-dir)))
         (let ((main-thread sb-thread:*current-thread*)
               (crash-after-ms
                 (json-get (json-get scenario "setup")

@@ -59,6 +59,32 @@
        border)
       plain))))
 
+(test model-selector-hint-wraps-at-the-baseline-text-width
+  ;; v1.4.0 model-selector.ts Text(hint, 0, 0) word-wraps. At 48 columns
+  ;; the cancel clause is the next row.
+  (let* ((width 48)
+         (model
+           (cadr-ai:make-model
+            :id "faux-1" :name "Faux" :provider :faux :api :faux))
+         (plain
+           (goal9-b3-plain-lines
+            (cadr-cli::render-model-selector
+             (cadr-cli::make-model-selector-state
+              :all-models (list model)
+              :current-model model)
+             width)))
+         (hint
+           (position-if
+            (lambda (line) (search "to set as default" line))
+            plain))
+         (cancel
+           (position-if
+            (lambda (line) (search "Escape/Ctrl+C to cancel" line))
+            plain)))
+    (is (and hint cancel (= cancel (1+ hint))))
+    (is (null
+         (find "default · E" plain :test #'search)))))
+
 (test goal9-b3-tree-help-copy-preserves-arrow-glyphs-and-filter-abbreviations
   (let* ((width 120)
          (border

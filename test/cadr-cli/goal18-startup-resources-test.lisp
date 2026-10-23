@@ -2,14 +2,10 @@
 
 (in-suite cadr-cli-suite)
 
-;;; Goal 18 Part H: the startup loaded-resource blocks follow the baseline
-;;; (interactive-mode.ts:1537-1613): section order
-;;; Context -> Skills -> Prompts -> Extensions -> Themes, the [Skill
-;;; conflicts] / [Prompt conflicts] warning blocks, and the baseline
-;;; compact/expanded bodies.  The render-diff startup-resources scenario
-;;; pins the dual captures; these tests pin the block semantics that
-;;; fixtures cannot byte-match (prompt conflicts are
-;;; implementation-specific text on the baseline side).
+;;; Goal 18 Part H, locked to v1.4.0 showLoadedResources: section order
+;;; Context -> Skills -> Prompts -> Extensions. Themes are not a startup
+;;; section. The [Skill conflicts] / [Prompt conflicts] warning blocks
+;;; and the compact/expanded bodies follow the same function.
 
 (defun goal18-startup-section-titles (lines)
   (loop for line in lines
@@ -46,23 +42,46 @@
         (list
          :path "/home/u/.cadr/agent/extensions/demo/extension.lisp"
          :scope :global)))
-    (declare (ignore expanded))
     (let* ((texts (mapcar #'goal18-strip-ansi compact))
+           (user-header
+            (find "user" expanded :test #'search))
            (titles
             (remove-if-not
              (lambda (line)
                (and (plusp (length line)) (char= (char line 0) #\[)))
              texts)))
       (is (equal
-           '("[Context]" "[Skills]" "[Prompts]" "[Extensions]" "[Themes]")
+           '("[Context]" "[Skills]" "[Prompts]" "[Extensions]")
            titles))
       (is (not (member "Prompt Templates" titles :test #'string=)))
+      (is (not (member "[Themes]" titles :test #'string=)))
       ;; Baseline compact lists sort by name; Context keeps insertion order.
       (is (find "  alpha-skill, zeta-skill" texts :test #'string=))
       (is (find "  /review" texts :test #'string=))
       (is (find "  demo" texts :test #'string=))
-      (is (find "  acme" texts :test #'string=))
-      (is (find "  AGENTS.md" texts :test #'string=)))))
+      (is (not (find "  acme" texts :test #'string=)))
+      (is (find "  AGENTS.md" texts :test #'string=))
+      ;; v1.4.0 formatScopeGroups: the two spaces sit outside the accent color.
+      (is (and user-header
+               (>= (length user-header) 2)
+               (string= "  " (subseq user-header 0 2)))))))
+
+(test startup-single-file-extension-keeps-its-filename
+  ;; v1.4.0 getCompactExtensionLabels keeps hello.ts. Directory entries
+  ;; named extension.lisp still collapse to the directory.
+  (multiple-value-bind (compact expanded)
+      (cadr-cli::make-tui-startup-lines
+       (cadr-cli::make-resource-snapshot
+        :cwd "/home/u/project/"
+        :agent-directory "/home/u/.cadr/agent/")
+       :extensions
+       (list
+        (list :path "/home/u/.cadr/agent/extensions/hello.ts"
+              :scope :global)))
+    (declare (ignore expanded))
+    (let ((texts (mapcar #'goal18-strip-ansi compact)))
+      (is (find "  hello.ts" texts :test #'string=))
+      (is (not (find "  hello.lisp" texts :test #'string=))))))
 
 (test goal18-context-files-follow-baseline-ancestor-order
   (with-test-directory (root)
@@ -194,7 +213,7 @@
               texts)))
         (is (equal
              '("[Context]" "[Skills]" "[Prompts]" "[Extensions]"
-               "[Themes]" "[Extension issues]")
+               "[Extension issues]")
              titles))))))
 
 (test goal18-startup-collision-winner-is-the-project-resource

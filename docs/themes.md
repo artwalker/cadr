@@ -32,6 +32,4 @@ only needs to override what it changes.
 
 ## Startup display
 
-Loaded custom themes are listed in the startup resources block under
-`[Themes]`. A malformed theme file is reported there as a diagnostic
-instead of aborting startup.
+Loaded custom themes are not listed in the startup resources block.

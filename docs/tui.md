@@ -7,7 +7,7 @@ from the default startup state.
 ## Layout
 
 - Startup banner: version, key hints, and the loaded-resources summary
-  (`[Context]`, `[Skills]`, `[Prompts]`, `[Extensions]`, `[Themes]`,
+  (`[Context]`, `[Skills]`, `[Prompts]`, `[Extensions]`,
   plus conflict blocks). `ctrl+o` expands the full help; `quietStartup`
   in settings keeps it compact.
 - Transcript: user/assistant messages, tool calls with collapsible

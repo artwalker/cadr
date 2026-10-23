@@ -334,10 +334,11 @@
             :current-model (first models))))
     (cadr-cli::model-selector-set-query scoped-overlay "model")
     (dolist (width '(72 28))
+      ;; Width 28 wraps the v1.4.0 hint into three rows (two more than 72).
       (multiple-value-bind (lines row column)
           (cadr-cli::render-tui-overlay-lines
            scoped-overlay width 0d0)
-        (is (= 23 (length lines)))
+        (is (= (if (= width 72) 23 25) (length lines)))
         (is (= 5 row))
         (is (= 7 column))
         (is
@@ -352,7 +353,7 @@
       (multiple-value-bind (lines row column)
           (cadr-cli::render-tui-overlay-lines
            unscoped-overlay width 0d0)
-        (is (= 22 (length lines)))
+        (is (= (if (= width 72) 22 24) (length lines)))
         (is (= 4 row))
         (is (= 2 column))
         (is

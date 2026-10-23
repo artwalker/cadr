@@ -227,6 +227,8 @@
              (getf
               (nth exit (alt-recording-events terminal))
               :data)))
+      ;; v1.4.0 afterTerminalStop prints render(width). ScrollView.render
+      ;; returns the child, so the replay is the document, not the window.
       (is (search "first" restore))
       (is (search "new tail" restore))
       (is (null (search "old tail" restore))))))

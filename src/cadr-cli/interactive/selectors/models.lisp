@@ -455,7 +455,9 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
     (declare (ignore end))
     (values visible start total)))
 
-(defun model-selector-footer-line (state width)
+(defun model-selector-footer-lines (state width)
+  ;; v1.4.0 model-selector.ts Text wraps the hint. A 48-column row
+  ;; breaks before "Escape/Ctrl+C to cancel".
   (let* ((kb (model-selector-keybindings state))
          (confirm
            (selector-keybinding-display-text
@@ -469,7 +471,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
          (cache-key (list width confirm save cancel)))
     (or (gethash cache-key *model-selector-footer-by-key*)
         (setf (gethash cache-key *model-selector-footer-by-key*)
-              (selector-component-text-line
+              (component-text-lines
                (cadr-tui:theme-foreground
                 :dim
                 (format
@@ -585,8 +587,8 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
                            (model-selector-state-refresh-status-message
                             state)))
                   width :padding-x 0)))))
-             (footer-line
-               (model-selector-footer-line state width)))
+             (footer-lines
+               (model-selector-footer-lines state width)))
       (let* ((scope-lines
                (append
                 (list
@@ -627,7 +629,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
                 :blank
                 (list :lines body-lines)
                 :blank
-                (list :lines (list footer-line))
+                (list :lines footer-lines)
                 :border))
          width)))))
 (defstruct (scoped-models-selector-state
