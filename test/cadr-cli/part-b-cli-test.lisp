@@ -77,6 +77,74 @@
     (is (null
          (cadr-cli::cli-arguments-diagnostics arguments)))))
 
+(test goal60-cli-help-matches-v140-print-help
+  ;; v1.4.0 packages/coding-agent/src/cli/args.ts printHelp, after the
+  ;; cadr identity substitution. cadr ai stays; it is the merged entry.
+  (let ((usage
+          (with-output-to-string (stream)
+            (cadr-cli::print-cli-usage stream))))
+    (is (search "cadr [options] [--] [@files...] [messages...]" usage))
+    (is (search
+         "  --                             End option parsing; treat remaining arguments as messages/files"
+         usage))
+    (is (search
+         "Comma-separated allowlist of tool names or patterns (*) to enable"
+         usage))
+    (is (search
+         "Keeps MCP tools unless an entry starts with mcp__"
+         usage))
+    (is (search
+         "Only +name/-name entries add to or remove from the defaults"
+         usage))
+    (is (search
+         "Comma-separated denylist of tool names or patterns (*) to disable"
+         usage))
+    (is (search "Applies to all tools, MCP tools included" usage))
+    (is (search "cadr --tools +codemode" usage))
+    (is (search "cadr --tools read,bash,codemode,'mcp__radius__*'" usage))
+    (is (search "cadr -p -- \"- Summarize these points\"" usage))
+    (is (search "powershell - Execute PowerShell commands on Windows" usage))
+    (is (search "BASETEN_API_KEY                  - Baseten API key" usage))
+    (is (search "cadr ai <command>" usage))
+    (is (null (search "cadr --tools +grep" usage)))
+    (is (null (search "Or only +name/-name entries to change the defaults" usage)))
+    (is (null (search "Applies to built-in, extension, and custom tools" usage)))
+    (let ((no-extensions (search "--no-extensions, -ne" usage))
+          (no-mcp (search "--no-mcp" usage))
+          (skill (search "--skill <path>" usage)))
+      (is (and no-extensions no-mcp skill
+               (< no-extensions no-mcp skill))))))
+
+(test goal60-double-dash-ends-option-parsing
+  ;; v1.4.0 packages/coding-agent/src/cli/args.ts parseArgs: arg === "--"
+  ;; stops option parsing. @tokens become files; other tokens, including
+  ;; ones that start with a dash, become messages.
+  (let ((summarize
+          (cadr-cli::parse-cli-arguments
+           '("-p" "--" "- Summarize these points"))))
+    (is-true (cadr-cli::cli-arguments-print-p summarize))
+    (is (equal '("- Summarize these points")
+               (cadr-cli::cli-arguments-messages summarize)))
+    (is (null (cadr-cli::cli-arguments-file-arguments summarize)))
+    (is (null (cadr-cli::cli-arguments-diagnostics summarize)))
+    (is (zerop
+         (hash-table-count
+          (cadr-cli::cli-arguments-unknown-flags summarize)))))
+  (let ((mixed
+          (cadr-cli::parse-cli-arguments
+           '("hello" "--" "@notes.md" "--help" "-x"))))
+    (is (equal '("hello" "--help" "-x")
+               (cadr-cli::cli-arguments-messages mixed)))
+    (is (equal '("notes.md")
+               (cadr-cli::cli-arguments-file-arguments mixed)))
+    (is (null (cadr-cli::cli-arguments-help-p mixed)))
+    (is (zerop
+         (hash-table-count
+          (cadr-cli::cli-arguments-unknown-flags mixed)))))
+  (let ((only (cadr-cli::parse-cli-arguments '("--"))))
+    (is (null (cadr-cli::cli-arguments-messages only)))
+    (is (null (cadr-cli::cli-arguments-file-arguments only)))))
+
 (test print-cli-usage-plain-bytes-match-shipped-literal
   (let ((stream (make-string-output-stream)))
     (cadr-cli::print-cli-usage stream)

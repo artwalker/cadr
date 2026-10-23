@@ -176,7 +176,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-cli/arguments.lisp` | 1056 | 27 | Parse, validate, resolve, and document the CLI argument contract. | pass · large | done | lookup-cli-option closed table; print-cli-usage write-string literals. I0: approve/no-approve stay special. | 20 |
+| `src/cadr-cli/arguments.lisp` | 1083 | 27 | Parse, validate, resolve, and document the CLI argument contract. | pass · large | done | lookup-cli-option closed table; print-cli-usage write-string literals. I0: approve/no-approve stay special. Measured 2026-10-23: `wc -l` 1083, column-0 `(def` 27. | 20 |
 | `src/cadr-cli/bootstrap/auth.lisp` | 172 | 2 | Project provider-owned authentication options into the native CLI login command. | pass | done | one metadata let. I0: :status stays on the option. | 20 |
 | `src/cadr-cli/bootstrap/commands.lisp` | 3,202 | 10 | Construct the agent controller and dispatch CLI modes and slash-command output through one frontend sink. | pass · large | done | spec-driven command records; one provider match. I0: no third loop. | 20 |
 | `src/cadr-cli/bootstrap/main.lisp` | 417 | 10 | Handle package/credential preflight, parse arguments, and enter the selected CLI path. | pass | no-rewrite | list_models writes token counts from slots; six-column table is still the baseline. | 20 |
