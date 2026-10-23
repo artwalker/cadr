@@ -33,34 +33,8 @@
 (defun egg-now-ms ()
   (* (/ (get-internal-real-time) internal-time-units-per-second) 1000d0))
 
-;;; v1.4.0 dark.json after vars resolve. The builtin dark table still stores
-;;; the pre-okhsl chrome hex; theme.colors in theme.ts is this okhsl.
-(defparameter +egg-v140-dark-okhsl+
-  '((:muted . "okhsl(229 6% 67%)")
-    (:dim . "okhsl(229 8% 56%)")
-    (:accent . "okhsl(295 50% 67%)")
-    (:text . "okhsl(234 3% 89%)")))
-
-(defparameter +egg-builtin-dark-hex+
-  '((:muted . "#808080")
-    (:dim . "#666666")
-    (:accent . "#8abeb7")
-    (:text . "#d4d4d4")))
-
-(defun egg-theme-color-text (key theme)
-  "Current theme color. Builtin dark muted/dim/accent/text resolve like v1.4.0."
-  (let* ((value (cadr-tui:theme-color-value key :theme theme))
-         (okhsl (cdr (assoc key +egg-v140-dark-okhsl+)))
-         (builtin (cdr (assoc key +egg-builtin-dark-hex+))))
-    (if (and okhsl
-             (eq (cadr-tui:terminal-theme-name theme) :dark)
-             (stringp value)
-             (string-equal value builtin))
-        (cadr-tui:normalize-theme-color okhsl)
-        value)))
-
 (defun egg-theme-rgb (key)
-  (let* ((value (egg-theme-color-text key (cadr-tui:current-theme)))
+  (let* ((value (cadr-tui:theme-color-value key))
          (color (cadr-tui:parse-theme-hex-color value)))
     (list (float (cadr-tui:rgb-color-red color) 1d0)
           (float (cadr-tui:rgb-color-green color) 1d0)

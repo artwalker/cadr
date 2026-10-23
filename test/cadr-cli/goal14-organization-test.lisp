@@ -691,10 +691,10 @@
     ;; +3 GAP-39 overlay swallow: egg-visible-overlay-p,
     ;; egg-logo-mouse-claim, and egg-mouse-after-widget
     ;; (interactive/components/easter-egg-play.lisp).
-    ;; +3 GAP-39 dark theme colors: +egg-v140-dark-okhsl+,
-    ;; +egg-builtin-dark-hex+, and egg-theme-color-text
-    ;; (interactive/components/easter-egg-play.lisp).
-    (is (= 449 definition-count)
+    ;; -3 GAP-39 fourth repair: deleted +egg-v140-dark-okhsl+,
+    ;; +egg-builtin-dark-hex+, and egg-theme-color-text.
+    ;; The egg reads theme-color-value.
+    (is (= 446 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

@@ -46,9 +46,45 @@
                   (floor (third (cadr-cli::egg-block-color block)))))
           (cadr-cli::egg-model-blocks model))))))
 
+(defparameter +egg-v140-theme-sha256+
+  '(("dark.json"
+     . "e1f96982f8cb7d2a48eca7db03c9cb282cb1e14a243680cd855638ecd6a251b6")
+    ("light.json"
+     . "2dee6a4be7f765e7fd7728166b7ebf8c29e4ce313f8ec6b38ae50699e3abc2f3")))
+
+(defun egg-test-v140-theme-text (name)
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (path
+           (merge-pathnames
+            (format nil "test/fixtures/v140-theme/~A" name)
+            root))
+         (text (uiop:read-file-string path :external-format :utf-8)))
+    (is (string=
+         (cdr (assoc name +egg-v140-theme-sha256+ :test #'string=))
+         (egg-test-sha256-hex text))
+        "~A sha256" name)
+    text))
+
+(defun egg-test-v140-theme-overrides (name)
+  (cadr-cli::theme-object-overrides
+   (cadr-ai::parse-json (egg-test-v140-theme-text name))))
+
+(defun egg-test-hex-rgb (hex)
+  (let ((color (cadr-tui:parse-theme-hex-color hex)))
+    (list (cadr-tui:rgb-color-red color)
+          (cadr-tui:rgb-color-green color)
+          (cadr-tui:rgb-color-blue color))))
+
+(defun egg-test-install-v140-theme (name)
+  (multiple-value-bind (overrides appearance)
+      (egg-test-v140-theme-overrides name)
+    (cadr-tui:set-current-theme appearance :overrides overrides)
+    overrides))
+
 (test egg-render-frames-match-v1.4.0-node-goldens
-  ;; SHA256 of lines.join("\n") from Node on v1.4.0, dark-theme muted/dim,
-  ;; foreground 212,212,212, background 0,0,0, width 24, height 8.
+  ;; SHA256 of lines.join("\n") from Node on v1.4.0. muted/dim come from
+  ;; dark.json through the shared theme resolver. Foreground 212,212,212,
+  ;; background 0,0,0, width 24, height 8.
   (let* ((screen
            (list "hello"
                  (format nil "~C[38;2;10;20;30mwide~C[0m" #\Escape #\Escape)
@@ -59,7 +95,7 @@
          (saved-theme (cadr-tui:current-theme)))
     (unwind-protect
          (progn
-           (cadr-tui:reset-current-theme)
+           (egg-test-install-v140-theme "dark.json")
            (setf (cadr-tui:terminal-theme-color-mode
                   (cadr-tui:current-theme))
                  :truecolor)
@@ -87,12 +123,27 @@
                  (cadr-tui:component-dispose animation)))))
       (cadr-tui:set-current-theme saved-theme))))
 
+(defun egg-test-parsed-rgb (overrides key)
+  (egg-test-hex-rgb (cdr (assoc key overrides))))
+
 (test egg-theme-colors-match-v140-dark-and-follow-overrides
-  ;; initTheme("dark") on Node 22.22.0: muted 157,165,169 dim 126,136,142
-  ;; accent 167,152,215 text 222,224,225. A replaced token follows the theme.
+  ;; Node 22.22.0 parseColor of v1.4.0 dark.json / light.json after
+  ;; resolveVarRefs. The egg reads theme-color-value, so these RGB apply
+  ;; once that JSON is the current theme. A #808080 muted override stays
+  ;; 128,128,128.
   (cadr-tui:reset-current-theme)
   (unwind-protect
-       (progn
+       (let ((dark (egg-test-v140-theme-overrides "dark.json"))
+             (light (egg-test-v140-theme-overrides "light.json")))
+         (is (equal '(157 165 169) (egg-test-parsed-rgb dark :muted)))
+         (is (equal '(126 136 142) (egg-test-parsed-rgb dark :dim)))
+         (is (equal '(167 152 215) (egg-test-parsed-rgb dark :accent)))
+         (is (equal '(222 224 225) (egg-test-parsed-rgb dark :text)))
+         (is (equal '(103 113 118) (egg-test-parsed-rgb light :muted)))
+         (is (equal '(135 144 149) (egg-test-parsed-rgb light :dim)))
+         (is (equal '(116 89 180) (egg-test-parsed-rgb light :accent)))
+         (is (equal '(59 63 65) (egg-test-parsed-rgb light :text)))
+         (egg-test-install-v140-theme "dark.json")
          (is (equal '(157d0 165d0 169d0) (cadr-cli::egg-theme-rgb :muted)))
          (is (equal '(126d0 136d0 142d0) (cadr-cli::egg-theme-rgb :dim)))
          (is (equal '(167d0 152d0 215d0) (cadr-cli::egg-theme-rgb :accent)))
@@ -109,14 +160,26 @@
            (is (equal '(222d0 224d0 225d0) foreground))
            (is (equal '(0d0 0d0 0d0) background)))
          (cadr-tui:set-current-theme
-          :dark :overrides '((:accent . "#010203")))
+          :dark
+          :overrides (acons :accent "#010203"
+                            (remove :accent dark :key #'car)))
          (is (equal '(1d0 2d0 3d0) (cadr-cli::egg-theme-rgb :accent)))
          (is (equal '(157d0 165d0 169d0) (cadr-cli::egg-theme-rgb :muted)))
-         (cadr-tui:set-current-theme :light)
-         (is (equal '(108d0 108d0 108d0) (cadr-cli::egg-theme-rgb :muted)))
-         (is (equal '(118d0 118d0 118d0) (cadr-cli::egg-theme-rgb :dim)))
-         (is (equal '(90d0 128d0 128d0) (cadr-cli::egg-theme-rgb :accent)))
-         (is (equal '(31d0 35d0 40d0) (cadr-cli::egg-theme-rgb :text))))
+         (cadr-tui:set-current-theme
+          :dark :overrides '((:muted . "#808080")))
+         (is (equal '(128d0 128d0 128d0) (cadr-cli::egg-theme-rgb :muted)))
+         (dolist (key '(:dim :accent :text))
+           (is (equal
+                (mapcar (lambda (channel) (float channel 1d0))
+                        (egg-test-hex-rgb
+                         (cadr-tui:theme-color-value key)))
+                (cadr-cli::egg-theme-rgb key))
+               "~A follows theme-color-value" key))
+         (egg-test-install-v140-theme "light.json")
+         (is (equal '(103d0 113d0 118d0) (cadr-cli::egg-theme-rgb :muted)))
+         (is (equal '(135d0 144d0 149d0) (cadr-cli::egg-theme-rgb :dim)))
+         (is (equal '(116d0 89d0 180d0) (cadr-cli::egg-theme-rgb :accent)))
+         (is (equal '(59d0 63d0 65d0) (cadr-cli::egg-theme-rgb :text))))
     (cadr-tui:reset-current-theme)))
 
 (test egg-logo-click-origin-hits-half-block-mark
