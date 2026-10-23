@@ -473,25 +473,40 @@
                     (tui-write-log-terminal note-log :output note-out))
                   (enable (format nil "~C[?2031h" #\Escape))
                   (disable (format nil "~C[?2031l" #\Escape)))
-             ;; Not started: the flag is recorded and nothing is written.
-             ;; v1.4.0 setTerminalColorSchemeNotifications returns when
-             ;; stopped. A repeat of the same value does not write again.
-             (cadr-tui:terminal-set-color-scheme-notifications note t)
+             ;; v1.4.0 TuiBase.stopped starts false, so set(true) before
+             ;; start writes ESC[?2031h. The same value does not write
+             ;; again. set(false) before start writes ESC[?2031l.
+             ;; set(false) on the default false writes nothing.
+             (cadr-tui:terminal-set-color-scheme-notifications note nil)
              (is (null (tui-write-log-file note-log)))
-             (setf (cadr-tui::process-terminal-color-scheme-notifications-enabled-p
-                    note)
-                   nil
-                   (cadr-tui::process-terminal-started-p note)
-                   t)
              (cadr-tui:terminal-set-color-scheme-notifications note t)
+             (is (string= enable (tui-write-log-file note-log)))
              (cadr-tui:terminal-set-color-scheme-notifications note t)
              (is (string= enable (tui-write-log-file note-log)))
              (cadr-tui:terminal-set-color-scheme-notifications note nil)
              (is (string= (concatenate 'string enable disable)
                           (tui-write-log-file note-log)))
-             (is (string= (concatenate 'string enable disable)
+             ;; After start, a changed value writes again. Stdout is
+             ;; read once here: every notification byte also went out,
+             ;; and nothing else did.
+             (setf (cadr-tui::process-terminal-started-p note) t)
+             (cadr-tui:terminal-set-color-scheme-notifications note t)
+             (cadr-tui:terminal-set-color-scheme-notifications note t)
+             (is (string= (concatenate 'string enable disable enable)
+                          (tui-write-log-file note-log)))
+             (cadr-tui:terminal-set-color-scheme-notifications note nil)
+             (is (string= (concatenate 'string enable disable enable disable)
+                          (tui-write-log-file note-log)))
+             (is (string= (concatenate 'string enable disable enable disable)
                           (get-output-stream-string note-out)))
-             (setf (cadr-tui::process-terminal-started-p note) nil))
+             ;; stop() sets stopped. Later sets change the flag and
+             ;; do not write. The flag is already false, so stop itself
+             ;; does not append ?2031l.
+             (cadr-tui:terminal-stop note)
+             (cadr-tui:terminal-set-color-scheme-notifications note t)
+             (cadr-tui:terminal-set-color-scheme-notifications note nil)
+             (is (string= (concatenate 'string enable disable enable disable)
+                          (tui-write-log-file note-log))))
            (let* ((cursor-log
                     (namestring (merge-pathnames "cursor.log" root)))
                   (cursor-out (make-string-output-stream))
@@ -543,9 +558,12 @@
       (uiop:delete-directory-tree root :validate t))))
 
 (test tui-write-log-records-cell-size-and-color-scheme-startup
-  ;; v1.4.0 tui.ts start writes ?2031h then CSI 16 t through terminal.write.
-  ;; stop writes ?2031l through terminal.write. Bracketed paste, the
-  ;; cursor hide, and the keyboard DA query stay on process.stdout.write.
+  ;; v1.4.0 TuiBase.stopped starts false. set(true) before start writes
+  ;; ?2031h through terminal.write. start writes that sequence again,
+  ;; then CSI 16 t when images are enabled. stop writes ?2031l.
+  ;; Bracketed paste, the cursor hide, and the keyboard DA query stay
+  ;; on process.stdout.write. After stop, set does not write; the next
+  ;; start writes ?2031h again because the flag was set back to true.
   (let ((root (tui-write-log-temp-dir))
         (saved-capabilities (cadr-tui:get-terminal-capabilities)))
     (unwind-protect
@@ -577,11 +595,15 @@
                      (hide (format nil "~C[?25l" #\Escape)))
                 (cadr-tui:terminal-set-color-scheme-notifications
                  terminal t)
-                (is (null (probe-file log)))
+                (is (string= enable (tui-write-log-file log)))
+                (is (string= enable (get-output-stream-string output)))
+                (cadr-tui:terminal-set-color-scheme-notifications
+                 terminal t)
+                (is (string= enable (tui-write-log-file log)))
                 (unwind-protect
                      (progn
                        (cadr-tui:terminal-start terminal)
-                       (is (string= (concatenate 'string enable cell)
+                       (is (string= (concatenate 'string enable enable cell)
                                     (tui-write-log-file log)))
                        (let ((stdout (get-output-stream-string output)))
                          (is (search paste stdout))
@@ -589,7 +611,8 @@
                          (is (search (concatenate 'string enable cell)
                                      stdout)))
                        (cadr-tui:terminal-stop terminal)
-                       (is (string= (concatenate 'string enable cell disable)
+                       (is (string= (concatenate 'string
+                                                 enable enable cell disable)
                                     (tui-write-log-file log)))
                        (is (null (search paste (tui-write-log-file log))))
                        (is (null (search hide (tui-write-log-file log))))
@@ -598,7 +621,19 @@
                                     (tui-write-log-file log))))
                        (is (null
                             (search (format nil "~C[?25h" #\Escape)
-                                    (tui-write-log-file log)))))
+                                    (tui-write-log-file log))))
+                       (cadr-tui:terminal-set-color-scheme-notifications
+                        terminal nil)
+                       (cadr-tui:terminal-set-color-scheme-notifications
+                        terminal t)
+                       (is (string= (concatenate 'string
+                                                 enable enable cell disable)
+                                    (tui-write-log-file log)))
+                       (cadr-tui:terminal-start terminal)
+                       (is (string= (concatenate 'string
+                                                 enable enable cell disable
+                                                 enable cell)
+                                    (tui-write-log-file log))))
                   (when (cadr-tui::process-terminal-started-p terminal)
                     (ignore-errors (cadr-tui:terminal-stop terminal)))
                   (cadr-tui::disarm-terminal-exit-restore terminal))))))

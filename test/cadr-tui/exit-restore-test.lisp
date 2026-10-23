@@ -222,10 +222,13 @@ and getExitRestoreSuffix.")
           (cadr-tui::keyboard-protocol-negotiator-mode
            (cadr-tui::process-terminal-keyboard-negotiator terminal))
           :modify-other-keys)
+    ;; set(true) before start writes ?2031h. The exit prefix still
+    ;; begins with ?2031l because the flag is enabled.
     (cadr-tui:terminal-set-color-scheme-notifications terminal t)
     (is (string=
          (concatenate
           'string
+          (exit-restore-csi "?2031h")
           (exit-restore-csi "?2031l")
           (exit-restore-csi "?25h")
           (format nil "~C]9;4;0~C" #\Escape (code-char 7))

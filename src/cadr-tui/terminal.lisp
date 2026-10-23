@@ -368,6 +368,12 @@
    (started-p
     :initform nil
     :accessor process-terminal-started-p)
+   ;; v1.4.0 TuiBase.stopped starts false. stop() sets it true.
+   ;; Not the same bit as started-p: before the first start, stopped
+   ;; is still false and color-scheme notification writes go out.
+   (stopped-p
+    :initform nil
+    :accessor process-terminal-stopped-p)
    (keyboard-protocol-pushed-p
     :initform nil
     :accessor process-terminal-keyboard-protocol-pushed-p)
@@ -802,7 +808,10 @@
       ;; which resets console mode flags.
       (funcall
        (process-terminal-windows-vt-input-function terminal))
-      (setf (process-terminal-started-p terminal) t)
+      ;; v1.4.0 TuiBase.start assigns stopped = false before the
+      ;; startup writes, including a restart after stop().
+      (setf (process-terminal-stopped-p terminal) nil
+            (process-terminal-started-p terminal) t)
       (setf
        (process-terminal-keyboard-protocol-pushed-p
         terminal)
@@ -850,6 +859,9 @@
 
 (defmethod terminal-stop ((terminal process-terminal))
   (when (process-terminal-started-p terminal)
+    ;; v1.4.0 TuiBase.stop assigns stopped = true before the explicit
+    ;; ?2031l write. A later set updates the flag and does not write.
+    (setf (process-terminal-stopped-p terminal) t)
     (disarm-terminal-exit-restore terminal)
     (setf (terminal-exit-renderer terminal) nil)
     (unwind-protect
@@ -1663,7 +1675,10 @@
        (process-terminal-color-scheme-notifications-enabled-p
         terminal)
        enabled-p)
-      (when (process-terminal-started-p terminal)
+      ;; v1.4.0 setTerminalColorSchemeNotifications writes through
+      ;; terminal.write when the value changes and stopped is false.
+      ;; stopped starts false, so this write happens before start().
+      (unless (process-terminal-stopped-p terminal)
         (terminal-write
          terminal
          (format nil "~C[?2031~C"
