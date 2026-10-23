@@ -5742,15 +5742,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "68cb71c6d8ae40b49088023192c0ed5ea6ff401c700de8f32903012f22cfcc05",
-          "cadr": "76e3eb6753890051d0d5c38092bd79ad32b2b410108bc170b74c5fed53f0a5ce"
+          "pi": "89e479ee5b20b1c959563721a445528b37cbaf4551efce7d5e9c12ba5ee0e18b",
+          "cadr": "8bb1bff406ef1e01e64386f24d8ca5e827c4b6afe77b077025341f484707fcec"
         },
         "narrow": {
-          "pi": "053b15dcdb2d6c18a937a1cce9fe844e764dd39c7af33b0df5a32099bcdbfd70",
-          "cadr": "fac346c5d0f2ad50206f69b5e09aa2ba6f3305738fe363f1686fa4da8bbc61dc"
+          "pi": "3a362ff5eaa80a50a98b2e631edc2feae319c55d4adeea6653336fde27559aca",
+          "cadr": "996f94e63af207ad0e9b22fc3a4396b39b0576298f886f7accec87f33a63aa95"
         }
       },
-      "note": "At compaction-status-manual/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-manual/process-exit [narrow+wide] the editor border is a plain separator with no compaction status (v1.4.0 stop() clears the indicator before the final frame). Remaining semantic-screen inequality is Goal 16 product-identity trailing padding on the <PRODUCT_TITLE> line (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "compaction-status-overflow",
@@ -5769,11 +5769,11 @@
           "cadr": "6cf20a012e4f6864b112ae32bb3fbeede7cc2933d72739577f10bc22ef76fd89"
         },
         "narrow": {
-          "pi": "3f2f212842ec3e1dee8d01ff1319d1cc207cd9cf88b65b5f61b302f682fbb44c",
-          "cadr": "9ae358fbbd0229a4422679b79e61f0003c003521f0ef90fac3e7a0e2d7ac3c92"
+          "pi": "ef00eace0e16ae60d1b2ac0bf115561226f2edaef63865f9f03f542ed8bf8df4",
+          "cadr": "658275166c211dab4d9ad6744187344fbb35d26448f029163e440c241702c6dd"
         }
       },
-      "note": "At compaction-status-overflow/compaction-overflow [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-overflow/compaction-overflow [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Narrow status border keeps the first wrapped line 'Context overflow detected,' then dashes (v1.4.0 renderInBorder)."
     },
     {
       "scenario": "compaction-status-overflow",
@@ -5788,15 +5788,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "11453bcd01a7cd14ae2bbc06655d86cb591ba4a38772caf381dd95635c316669",
-          "cadr": "4c5b2ac34d919c636d2bdd4063feab9eefdf39b253e28a48ff8b0cb665dcb697"
+          "pi": "89e479ee5b20b1c959563721a445528b37cbaf4551efce7d5e9c12ba5ee0e18b",
+          "cadr": "8bb1bff406ef1e01e64386f24d8ca5e827c4b6afe77b077025341f484707fcec"
         },
         "narrow": {
-          "pi": "e0ea978efe2ff07d39b765b4aa98139f34bec39ed0fdb4dfa71bf0df71236b8d",
-          "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
+          "pi": "3a362ff5eaa80a50a98b2e631edc2feae319c55d4adeea6653336fde27559aca",
+          "cadr": "996f94e63af207ad0e9b22fc3a4396b39b0576298f886f7accec87f33a63aa95"
         }
       },
-      "note": "At compaction-status-overflow/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-overflow/process-exit [narrow+wide] the editor border is a plain separator with no compaction status (v1.4.0 stop() clears the indicator before the final frame). Remaining semantic-screen inequality is Goal 16 product-identity trailing padding on the <PRODUCT_TITLE> line (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -5834,15 +5834,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bd1c6545770d43579fc983f54b22027524735b7601bd6a949ca7dda907cddec7",
-          "cadr": "0033586f7b5287131698bc130c3174ab086e252b928f8badfab386afd29b9750"
+          "pi": "89e479ee5b20b1c959563721a445528b37cbaf4551efce7d5e9c12ba5ee0e18b",
+          "cadr": "8bb1bff406ef1e01e64386f24d8ca5e827c4b6afe77b077025341f484707fcec"
         },
         "narrow": {
-          "pi": "d0faa6e8b597c1163adf1d4511abc6b7b8ca28f4202358341212944110681820",
-          "cadr": "9f615f32cea67934c86fe59733a6e3365e77d5477489a893203ab55f33dbd28e"
+          "pi": "3a362ff5eaa80a50a98b2e631edc2feae319c55d4adeea6653336fde27559aca",
+          "cadr": "996f94e63af207ad0e9b22fc3a4396b39b0576298f886f7accec87f33a63aa95"
         }
       },
-      "note": "At compaction-status-threshold/process-exit [wide] both sides now paint the offline 'Warning: fd not found. Offline mode enabled, skipping download.' chat line (v1.4.0 showManagedToolStatus). Remaining visible delta is Goal 16 product-identity wrap/padding from <PRODUCT>/<PRODUCT_TITLE>/<VERSION> placeholders versus pi's shorter names (I04); raw ANSI update segmentation and teardown still differ (I01). Also covers narrow after theme-cache SHA refresh."
+      "note": "At compaction-status-threshold/process-exit [narrow+wide] the editor border is a plain separator with no compaction status (v1.4.0 stop() clears the indicator before the final frame). Remaining semantic-screen inequality is Goal 16 product-identity trailing padding on the <PRODUCT_TITLE> line (I04); raw ANSI update segmentation and teardown still differ (I01)."
     },
     {
       "scenario": "conversation-content",

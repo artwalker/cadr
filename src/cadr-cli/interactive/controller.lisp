@@ -3835,6 +3835,17 @@ interactive-mode.ts:5956-5960).")
               (cadr-tui:renderer-start renderer))
             :before-stop
             (lambda ()
+              ;; pi@4a080252f interactive-mode.ts stop() clears the
+              ;; status indicator before the final frame, so the exit
+              ;; transcript's editor border is a plain separator.
+              (let ((clear-status-p
+                      (sb-thread:with-mutex (lock)
+                        (when (tui-state-status-message state)
+                          (setf (tui-state-status-message state) nil)
+                          t))))
+                (when clear-status-p
+                  (request-render t)
+                  (flush-render t)))
               (setf terminal-active-p nil)
               (when terminal-progress-active-p
                 (set-terminal-progress-state nil))

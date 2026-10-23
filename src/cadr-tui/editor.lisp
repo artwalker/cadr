@@ -1858,6 +1858,13 @@
 (defun editor-working-status-border-text
     (editor message spinner-frame max-width
      &key spinner-only-p)
+  ;; pi@4a080252f status-indicator.ts renderInBorder. The loader text
+  ;; is word-wrapped at the requested width and only the first line is
+  ;; kept, then hard-cut with an empty ellipsis. A long overflow label
+  ;; stops at "Context overflow detected," instead of cutting into
+  ;; "Auto-compacting".
+  (when (<= max-width 0)
+    (return-from editor-working-status-border-text ""))
   (let* ((frame (or spinner-frame ""))
          (color-key (multiline-editor-border-color-key editor))
          (styled
@@ -1867,10 +1874,12 @@
                 'string
                 (theme-foreground color-key frame :enabled-p t)
                 (if (plusp (length frame)) " " "")
-                (theme-foreground color-key message :enabled-p t)))))
-    (truncate-to-width
-     (string-trim '(#\Space) styled)
-     (max 0 max-width) "")))
+                (theme-foreground color-key message :enabled-p t))))
+         (first-line
+           (string-trim
+            '(#\Space #\Tab #\Newline #\Return)
+            (or (first (wrap-text styled max-width)) ""))))
+    (truncate-to-width first-line max-width "")))
 
 (defun editor-render-top-border
     (editor width hidden-line-count

@@ -4372,6 +4372,111 @@
             :muted message :enabled-p t)
            status)))))
 
+(test compaction-overflow-border-keeps-the-first-wrapped-line
+  ;; pi@4a080252f status-indicator.ts renderInBorder. At 48 columns the
+  ;; overflow label wraps before "Auto-compacting", and the border keeps
+  ;; that first line: "── ⠋ Context overflow detected, " plus dashes.
+  (let* ((editor (cadr-tui:make-multiline-editor))
+         (state (cadr-cli::make-tui-state :model "mock"))
+         (message
+           (cadr-cli::summarization-status-message
+            :compaction :overflow)))
+    (setf (cadr-cli::tui-state-status-message state) message)
+    (let* ((lines
+             (cadr-cli::render-tui-state
+              state editor 48 20 :spinner-frame "⠋"))
+           (border
+             (find-if
+              (lambda (line)
+                (and (search "Context overflow" line)
+                     (search "─" line)))
+              lines))
+           (plain
+             (cadr-tui:strip-terminal-sequences border)))
+      (is (string=
+           "── ⠋ Context overflow detected, ────────────────"
+           plain))
+      (is (not (search "Auto-compact" plain)))
+      (is (= 48 (cadr-tui:visible-width plain))))
+    (let* ((wide
+             (cadr-cli::render-tui-state
+              state editor 100 32 :spinner-frame "⠋"))
+           (border
+             (find-if
+              (lambda (line)
+                (and (search message line)
+                     (search "─" line)))
+              wide)))
+      (is (search message
+                  (cadr-tui:strip-terminal-sequences border))))))
+
+(test compaction-status-exit-frame-is-a-plain-separator
+  ;; pi@4a080252f interactive-mode.ts stop() clears the compaction
+  ;; indicator before the final frame. The exit screen's editor border
+  ;; is a plain separator for manual, threshold, and overflow.
+  (labels
+      ((plain-separator-p (line columns)
+         (and (= (length line) columns)
+              (plusp columns)
+              (every (lambda (character)
+                       (char= character #\─))
+                     line)))
+       (run-exit (reason columns rows)
+         (let* ((sent-p nil)
+                (consumer nil)
+                (needle
+                  (cadr-cli::summarization-status-message
+                   :compaction reason))
+                (wait
+                  (footer-sync-wait-for-screen-text
+                   (if (eq reason :overflow)
+                       "Context overflow detected,"
+                       needle)))
+                (terminal
+                  (make-instance
+                   'footer-sync-test-terminal
+                   :columns columns
+                   :rows rows
+                   :inputs
+                   (list
+                    (lambda (terminal)
+                      (unless sent-p
+                        (setf sent-p t)
+                        (funcall
+                         consumer
+                         (cadr-agent::make-agent-event
+                          :type :compaction-start
+                          :reason reason)))
+                      (funcall wait terminal))
+                    (format nil "~C[100;5u" #\Escape)))))
+           (cadr-cli::run-tui
+            (constantly nil)
+            :set-event-consumer
+            (lambda (next) (setf consumer next))
+            :model "faux"
+            :alt-p t
+            :terminal terminal)
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-tui:virtual-terminal-snapshot terminal)))))
+    (dolist (reason '(:manual :threshold :overflow))
+      (dolist (size '((100 32) (48 20)))
+        (let* ((columns (first size))
+               (rows (second size))
+               (lines (run-exit reason columns rows)))
+          (is (find-if
+               (lambda (line)
+                 (plain-separator-p line columns))
+               lines))
+          (is (not
+               (find-if
+                (lambda (line)
+                  (or (search "Compacting" line)
+                      (search "compacting" line)
+                      (search "escape to cancel" line)
+                      (search "Context overflow" line)))
+                lines))))))))
+
 (test goal9-startup-header-precedes-chat-and-expands-with-tools
   (let* ((version-line
            (format nil "cadr v~A" (cadr-ai::cadr-version)))
