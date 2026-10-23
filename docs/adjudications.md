@@ -2349,3 +2349,24 @@ The gray `Working` status rule is canonicalized in
   cell keeps the previous blocked text after the new open prefix. The
   open text also requires that the repair clarify the relationship with
   GAP-20 and that both rows' tests pass together.
+
+## 2026-10-23 — GAP-08 and GAP-11 get a third repair pass
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):**
+  GAP-08 and GAP-11 are open for a third repair under the already
+  recorded 条件 S. Two acceptances failed for each row. Keep each row
+  whole. If the third acceptance fails, write the status `blocked` and
+  hand that row to the advisor.
+- **Why:** each acceptance found new defects. The implementation was
+  following review comments instead of starting from the upstream test
+  surface.
+- **GAP-08:** ChatGPT oauth is lost on the next startup. The stored
+  `clientId` is not used to request the token endpoint.
+- **GAP-11:** a background exchange in the advisory window writes back
+  after a 401 and clears the force-refresh flag, so the next request
+  does not exchange again.
+- **Repair:** the third repair follows the already recorded 条件 S
+  (the 2026-10-23 entry that quotes it in full).
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-08 and GAP-11.
+  The status cell keeps the previous blocked text after the new open
+  prefix.
