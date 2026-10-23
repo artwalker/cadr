@@ -1052,22 +1052,26 @@
         "oversized" :maximum-bytes 1))))
 
 (test clipboard-osc52-opt-in-follows-a-successful-local-copy
-  ;; pi #10826: PI_CLIPBOARD_OSC52=1 sends OSC 52 after the local write
-  ;; when the session has no SSH markers.
-  (let ((events nil)
-        (output (make-string-output-stream)))
-    (is (eq :native+osc52
-            (cadr-cli::copy-to-clipboard
-             "hello"
-             :platform :darwin
-             :environment '(("PI_CLIPBOARD_OSC52" . "1"))
-             :output output
-             :native-setter
-             (lambda (text)
-               (push (list :native text) events)))))
-    (is (equal '((:native "hello")) events))
-    (is (search "]52;c;aGVsbG8="
-                (get-output-stream-string output))))
+  ;; v1.4.0 clipboard.test.ts: exact "1" emits OSC 52 after a successful
+  ;; darwin, win32, or displayed-linux copy. The runtime name is
+  ;; CADR_CLIPBOARD_OSC52. "0" does not emit.
+  (dolist (platform '(:darwin :windows))
+    (let ((events nil)
+          (output (make-string-output-stream)))
+      (is (eq :native+osc52
+              (cadr-cli::copy-to-clipboard
+               "hello"
+               :platform platform
+               :wsl-p nil
+               :windows-terminal-p nil
+               :environment '(("CADR_CLIPBOARD_OSC52" . "1"))
+               :output output
+               :native-setter
+               (lambda (text)
+                 (push (list :native text) events)))))
+      (is (equal '((:native "hello")) events))
+      (is (string= (clipboard-test-hello-osc52)
+                   (get-output-stream-string output)))))
   (let ((commands nil)
         (output (make-string-output-stream)))
     (is (eq :shell+osc52
@@ -1076,7 +1080,8 @@
              :platform :linux
              :x11-display-p t
              :wsl-p nil
-             :environment '(("PI_CLIPBOARD_OSC52" . "1")
+             :windows-terminal-p nil
+             :environment '(("CADR_CLIPBOARD_OSC52" . "1")
                             ("DISPLAY" . ":99"))
              :output output
              :command-runner
@@ -1085,8 +1090,8 @@
                t))))
     (is (equal '((("xclip" "-selection" "clipboard") "hello"))
                commands))
-    (is (search "]52;c;aGVsbG8="
-                (get-output-stream-string output))))
+    (is (string= (clipboard-test-hello-osc52)
+                 (get-output-stream-string output))))
   (let ((output (make-string-output-stream)))
     (is (eq :shell
             (cadr-cli::copy-to-clipboard
@@ -1094,7 +1099,8 @@
              :platform :linux
              :x11-display-p t
              :wsl-p nil
-             :environment '(("PI_CLIPBOARD_OSC52" . "0")
+             :windows-terminal-p nil
+             :environment '(("CADR_CLIPBOARD_OSC52" . "0")
                             ("DISPLAY" . ":99"))
              :output output
              :command-runner
@@ -1102,6 +1108,91 @@
                (declare (ignore argv input))
                t))))
     (is (string= "" (get-output-stream-string output)))))
+
+(defun clipboard-test-local-copy (environment)
+  (let ((output (make-string-output-stream)))
+    (list
+     (cadr-cli::copy-to-clipboard
+      "hello"
+      :platform :darwin
+      :wsl-p nil
+      :windows-terminal-p nil
+      :environment environment
+      :output output
+      :native-setter (lambda (text) (declare (ignore text))))
+     (get-output-stream-string output))))
+
+(test clipboard-osc52-name-is-exact-and-ssh-markers-stay-remote
+  ;; v1.4.0 isRemoteSession: SSH_CONNECTION, SSH_CLIENT, and
+  ;; MOSH_CONNECTION are truthy strings. "" is not. Exact "1" opts in.
+  ;; The legacy name is not a fallback.
+  (dolist (value '("0" "" "true" "01" "1 "))
+    (destructuring-bind (outcome text)
+        (clipboard-test-local-copy
+         `(("CADR_CLIPBOARD_OSC52" . ,value)))
+      (is (eq :native outcome))
+      (is (string= "" text))))
+  (destructuring-bind (outcome text)
+      (clipboard-test-local-copy
+       '(("PI_CLIPBOARD_OSC52" . "1")))
+    (is (eq :native outcome))
+    (is (string= "" text)))
+  (destructuring-bind (outcome text)
+      (clipboard-test-local-copy
+       '(("CADR_CLIPBOARD_OSC52" . "1")
+         ("PI_CLIPBOARD_OSC52" . "0")))
+    (is (eq :native+osc52 outcome))
+    (is (string= (clipboard-test-hello-osc52) text)))
+  (dolist (name '("SSH_CONNECTION" "SSH_CLIENT" "MOSH_CONNECTION"))
+    (destructuring-bind (outcome text)
+        (clipboard-test-local-copy `((,name . "client server")))
+      (is (eq :native+osc52 outcome))
+      (is (string= (clipboard-test-hello-osc52) text)))
+    (destructuring-bind (outcome text)
+        (clipboard-test-local-copy `((,name . "")))
+      (is (eq :native outcome))
+      (is (string= "" text))))
+  (let ((saved
+          (loop for name in '("SSH_CONNECTION" "SSH_CLIENT"
+                              "MOSH_CONNECTION"
+                              "CADR_CLIPBOARD_OSC52"
+                              "PI_CLIPBOARD_OSC52")
+                collect (cons name (uiop:getenv name)))))
+    (unwind-protect
+         (progn
+           (dolist (name '("SSH_CONNECTION" "SSH_CLIENT"
+                           "MOSH_CONNECTION"
+                           "CADR_CLIPBOARD_OSC52"))
+             (sb-posix:unsetenv name))
+           (setf (uiop:getenv "PI_CLIPBOARD_OSC52") "1")
+           (let ((output (make-string-output-stream)))
+             (is (eq :native
+                     (cadr-cli::copy-to-clipboard
+                      "hello"
+                      :platform :darwin
+                      :wsl-p nil
+                      :windows-terminal-p nil
+                      :output output
+                      :native-setter
+                      (lambda (text) (declare (ignore text))))))
+             (is (string= "" (get-output-stream-string output))))
+           (setf (uiop:getenv "CADR_CLIPBOARD_OSC52") "1")
+           (let ((output (make-string-output-stream)))
+             (is (eq :native+osc52
+                     (cadr-cli::copy-to-clipboard
+                      "hello"
+                      :platform :darwin
+                      :wsl-p nil
+                      :windows-terminal-p nil
+                      :output output
+                      :native-setter
+                      (lambda (text) (declare (ignore text))))))
+             (is (string= (clipboard-test-hello-osc52)
+                          (get-output-stream-string output)))))
+      (dolist (pair saved)
+        (if (cdr pair)
+            (setf (uiop:getenv (car pair)) (cdr pair))
+            (sb-posix:unsetenv (car pair)))))))
 
 (test clipboard-text-and-image-fallbacks-preserve-platform-order
   (is (string=

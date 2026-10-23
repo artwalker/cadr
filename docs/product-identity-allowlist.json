@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1788,
+  "expected_findings": 1783,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -11420,30 +11420,6 @@
     },
     {
       "path": "src/cadr-cli/interactive/clipboard.lisp",
-      "kind": "legacy-env",
-      "token": "PI_CLIPBOARD_OSC52",
-      "line": "                     environment \"PI_CLIPBOARD_OSC52\")",
-      "occurrences": 1,
-      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
-    },
-    {
-      "path": "src/cadr-cli/interactive/clipboard.lisp",
-      "kind": "legacy-env",
-      "token": "PI_CLIPBOARD_OSC52",
-      "line": "         ;; pi@4a080252f clipboard.ts isRemoteSession. PI_CLIPBOARD_OSC52=1",
-      "occurrences": 1,
-      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
-    },
-    {
-      "path": "src/cadr-cli/interactive/clipboard.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "         ;; pi@4a080252f clipboard.ts isRemoteSession. PI_CLIPBOARD_OSC52=1",
-      "occurrences": 1,
-      "reason": "Source comment cites the pinned upstream pi behavior being implemented; it is not a Cadr runtime identity string."
-    },
-    {
-      "path": "src/cadr-cli/interactive/clipboard.lisp",
       "kind": "pi-token",
       "token": "pi",
       "line": "  ;; pi@4a080252f win32-platform.c clipboard_execute reads",
@@ -13145,22 +13121,6 @@
       "line": "  ;; pi@4a080252f terminal-image.ts:179-189 \u2014 skip work when the three",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "src/cadr-tui/terminal.lisp",
-      "kind": "legacy-env",
-      "token": "PI_PROGRAM_STATUS",
-      "line": "  (uiop:getenv \"PI_PROGRAM_STATUS\"))",
-      "occurrences": 1,
-      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
-    },
-    {
-      "path": "src/cadr-tui/terminal.lisp",
-      "kind": "legacy-env",
-      "token": "PI_PROGRAM_STATUS",
-      "line": "  ;; PI_PROGRAM_STATUS matches the baseline env contract (enumerate",
-      "occurrences": 1,
-      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
     },
     {
       "path": "src/cadr-tui/terminal.lisp",

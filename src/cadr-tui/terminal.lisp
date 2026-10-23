@@ -120,7 +120,8 @@
     (otherwise (values nil nil))))
 
 (defun keyboard-protocol-consume
-    (negotiator sequence)
+    (negotiator sequence
+     &key (swallow-device-attributes-p t))
   (let* ((pending
            (keyboard-protocol-negotiator-buffer
             negotiator))
@@ -137,14 +138,20 @@
         (keyboard-protocol-negotiator-buffer
          negotiator)
         "")
-       (keyboard-protocol-handle-sequence
-        negotiator parsed))
+       (if (and (eq (first parsed) :device-attributes)
+                (not swallow-device-attributes-p))
+           ;; An unowed DA is user input. Do not enable modifyOtherKeys.
+           (values (list combined) nil parsed)
+           (multiple-value-bind (sequences writes)
+               (keyboard-protocol-handle-sequence
+                negotiator parsed)
+             (values sequences writes parsed))))
       ((keyboard-protocol-prefix-p combined)
        (setf
         (keyboard-protocol-negotiator-buffer
          negotiator)
         combined)
-       (values nil nil))
+       (values nil nil nil))
       ((plusp (length pending))
        (setf
         (keyboard-protocol-negotiator-buffer
@@ -154,9 +161,10 @@
         (remove ""
                 (list pending sequence)
                 :test #'string=)
+        nil
         nil))
       (t
-       (values (list sequence) nil)))))
+       (values (list sequence) nil nil)))))
 
 (defun keyboard-protocol-flush (negotiator)
   (let ((pending
@@ -409,6 +417,12 @@
    (program-status-query-pending-p
     :initform nil
     :accessor process-terminal-program-status-query-pending-p)
+   ;; DAs still owed to keyboard queries. A late DA from before restart
+   ;; must not end the new program-status query. Not cleared by stop.
+   (pending-keyboard-protocol-device-attributes
+    :initform 0
+    :accessor
+    process-terminal-pending-keyboard-protocol-device-attributes)
    (apple-terminal-function
     :initarg :apple-terminal-function
     :initform #'apple-terminal-session-p
@@ -434,18 +448,20 @@
     :accessor process-terminal-resize-p)))
 
 (defun program-status-env-override ()
-  ;; PI_PROGRAM_STATUS matches the baseline env contract (enumerate
-  ;; environmentVariables). 1 forces reports; 0 disables; unset queries.
-  (uiop:getenv "PI_PROGRAM_STATUS"))
+  ;; v1.4.0 terminal.ts queryAndEnableKittyProtocol. Exact "1" reports
+  ;; without asking. Exact "0" stays silent. Unset, empty, and every
+  ;; other value ask the terminal first. The runtime name is
+  ;; CADR_PROGRAM_STATUS.
+  (uiop:getenv "CADR_PROGRAM_STATUS"))
 
 (defun configure-program-status-support (terminal)
   (let ((override (program-status-env-override)))
     (setf
      (process-terminal-program-status-supported-p terminal)
-     (string= override "1")
+     (equal override "1")
      (process-terminal-program-status-query-pending-p terminal)
-     (and (not (string= override "1"))
-          (not (string= override "0"))))
+     (not (or (equal override "1")
+              (equal override "0"))))
     (process-terminal-program-status-query-pending-p
      terminal)))
 
@@ -787,6 +803,9 @@
        t)
       (arm-terminal-exit-restore terminal)
       (refresh-terminal-size terminal)
+      (incf
+       (process-terminal-pending-keyboard-protocol-device-attributes
+        terminal))
       (let ((program-status-query
               (if (configure-program-status-support
                    terminal)
@@ -1183,10 +1202,31 @@
       (write-stored-program-status terminal))
     (return-from process-terminal-consume-sequence
       forward))
-  (multiple-value-bind (sequences writes)
+  (multiple-value-bind (sequences writes parsed)
       (keyboard-protocol-consume
        (process-terminal-keyboard-negotiator terminal)
-       sequence)
+       sequence
+       :swallow-device-attributes-p
+       (plusp
+        (process-terminal-pending-keyboard-protocol-device-attributes
+         terminal)))
+    (when (and parsed (eq (first parsed) :device-attributes))
+      (let ((owed
+              (process-terminal-pending-keyboard-protocol-device-attributes
+               terminal)))
+        (when (plusp owed)
+          (decf owed)
+          (setf
+           (process-terminal-pending-keyboard-protocol-device-attributes
+            terminal)
+           owed)
+          ;; The last owed DA means this query got no program-status
+          ;; reply first. Earlier DAs belong to a query from before restart.
+          (when (zerop owed)
+            (setf
+             (process-terminal-program-status-query-pending-p
+              terminal)
+             nil)))))
     (dolist (write writes)
       (write-process-terminal-output terminal write))
     (dolist (candidate sequences)

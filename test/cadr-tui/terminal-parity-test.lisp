@@ -180,6 +180,9 @@
                 negotiator)))))
 
 (test process-terminal-splits-batched-capability-replies-from-user-input
+  ;; v1.4.0 terminal.ts handleKeyboardProtocolNegotiationSequence: a DA
+  ;; is modifyOtherKeys only while a keyboard query still owes one.
+  ;; With none owed, the DA is input and nothing is written.
   (let* ((escape (string #\Escape))
          (output (make-string-output-stream))
          (terminal
@@ -191,8 +194,9 @@
     (is (string= "/"
                  (cadr-tui:terminal-read-input terminal)))
     (is (string=
-         (format nil "~A[>4;2m" escape)
-         (get-output-stream-string output))))
+         (format nil "~A[?1;2;4c" escape)
+         (cadr-tui:terminal-read-input terminal)))
+    (is (string= "" (get-output-stream-string output))))
   (let ((terminal
           (cadr-tui:make-process-terminal
            :input

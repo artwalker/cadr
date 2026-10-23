@@ -593,16 +593,9 @@ interrupt (baseline selectSession onExit: silent exit 0)."
       (null
        (clipboard-environment-value
         environment "DISPLAY")))
-     :remote-p
-     (not
-      (null
-       (or
-        (clipboard-environment-value
-         environment "SSH_CONNECTION")
-        (clipboard-environment-value
-         environment "SSH_CLIENT")
-        (clipboard-environment-value
-         environment "MOSH_CONNECTION")))))))
+     ;; Remote detection, including CADR_CLIPBOARD_OSC52, is inside
+     ;; copy-to-clipboard. An empty SSH marker must not count.
+     )))
 
 (defun assistant-tool-call-only-p (message)
   (let ((content

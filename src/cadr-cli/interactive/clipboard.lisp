@@ -192,16 +192,13 @@
                 (not termux-p)
                 (not wayland-display-p)
                 (not x11-display-p)))
-         ;; pi@4a080252f clipboard.ts isRemoteSession. PI_CLIPBOARD_OSC52=1
-         ;; is a remote client that left no SSH markers, so OSC 52 follows
-         ;; a successful local write.
+         ;; v1.4.0 clipboard.ts isRemoteSession. A non-empty SSH or
+         ;; mosh marker is remote. Exact "1" is a remote client that
+         ;; left no marker, so OSC 52 follows a successful local write.
+         ;; The runtime name is CADR_CLIPBOARD_OSC52.
          (session-remote-p
            (or remote-p
-               (string=
-                "1"
-                (or (clipboard-environment-value
-                     environment "PI_CLIPBOARD_OSC52")
-                    ""))))
+               (clipboard-remote-session-p environment)))
          (copied-p nil)
          (native-p nil)
          (shell-p nil)
@@ -286,6 +283,24 @@
       (cdr
        (assoc name environment :test #'string=))
       (uiop:getenv name)))
+
+(defun clipboard-truthy-environment-p (environment name)
+  ;; JS Boolean(env[name]): missing and "" are false. Any other string is true.
+  (let ((value (clipboard-environment-value environment name)))
+    (and (stringp value) (plusp (length value)))))
+
+(defun clipboard-remote-session-p (environment)
+  ;; v1.4.0 clipboard.ts isRemoteSession, with the product env name.
+  (or (clipboard-truthy-environment-p
+       environment "SSH_CONNECTION")
+      (clipboard-truthy-environment-p
+       environment "SSH_CLIENT")
+      (clipboard-truthy-environment-p
+       environment "MOSH_CONNECTION")
+      (equal
+       "1"
+       (clipboard-environment-value
+        environment "CADR_CLIPBOARD_OSC52"))))
 
 (defun clipboard-wayland-p (environment)
   (or
