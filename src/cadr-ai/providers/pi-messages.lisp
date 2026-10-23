@@ -82,7 +82,7 @@
 (defmethod build-request
     ((provider pi-messages-provider) model context
      &key stream-p max-tokens temperature reasoning
-       cache-retention session-id tool-choice metadata
+       cache-retention session-id tool-choice metadata debug
        &allow-other-keys)
   (let ((key
           (or (provider-oauth-access-token provider)
@@ -114,8 +114,11 @@
        :url
        (format nil "~A/messages~A"
                (strip-trailing-slash (model-base-url model))
-               (if (and (listp metadata)
-                        (getf metadata :debug))
+               ;; pi@4a080252f pi-messages.ts stream: options.debug
+               ;; appends ?debug=1. The flag stays out of the JSON body.
+               (if (or debug
+                       (and (listp metadata)
+                            (getf metadata :debug)))
                    "?debug=1" ""))
        :headers
        (append

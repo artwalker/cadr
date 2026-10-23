@@ -339,6 +339,7 @@ interactive-mode.ts:5956-5960).")
        output-pad-function
        external-editor-command-function
        external-editor-runner-function
+       clipboard-file-path-getter
        extension-host
        fork-items-function
        session-items-function
@@ -3242,6 +3243,44 @@ interactive-mode.ts:5956-5960).")
                  (:dequeue
                   (restore-queued-messages :notify-p t)
                   (request-render))
+                 (:paste-image
+                  (let ((editor (current-editor)))
+                    (multiple-value-bind (line column)
+                        (if (tui-multiline-editor-p editor)
+                            (cadr-tui:editor-cursor editor)
+                            (values
+                             0
+                             (length
+                              (tui-editor-component-text
+                               editor))))
+                      (handle-clipboard-paste
+                       :file-path-reader
+                       (lambda ()
+                         (read-clipboard-file-paths
+                          :native-getter
+                          clipboard-file-path-getter))
+                       :image-reader #'read-clipboard-image
+                       :text-reader #'read-clipboard-text
+                       :editor-text
+                       (tui-editor-component-text editor)
+                       :editor-line line
+                       :editor-column column
+                       :bash-mode-p
+                       (tui-editor-bash-input-p editor)
+                       :insert
+                       (lambda (text)
+                         (if (tui-multiline-editor-p editor)
+                             (cadr-tui:editor-insert-text-at-cursor
+                              editor text)
+                             (tui-editor-component-set-text
+                              editor
+                              (concatenate
+                               'string
+                               (tui-editor-component-text
+                                editor)
+                               text))))
+                       :show-error #'show-error))
+                    (request-render)))
                  (:external-editor
                   (let* ((command
                            (and

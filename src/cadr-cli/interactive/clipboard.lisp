@@ -619,3 +619,195 @@
                      :ignore-error-status t))))
           (and (stringp text) text))
       (condition () nil))))
+
+(define-condition clipboard-paste-error (error)
+  ((message :initarg :message :reader clipboard-paste-error-message))
+  (:report
+   (lambda (condition stream)
+     (write-string
+      (clipboard-paste-error-message condition)
+      stream))))
+
+(defun clipboard-condition-message (condition)
+  (cond
+    ((typep condition 'clipboard-paste-error)
+     (clipboard-paste-error-message condition))
+    ((typep condition 'simple-condition)
+     (apply #'format nil
+            (simple-condition-format-control condition)
+            (simple-condition-format-arguments condition)))
+    (t (princ-to-string condition))))
+
+(defun clipboard-control-character-p (character)
+  ;; pi@4a080252f interactive-mode.ts /\p{Cc}/u
+  (eq (sb-unicode:general-category character) :cc))
+
+(defun clipboard-js-whitespace-p (character)
+  ;; Node /\s/ without the unicode flag. The set is the 25 WhiteSpace
+  ;; and LineTerminator code points that paste spacing uses.
+  (let ((code (char-code character)))
+    (or (member code
+                '(9 10 11 12 13 32 160
+                  #x1680 #x2028 #x2029 #x202f
+                  #x205f #x3000 #xfeff))
+        (<= #x2000 code #x200a))))
+
+(defun clipboard-shell-safe-char-p (character)
+  ;; pi@4a080252f quoteIfNeeded: ASCII letters, digits, and _-./~:@
+  (let ((code (char-code character)))
+    (or (<= 48 code 57)
+        (<= 65 code 90)
+        (<= 97 code 122)
+        (find character "_-./~:@" :test #'char=))))
+
+(defun clipboard-quote-if-needed (value)
+  (if (and (plusp (length value))
+           (every #'clipboard-shell-safe-char-p value))
+      value
+      (with-output-to-string (output)
+        (write-char #\' output)
+        (loop for character across value
+              do (if (char= character #\')
+                     (write-string "'\\''" output)
+                     (write-char character output)))
+        (write-char #\' output))))
+
+(defun read-clipboard-file-paths (&key native-getter)
+  ;; pi@4a080252f clipboard.ts readClipboardFilePaths. An empty list
+  ;; is the same as a missing getter: the paste falls through.
+  (unless native-getter
+    (return-from read-clipboard-file-paths nil))
+  (let ((paths (funcall native-getter)))
+    (when (and paths (plusp (length paths)))
+      (coerce paths 'list))))
+
+(defun clipboard-editor-line (text line)
+  (let ((lines
+          (uiop:split-string
+           (or text "")
+           :separator '(#\Newline))))
+    (or (nth (or line 0) lines) "")))
+
+(defun clipboard-line-character (line index)
+  (and line index
+       (>= index 0)
+       (< index (length line))
+       (char line index)))
+
+(defun clipboard-file-path-insertion
+    (paths &key text line column bash-mode-p)
+  (let* ((rendered
+           (mapcar
+            (lambda (path)
+              (if bash-mode-p
+                  (clipboard-quote-if-needed path)
+                  path))
+            paths))
+         (joined
+           (with-output-to-string (output)
+             (loop for part in rendered
+                   for first-p = t then nil
+                   do (unless first-p
+                        (write-char
+                         (if bash-mode-p #\Space #\Newline)
+                         output))
+                      (write-string part output))))
+         (current
+           (clipboard-editor-line text line))
+         (before
+           (clipboard-line-character
+            current (and column (1- column))))
+         (after
+           (clipboard-line-character current column))
+         (leading
+           (if (and before
+                    (not (clipboard-js-whitespace-p before)))
+               " "
+               ""))
+         (trailing
+           (if (and after
+                    (not (clipboard-js-whitespace-p after)))
+               " "
+               "")))
+    (concatenate 'string leading joined trailing)))
+
+(defun clipboard-image-extension (mime-type)
+  (let ((base (clipboard-base-mime-type (or mime-type ""))))
+    (cond
+      ((string= base "image/png") "png")
+      ((string= base "image/jpeg") "jpg")
+      ((string= base "image/webp") "webp")
+      ((string= base "image/gif") "gif")
+      (t "png"))))
+
+(defun write-clipboard-image-file (image)
+  (let ((path
+          (namestring
+           (merge-pathnames
+            (format nil "cadr-clipboard-~A.~A"
+                    (cadr-ai:uuid-v7)
+                    (clipboard-image-extension
+                     (clipboard-image-mime-type image)))
+            (uiop:temporary-directory)))))
+    (with-open-file
+        (stream path
+                :direction :output
+                :if-exists :supersede
+                :if-does-not-exist :create
+                :element-type '(unsigned-byte 8))
+      (write-sequence (clipboard-image-bytes image) stream))
+    path))
+
+(defun handle-clipboard-paste
+    (&key file-path-reader image-reader text-reader
+          editor-text editor-line editor-column bash-mode-p
+          insert show-error)
+  ;; pi@4a080252f interactive-mode.ts handleClipboardPaste. File paths
+  ;; win over the Finder icon image. A control character or a reader
+  ;; error is shown and does not fall through.
+  (handler-case
+      (let ((paths
+              (and file-path-reader
+                   (funcall file-path-reader))))
+        (cond
+          (paths
+           (when (some
+                  (lambda (path)
+                    (some #'clipboard-control-character-p path))
+                  paths)
+             (error 'clipboard-paste-error
+                    :message
+                    "Clipboard file path contains control characters"))
+           (when insert
+             (funcall
+              insert
+              (clipboard-file-path-insertion
+               paths
+               :text editor-text
+               :line editor-line
+               :column editor-column
+               :bash-mode-p bash-mode-p))))
+          (t
+           (let ((image
+                   (and image-reader
+                        (funcall image-reader))))
+             (cond
+               (image
+                (when insert
+                  (funcall
+                   insert
+                   (write-clipboard-image-file image))))
+               (t
+                (let ((text
+                        (and text-reader
+                             (funcall text-reader))))
+                  (when (and insert
+                             (stringp text)
+                             (plusp (length text)))
+                    (funcall insert text)))))))))
+    (error (condition)
+      (when show-error
+        (funcall
+         show-error
+         (format nil "Failed to paste from clipboard: ~A"
+                 (clipboard-condition-message condition)))))))

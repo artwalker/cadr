@@ -461,11 +461,14 @@
       (and reasoning
            (string-downcase (symbol-name reasoning)))))
 
-(defun resolve-chat-template-args (model reasoning values)
+(defun resolve-chat-template-args
+    (model reasoning values &optional thinking-budget)
   ;; pi@4a080252f api/openai-completions.ts:892-940 — each entry
   ;; resolves a scalar verbatim or a $var reference to the current
   ;; thinking state; omitWhenOff drops the entry with no reasoning
   ;; active; an empty result omits the request field entirely.
+  ;; thinking.budget is the already-clamped token budget, omitted
+  ;; when thinking is off.
   (let ((resolved (json-object)))
     (dolist (entry values)
       (let* ((value (cdr entry))
@@ -479,6 +482,10 @@
                         :omit)
                        ((string= var "thinking.enabled")
                         (not (null reasoning)))
+                       ((string= var "thinking.budget")
+                        (if thinking-budget
+                            thinking-budget
+                            :omit))
                        (t
                         ;; thinking.effort: the level map wins; a
                         ;; missing map entry falls back to the
@@ -502,7 +509,40 @@
     (when (plusp (hash-table-count resolved))
       resolved)))
 
-(defun add-completions-reasoning (payload model reasoning)
+(defun completions-clamped-thinking-budget
+    (model reasoning thinking-budgets max-tokens)
+  ;; pi@4a080252f openai-completions.ts resolveClampedThinkingBudget.
+  ;; Reasoning and the answer share the response ceiling, so the
+  ;; budget always leaves 1024 tokens. Zero and a missing effort omit
+  ;; the field.
+  (unless (and reasoning (model-reasoning-p model))
+    (return-from completions-clamped-thinking-budget nil))
+  (let* ((budget
+           (thinking-budget-for-level reasoning thinking-budgets))
+         (ceiling
+           (or max-tokens (model-max-tokens model)))
+         (capped
+           (min budget (max 0 (- ceiling 1024)))))
+    (when (plusp capped)
+      capped)))
+
+(defun completions-thinking-token-budget-field (model)
+  ;; pi@4a080252f openai-completions.ts resolveThinkingTokenBudgetField.
+  ;; A named field wins over the boolean alias. The alias alone is
+  ;; thinking_token_budget. An empty name is absent.
+  (let ((field
+          (model-compat-value
+           model :thinking-token-budget-field nil)))
+    (cond
+      ((and (stringp field) (plusp (length field)))
+       field)
+      ((model-compat-value
+        model :supports-thinking-token-budget nil)
+       "thinking_token_budget")
+      (t nil))))
+
+(defun add-completions-reasoning
+    (payload model reasoning &optional thinking-budget)
   (when (model-reasoning-p model)
     (case (completions-thinking-format model)
       (:qwen
@@ -575,15 +615,29 @@
                    (model-thinking-level-value model :off))))
          (when (stringp value)
            (json-put payload "thinking" value))))
+      (:chat-template
+       ;; pi@4a080252f openai-completions.ts chat-template branch.
+       ;; $var thinking.budget receives the clamped budget. This
+       ;; branch does not also send reasoning_effort.
+       (let ((kwargs
+               (resolve-chat-template-args
+                model reasoning
+                (model-compat-value
+                 model :chat-template-kwargs nil)
+                thinking-budget)))
+         (when kwargs
+           (json-put payload "chat_template_kwargs" kwargs))))
       (:baseten
-       ;; pi@4a080252f api/openai-completions.ts:779-793 — chat
-       ;; template args carry the thinking toggle, and reasoning_effort
-       ;; follows only when the model supports it.
+       ;; pi@4a080252f openai-completions.ts baseten branch. Template
+       ;; args receive the same clamped thinking budget as
+       ;; chat-template, and reasoning_effort follows only when the
+       ;; model supports it.
        (let ((args
                (resolve-chat-template-args
                 model reasoning
                 (model-compat-value
-                 model :chat-template-args nil))))
+                 model :chat-template-args nil)
+                thinking-budget)))
          (when args
            (json-put payload "chat_template_args" args)))
        (when (completions-supports-reasoning-effort-p model)
@@ -708,26 +762,18 @@
     ;; toolChoice is copied even when the request has no tools.
     (when tool-choice
       (json-put payload "tool_choice" tool-choice))
-    (add-completions-reasoning payload model reasoning)
-    ;; pi@4a080252f api/openai-completions.ts:847-866 — vLLM caps
-    ;; reasoning with a top-level thinking_token_budget, independent of
-    ;; thinkingFormat; reasoning and the answer share max_tokens, so an
-    ;; uncapped reasoning phase can consume the whole response.  The
-    ;; budget always leaves MIN_ANSWER_TOKENS (1024) for the answer.
-    (when (and (model-compat-value
-                model :supports-thinking-token-budget nil)
-               reasoning
-               (model-reasoning-p model))
-      (let* ((budget
-               (thinking-budget-for-level
-                reasoning thinking-budgets))
-             (ceiling
-               (or max-tokens
-                   (model-max-tokens model)))
-             (capped
-               (min budget (max 0 (- ceiling 1024)))))
-        (when (plusp capped)
-          (json-put payload "thinking_token_budget" capped))))
+    (let ((thinking-budget
+            (completions-clamped-thinking-budget
+             model reasoning thinking-budgets max-tokens)))
+      (add-completions-reasoning
+       payload model reasoning thinking-budget)
+      ;; pi@4a080252f openai-completions.ts: the named budget field is
+      ;; independent of thinkingFormat. thinkingTokenBudgetField wins;
+      ;; supportsThinkingTokenBudget alone writes thinking_token_budget.
+      (let ((field
+              (completions-thinking-token-budget-field model)))
+        (when (and field thinking-budget)
+          (json-put payload field thinking-budget))))
     (let ((retention
             (normalize-cache-retention cache-retention))
           (supports-long

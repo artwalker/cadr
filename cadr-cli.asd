@@ -213,6 +213,7 @@
                              (:file "goal28-last-changelog-version-test")
                              (:file "goal28-external-editor-settings-test")
                              (:file "goal28-external-editor-key-test")
+                             (:file "goal27-clipboard-file-paste-test")
                              (:file "goal28-npm-command-settings-test")
                              (:file "goal28-npm-command-install-test")
                              (:file "goal28-packages-settings-test")

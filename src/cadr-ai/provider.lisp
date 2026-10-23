@@ -121,7 +121,7 @@
     (provider model context
      &key stream-p max-tokens temperature reasoning cache-retention
        session-id tool-choice metadata thinking-budgets headers
-       sampling-params identity
+       sampling-params identity debug
      &allow-other-keys))
 
 (defun suppress-client-identity-p (provider)
@@ -212,14 +212,16 @@ completed assistant message."))
            :test #'eq))))
 
 (defun thinking-budget-for-level (level &optional custom-budgets)
+  ;; pi@4a080252f simple-options.ts thinkingBudgetForLevel. xhigh and
+  ;; max use the high budget. An explicit 0 stays 0; it must not fall
+  ;; through to the default the way a missing key does.
   (let* ((mapped
-           (if (member level '(:xhigh :max))
+           (if (member level '(:xhigh :max) :test #'eq)
                :high
                level))
-         (custom
-           (and custom-budgets
-                (getf custom-budgets mapped))))
-    (or custom
+         (tail (member mapped custom-budgets :test #'eq)))
+    (if tail
+        (second tail)
         (case mapped
           (:minimal 1024)
           (:low 2048)
@@ -812,6 +814,7 @@ string. Returns the buffer to store back. Per-delta
                         session-id tool-choice metadata abort-p
                         on-payload transform-headers on-response
                         thinking-budgets headers sampling-params identity
+                        debug
                         max-retries max-retry-delay-ms timeout-ms
                         (read-timeout nil read-timeout-supplied-p)
                       &allow-other-keys)
@@ -836,7 +839,8 @@ string. Returns the buffer to store back. Per-delta
                                        :thinking-budgets thinking-budgets
                                        :headers headers
                                        :sampling-params sampling-params
-                                       :identity identity))
+                                       :identity identity
+                                       :debug debug))
                (_prepared
                  (apply-provider-request-callbacks
                   request model
@@ -939,6 +943,7 @@ string. Returns the buffer to store back. Per-delta
                       transport
                       websocket-connect-timeout-ms http-proxy
                       thinking-budgets headers sampling-params identity
+                      debug
                       max-retries max-retry-delay-ms timeout-ms
                       (read-timeout nil read-timeout-supplied-p)
                     &allow-other-keys)
@@ -988,6 +993,7 @@ string. Returns the buffer to store back. Per-delta
                                       :headers headers
                                       :sampling-params sampling-params
                                       :identity identity
+                                      :debug debug
                                       :disable-preferred-strict-tools
                                       disable-preferred-strict-p))
                      (preferred-strict-p
