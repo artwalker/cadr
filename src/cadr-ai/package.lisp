@@ -483,6 +483,8 @@
    #:models-runtime-refresh
    #:models-runtime-complete
    #:models-runtime-stream
+   #:models-runtime-stream-deferred
+   #:models-runtime-fetch-deferred
    #:make-built-in-models-runtime
    #:faux-state
    #:faux-state-call-count

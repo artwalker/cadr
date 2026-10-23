@@ -91,6 +91,50 @@
     :tool-call (third (cadr-ai:assistant-message-content message))
     :message message)))
 
+(defun telemetry-schema-span (name)
+  (cdr (assoc name
+              (cadr-telemetry:telemetry-schema-spans cadr-ai:*ai-telemetry-schema*)
+              :test #'string=)))
+
+(defun telemetry-schema-metric (name)
+  (cdr (assoc name
+              (cadr-telemetry:telemetry-schema-metrics cadr-ai:*ai-telemetry-schema*)
+              :test #'string=)))
+
+(defun telemetry-schema-attribute (attributes name)
+  (cdr (assoc name attributes :test #'string=)))
+
+(defun telemetry-deferred-runtime (message &key events)
+  (let* ((model (telemetry-model))
+         (provider
+           (cadr-ai:make-runtime-provider
+            :id :test :name "telemetry"
+            :models (list model)
+            :api-key-auth-p t
+            :auth-resolver
+            (lambda (&rest ignored)
+              (declare (ignore ignored))
+              (cadr-ai:make-runtime-auth-result :type :api-key :api-key "k"))
+            :stream-function
+            (lambda (request-model context on-event &rest options)
+              (declare (ignore request-model context options))
+              (dolist (event events)
+                (funcall on-event event))
+              message)
+            :complete-function
+            (lambda (request-model context options)
+              (declare (ignore request-model context options))
+              message)
+            :fetch-deferred-function
+            (lambda (request-model handle on-event &rest options)
+              (declare (ignore request-model handle options))
+              (dolist (event events)
+                (funcall on-event event))
+              message)))
+         (runtime (cadr-ai:make-models-runtime)))
+    (cadr-ai:models-runtime-set-provider runtime provider)
+    (values runtime model)))
+
 (defun telemetry-observe (model span events message &key poll reasoning clock)
   (cadr-ai:call-with-observed-model-request
    model
@@ -180,6 +224,93 @@
                                   (cadr-telemetry:telemetry-schema-spans schema)
                               :test #'string=)))
                  :test #'string=))))
+    (let* ((request (telemetry-schema-span "pi.ai.request"))
+           (poll (telemetry-schema-span "pi.ai.poll"))
+           (start (cadr-telemetry::telemetry-span-definition-start-attributes request))
+           (end (cadr-telemetry::telemetry-span-definition-end-attributes request))
+           (events (cadr-telemetry::telemetry-span-definition-events request))
+           (block (cdr (assoc "pi.ai.block" events :test #'string=)))
+           (duration (telemetry-schema-metric "pi.ai.request.duration"))
+           (first-chunk (telemetry-schema-metric "pi.ai.first_chunk.duration"))
+           (tokens (telemetry-schema-metric "pi.ai.tokens"))
+           (cost (telemetry-schema-metric "pi.ai.cost")))
+      (is (string= "One logical model request, including authentication and provider setup."
+                   (cadr-telemetry:telemetry-span-definition-description request)))
+      (is (string= "One deferred-response poll, not the deferred request's lifetime."
+                   (cadr-telemetry:telemetry-span-definition-description poll)))
+      (is (eq start (cadr-telemetry::telemetry-span-definition-start-attributes poll)))
+      (is (eq end (cadr-telemetry::telemetry-span-definition-end-attributes poll)))
+      (is (eq events (cadr-telemetry::telemetry-span-definition-events poll)))
+      (is (eq (cadr-telemetry::telemetry-span-definition-status request)
+              (cadr-telemetry::telemetry-span-definition-status poll)))
+      (is (eq (cadr-telemetry::telemetry-span-definition-parents request)
+              (cadr-telemetry::telemetry-span-definition-parents poll)))
+      (is (equal '(:kind "any")
+                 (cadr-telemetry::telemetry-span-definition-parents request)))
+      (is (equal '("provider" "api" "model" "reasoning")
+                 (mapcar #'car start)))
+      (is (equal '("stop" "usage.input" "usage.output" "usage.cache_read"
+                   "usage.cache_write" "cost.total" "response.id")
+                 (mapcar #'car end)))
+      (is (equal '("pending" "stop" "length" "toolUse" "error" "aborted" "deferred")
+                 (cadr-telemetry::telemetry-attribute-definition-values
+                  (telemetry-schema-attribute end "stop"))))
+      (is (null (cadr-telemetry:telemetry-attribute-definition-required
+                 (telemetry-schema-attribute end "stop"))))
+      (is (string= "high"
+                   (cadr-telemetry::telemetry-attribute-definition-cardinality
+                    (telemetry-schema-attribute end "response.id"))))
+      (is (equal '("pi.ai.first_chunk" "pi.ai.block") (mapcar #'car events)))
+      (is (string= "First normalized stream event delivered."
+                   (getf (cdr (assoc "pi.ai.first_chunk" events :test #'string=))
+                         :description)))
+      (is (null (getf (cdr (assoc "pi.ai.first_chunk" events :test #'string=))
+                      :attributes)))
+      (is (string= "A completed content block; content is never recorded."
+                   (getf block :description)))
+      (is (equal '("text" "thinking" "tool_call")
+                 (cadr-telemetry::telemetry-attribute-definition-values
+                  (telemetry-schema-attribute (getf block :attributes) "type"))))
+      (is (equal '(:default "ok"
+                   :error-when
+                   "Stop reason is error: provider_error with at most 500 error-message characters. Aborted stays ok.")
+                 (cadr-telemetry::telemetry-span-definition-status request)))
+      (is (eq (telemetry-schema-attribute start "provider")
+              (telemetry-schema-attribute
+               (cadr-telemetry::telemetry-metric-definition-attributes duration)
+               "provider")))
+      (is (equal '("provider" "model" "stop")
+                 (mapcar #'car
+                         (cadr-telemetry::telemetry-metric-definition-attributes duration))))
+      (is (cadr-telemetry:telemetry-attribute-definition-required
+           (telemetry-schema-attribute
+            (cadr-telemetry::telemetry-metric-definition-attributes duration)
+            "stop")))
+      (is (not (eq (telemetry-schema-attribute end "stop")
+                   (telemetry-schema-attribute
+                    (cadr-telemetry::telemetry-metric-definition-attributes duration)
+                    "stop"))))
+      (is (equal '("provider" "model")
+                 (mapcar #'car
+                         (cadr-telemetry::telemetry-metric-definition-attributes
+                          first-chunk))))
+      (is (equal '("provider" "model" "kind")
+                 (mapcar #'car
+                         (cadr-telemetry::telemetry-metric-definition-attributes tokens))))
+      (is (equal '("input" "output" "cache_read" "cache_write")
+                 (cadr-telemetry::telemetry-attribute-definition-values
+                  (telemetry-schema-attribute
+                   (cadr-telemetry::telemetry-metric-definition-attributes tokens)
+                   "kind"))))
+      (is (equal '("provider" "model")
+                 (mapcar #'car
+                         (cadr-telemetry::telemetry-metric-definition-attributes cost))))
+      (is (string= "token" (cadr-telemetry:telemetry-metric-definition-unit tokens)))
+      (is (string= "USD" (cadr-telemetry:telemetry-metric-definition-unit cost)))
+      (is (string= "ms" (cadr-telemetry:telemetry-metric-definition-unit duration)))
+      (is (string= "histogram"
+                   (cadr-telemetry:telemetry-metric-definition-kind first-chunk)))
+      (is (string= "counter" (cadr-telemetry:telemetry-metric-definition-kind tokens))))
     (let* ((context (cadr-telemetry:make-in-memory-telemetry))
            (starter (cadr-telemetry:create-typed-span-starter context (list schema))))
       (funcall starter "parent" nil
@@ -695,10 +826,14 @@ other (10ms)"
          (message (telemetry-message
                    :stop :error
                    :error-message (concatenate 'string tail "discarded-tail"))))
-    (cadr-telemetry:telemetry-start-span
-     context "caller"
-     (lambda (parent)
-       (telemetry-observe (telemetry-model) parent nil message :poll t)))
+    (multiple-value-bind (runtime model)
+        (telemetry-deferred-runtime message)
+      (cadr-telemetry:telemetry-start-span
+       context "caller"
+       (lambda (parent)
+         (cadr-ai:models-runtime-fetch-deferred
+          runtime model '(:id "deferred-secret")
+          :telemetry parent :api-key "k"))))
     (let ((span (second (cadr-telemetry:in-memory-telemetry-spans context))))
       (is (string= "pi.ai.poll"
                    (cadr-telemetry:recorded-telemetry-span-name span)))
@@ -706,9 +841,63 @@ other (10ms)"
                    (cadr-telemetry:telemetry-status-error-message
                     (cadr-telemetry:recorded-telemetry-span-status span))))
       (is (not (search "discarded-tail" (telemetry-span-text span))))
+      (is (not (search "deferred-secret" (telemetry-span-text span))))
       (is (not (search "xxx"
                        (telemetry-span-text
-                        (cadr-telemetry:recorded-telemetry-span-attributes span))))))
+                        (cadr-telemetry:recorded-telemetry-span-attributes span)))))))
+  (let* ((context (cadr-telemetry:make-in-memory-telemetry))
+         (split (concatenate 'string
+                             (make-string 499 :initial-element #\x)
+                             (string (code-char #x1F600))))
+         (kept (concatenate 'string
+                            (make-string 498 :initial-element #\x)
+                            (string (code-char #x1F600))))
+         (message (telemetry-message :stop :error :error-message split)))
+    (multiple-value-bind (runtime model)
+        (telemetry-deferred-runtime message)
+      (cadr-telemetry:telemetry-start-span
+       context "caller"
+       (lambda (parent)
+         (cadr-ai:models-runtime-fetch-deferred
+          runtime model '(:id "deferred-secret")
+          :telemetry parent :api-key "k"))))
+    (let ((status (cadr-telemetry:telemetry-status-error-message
+                   (cadr-telemetry:recorded-telemetry-span-status
+                    (second (cadr-telemetry:in-memory-telemetry-spans context))))))
+      (is (string= (concatenate 'string
+                                (make-string 499 :initial-element #\x)
+                                (string (code-char #xD83D)))
+                   status))
+      (is (= 500 (cadr-ai::telemetry-utf16-length status)))
+      (is (= #xD83D (char-code (char status (1- (length status)))))))
+    (let ((whole (cadr-telemetry:make-in-memory-telemetry)))
+      (multiple-value-bind (runtime model)
+          (telemetry-deferred-runtime
+           (telemetry-message :stop :error :error-message kept))
+        (cadr-telemetry:telemetry-start-span
+         whole "caller"
+         (lambda (parent)
+           (cadr-ai:models-runtime-fetch-deferred
+            runtime model '(:id "deferred-secret")
+            :telemetry parent :api-key "k"))))
+      (is (string= kept
+                   (cadr-telemetry:telemetry-status-error-message
+                    (cadr-telemetry:recorded-telemetry-span-status
+                     (second (cadr-telemetry:in-memory-telemetry-spans whole))))))))
+  (let ((context (cadr-telemetry:make-in-memory-telemetry))
+        (message (telemetry-message :stop :error :error-message nil)))
+    (multiple-value-bind (runtime model)
+        (telemetry-deferred-runtime message)
+      (cadr-telemetry:telemetry-start-span
+       context "caller"
+       (lambda (parent)
+         (cadr-ai:models-runtime-fetch-deferred
+          runtime model '(:id "deferred-secret")
+          :telemetry parent :api-key "k"))))
+    (is (string= ""
+                 (cadr-telemetry:telemetry-status-error-message
+                  (cadr-telemetry:recorded-telemetry-span-status
+                   (second (cadr-telemetry:in-memory-telemetry-spans context)))))))
   (let ((context (cadr-telemetry:make-in-memory-telemetry))
         (message (telemetry-message :stop :error :error-message "Unknown provider: test")))
     (cadr-telemetry:telemetry-start-span
@@ -729,7 +918,7 @@ other (10ms)"
       (is (not (search "native-secret" (telemetry-span-text span))))
       (is (not (search "Unknown provider"
                        (telemetry-span-text
-                        (cadr-telemetry:recorded-telemetry-span-attributes span)))))))))
+                        (cadr-telemetry:recorded-telemetry-span-attributes span))))))))
 
 (test telemetry-tool-deltas-are-counted-without-reading-arguments
   (let* ((context (cadr-telemetry:make-in-memory-telemetry))
@@ -777,18 +966,24 @@ other (10ms)"
     (is (null (cadr-telemetry:in-memory-measurements context))))
   (dolist (stop '(:pending :deferred :stop :error))
     (let ((context (cadr-telemetry:make-in-memory-telemetry)))
-      (cadr-telemetry:telemetry-start-span
-       context "caller"
-       (lambda (parent)
-         (telemetry-observe (telemetry-model) parent
-                            (list (cadr-ai:make-stream-event :type :start))
-                            (telemetry-message :stop stop)
-                            :poll t)))
+      (multiple-value-bind (runtime model)
+          (telemetry-deferred-runtime
+           (telemetry-message :stop stop)
+           :events (list (cadr-ai:make-stream-event :type :start)))
+        (cadr-telemetry:telemetry-start-span
+         context "caller"
+         (lambda (parent)
+           (cadr-ai:models-runtime-fetch-deferred
+            runtime model '(:id "deferred-secret")
+            :telemetry parent :api-key "k"))))
       (is (= (if (member stop '(:pending :deferred)) 0 5)
              (count "counter"
                     (cadr-telemetry:in-memory-measurements context)
                     :key #'cadr-telemetry:recorded-measurement-kind
-                    :test #'string=)))))
+                    :test #'string=)))
+      (is (string= "pi.ai.poll"
+                   (cadr-telemetry:recorded-telemetry-span-name
+                    (second (cadr-telemetry:in-memory-telemetry-spans context)))))))
   (let* ((context (cadr-telemetry:make-in-memory-telemetry))
          (histograms nil)
          (counters nil)
@@ -802,14 +997,30 @@ other (10ms)"
           (lambda (name description unit)
             (push name counters)
             (funcall original-counter name description unit)))
-    (dotimes (index 3)
+    (multiple-value-bind (runtime model)
+        (telemetry-deferred-runtime
+         (telemetry-message)
+         :events (list (cadr-ai:make-stream-event :type :start)))
       (cadr-telemetry:telemetry-start-span
        context "caller"
        (lambda (parent)
-         (telemetry-observe (telemetry-model) parent
-                            (list (cadr-ai:make-stream-event :type :start))
-                            (telemetry-message)
-                            :poll (oddp index)))))
+         (cadr-ai:models-runtime-stream
+          runtime model (cadr-ai:make-context)
+          (lambda (event) (declare (ignore event)) nil)
+          :telemetry parent :api-key "k")))
+      (cadr-telemetry:telemetry-start-span
+       context "caller"
+       (lambda (parent)
+         (cadr-ai:models-runtime-fetch-deferred
+          runtime model '(:id "deferred-secret")
+          :telemetry parent :api-key "k")))
+      (cadr-telemetry:telemetry-start-span
+       context "caller"
+       (lambda (parent)
+         (cadr-ai:models-runtime-stream
+          runtime model (cadr-ai:make-context)
+          (lambda (event) (declare (ignore event)) nil)
+          :telemetry parent :api-key "k"))))
     (is (equal '("pi.ai.request.duration" "pi.ai.first_chunk.duration")
                (reverse histograms)))
     (is (equal '("pi.ai.tokens" "pi.ai.cost") (reverse counters)))
@@ -841,6 +1052,14 @@ other (10ms)"
             :complete-function
             (lambda (request-model context options)
               (declare (ignore request-model context options))
+              message)
+            :fetch-deferred-function
+            (lambda (request-model handle on-event &rest options)
+              (declare (ignore request-model options))
+              (unless (equal '(:id "deferred-secret") handle)
+                (error "deferred handle was not delivered"))
+              (dolist (event events)
+                (funcall on-event event))
               message)))
          (runtime (cadr-ai:make-models-runtime))
          (context (cadr-telemetry:make-in-memory-telemetry)))
@@ -857,6 +1076,59 @@ other (10ms)"
                  (cadr-telemetry:recorded-telemetry-span-name
                   (second (cadr-telemetry:in-memory-telemetry-spans context)))))
     (is (= 7 (length (cadr-telemetry:in-memory-measurements context))))
+    (cadr-telemetry:telemetry-start-span
+     context "poll"
+     (lambda (parent)
+       (let ((result
+               (cadr-ai:models-runtime-stream-deferred
+                runtime model '(:id "deferred-secret")
+                (lambda (event) (declare (ignore event)) nil)
+                :telemetry parent :api-key "k")))
+         (is (eq message result)))))
+    (let ((span (find "pi.ai.poll"
+                      (cadr-telemetry:in-memory-telemetry-spans context)
+                      :key #'cadr-telemetry:recorded-telemetry-span-name
+                      :test #'string=)))
+      (is (string= "pi.ai.poll"
+                   (cadr-telemetry:recorded-telemetry-span-name span)))
+      (is (not (search "deferred-secret" (telemetry-span-text span))))
+      (is (null (assoc "reasoning"
+                       (cadr-telemetry:recorded-telemetry-span-attributes span)
+                       :test #'string=)))
+      (is (= 4 (length (cadr-telemetry:recorded-telemetry-span-events span)))))
+    (let* ((plain
+             (cadr-ai:make-runtime-provider
+              :id :telemetry-test :name "telemetry"
+              :models (list model)
+              :api-key-auth-p t
+              :auth-resolver
+              (lambda (&rest ignored)
+                (declare (ignore ignored))
+                (cadr-ai:make-runtime-auth-result :type :api-key :api-key "k"))
+              :stream-function
+              (lambda (request-model context on-event &rest options)
+                (declare (ignore request-model context on-event options))
+                message)))
+           (unsupported (cadr-ai:make-models-runtime))
+           (failed (cadr-telemetry:make-in-memory-telemetry)))
+      (cadr-ai:models-runtime-set-provider unsupported plain)
+      (cadr-telemetry:telemetry-start-span
+       failed "caller"
+       (lambda (parent)
+         (let ((result
+                 (cadr-ai:models-runtime-fetch-deferred
+                  unsupported model '(:id "deferred-secret")
+                  :telemetry parent :api-key "k")))
+           (is (eq :error (cadr-ai:assistant-message-stop-reason result)))
+           (is (string= "Provider telemetry-test does not support deferred responses"
+                        (cadr-ai:assistant-message-error-message result))))))
+      (is (string= "pi.ai.poll"
+                   (cadr-telemetry:recorded-telemetry-span-name
+                    (second (cadr-telemetry:in-memory-telemetry-spans failed)))))
+      (is (string= "Provider telemetry-test does not support deferred responses"
+                   (cadr-telemetry:telemetry-status-error-message
+                    (cadr-telemetry:recorded-telemetry-span-status
+                     (second (cadr-telemetry:in-memory-telemetry-spans failed)))))))
     (let ((quiet (cadr-telemetry:make-in-memory-telemetry)))
       (cadr-ai:models-runtime-complete
        runtime model (cadr-ai:make-context) :api-key "k")

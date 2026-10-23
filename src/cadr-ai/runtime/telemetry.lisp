@@ -1,55 +1,126 @@
 (in-package #:cadr-ai)
 
 (defparameter *ai-telemetry-schema*
-  (cadr-telemetry:make-telemetry-schema
-   :version 1
-   :spans
-   (list
-    (cons "pi.ai.request"
-          (cadr-telemetry:make-telemetry-span-definition
-           :description "One logical model request, including authentication and provider setup."
-           :start-attributes
-           (list (cons "provider"
-                       (cadr-telemetry:make-telemetry-attribute-definition
-                        :type "string" :required t
-                        :description "Provider identifier."))
-                 (cons "api"
-                       (cadr-telemetry:make-telemetry-attribute-definition
-                        :type "string" :required t
-                        :description "API identifier."))
-                 (cons "model"
-                       (cadr-telemetry:make-telemetry-attribute-definition
-                        :type "string" :required t
-                        :description "Requested model identifier."))
-                 (cons "reasoning"
-                       (cadr-telemetry:make-telemetry-attribute-definition
-                        :type "string" :required nil
-                        :description "Scalar requested reasoning level.")))))
-    (cons "pi.ai.poll"
-          (cadr-telemetry:make-telemetry-span-definition
-           :description "One deferred-response poll, not the deferred request's lifetime.")))
-   :metrics
-   (list
-    (cons "pi.ai.request.duration"
-          (cadr-telemetry:make-telemetry-metric-definition
-           :kind "histogram"
-           :description "Logical request or poll duration."
-           :unit "ms"))
-    (cons "pi.ai.first_chunk.duration"
-          (cadr-telemetry:make-telemetry-metric-definition
-           :kind "histogram"
-           :description "Time to the first normalized stream event."
-           :unit "ms"))
-    (cons "pi.ai.tokens"
-          (cadr-telemetry:make-telemetry-metric-definition
-           :kind "counter"
-           :description "Reported model token usage; pending and deferred polls are excluded."
-           :unit "token"))
-    (cons "pi.ai.cost"
-          (cadr-telemetry:make-telemetry-metric-definition
-           :kind "counter"
-           :description "Reported model cost; pending and deferred polls are excluded."
-           :unit "USD")))))
+  (labels ((attribute (type description &key required values cardinality)
+             (cadr-telemetry:make-telemetry-attribute-definition
+              :type type
+              :description description
+              :required required
+              :values values
+              :cardinality cardinality)))
+    (let* ((provider (attribute "string" "Provider identifier." :required t))
+           (model (attribute "string" "Requested model identifier." :required t))
+           (stop-values '("pending" "stop" "length" "toolUse" "error"
+                          "aborted" "deferred"))
+           (stop (attribute "string" "Normalized stop reason."
+                            :values stop-values))
+           (metric-stop (attribute "string" "Normalized stop reason."
+                                   :values stop-values :required t))
+           (start-attributes
+             (list (cons "provider" provider)
+                   (cons "api" (attribute "string" "API identifier." :required t))
+                   (cons "model" model)
+                   (cons "reasoning"
+                         (attribute "string" "Scalar requested reasoning level."
+                                    :required nil))))
+           (end-attributes
+             (list (cons "stop" stop)
+                   (cons "usage.input"
+                         (attribute "number" "Uncached input tokens."))
+                   (cons "usage.output" (attribute "number" "Output tokens."))
+                   (cons "usage.cache_read"
+                         (attribute "number" "Cache-read tokens."))
+                   (cons "usage.cache_write"
+                         (attribute "number" "Cache-write tokens."))
+                   (cons "cost.total"
+                         (attribute "number" "Total request cost in USD."))
+                   (cons "response.id"
+                         (attribute "string" "Provider response identifier."
+                                    :cardinality "high"))))
+           (events
+             (list (cons "pi.ai.first_chunk"
+                         '(:description "First normalized stream event delivered."
+                           :attributes nil))
+                   (cons "pi.ai.block"
+                         (list :description
+                               "A completed content block; content is never recorded."
+                               :attributes
+                               (list (cons "type"
+                                           (attribute "string" "Block kind."
+                                                      :values '("text" "thinking"
+                                                                "tool_call")
+                                                      :required t))
+                                     (cons "index"
+                                           (attribute "number" "Content block index."
+                                                      :required t))
+                                     (cons "chars"
+                                           (attribute "number" "UTF-16 character count."
+                                                      :required t))
+                                     (cons "tool"
+                                           (attribute "string"
+                                                      "Tool name, for tool-call blocks only."
+                                                      :required nil)))))))
+           (status
+             '(:default "ok"
+               :error-when
+               "Stop reason is error: provider_error with at most 500 error-message characters. Aborted stays ok."))
+           (parents '(:kind "any"))
+           (request
+             (cadr-telemetry:make-telemetry-span-definition
+              :description "One logical model request, including authentication and provider setup."
+              :parents parents
+              :start-attributes start-attributes
+              :end-attributes end-attributes
+              :events events
+              :status status)))
+      (cadr-telemetry:make-telemetry-schema
+       :version 1
+       :spans
+       (list (cons "pi.ai.request" request)
+             (cons "pi.ai.poll"
+                   (cadr-telemetry:make-telemetry-span-definition
+                    :description "One deferred-response poll, not the deferred request's lifetime."
+                    :parents parents
+                    :start-attributes start-attributes
+                    :end-attributes end-attributes
+                    :events events
+                    :status status)))
+       :metrics
+       (list (cons "pi.ai.request.duration"
+                   (cadr-telemetry:make-telemetry-metric-definition
+                    :kind "histogram"
+                    :description "Logical request or poll duration."
+                    :unit "ms"
+                    :attributes (list (cons "provider" provider)
+                                      (cons "model" model)
+                                      (cons "stop" metric-stop))))
+             (cons "pi.ai.first_chunk.duration"
+                   (cadr-telemetry:make-telemetry-metric-definition
+                    :kind "histogram"
+                    :description "Time to the first normalized stream event."
+                    :unit "ms"
+                    :attributes (list (cons "provider" provider)
+                                      (cons "model" model))))
+             (cons "pi.ai.tokens"
+                   (cadr-telemetry:make-telemetry-metric-definition
+                    :kind "counter"
+                    :description "Reported model token usage; pending and deferred polls are excluded."
+                    :unit "token"
+                    :attributes
+                    (list (cons "provider" provider)
+                          (cons "model" model)
+                          (cons "kind"
+                                (attribute "string" "Token usage category."
+                                           :values '("input" "output"
+                                                     "cache_read" "cache_write")
+                                           :required t)))))
+             (cons "pi.ai.cost"
+                   (cadr-telemetry:make-telemetry-metric-definition
+                    :kind "counter"
+                    :description "Reported model cost; pending and deferred polls are excluded."
+                    :unit "USD"
+                    :attributes (list (cons "provider" provider)
+                                      (cons "model" model)))))))))
 
 (defvar *ai-instrument-cache*
   (make-hash-table :test 'eq :weakness :key))
@@ -66,16 +137,29 @@
   (loop for character across (or text "")
         sum (if (> (char-code character) #xFFFF) 2 1)))
 
+(defun telemetry-utf16-high-surrogate (character)
+  (code-char
+   (+ #xD800
+      (ldb (byte 10 10) (- (char-code character) #x10000)))))
+
 (defun telemetry-utf16-slice (text limit)
   (let ((text (or text ""))
         (count 0)
-        (end 0))
+        (end 0)
+        (split nil))
     (loop for character across text
           for units = (if (> (char-code character) #xFFFF) 2 1)
-          while (<= (+ count units) limit)
-          do (incf count units)
-             (incf end))
-    (subseq text 0 end)))
+          do (cond
+               ((<= (+ count units) limit)
+                (incf count units)
+                (incf end))
+               ((and (> units 1) (< count limit))
+                (setf split (telemetry-utf16-high-surrogate character))
+                (loop-finish))
+               (t (loop-finish))))
+    (if split
+        (concatenate 'string (subseq text 0 end) (string split))
+        (subseq text 0 end))))
 
 (defun telemetry-event-name (event)
   (let ((type (stream-event-type event)))

@@ -206,7 +206,8 @@
   refresh-context-function
   filter-function
   complete-function
-  stream-function)
+  stream-function
+  fetch-deferred-function)
 
 (defstruct models-refresh-result
   (aborted-p nil :type boolean)
@@ -754,7 +755,8 @@
    :compat (model-compat model)))
 
 (defun models-runtime-request-body
-    (runtime model context stream-p on-event options)
+    (runtime model context stream-p on-event options
+     &key (deferred nil deferred-supplied))
   (handler-case
       (let ((provider
               (models-runtime-provider
@@ -765,6 +767,14 @@
                  :message
                  (format nil "Unknown provider: ~A"
                          (model-provider model))))
+        (when deferred-supplied
+          (unless (runtime-provider-fetch-deferred-function provider)
+            (error 'models-runtime-error
+                   :code :provider
+                   :message
+                   (format nil
+                           "Provider ~A does not support deferred responses"
+                           (telemetry-symbol-text (model-provider model))))))
         (let* ((api-key (getf options :api-key))
                (environment (getf options :environment))
                (auth
@@ -804,30 +814,35 @@
                              (assoc (car entry) environment
                                     :test #'string-equal))
                            (runtime-auth-result-environment auth))))
-            (if stream-p
-                (let ((stream
-                        (runtime-provider-stream-function provider)))
-                  (unless stream
-                    (error 'models-runtime-error
-                           :code :stream
-                           :message
-                           (format nil
-                                   "Provider ~A has no stream implementation"
-                                   (runtime-provider-id provider))))
-                  (apply stream request-model context
-                         on-event request-options))
-                (let ((complete
-                        (runtime-provider-complete-function provider)))
-                  (unless complete
-                    (error 'models-runtime-error
-                           :code :stream
-                           :message
-                           (format nil
-                                   "Provider ~A has no complete implementation"
-                                   (runtime-provider-id provider))))
-                  (funcall complete
-                           request-model context
-                           request-options))))))
+            (cond
+              (deferred-supplied
+               (apply (runtime-provider-fetch-deferred-function provider)
+                      request-model deferred on-event request-options))
+              (stream-p
+               (let ((stream
+                       (runtime-provider-stream-function provider)))
+                 (unless stream
+                   (error 'models-runtime-error
+                          :code :stream
+                          :message
+                          (format nil
+                                  "Provider ~A has no stream implementation"
+                                  (runtime-provider-id provider))))
+                 (apply stream request-model context
+                        on-event request-options)))
+              (t
+               (let ((complete
+                       (runtime-provider-complete-function provider)))
+                 (unless complete
+                   (error 'models-runtime-error
+                          :code :stream
+                          :message
+                          (format nil
+                                  "Provider ~A has no complete implementation"
+                                  (runtime-provider-id provider))))
+                 (funcall complete
+                          request-model context
+                          request-options)))))))
     (error (condition)
       (let ((message
               (error-assistant-message model condition)))
@@ -842,18 +857,23 @@
         message))))
 
 (defun models-runtime-request
-    (runtime model context stream-p on-event options)
+    (runtime model context stream-p on-event options
+     &key poll (deferred nil deferred-supplied))
   (call-with-observed-model-request
-   model options nil
+   model options poll
    (lambda (observe finish)
-     (let ((message
-            (models-runtime-request-body
-             runtime model context stream-p
-             (lambda (event)
-               (funcall observe event)
-               (when on-event
-                 (funcall on-event event)))
-             options)))
+     (let* ((deliver
+              (lambda (event)
+                (funcall observe event)
+                (when on-event
+                  (funcall on-event event))))
+            (message
+              (if deferred-supplied
+                  (models-runtime-request-body
+                   runtime model context stream-p deliver options
+                   :deferred deferred)
+                  (models-runtime-request-body
+                   runtime model context stream-p deliver options))))
        (funcall finish message)
        message))))
 
@@ -866,3 +886,14 @@
     (runtime model context on-event &rest options)
   (models-runtime-request
    runtime model context t on-event options))
+
+(defun models-runtime-stream-deferred
+    (runtime model handle on-event &rest options)
+  (models-runtime-request
+   runtime model nil t on-event options
+   :poll t :deferred handle))
+
+(defun models-runtime-fetch-deferred
+    (runtime model handle &rest options)
+  (apply #'models-runtime-stream-deferred
+         runtime model handle nil options))

@@ -1477,8 +1477,10 @@
     ;; +1 Goal 27 GAP-08: models-runtime-available-classifiers.
     ;; +1 Goal 27 GAP-43: models-runtime-request-body.
     ;; +1 Goal 27 GAP-23: retry-delay-ms (support/retry.lisp).
-    ;; Measured 2026-10-23: 17 B10 owner files, 298 column-0 def* forms.
-    (is (= 298 definition-count)
+    ;; +2 Goal 27 GAP-43 review: models-runtime-stream-deferred and
+    ;; models-runtime-fetch-deferred.
+    ;; Measured 2026-10-23: 17 B10 owner files, 300 column-0 def* forms.
+    (is (= 300 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
@@ -1549,9 +1551,11 @@
               ;; OpenRouter image catalog exports already in package.lisp.
               ;; +2 Goal 27 GAP-43: *ai-telemetry-schema* and
               ;; call-with-observed-model-request.
+              ;; +2 Goal 27 GAP-43 review: models-runtime-stream-deferred
+              ;; and models-runtime-fetch-deferred.
               ;; Goal 27 GAP-17: image inputLimits stay on the
               ;; image-model object. No #:image-model-input-limits export.
-              "bc04de86f0d336becbdb76890937157596df24d3bf38c290d8b60e00de69079d"
+              "463e2723bebb4262d1560ee9f96679109e6960959348080987926cf62d96c7e1"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
