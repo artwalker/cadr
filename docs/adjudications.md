@@ -2090,3 +2090,50 @@ The gray `Working` status rule is canonicalized in
      `CADR_CODEMODE_MAX_WORKERS` (default 2).
 - **Where:** `docs/acceptance/goal27-pi-parity.md`. GAP-05 records the
   split. GAP-05a is conditions 1–6. GAP-05b is conditions 2, 5, and 7.
+
+## 2026-10-23 — GAP-05a 补充：AOT 与运行期硬指标
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):** this
+  entry replaces condition 5 of the same day's entry "GAP-05 switches from
+  A to a pure Lisp WASM runtime". Conditions 1, 2, 3, 4, 6, and 7 of that
+  entry stay as written. The old condition 5 (compile the wasm on the
+  first codemode execution, and a cache is allowed) is withdrawn. Runtime
+  compilation of this wasm is not acceptable.
+- **Background (first acceptance measurement, 2026-10-23):** the
+  quickjs-wasi 3.6.2 wasm has 1698 functions. Compiling it at runtime on
+  SBCL's default 1GB heap (`dynamic_space_size` 1073741824 in the crash
+  log; `scripts/rebuild-root-binary.sh` passes no `--dynamic-space-size`)
+  reports `Heap exhausted` and kills the process. On an 8GB heap
+  (`--dynamic-space-size 8192`) the first compile took 338 seconds (the
+  review recorded 338.05 seconds). Upstream hands the same bytes to
+  `WebAssembly.compile` and finishes in under a second.
+- **Replacement for condition 5** (acceptance checks these one by one):
+  5'. Ahead-of-time compilation. The Lisp translated from this wasm is
+     compiled at build time and is part of the cadr binary image.
+     Distribution stays a single file. The user's machine does not
+     compile this wasm at runtime. The build may use a large heap.
+     Record the added build time and the peak heap.
+  5''. Hard runtime limits. The acceptance party measures each item and
+     records the number.
+     a. The cadr binary from the release build, with no
+        `--dynamic-space-size`, completes a first codemode execution of
+        `1+1`. The process does not crash.
+     b. That first execution, including QuickJS instantiation, takes at
+        most 2 seconds of wall time. Each later execution takes at most
+        200 milliseconds.
+     c. Record the resident-memory increase of one codemode instance.
+        The target is at most 300MB. That target excludes the part of
+        QuickJS's own 256MB heap cap that the instance actually uses.
+     d. The cold-start gate still passes. Record the growth of the image.
+     e. If any item misses its number, write the row status as `blocked`,
+        attach the measured numbers, and hand the row to the advisor.
+        Raising the default heap, or loosening these numbers, does not
+        pass the row.
+  5'''. To keep the build-time compile under control, the implementer
+     may split an oversized function into several Lisp functions along
+     basic-block boundaries, and may lower the optimization level.
+     Neither is required. The specification tests must still all pass.
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. A repair of
+  that row still has to fix the five review-fail items already listed
+  there. GAP-05b cites condition 5 of the re-ruling. That citation is
+  this replacement.
