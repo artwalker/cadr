@@ -47,38 +47,53 @@
              (lambda ()
                (if (agent-aborted-p agent)
                    (make-empty-aborted-summary-response agent)
-                   (multiple-value-bind
-                         (request-model request-provider
-                          request-thinking route-error)
-                       (let ((captured
-                               (agent-compaction-request-model
-                                agent)))
-                         (if (and captured
-                                  (not (virtual-model-p captured)))
-                             (values
-                              captured
-                              (agent-provider agent)
-                              (agent-thinking-level agent)
-                              nil)
-                             (agent-stream-target
-                              agent
-                              (cadr-ai:context-messages context)
-                              :reason :direct)))
-                     (cond
-                       (route-error
-                        (cadr-ai:make-assistant-message
-                         :api (cadr-ai:model-api (agent-model agent))
-                         :provider
-                         (cadr-ai:model-provider (agent-model agent))
-                         :model (cadr-ai:model-id (agent-model agent))
-                         :stop-reason :error
-                         :error-message route-error))
-                       (t
-                        (let ((level
-                                (if (virtual-model-p (agent-model agent))
-                                    (and (not (eq request-thinking :off))
-                                         request-thinking)
-                                    reasoning)))
+                   (let ((captured
+                           (agent-compaction-request-model agent)))
+                     (multiple-value-bind
+                           (request-model request-provider
+                            request-thinking route-error)
+                         (cond
+                           ((and captured (virtual-model-p captured))
+                            ;; v1.4.0 resolveModel(selectedModel,
+                            ;; convertToLlm(this.messages), {reason:"direct"}).
+                            ;; The summary prompt is the stream context,
+                            ;; not the route input. A later model swap
+                            ;; does not replace this selection.
+                            (agent-stream-target
+                             agent
+                             (convert-agent-messages-to-llm
+                              (agent-messages agent))
+                             :reason :direct
+                             :model captured))
+                           (captured
+                            (values
+                             captured
+                             (agent-provider agent)
+                             (agent-thinking-level agent)
+                             nil))
+                           (t
+                            (agent-stream-target
+                             agent
+                             (cadr-ai:context-messages context)
+                             :reason :direct)))
+                       (cond
+                         (route-error
+                          (cadr-ai:make-assistant-message
+                           :api (cadr-ai:model-api (agent-model agent))
+                           :provider
+                           (cadr-ai:model-provider (agent-model agent))
+                           :model (cadr-ai:model-id (agent-model agent))
+                           :stop-reason :error
+                           :error-message route-error))
+                         (t
+                          (let ((level
+                                  (if (or (and captured
+                                               (virtual-model-p captured))
+                                          (virtual-model-p
+                                           (agent-model agent)))
+                                      (and (not (eq request-thinking :off))
+                                           request-thinking)
+                                      reasoning)))
                           (or
                            (apply
                             (agent-stream-function agent)
@@ -94,7 +109,7 @@
                            (progn
                              (setf no-response-p t)
                              (make-empty-aborted-summary-response
-                              agent)))))))))
+                              agent))))))))))
              (summarization-retry-policy agent)
              :abort-p (lambda () (agent-aborted-p agent))
              :sleep-function

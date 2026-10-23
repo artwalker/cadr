@@ -398,8 +398,11 @@
         "modelId" (cadr-ai:model-id model)
         "state" state)))))
 
-(defun agent-stream-target (agent messages &key (reason nil reason-p))
-  (let ((selected (agent-model agent)))
+(defun agent-stream-target (agent messages &key (reason nil reason-p)
+                                                (model nil model-p))
+  ;; v1.4.0 _getSummarizationRequestAuth passes the model captured
+  ;; before auth. The live selection is the default for a turn.
+  (let ((selected (if model-p model (agent-model agent))))
     (unless (virtual-model-p selected)
       (return-from agent-stream-target
         (values selected
