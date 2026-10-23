@@ -230,7 +230,14 @@
      (cadr-agent::agent-auto-retry-max-attempts agent)
      (json-get retry "maxRetries" 0)
      (cadr-agent::agent-auto-retry-base-delay agent)
-     (/ (json-get retry "baseDelayMs" 0) 1000d0))
+     (/ (json-get retry "baseDelayMs" 0) 1000d0)
+     (cadr-agent::agent-auto-retry-max-delay-ms agent)
+     (let ((value
+             (json-get retry "maxAgentDelayMs" :absent)))
+       (if (or (eq value :absent)
+               (cadr-ai::json-null-p value))
+           60000
+           value)))
     (unwind-protect
          (cond
            ((eq mode :rpc)

@@ -1466,7 +1466,9 @@
     ;; request-failure matcher in support/retry.lisp.
     ;; +1 Goal 27 GAP-08: models-runtime-available-classifiers.
     ;; +1 Goal 27 GAP-43: models-runtime-request-body.
-    (is (= 297 definition-count)
+    ;; +1 Goal 27 GAP-23: retry-delay-ms (support/retry.lisp).
+    ;; Measured 2026-10-23: 17 B10 owner files, 298 column-0 def* forms.
+    (is (= 298 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

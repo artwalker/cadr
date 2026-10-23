@@ -355,3 +355,50 @@
         "Retry cancelled"
         (cadr-agent::agent-event-final-error
          final))))))
+
+(test agent-retry-delay-is-capped-at-max-agent-delay
+  ;; packages/coding-agent/test/agent-session-retry.test.ts
+  ;; "caps agent retry delay": baseDelayMs 1, maxAgentDelayMs 5.
+  (let ((*responses*
+          (list
+           (retry-error-message "overloaded_error")
+           (retry-error-message "overloaded_error")
+           (retry-error-message "overloaded_error")
+           (retry-error-message "overloaded_error")
+           (assistant
+            (list (make-text-content :text "recovered")))))
+        (*contexts* nil)
+        (events nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :auto-retry-max-attempts 5
+             :auto-retry-base-delay 1/1000
+             :auto-retry-max-delay-ms 5
+             :on-event
+             (lambda (event) (push event events)))))
+      (agent-prompt agent "cap the delay")
+      (is (equal
+           '(1 2 4 5)
+           (loop for event in (nreverse events)
+                 when (eq :auto-retry-start
+                          (agent-event-type event))
+                   collect
+                   (cadr-agent::agent-event-delay-ms
+                    event)))))))
+
+(test summarization-retry-policy-keeps-the-agent-delay-cap
+  (let ((agent (make-agent :auto-retry-max-delay-ms 15
+                           :auto-retry-base-delay 1/100)))
+    (let ((policy
+            (cadr-agent::summarization-retry-policy agent)))
+      (is (= 10
+             (cadr-ai::retry-policy-base-delay-milliseconds
+              policy)))
+      (is (= 15
+             (cadr-ai::retry-policy-max-agent-delay-milliseconds
+              policy))))))

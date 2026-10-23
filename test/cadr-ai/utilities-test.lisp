@@ -605,3 +605,52 @@ second" (cadr-ai:content-text content)))
               (cadr-ai:assistant-message-stop-reason result)))
       (is (= 1 calls))
       (is-true finished))))
+
+(test retry-delay-ms-matches-v140-retry-delay
+  ;; packages/ai/test/retry.test.ts retryDelayMs, plus the same
+  ;; function on a non-integer base and an unsafe product.
+  (is (= 60000 (cadr-ai::retry-delay-ms 2000 6)))
+  (is (= 60000 (cadr-ai::retry-delay-ms 2000 6 nil)))
+  (is (= 5000 (cadr-ai::retry-delay-ms 2000 5 5000)))
+  (is (= 0 (cadr-ai::retry-delay-ms 2000 5 0)))
+  (is (= 0 (cadr-ai::retry-delay-ms 0 3 60000)))
+  (is (= 64000 (cadr-ai::retry-delay-ms 2000 6 64000)))
+  (is (= 63999 (cadr-ai::retry-delay-ms 2000 6 63999)))
+  (is (= -5 (cadr-ai::retry-delay-ms 2000 1 -5)))
+  (is (= 100000 (cadr-ai::retry-delay-ms 1.5d0 1 100000)))
+  (is (= 9007199254740991
+         (cadr-ai::retry-delay-ms 2000 44 1.0d16))))
+
+(test retry-assistant-call-reports-capped-delays
+  ;; packages/ai/test/retry.test.ts "reports capped retry delays".
+  (let ((n 0)
+        (delays nil))
+    (let ((result
+            (cadr-ai:retry-assistant-call
+             (lambda ()
+               (incf n)
+               (if (< n 5)
+                   (utility-error-message "terminated")
+                   (cadr-ai:make-assistant-message
+                    :content
+                    (list (cadr-ai:make-text-content
+                           :text "recovered"))
+                    :api :test
+                    :provider :test
+                    :model "test"
+                    :stop-reason :stop)))
+             (cadr-ai:make-retry-policy
+              :enabled-p t
+              :max-retries 4
+              :base-delay-milliseconds 10
+              :max-agent-delay-milliseconds 15)
+             :sleep-function
+             (lambda (seconds)
+               (declare (ignore seconds)))
+             :on-retry-scheduled
+             (lambda (attempt maximum delay error)
+               (declare (ignore attempt maximum error))
+               (push delay delays)))))
+      (is (eq :stop
+              (cadr-ai:assistant-message-stop-reason result)))
+      (is (equal '(10 15 15 15) (nreverse delays))))))

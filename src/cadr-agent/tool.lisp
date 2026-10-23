@@ -284,6 +284,7 @@
                          (auto-retry-p t)
                          (auto-retry-max-attempts 3)
                          (auto-retry-base-delay 2)
+                         (auto-retry-max-delay-ms 60000)
                          finish-turn-function
                          abort-p
                          named-tool-names
@@ -328,6 +329,7 @@
            :auto-retry-p auto-retry-p
            :auto-retry-max-attempts auto-retry-max-attempts
            :auto-retry-base-delay auto-retry-base-delay
+           :auto-retry-max-delay-ms auto-retry-max-delay-ms
            :finish-turn-function finish-turn-function
            :abort-p abort-p
            :named-tool-names (copy-list named-tool-names)

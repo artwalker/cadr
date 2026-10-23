@@ -298,6 +298,9 @@
        (eq t (field "enabled" t))
        :max-retries (field "maxRetries" 3)
        :base-delay-ms (field "baseDelayMs" 2000)
+       :max-agent-delay-ms
+       (retry-provider-number
+        retry "maxAgentDelayMs" 60000)
        :max-retry-delay-ms
        (retry-provider-number
         provider "maxRetryDelayMs" 60000)

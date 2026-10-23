@@ -200,7 +200,35 @@
   (enabled-p t :type boolean)
   (max-retries 3 :type (integer 0 *))
   (base-delay-milliseconds 1000
-                           :type (integer 0 *)))
+                           :type (integer 0 *))
+  ;; Nil matches an omitted cap. Zero is a configured delay.
+  (max-agent-delay-milliseconds nil))
+
+(defun retry-delay-ms
+    (base-delay-ms attempt
+     &optional max-agent-delay-ms)
+  ;; pi@4a080252f packages/ai/src/utils/retry.ts retryDelayMs.
+  ;; A product that is not a JavaScript safe integer becomes
+  ;; 9007199254740991 before the cap is applied.
+  (let* ((cap
+           (if (null max-agent-delay-ms)
+               60000
+               max-agent-delay-ms))
+         (exponent (max 0 (1- attempt)))
+         (delay
+           (* (float base-delay-ms 1.0d0)
+              (expt 2.0d0 (float exponent 1.0d0))))
+         (safe
+           (if (and (not (sb-ext:float-infinity-p delay))
+                    (not (sb-ext:float-nan-p delay))
+                    (= delay (ftruncate delay))
+                    (<= (abs delay) 9007199254740991d0))
+               delay
+               9007199254740991d0))
+         (result (min safe (float cap 1.0d0))))
+    (if (zerop (nth-value 1 (ftruncate result)))
+        (truncate result)
+        result)))
 
 (defun retry-assistant-call
     (produce policy
@@ -244,8 +272,12 @@
                  (or (assistant-message-error-message message)
                      "Unknown error"))
            (let ((delay
-                   (* (retry-policy-base-delay-milliseconds policy)
-                      (expt 2 (1- attempt)))))
+                   (retry-delay-ms
+                    (retry-policy-base-delay-milliseconds
+                     policy)
+                    attempt
+                    (retry-policy-max-agent-delay-milliseconds
+                     policy))))
              (flet ((aborted-message ()
                       (when on-retry-finished
                         (funcall on-retry-finished

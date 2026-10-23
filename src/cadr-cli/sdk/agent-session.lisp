@@ -607,6 +607,8 @@
               (getf retry-settings :max-retries)
               :auto-retry-base-delay
               (/ (getf retry-settings :base-delay-ms) 1000)
+              :auto-retry-max-delay-ms
+              (getf retry-settings :max-agent-delay-ms)
               :on-event
               (lambda (event)
                 (when (eq (cadr-agent:agent-event-type event)

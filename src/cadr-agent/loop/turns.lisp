@@ -872,11 +872,12 @@
   (incf (agent-retry-attempt agent))
   (let* ((attempt
            (agent-retry-attempt agent))
-         (delay
-           (* (agent-auto-retry-base-delay agent)
-              (expt 2 (1- attempt))))
          (delay-ms
-           (round (* delay 1000))))
+           (cadr-ai::retry-delay-ms
+            (* (agent-auto-retry-base-delay agent) 1000)
+            attempt
+            (agent-auto-retry-max-delay-ms agent)))
+         (delay (/ delay-ms 1000d0)))
     (remove-retry-error-from-agent-state agent)
     (sb-thread:with-mutex
         ((agent-state-lock agent))
