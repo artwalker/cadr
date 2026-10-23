@@ -2032,3 +2032,61 @@ The gray `Working` status rule is canonicalized in
      the build script must be able to fetch that platform's runtime
      library, and the docs must say how far verification went.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05.
+
+## 2026-10-23 — GAP-05 switches from A to a pure Lisp WASM runtime
+
+- **Ruling (advisor Claude, 2026-10-23, after discussion with the user; the
+  user keeps the veto):** this entry supersedes the same day's earlier
+  choice of A in "Codemode runs the upstream quickjs-wasi wasm". GAP-05 is
+  split into GAP-05a and GAP-05b. cadr still executes the same upstream
+  `quickjs-wasi` 3.6.2 wasm. The runtime is pure Lisp (D). It is not the
+  wasmtime native library (A).
+- **Options:**
+  - A. A native library, wasmtime. Execute the published
+    `quickjs-wasi` 3.6.2 wasm in process. The earlier entry also allowed
+    an equally mature runtime in place of wasmtime. That choice is
+    withdrawn.
+  - B. After the dependency review, compile the same QuickJS as a C
+    library, drive it with CFFI, and recreate WASI clock, randomness,
+    and the heap limit in Lisp.
+  - C. Spawn a local Node (≥22.19) to run the upstream worker. The cadr
+    binary would depend on Node.
+  - D. Implement the WASM runtime in pure Lisp and execute the same
+    upstream `quickjs-wasi` 3.6.2 wasm.
+- **Choice:** D.
+- **Why:** running the same wasm bytes keeps JavaScript behavior verbatim
+  with upstream. cadr stays a pure Lisp single file and does not take on
+  a native library that must be packaged per platform and followed for
+  security updates. WebAssembly has an official specification test suite,
+  so correctness can be locked against it.
+- **Conditions** (the implementer must meet every one; acceptance checks
+  them one by one; they replace the five conditions in the superseded
+  entry):
+  1. Pure Lisp. Do not add a new native library. Review any new Lisp
+     dependency under `docs/development-policy.md` §3.
+  2. The vendored wasm comes from the published npm package
+     `quickjs-wasi@3.6.2`. Pin the SHA-256 and record the license. A
+     test asserts that SHA-256 equals the upstream copy.
+  3. First parse which WASM features and WASI imports that wasm uses.
+     The runtime must fully support at least those. Translate WASM
+     functions into Lisp and hand that Lisp to SBCL to compile. Do not
+     interpret instructions one by one.
+  4. Lock correctness to the official WebAssembly spec testsuite,
+     vendored and pinned to a commit. Every spec test for a feature
+     this wasm uses must pass. WASI imports have their own tests.
+  5. Lazy load. Compile the wasm on the first codemode execution. The
+     compiled result may be cached. A cold start that does not enable
+     codemode is unaffected, and the cold-start gate still passes.
+     Record the time of the first codemode execution and of later
+     executions.
+  6. Put the code in a new standalone system, for example
+     `src/cadr-wasm/` with its own asd and tests. Do not pile it into
+     existing large files.
+  7. Lock codemode behavior to the upstream codemode tests: off by
+     default, `--tools +codemode`, `codemode.mode`,
+     `codemode.inlineBudget`, `tools.*`, `store` / `load`,
+     `models.classify`, `models.generateImages`, interrupt, the 256MB
+     heap cap and `InternalError: out of memory`, and the worker cap
+     `CADR_CODEMODE_MAX_WORKERS` (default 2).
+- **Where:** `docs/acceptance/goal27-pi-parity.md`. GAP-05 records the
+  split. GAP-05a is conditions 1–6. GAP-05b is conditions 2, 5, and 7.
