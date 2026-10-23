@@ -1490,7 +1490,8 @@
     ;; +2 Goal 27 GAP-43 review: models-runtime-stream-deferred and
     ;; models-runtime-fetch-deferred.
     ;; Measured 2026-10-23: 17 B10 owner files, 300 column-0 def* forms.
-    (is (= 300 definition-count)
+    ;; +1 Goal 27 GAP-66: faux-estimate-tokens (runtime/faux-provider.lisp).
+    (is (= 301 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

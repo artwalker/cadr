@@ -219,7 +219,8 @@
               ((typep block 'image-content)
                (format nil "[image:~A:~D]"
                        (image-content-mime-type block)
-                       (length (image-content-data block))))
+                       (utf16-code-unit-length
+                        (image-content-data block))))
               (t "")))))
     (t "")))
 
@@ -243,16 +244,23 @@
 
 (defun faux-message-text (message)
   (cond
+    ((typep message 'system-message)
+     (faux-system-line message))
     ((typep message 'user-message)
      (faux-content-text (user-message-content message)))
     ((typep message 'assistant-message)
      (faux-assistant-content-text
       (assistant-message-content message)))
     ((typep message 'tool-result-message)
-     (format nil "~A~%~A"
-             (tool-result-message-tool-name message)
-             (faux-content-text
-              (tool-result-message-content message))))
+     (let* ((content (tool-result-message-content message))
+            (pieces
+              (if (stringp content)
+                  (list content)
+                  (loop for block across (coerce content 'vector)
+                        collect (faux-content-text (list block))))))
+       (format nil "~{~A~^~%~}"
+               (cons (tool-result-message-tool-name message)
+                     pieces))))
     (t "")))
 
 (defun faux-tool-json-object (tool)
@@ -266,60 +274,60 @@
             (tool-constrained-sampling tool)))
     object))
 
-(defun faux-system-line (prompt tools)
-  (let ((parts
-          (remove ""
-                  (cons (or prompt "")
-                        (mapcar
-                         (lambda (tool)
-                           (format nil "tool+:~A"
-                                   (stringify-json
-                                    (faux-tool-json-object tool))))
-                         tools))
-                  :test #'equal)))
-    (when parts
-      (format nil "system:~{~A~^~%~}" parts))))
+(defun faux-system-line (message)
+  (let ((parts nil)
+        (text (get-system-message-text message)))
+    (when (plusp (length text))
+      (push text parts))
+    (dolist (tool (system-message-tools-removed message))
+      (push (format nil "tool-:~A"
+                    (stringify-json
+                     (json-object
+                      "name" (tool-reference-name tool))))
+            parts))
+    (dolist (tool (system-message-tools-added message))
+      (push (format nil "tool+:~A"
+                    (stringify-json
+                     (faux-tool-json-object tool)))
+            parts))
+    (format nil "~{~A~^~%~}" (nreverse parts))))
 
 (defun faux-message-line (message)
   (format nil "~A:~A"
           (cond
+            ((typep message 'system-message) "system")
             ((typep message 'user-message) "user")
             ((typep message 'assistant-message) "assistant")
             (t "toolResult"))
           (faux-message-text message)))
 
 (defun faux-serialize-context (context)
-  (let ((lines
+  (format nil "~{~A~^~%~%~}"
           (mapcar #'faux-message-line
-                  (context-messages context)))
-        (system
-          (faux-system-line
-           (context-system-prompt context)
-           (context-tools context))))
-    (when system
-      (let ((index (context-system-prompt-index context)))
-        (setf lines
-              (if index
-                  (let ((at (min index (length lines))))
-                    (append (subseq lines 0 at)
-                            (list system)
-                            (subseq lines at)))
-                  (cons system lines)))))
-    (format nil "~{~A~^~%~%~}" lines)))
+                  (transcript-context-messages
+                   (ensure-transcript-context context)))))
 
 (defun common-prefix-length (left right)
   (loop for index from 0
         below (min (length left) (length right))
         while (char= (char left index)
                      (char right index))
-        finally (return index)))
+        sum (if (> (char-code (char left index)) #xffff)
+                2
+                1)))
+
+(defun faux-estimate-tokens (text)
+  ;; v1.4.0 packages/ai/src/providers/faux.ts estimateTokens.
+  ;; JavaScript string length counts UTF-16 code units.
+  (ceiling (utf16-code-unit-length (or text "")) 4))
 
 (defun faux-with-usage
     (handle message context session-id cache-retention)
   (let* ((prompt (faux-serialize-context context))
-         (prompt-tokens (estimate-text-tokens prompt))
+         (prompt-units (utf16-code-unit-length prompt))
+         (prompt-tokens (faux-estimate-tokens prompt))
          (output-tokens
-           (estimate-text-tokens
+           (faux-estimate-tokens
             (faux-assistant-content-text
              (assistant-message-content message))))
          (input prompt-tokens)
@@ -331,16 +339,12 @@
               (gethash session-id
                        (faux-handle-prompt-cache handle))))
         (if previous
-            (let ((prefix
+            (let ((cached
                     (common-prefix-length previous prompt)))
-              (setf cache-read
-                    (estimate-text-tokens
-                     (subseq previous 0 prefix))
+              (setf cache-read (ceiling cached 4)
                     cache-write
-                    (estimate-text-tokens
-                     (subseq prompt prefix))
-                    input (max 0
-                               (- prompt-tokens cache-read))))
+                    (ceiling (max 0 (- prompt-units cached)) 4)
+                    input (max 0 (- prompt-tokens cache-read))))
             (setf cache-write prompt-tokens))
         (setf
          (gethash session-id
@@ -484,7 +488,7 @@
   (let ((rate (faux-handle-tokens-per-second handle)))
     (when (plusp rate)
       (sleep
-       (/ (estimate-text-tokens chunk) rate))))
+       (/ (faux-estimate-tokens chunk) rate))))
   nil)
 
 (defun faux-stream-aborted-p (abort-p)

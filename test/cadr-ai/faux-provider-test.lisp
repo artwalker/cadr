@@ -375,14 +375,6 @@
             (list
              (cadr-ai:make-user-message :content "U" :timestamp 1))
             :tools (list tool)))
-         (expected-prompt
-           (format
-            nil "system:S~%tool+:~A~%~%user:U"
-            (cadr-ai::stringify-json
-             (cadr-ai::json-object
-              "description" "Read file"
-              "name" "read"
-              "parameters" parameters))))
          (handle (cadr-ai:make-faux-provider)))
     (cadr-ai:faux-set-responses
      handle (list (cadr-ai:faux-assistant-message "ok")))
@@ -390,9 +382,13 @@
              (cadr-ai:faux-complete
               handle (cadr-ai:faux-get-model handle) context))
            (usage (cadr-ai:assistant-message-usage message)))
-      (is
-       (= (cadr-ai:estimate-text-tokens expected-prompt)
-          (cadr-ai:usage-input usage))))))
+      ;; v1.4.0 faux.ts withUsageEstimate on normalizeContext of this
+      ;; prompt and tool. Node createFauxCore at pi-ai 1.4.0: input 39,
+      ;; output 1. Math.ceil(utf16Length / 4), not chars*2/7.
+      (is (= 39 (cadr-ai:usage-input usage)))
+      (is (= 1 (cadr-ai:usage-output usage)))
+      (is (= 0 (cadr-ai:usage-cache-read usage)))
+      (is (= 0 (cadr-ai:usage-cache-write usage))))))
 
 (test faux-provider-abort-and-invalid-terminal-are-errors
   (let ((handle (cadr-ai:make-faux-provider)))
@@ -418,3 +414,196 @@
              :abort-p (constantly t))))
       (is (eq :aborted
               (cadr-ai:assistant-message-stop-reason aborted))))))
+
+(defun gap66-read-tool ()
+  (cadr-ai:make-tool
+   :name "read"
+   :description "Read file"
+   :parameters
+   (cadr-ai::json-object
+    "type" "object"
+    "properties"
+    (cadr-ai::json-object
+     "path" (cadr-ai::json-object "type" "string"))
+    "required" (cadr-ai::json-array "path"))))
+
+(defun gap66-usage (message)
+  (cadr-ai:assistant-message-usage message))
+
+(test faux-provider-estimates-tokens-by-utf16-quarters
+  ;; Numbers are v1.4.0 createFauxCore().stream().result().usage
+  ;; (packages/ai/src/providers/faux.ts withUsageEstimate).
+  (let ((handle (cadr-ai:make-faux-provider))
+        (tool (gap66-read-tool)))
+    (cadr-ai:faux-set-responses
+     handle
+     (list
+      (cadr-ai:faux-assistant-message "first")
+      (cadr-ai:faux-assistant-message "abcd")
+      (cadr-ai:faux-assistant-message "🙂🙂🙂🙂")
+      (cadr-ai:faux-assistant-message "x")
+      (cadr-ai:faux-assistant-message "")
+      (cadr-ai:faux-assistant-message "ok")))
+    (let ((hello
+            (cadr-ai:faux-complete
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context
+              :messages
+              (list (cadr-ai:make-user-message
+                     :content "hello" :timestamp 1))))))
+      (is (= 3 (cadr-ai:usage-input (gap66-usage hello))))
+      (is (= 2 (cadr-ai:usage-output (gap66-usage hello))))
+      (is (= 5 (cadr-ai:usage-total (gap66-usage hello)))))
+    (let ((abcd
+            (cadr-ai:faux-complete
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context
+              :messages
+              (list (cadr-ai:make-user-message
+                     :content "abcd" :timestamp 1))))))
+      (is (= 3 (cadr-ai:usage-input (gap66-usage abcd))))
+      (is (= 1 (cadr-ai:usage-output (gap66-usage abcd)))))
+    (let ((emoji
+            (cadr-ai:faux-complete
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context
+              :messages
+              (list (cadr-ai:make-user-message
+                     :content "hi" :timestamp 1))))))
+      (is (= 2 (cadr-ai:usage-input (gap66-usage emoji))))
+      (is (= 2 (cadr-ai:usage-output (gap66-usage emoji)))))
+    (let ((image
+            (cadr-ai:faux-complete
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context
+              :messages
+              (list
+               (cadr-ai:make-user-message
+                :content
+                (list (cadr-ai:make-image-content
+                       :mime-type "image/png" :data "abcd"))
+                :timestamp 1))))))
+      (is (= 6 (cadr-ai:usage-input (gap66-usage image))))
+      (is (= 1 (cadr-ai:usage-output (gap66-usage image)))))
+    (let ((removed
+            (cadr-ai:faux-complete
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context
+              :messages
+              (list
+               (cadr-ai:make-system-message
+                :content "P"
+                :tools-removed
+                (list (cadr-ai:make-tool-reference :name "bash"))
+                :tools-added (list tool)
+                :timestamp 1))))))
+      (is (= 43 (cadr-ai:usage-input (gap66-usage removed))))
+      (is (= 0 (cadr-ai:usage-output (gap66-usage removed)))))
+    (let ((sections
+            (cadr-ai:faux-complete
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context
+              :messages
+              (list
+               (cadr-ai:make-system-message
+                :content ""
+                :sections
+                '(("preamble" . "Be concise.")
+                  ("cwd" . "<cwd>
+/tmp
+</cwd>"))
+                :tools-added (list tool)
+                :timestamp 1)
+               (cadr-ai:make-user-message
+                :content "U" :timestamp 2))))))
+      (is (= 46 (cadr-ai:usage-input (gap66-usage sections))))
+      (is (= 1 (cadr-ai:usage-output (gap66-usage sections)))))
+    (let ((preset (cadr-ai:faux-assistant-message "z")))
+      (setf (cadr-ai:assistant-message-usage preset)
+            (cadr-ai:make-usage :input 999 :output 999))
+      (cadr-ai:faux-set-responses handle (list preset))
+      (let ((empty
+              (cadr-ai:faux-complete
+               handle (cadr-ai:faux-get-model handle)
+               (cadr-ai:make-context :messages nil))))
+        (is (= 0 (cadr-ai:usage-input (gap66-usage empty))))
+        (is (= 1 (cadr-ai:usage-output (gap66-usage empty))))))))
+
+(test faux-provider-session-cache-splits-the-shared-prefix
+  ;; v1.4.0 createFauxCore, sessionId session-1, cacheRetention short.
+  ;; First usage is input 43, output 8, cacheRead 0, cacheWrite 43.
+  ;; Second is input 19, output 2, cacheRead 43, cacheWrite 20.
+  (let* ((handle (cadr-ai:make-faux-provider))
+         (tool (gap66-read-tool))
+         (context
+           (cadr-ai:make-context
+            :messages
+            (list
+             (cadr-ai:make-system-message
+              :content "Be concise."
+              :tools-added (list tool)
+              :timestamp 1)
+             (cadr-ai:make-user-message
+              :content "hello" :timestamp 2)))))
+    (cadr-ai:faux-set-responses
+     handle
+     (list
+      (cadr-ai:faux-assistant-message
+       (list
+        (cadr-ai:faux-thinking "think")
+        (cadr-ai:faux-text "hi")
+        (cadr-ai:faux-tool-call
+         "grep" (cadr-ai::json-object "pattern" "a") :id "t1")))
+      (cadr-ai:faux-assistant-message "second")))
+    (let ((first
+            (cadr-ai:faux-complete
+             handle (cadr-ai:faux-get-model handle) context
+             :session-id "session-1"
+             :cache-retention :short)))
+      (is (= 43 (cadr-ai:usage-input (gap66-usage first))))
+      (is (= 8 (cadr-ai:usage-output (gap66-usage first))))
+      (is (= 0 (cadr-ai:usage-cache-read (gap66-usage first))))
+      (is (= 43 (cadr-ai:usage-cache-write (gap66-usage first))))
+      (is (= 94 (cadr-ai:usage-total (gap66-usage first))))
+      (setf (cadr-ai:context-messages context)
+            (append
+             (cadr-ai:context-messages context)
+             (list
+              first
+              (cadr-ai:make-tool-result-message
+               :tool-call-id "t1"
+               :tool-name "grep"
+               :content (list (cadr-ai:faux-text "hit"))
+               :is-error nil
+               :timestamp 3)
+              (cadr-ai:make-user-message
+               :content "follow up" :timestamp 4))))
+      (let ((second
+              (cadr-ai:faux-complete
+               handle (cadr-ai:faux-get-model handle) context
+               :session-id "session-1"
+               :cache-retention :short)))
+        (is (= 19 (cadr-ai:usage-input (gap66-usage second))))
+        (is (= 2 (cadr-ai:usage-output (gap66-usage second))))
+        (is (= 43 (cadr-ai:usage-cache-read (gap66-usage second))))
+        (is (= 20 (cadr-ai:usage-cache-write (gap66-usage second)))))
+      (cadr-ai:faux-set-responses
+       handle (list (cadr-ai:faux-assistant-message "z")))
+      (let ((uncached
+              (cadr-ai:faux-complete
+               handle (cadr-ai:faux-get-model handle)
+               (cadr-ai:make-context
+                :messages
+                (list
+                 (cadr-ai:make-system-message
+                  :content "Be concise."
+                  :tools-added (list tool)
+                  :timestamp 1)
+                 (cadr-ai:make-user-message
+                  :content "hello" :timestamp 2)))
+               :session-id "s"
+               :cache-retention :none)))
+        (is (= 43 (cadr-ai:usage-input (gap66-usage uncached))))
+        (is (= 1 (cadr-ai:usage-output (gap66-usage uncached))))
+        (is (= 0 (cadr-ai:usage-cache-read (gap66-usage uncached))))
+        (is (= 0 (cadr-ai:usage-cache-write (gap66-usage uncached))))))))

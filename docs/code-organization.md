@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=341 lines=150191 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=179 in-progress=0 done=159 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4a080252f06caf63a525d7873c5d94d3c23887e0 files=341 lines=150225 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=179 in-progress=0 done=159 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -154,7 +154,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/providers/definitions.lisp` | 1,135 | 19 | Validate and own the complete 42-provider declaration matrix and environment inputs. | pass · large | done | provider-definition-row-keys from MOP. I0: slots are the contract. | 20 |
 | `src/cadr-ai/providers/registry.lisp` | 157 | 2 | Instantiate declared providers through the appropriate native protocol class. | pass | no-rewrite | Five metadata-or-fallback ifs at :124-148 share a shape but are five distinct decisions — the explicit chain is the auditable parity contract. | 20 |
 | `src/cadr-ai/providers/runtime-projection.lisp` | 368 | 18 | Project provider declarations into session-local auth, OAuth, model, and dispatch callbacks. | pass | done | +api-key-auth-strategy-table+. I0: one strategy set. | 20 |
-| `src/cadr-ai/runtime/faux-provider.lisp` | 601 | 34 | Implement the deterministic faux provider, queued responses, and transcript serializer. | pass | done | faux-stream-block. I0: one emit skeleton. | 20 |
+| `src/cadr-ai/runtime/faux-provider.lisp` | 635 | 34 | Implement the deterministic faux provider, queued responses, and transcript serializer. | pass | done | faux-stream-block. I0: one emit skeleton. | 20 |
 | `src/cadr-ai/runtime/models.lisp` | 901 | 55 | Own mutable provider/model/auth state, refresh, lookup, and request dispatch. | pass · large | done | call-with-models-runtime-error. I0: one wrap. stream-deferred and fetch-deferred are the poll entry points. complete calls stream. Measured 2026-10-23: `wc -l` 901, column-0 `def*` 55. | 20 |
 | `src/cadr-ai/runtime/telemetry.lisp` | 324 | 10 | Record pi.ai.request and pi.ai.poll when the caller passes a span. | pass | no-rewrite | Attributes stay an alist, so order is the contract. One metrics object caches its instruments. The default span records nothing. Error text is sliced on UTF-16 code units. Measured 2026-10-23: `wc -l` 324, column-0 `def*` 10. | 27 |
 | `src/cadr-ai/sse.lisp` | 267 | 7 | Parse Server-Sent Events from text or binary streams. | pass | no-rewrite | Sentinel read loop transcribes the WHATWG line protocol; field dispatch has one owner and failures signal typed errors. Binary data/event/id lines decode payload octets only. File-stream READ-SEQUENCE scans newlines in the 8192 chunk; sockets stay on READ-BYTE. | 20 |
