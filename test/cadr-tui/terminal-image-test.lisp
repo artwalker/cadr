@@ -228,6 +228,140 @@
          (cadr-tui:crop-kitty-image-line
           "plain" 1 1)))))
 
+(defun call-with-image-cell-dimensions (width height function)
+  (multiple-value-bind (previous-width previous-height)
+      (cadr-tui:get-cell-dimensions)
+    (unwind-protect
+         (progn
+           (cadr-tui:set-cell-dimensions width height)
+           (funcall function))
+      (cadr-tui:set-cell-dimensions
+       previous-width previous-height))))
+
+(test kitty-image-cell-size-matches-v140-aspect-optimization
+  ;; v1.4.0 packages/tui/test/terminal-image.test.ts
+  ;; "image cell sizing" (#8938). Kitty passes optimizeAspectRatio.
+  ;; iTerm2 does not, so a height-limited 400x900 stays 14 columns.
+  (let ((kitty
+          (cadr-tui:make-terminal-capabilities
+           :images :kitty :true-color-p t :hyperlinks-p t))
+        (iterm
+          (cadr-tui:make-terminal-capabilities
+           :images :iterm2 :true-color-p t
+           :hyperlinks-p t)))
+    (call-with-image-cell-dimensions
+     9 18
+     (lambda ()
+       (let ((thin
+               (cadr-tui:render-terminal-image
+                "AAAA" 1200 12
+                :capabilities kitty
+                :max-width-cells 60
+                :move-cursor-p nil)))
+         (is (= 60
+                (cadr-tui:image-render-result-columns thin)))
+         (is (= 1 (cadr-tui:image-render-result-rows thin)))
+         (is (search ",c=60,r=1;"
+                     (cadr-tui:image-render-result-sequence
+                      thin))))
+       (let* ((image
+                (cadr-tui:make-image-component
+                 "AAAA" "image/png"
+                 :dimensions '(615 86)
+                 :capabilities kitty
+                 :max-width-cells 60
+                 :image-id 8938))
+              (lines (cadr-tui:component-render image 62)))
+         (is (= 4 (length lines)))
+         (is (equal '("" "" "") (rest lines)))
+         (is (search ",c=60,r=4,i=8938;" (first lines)))
+         (let ((narrower
+                 (cadr-tui:component-render image 32)))
+           (is (= 2 (length narrower)))
+           (is (search ",c=30,r=2,i=8938;"
+                       (first narrower)))))))
+    (call-with-image-cell-dimensions
+     15 28
+     (lambda ()
+       (let ((ceiling
+               (cadr-tui:render-terminal-image
+                "AAAA" 615 86
+                :capabilities kitty
+                :max-width-cells 60)))
+         (is (= 60
+                (cadr-tui:image-render-result-columns
+                 ceiling)))
+         (is (= 5
+                (cadr-tui:image-render-result-rows ceiling)))
+         (is (search ",c=60,r=5;"
+                     (cadr-tui:image-render-result-sequence
+                      ceiling))))))
+    (call-with-image-cell-dimensions
+     14 28
+     (lambda ()
+       (let* ((image
+                (cadr-tui:make-image-component
+                 "AAAA" "image/png"
+                 :dimensions '(400 900)
+                 :capabilities kitty
+                 :max-width-cells 30
+                 :image-id 8938))
+              (lines (cadr-tui:component-render image 32)))
+         (is (= 15 (length lines)))
+         (is (search ",c=13,r=15,i=8938;" (first lines)))
+         (let ((narrower
+                 (cadr-tui:component-render image 22)))
+           (is (= 10 (length narrower)))
+           (is (search ",c=9,r=10,i=8938;"
+                       (first narrower)))))
+       (let ((iterm-result
+               (cadr-tui:render-terminal-image
+                "AAAA" 400 900
+                :capabilities iterm
+                :max-width-cells 30
+                :max-height-cells 15)))
+         (is (= 14
+                (cadr-tui:image-render-result-columns
+                 iterm-result)))
+         (is (= 15
+                (cadr-tui:image-render-result-rows
+                 iterm-result))))))
+    (call-with-image-cell-dimensions
+     1 1
+     (lambda ()
+       (loop for (width columns) in '((1 1) (140 1) (149 2))
+             do (let ((result
+                        (cadr-tui:render-terminal-image
+                         "AAAA" width 1000
+                         :capabilities kitty
+                         :max-width-cells 30
+                         :max-height-cells 10)))
+                  (is (= columns
+                         (cadr-tui:image-render-result-columns
+                          result)))
+                  (is (= 10
+                         (cadr-tui:image-render-result-rows
+                          result)))
+                  (is (search
+                       (format nil ",c=~D,r=10;" columns)
+                       (cadr-tui:image-render-result-sequence
+                        result)))))))
+    (call-with-image-cell-dimensions
+     9 18
+     (lambda ()
+       (let* ((image
+                (cadr-tui:make-image-component
+                 "AAAA" "image/png"
+                 :dimensions '(615 86)
+                 :capabilities iterm
+                 :max-width-cells 60))
+              (lines (cadr-tui:component-render image 62)))
+         (is (= 5 (length lines)))
+         (is (equal '("" "" "" "") (butlast lines)))
+         (is (search "width=60" (car (last lines))))
+         (is (search (format nil "~C[4A" #\Escape)
+                     (car (last lines)))))))))
+
 (test terminal-capability-overrides-honor-cadr-environment
   (cadr-tui:reset-capability-overrides)
   (unwind-protect

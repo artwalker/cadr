@@ -78,7 +78,9 @@
   ;; v1.4.0 earendil-announcement.ts IMAGE_FILENAME, maxWidthCells 56,
   ;; mime image/png, fallbackColor muted. image.ts clamps width to
   ;; min(width-2, 56). Cell size 9x18 makes the default max height 28.
-  ;; IHDR 640x537 is width-bound, so the kitty grid is c=56 r=24.
+  ;; calculateImageCellSize on 640x537 yields columns 56 and rows 24,
+  ;; idealRows 23.49375. Kitty passes optimizeAspectRatio and keeps
+  ;; r=23 (23 lines). iTerm2 leaves the flag false and reserves 24.
   (let ((cadr-cli::*earendil-announcement-image-base64* :unloaded)
         (bytes (clankolas-bytes)))
     (let* ((component
@@ -129,12 +131,23 @@
           (lambda ()
             (cadr-tui:component-invalidate image)
             (let ((lines (cadr-tui:component-render image 80)))
-              (is (= 24 (length lines)))
+              (is (= 23 (length lines)))
               (is (cadr-tui:image-line-p (first lines)))
               (is (search "c=56" (first lines)))
-              (is (search "r=24" (first lines)))
+              (is (search "r=23" (first lines)))
               (is (every #'string= (rest lines)
-                         (make-list 23 :initial-element "")))))))))
+                         (make-list 22 :initial-element ""))))))
+      (with-announcement-caps
+          :iterm2
+          (lambda ()
+            (cadr-tui:component-invalidate image)
+            (let ((lines (cadr-tui:component-render image 80)))
+              (is (= 24 (length lines)))
+              (is (every #'string=
+                         (butlast lines)
+                         (make-list 23 :initial-element "")))
+              (is (search "width=56" (car (last lines))))
+              (is (cadr-tui:image-line-p (car (last lines))))))))))
 
 (test earendil-announcement-omits-the-image-when-the-asset-is-missing
   ;; v1.4.0 loadImageBase64 catches a failed read and skips Image and

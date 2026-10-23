@@ -494,10 +494,39 @@
             #\Escape parameters base64-data
             (code-char 7))))
 
+(defun choose-less-distorted-cell-count (upper-count ideal-count)
+  ;; v1.4.0 terminal-image.ts chooseLessDistortedCellCount. The ideal
+  ;; count is a float64 ratio. A lower cell count wins only when its
+  ;; distortion is strictly smaller.
+  (if (<= upper-count 1)
+      upper-count
+      (let* ((ideal (float ideal-count 1.0d0))
+             (upper (float upper-count 1.0d0))
+             (lower (float (1- upper-count) 1.0d0))
+             (upper-distortion
+               (max (/ upper ideal) (/ ideal upper)))
+             (lower-distortion
+               (max (/ lower ideal) (/ ideal lower))))
+        (if (< lower-distortion upper-distortion)
+            (1- upper-count)
+            upper-count))))
+
+(defun image-ideal-cell-count
+    (primary-cells primary-cell-px cross-image-px
+     primary-image-px cross-cell-px)
+  ;; ((cells * cellPx) * crossImage) / (primaryImage * crossPx),
+  ;; the same left-to-right float64 association as calculateImageCellSize.
+  (/ (* (* (float primary-cells 1.0d0)
+           (float primary-cell-px 1.0d0))
+        (float cross-image-px 1.0d0))
+     (* (float primary-image-px 1.0d0)
+        (float cross-cell-px 1.0d0))))
+
 (defun calculate-image-cell-size
     (image-width image-height max-width-cells
      &key max-height-cells
-       (cell-width 9) (cell-height 18))
+       (cell-width 9) (cell-height 18)
+       optimize-aspect-ratio-p)
   (let* ((maximum-width
            (max 1 (floor max-width-cells)))
          (maximum-height
@@ -515,14 +544,31 @@
                width-scale))
          (scale (min width-scale height-scale))
          (columns
-           (ceiling (/ (* width scale) cell-width)))
+           (max 1
+                (min maximum-width
+                     (ceiling
+                      (/ (* width scale) cell-width)))))
          (rows
-           (ceiling (/ (* height scale) cell-height))))
-    (values
-     (max 1 (min maximum-width columns))
-     (max 1 (if maximum-height
-                (min maximum-height rows)
-                rows)))))
+           (max 1
+                (ceiling
+                 (/ (* height scale) cell-height)))))
+    (when maximum-height
+      (setf rows (min maximum-height rows)))
+    (when optimize-aspect-ratio-p
+      (if (<= width-scale height-scale)
+          (setf rows
+                (choose-less-distorted-cell-count
+                 rows
+                 (image-ideal-cell-count
+                  columns cell-width height
+                  width cell-height)))
+          (setf columns
+                (choose-less-distorted-cell-count
+                 columns
+                 (image-ideal-cell-count
+                  rows cell-height width
+                  height cell-width)))))
+    (values columns rows)))
 
 (defun base64-value (character)
   (let ((code (char-code character)))
@@ -728,7 +774,11 @@ a few dozen). Returns NIL on malformed input."
          image-width image-height max-width-cells
          :max-height-cells max-height-cells
          :cell-width cell-width
-         :cell-height cell-height)
+         :cell-height cell-height
+         :optimize-aspect-ratio-p
+         (eq :kitty
+             (terminal-capabilities-images
+              capabilities)))
       (let ((result
               (make-image-render-result
                :sequence
