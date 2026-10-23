@@ -2590,3 +2590,49 @@ The gray `Working` status rule is canonicalized in
      present only in the mode-0600 log.
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-72. The status
   cell starts with `open：顾问裁决 2026-10-24 选 C（对齐上游崩溃页结构，栈帧不带参数值，完整栈进 0600 日志，栈帧文本为新差异类），见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-23 — GAP-05a 第三次性能裁决（最后一轮）
+
+- **Ruling (advisor Claude, 2026-10-23; the user keeps the veto):** round
+  5''''' cut the ratios from 20.2× / 16.3× to 10.7× / 9.6×. Float-trap
+  switching and generic vector reads are gone from the sample. The
+  implementer again recommends B (a native runtime). The advisor does
+  not adopt that. This is the last round, and it does only one thing:
+  stop boxing i64. Condition 5'''''' is quoted in full below.
+- **Measured (2026-10-23, GAP-05a status cell and
+  `docs/reviews/goal27-surface/GAP-05a-perf.md`):** 1e6 integer additions
+  are 10.7× Node 22 (696ms, and another run 708ms, value 499999500000,
+  against 65.3ms on the second run of Node 22.22.0 quickjs-wasi 3.6.2).
+  A 1MB string JSON round trip is 9.6× (304ms against 31.7ms). Both are
+  over 5×. The 1e6 loop's `sb-ext:get-bytes-consed` delta is 794657984
+  bytes. In sb-sprof (174 samples), `QJS-AOT-80` is 53% of self time
+  (the perf table lists 53.4%). The sample has no `arch_set_fp_modes`
+  and no `VECTOR-HAIRY-DATA-VECTOR-REF`.
+- **Options:**
+  - A. Record the measured roughly 11× and 10× as an intentional
+    difference.
+  - B. Switch to a native Wasm runtime.
+- **Choice:** neither. One last round, and only i64 legalization plus a
+  zero-allocation proof. The 5× target does not move. If the ratio is
+  still over 5× after this round, the status is blocked with the full
+  data, and the advisor takes that data to the user. The choice then is
+  between accepting the measured ratio as an intentional difference and
+  switching to a native runtime. The implementer does not loosen the
+  number and does not add a native library.
+- **Why:** the perf note records that the 1e6 loop allocates 794657984
+  bytes. Passing `(unsigned-byte 64)` across a function is a bignum.
+  QuickJS on wasm32 uses NaN-boxing, so each JSValue is an i64 with a
+  tag in the high bits, and almost every JS value that crosses a
+  function allocates. `pthread_sigmask` at 8% and `lisp_alloc` at 8.6%
+  sit under GC (`interrupt_handle_pending` / `maybe_gc`), not under a
+  per-operation float-trap mask. This is a known problem with a standard
+  fix (wasm2js legalizes i64 as two i32). Until that fix lands, there is
+  not enough evidence that pure Lisp has hit its ceiling.
+- **条件 5''''''（全文）:**
+  1. i64 合法化：生成代码里 i64 参数、返回值、跨调用存活的局部变量、全局和表/间接调用的签名，一律按两个 `(unsigned-byte 32)`（高/低半）传递；返回 i64 用两个值（`values`）；函数体内部可以组合成 `(unsigned-byte 64)` 做运算，但不得在函数边界、`funcall`、闭包或 simple-vector 槽里出现 bignum。导出边界（宿主调用 wasm 导出、wasm 调用 WASI 导入）按规范语义转回整数。
+  2. 证明零分配：1e6 累加的 `sb-ext:get-bytes-consed` 差值降到 1MB 以下（或写明剩下每一处分配的来源）；sb-sprof 里 `ALLOC-UNSIGNED-BIGNUM-*` 与 GC 相关的 `pthread_sigmask` / `maybe_gc` 不再进前 10。
+  3. 解释路径清点：列出走“小循环解释器”（局部变量 >64 或 >400 条指令）的全部函数，以及在 1e6 循环和 JSON 基准里各自的调用次数；任何在基准里被调用超过 1000 次的函数不得走解释路径（若 QuickJS 的 JS_CallInternal 一类大函数落在解释路径，说明这是瓶颈，必须改为编译，必要时把大函数按基本块切成若干编译函数）。
+  4. spec testsuite（含 i64 全部用例与 trap）全过；重测后续 `return 1 + 1`、1e6 累加、1MB JSON 往返的倍数，记前后数字。
+  5. 这一轮之后倍数仍 > 5：状态写 blocked，附全部数据，**这是最后一轮**，顾问将带数据与用户讨论在“接受实测倍数并记为有意差异”和“改用原生运行时”之间决定；不得自行放宽、不得自行引入原生库。
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. The status
+  cell starts with `open：顾问裁决 2026-10-23 第三次性能裁决：最后一轮，只做 i64 合法化与零分配，条件 5'''''' 见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
