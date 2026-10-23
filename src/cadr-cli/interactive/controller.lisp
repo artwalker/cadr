@@ -646,7 +646,8 @@ interactive-mode.ts:5956-5960).")
                                  remembered-overlay-custom))
                                remembered-overlay-custom)))
                     (multiple-value-bind
-                          (lines cursor-row cursor-column editor-origin)
+                          (lines cursor-row cursor-column
+                           editor-origin dock-line-count)
                         (render-tui-state
                          state (current-editor)
                          (cadr-tui:terminal-columns terminal)
@@ -666,6 +667,13 @@ interactive-mode.ts:5956-5960).")
                          (tui-status-animation-frame
                           status-animation)
                          :floating-overlay floating-overlay)
+                      (setf
+                       (cadr-tui::terminal-renderer-chat-dock-lines
+                        renderer)
+                       (if alt-p (or dock-line-count 0) 0)
+                       (cadr-tui::terminal-renderer-chat-editor-origin
+                        renderer)
+                       editor-origin)
                       (cadr-tui:render-frame
                        renderer lines
                        :cursor-row cursor-row
@@ -3520,17 +3528,24 @@ interactive-mode.ts:5956-5960).")
                (lambda (gesture)
                  (let* ((origin list-mouse-origin)
                         (y (getf gesture :y))
+                        (screen-editor
+                          (cadr-tui::terminal-renderer-editor-screen-row
+                           renderer))
                         (content-line
                           (and y
                                (+ (cadr-tui::terminal-renderer-scroll-top
                                    renderer)
                                   y)))
                         (local
-                          (and origin
-                               (- (+ (cadr-tui::terminal-renderer-scroll-top
-                                      renderer)
-                                     y)
-                                  origin)))
+                          (cond
+                            ((and (integerp screen-editor)
+                                  (integerp y))
+                             (- y screen-editor))
+                            (origin
+                             (- (+ (cadr-tui::terminal-renderer-scroll-top
+                                    renderer)
+                                   y)
+                                origin))))
                         (lines
                           (cadr-tui::terminal-renderer-previous-lines
                            renderer)))

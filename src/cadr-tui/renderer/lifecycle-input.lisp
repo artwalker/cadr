@@ -33,6 +33,15 @@
   (scroll-top 0 :type (integer 0 *))
   (content-line-count 0 :type (integer 0 *))
   (stick-to-bottom-p t :type boolean)
+  ;; pi@4a080252f chat-viewport.ts — fullscreen pins this many trailing
+  ;; lines (pending, status, widgets, editor, footer). Zero means the
+  ;; whole document scrolls, which is regular mode.
+  (chat-dock-lines 0 :type (integer 0 *))
+  (chat-editor-origin nil :type (or null integer))
+  ;; Rows of the transcript viewport after the dock is placed. Zero
+  ;; means scroll math uses the terminal height.
+  (chat-viewport-height 0 :type (integer 0 *))
+  (editor-screen-row nil :type (or null integer))
   selection-anchor
   selection-focus
   pressed-url
@@ -575,15 +584,25 @@ controlling mode flag and repaint afterwards."
    (terminal-renderer-invalid-p renderer) t)
   renderer)
 
+(defun renderer-chat-viewport-height (renderer)
+  ;; pi@4a080252f layout.ts renderLayoutFrame — the scroll range is the
+  ;; transcript viewport, the rows left after the dock.
+  (let ((stored
+          (terminal-renderer-chat-viewport-height renderer)))
+    (if (plusp stored)
+        stored
+        (max
+         1
+         (terminal-rows
+          (terminal-renderer-terminal renderer))))))
+
 (defun renderer-scroll-by (renderer lines)
   (when (zerop lines)
     (return-from renderer-scroll-by
       renderer))
   (renderer-note-scrollbar-activity renderer)
-  (let* ((terminal
-           (terminal-renderer-terminal renderer))
-         (height
-           (max 1 (terminal-rows terminal)))
+  (let* ((height
+           (renderer-chat-viewport-height renderer))
          (maximum
            (max
             0
@@ -618,8 +637,7 @@ controlling mode flag and repaint afterwards."
            (<=
             (terminal-renderer-content-line-count
              renderer)
-            (terminal-rows
-             (terminal-renderer-terminal renderer))))
+            (renderer-chat-viewport-height renderer)))
          (changed-p
            (or (plusp (terminal-renderer-scroll-top renderer))
                (not
@@ -636,22 +654,20 @@ controlling mode flag and repaint afterwards."
   renderer)
 
 (defun renderer-scroll-to-bottom (renderer)
-  (let ((terminal
-          (terminal-renderer-terminal renderer)))
-    (let ((next
-            (max
-             0
-             (- (terminal-renderer-content-line-count
-                 renderer)
-                (terminal-rows terminal))))
-          (was-sticky-p
-            (terminal-renderer-stick-to-bottom-p renderer)))
-      (when (or (not was-sticky-p)
-                (/= (terminal-renderer-scroll-top renderer) next))
-        (renderer-note-scrollbar-activity renderer))
-      (setf
-       (terminal-renderer-stick-to-bottom-p renderer) t
-       (terminal-renderer-scroll-top renderer) next)))
+  (let ((next
+          (max
+           0
+           (- (terminal-renderer-content-line-count
+               renderer)
+              (renderer-chat-viewport-height renderer))))
+        (was-sticky-p
+          (terminal-renderer-stick-to-bottom-p renderer)))
+    (when (or (not was-sticky-p)
+              (/= (terminal-renderer-scroll-top renderer) next))
+      (renderer-note-scrollbar-activity renderer))
+    (setf
+     (terminal-renderer-stick-to-bottom-p renderer) t
+     (terminal-renderer-scroll-top renderer) next))
   renderer)
 
 (defun osc133-prompt-start-line-p (line)
@@ -669,10 +685,8 @@ controlling mode flag and repaint afterwards."
   ;; pi@4a080252f tui-alt-screen.ts:366-378 — scan the scroll content
   ;; from the current viewport edge for the next OSC 133 prompt-start
   ;; marker and land the viewport on it.
-  (let* ((terminal
-           (terminal-renderer-terminal renderer))
-         (height
-           (max 1 (terminal-rows terminal)))
+  (let* ((height
+           (renderer-chat-viewport-height renderer))
          (count
            (terminal-renderer-content-line-count renderer))
          (maximum

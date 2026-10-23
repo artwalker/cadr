@@ -292,7 +292,14 @@
                   (+ entry-origin (second hit))
                   (+ entry-origin (third hit))))
           entry-hits)))
-      (let ((frame
+      (let* ((dock-line-count
+               (+ (length pending-message-lines)
+                  (length status-indicator)
+                  (length widget-above-lines)
+                  (length active-editor-lines)
+                  (length widget-below-lines)
+                  (length footer-lines)))
+             (frame
               (nconc visible
                      pending-message-lines
                      status-indicator
@@ -345,4 +352,11 @@
          (if overlay
              overlay-column
              editor-column)
-         editor-origin))))))
+         editor-origin
+         ;; Floating composite pads the buffer, so the suffix is no
+         ;; longer the dock. Fullscreen pinning uses this count only
+         ;; when the returned lines are still transcript + dock.
+         (if (and floating-overlay
+                  (extension-custom-ui-visible-p floating-overlay))
+             0
+             dock-line-count)))))))

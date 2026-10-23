@@ -2022,7 +2022,11 @@ render loopback login received
            (let ((status
                    (cadr-cli::session-compaction-status session)))
              (and status (list status)))
-           :alt-p nil
+           ;; pi@4a080252f goal15-render-driver.ts passes alt:false, which
+           ;; InteractiveModeOptions no longer reads. tuiMode falls
+           ;; through to settings and the default is fullscreen, so the
+           ;; chat viewport pins the footer. Match that mode.
+           :alt-p t
            :show-hardware-cursor-p nil))
         (when persistent-p
           (let ((current

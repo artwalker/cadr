@@ -6351,3 +6351,169 @@
         (sb-thread:join-thread upper-worker :timeout 2))
       (is (equal "lower closed" lower-result))
       (is (equal "upper closed" upper-result)))))
+
+(defun fullscreen-dock-screen
+    (state &key (width 80) (rows 24) scroll-to-top-p)
+  ;; pi@4a080252f chat-viewport.ts createChatViewport paints through
+  ;; renderLayoutFrame: the returned lines stay the natural document,
+  ;; and the fullscreen renderer pins the dock.
+  (let* ((editor (cadr-tui:make-multiline-editor))
+         (terminal
+           (cadr-tui:make-virtual-terminal
+            :columns width :rows rows))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p t)))
+    (multiple-value-bind (lines row column origin dock)
+        (cadr-cli::render-tui-state
+         state editor width rows :full-document-p t)
+      (setf
+       (cadr-tui::terminal-renderer-chat-dock-lines renderer)
+       dock
+       (cadr-tui::terminal-renderer-chat-editor-origin renderer)
+       origin)
+      (cadr-tui:render-frame
+       renderer lines :cursor-row row :cursor-column column)
+      (when scroll-to-top-p
+        (cadr-tui:renderer-scroll-to-top renderer)
+        (cadr-tui:render-frame
+         renderer lines :cursor-row row :cursor-column column))
+      (mapcar
+       (lambda (line)
+         (string-right-trim
+          " "
+          (cadr-tui:strip-terminal-sequences line)))
+       (cadr-tui:virtual-terminal-snapshot terminal)))))
+
+(test fullscreen-chat-viewport-pins-the-footer
+  ;; pi@4a080252f packages/coding-agent/src/modes/interactive/chat-viewport.ts
+  ;; createChatViewport and packages/tui/src/layout.ts renderLayoutFrame.
+  ;; The transcript occupies the rows above the dock. A short transcript
+  ;; leaves blank rows above the editor. The cwd and model lines are the
+  ;; last two rows. Scrolling the transcript to the top keeps that dock.
+  (let* ((rows 24)
+         (short
+           (cadr-cli::make-tui-state
+            :model "pin-model"
+            :cwd "/tmp/pin-dock")))
+    (cadr-cli::append-tui-entry
+     short
+     (cadr-cli::make-tui-entry :type :notice :text "only-notice"))
+    (let* ((short-screen
+             (fullscreen-dock-screen short :rows rows))
+           (notice
+             (position-if
+              (lambda (line) (search "only-notice" line))
+              short-screen))
+           (border
+             (position-if
+              (lambda (line)
+                (and (plusp (length line))
+                     (every (lambda (character)
+                              (char= character #\─))
+                            line)))
+              short-screen))
+           (model
+             (position-if
+              (lambda (line) (search "pin-model" line))
+              short-screen))
+           (cwd
+             (position-if
+              (lambda (line) (search "/tmp/pin-dock" line))
+              short-screen)))
+      (is (= rows (length short-screen)))
+      (is (= (1- rows) model))
+      (is (= (- rows 2) cwd))
+      (is (and notice border (< notice border)))
+      (is (> (- border notice) 2))))
+  (let* ((rows 18)
+         (state
+           (cadr-cli::make-tui-state
+            :model "pin-model"
+            :cwd "/tmp/pin-dock")))
+    (loop for index from 1 to 30
+          do (cadr-cli::append-tui-entry
+              state
+              (cadr-cli::make-tui-entry
+               :type :notice
+               :text (format nil "notice-~2,'0D" index))))
+    (let ((followed
+            (fullscreen-dock-screen state :rows rows))
+          (top
+            (fullscreen-dock-screen
+             state :rows rows :scroll-to-top-p t)))
+      (is (= (1- rows)
+             (position-if
+              (lambda (line) (search "pin-model" line))
+              followed)))
+      (is (null
+           (position-if
+            (lambda (line) (search "notice-01" line))
+            followed)))
+      (is (position-if
+           (lambda (line) (search "notice-30" line))
+           followed))
+      (is (position-if
+           (lambda (line) (search "notice-01" line))
+           top))
+      (is (null
+           (position-if
+            (lambda (line) (search "notice-30" line))
+            top)))
+      (is (= (1- rows)
+             (position-if
+              (lambda (line) (search "pin-model" line))
+              top)))))
+  ;; pi@4a080252f chat-viewport.ts: the login method selector is the
+  ;; editor child of the dock. Its title stays on screen above the
+  ;; footer even when the selector reports no cursor row.
+  (let* ((rows 32)
+         (state
+           (cadr-cli::make-tui-state
+            :model "pin-model"
+            :cwd "/tmp/pin-dock"))
+         (overlay
+           (cadr-cli::make-login-method-selector-state
+            :title "Select authentication method for Render Auth:")))
+    (loop for index from 1 to 20
+          do (cadr-cli::append-tui-entry
+              state
+              (cadr-cli::make-tui-entry
+               :type :notice
+               :text (format nil "startup-~2,'0D" index))))
+    (let* ((editor (cadr-tui:make-multiline-editor))
+           (terminal
+             (cadr-tui:make-virtual-terminal :columns 100 :rows rows))
+           (renderer
+             (cadr-tui:make-terminal-renderer terminal :alt-p t)))
+      (multiple-value-bind (lines row column origin dock)
+          (cadr-cli::render-tui-state
+           state editor 100 rows
+           :overlay overlay :full-document-p t)
+        (setf
+         (cadr-tui::terminal-renderer-chat-dock-lines renderer)
+         dock
+         (cadr-tui::terminal-renderer-chat-editor-origin renderer)
+         origin)
+        (cadr-tui:render-frame
+         renderer lines :cursor-row row :cursor-column column)
+        (let ((screen
+                (mapcar
+                 (lambda (line)
+                   (string-right-trim
+                    " "
+                    (cadr-tui:strip-terminal-sequences line)))
+                 (cadr-tui:virtual-terminal-snapshot terminal))))
+          (is (position-if
+               (lambda (line)
+                 (search
+                  "Select authentication method for Render Auth:"
+                  line))
+               screen))
+          (is (= (1- rows)
+                 (position-if
+                  (lambda (line) (search "pin-model" line))
+                  screen)))
+          (is (null
+               (position-if
+                (lambda (line) (search "startup-01" line))
+                screen))))))))

@@ -466,12 +466,35 @@
          (document
            (prepare-alt-document-incrementally
             renderer lines width))
+         ;; pi@4a080252f chat-viewport.ts createChatViewport. The dock
+         ;; is the trailing pending/status/widget/editor/footer lines.
+         ;; It stays on the last rows; only the transcript scrolls.
+         (dock-lines
+           (terminal-renderer-chat-dock-lines renderer))
+         (pin-p
+           (and (> height 1)
+                (plusp dock-lines)
+                (<= dock-lines (length document))))
+         (dock-height
+           (if pin-p (min dock-lines (1- height)) 0))
+         (viewport-height
+           (if pin-p (- height dock-height) height))
+         (split
+           (if pin-p (- (length document) dock-lines) 0))
+         (scroll-document
+           (if pin-p (subseq document 0 split) document))
+         (shown-dock
+           (when pin-p
+             (nthcdr
+              (- dock-lines dock-height)
+              (subseq document split))))
          (maximum-top
-           (max 0 (- (length document) height))))
+           (max 0 (- (length scroll-document) viewport-height))))
     (setf
-     (terminal-renderer-content-line-count
-      renderer)
-     (length document)
+     (terminal-renderer-content-line-count renderer)
+     (length scroll-document)
+     (terminal-renderer-chat-viewport-height renderer)
+     (if pin-p viewport-height 0)
      (terminal-renderer-last-document renderer)
      (coerce document 'simple-vector))
     (if
@@ -498,15 +521,31 @@
              (terminal-renderer-stick-to-bottom-p
               renderer)
              t))))
+    (let ((origin
+            (terminal-renderer-chat-editor-origin renderer))
+          (dropped
+            (if pin-p (- dock-lines dock-height) 0)))
+      (setf
+       (terminal-renderer-editor-screen-row renderer)
+       (when (and pin-p origin)
+         (let ((row
+                 (+ viewport-height
+                    (- origin split dropped))))
+           (and (>= row 0) (< row height) row)))))
     (when (terminal-renderer-alt-search-state renderer)
-      (renderer-refresh-search renderer document height))
-    (let* ((selected
+      (renderer-refresh-search
+       renderer scroll-document viewport-height))
+    (let* ((viewport
+             (alt-viewport-lines
+              renderer scroll-document viewport-height))
+           (selected
              (apply-search-highlights
               renderer
               (apply-renderer-selection
                renderer
-               (alt-viewport-lines
-                renderer document height))))
+               (if pin-p
+                   (nconc viewport shown-dock)
+                   viewport))))
            (selected
              ;; pi@4a080252f tui-alt-screen.ts:969-981
              ;; compositeFlashes: surviving flash lines overlay the
@@ -549,10 +588,10 @@
              (overlay-search-bar renderer current width))
            (current
              (composite-scroll-to-end-indicator
-              renderer current width height))
+              renderer current width viewport-height))
            (current
              (apply-alt-scrollbar
-              renderer current width height))
+              renderer current width viewport-height))
            (previous
              (terminal-renderer-previous-lines
               renderer))
@@ -573,10 +612,28 @@
              (frame-image-change-p
               current previous))
            (visible-cursor-row
-             (and cursor-row
-                  (- cursor-row
-                     (terminal-renderer-scroll-top
-                      renderer))))
+             ;; Overlay frames can omit a cursor row. Comparing that
+             ;; nil with the dock split aborts the paint, so the
+             ;; selector title never reaches the terminal.
+             (if (and pin-p cursor-row)
+                 (let ((dropped
+                         (- dock-lines dock-height)))
+                   (if (>= cursor-row split)
+                       (let ((row
+                               (+ viewport-height
+                                  (- cursor-row split dropped))))
+                         (and (>= row 0) (< row height) row))
+                       (let ((row
+                               (- cursor-row
+                                  (terminal-renderer-scroll-top
+                                   renderer))))
+                         (and (>= row 0)
+                              (< row viewport-height)
+                              row))))
+                 (and cursor-row
+                      (- cursor-row
+                         (terminal-renderer-scroll-top
+                          renderer)))))
            (cursor-visible-p
              (and visible-cursor-row cursor-column
               (>= visible-cursor-row 0)
