@@ -92,3 +92,80 @@
      :terminal terminal)
     (is (string= "hello" prompt-line)
         "cancelling the API-key dialog must leave the editor usable")))
+
+(test goal27-second-return-on-two-method-provider-opens-method-selector
+  ;; v1.4.0 packages/tui/src/autocomplete.ts returns argumentText as the
+  ;; prefix, and editor.ts confirm falls through to submit only when that
+  ;; prefix starts with "/". The first Return applies the login argument
+  ;; and stays in the editor. The second Return submits. handleLoginCommand
+  ;; then opens the provider method selector when that id has both oauth
+  ;; and api_key (interactive-mode.ts showLoginAuthTypeSelector).
+  (let ((title "Select authentication method for Render Auth:"))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :login-options-function
+     (lambda ()
+       (list
+        (cadr-cli::make-oauth-selector-option
+         :id :render-auth :name "Render Auth"
+         :auth-type :oauth
+         :method-name "Render Auth account")
+        (cadr-cli::make-oauth-selector-option
+         :id :render-auth :name "Render Auth"
+         :auth-type :api-key
+         :method-name "Render Auth API key")))
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 100 :rows 24
+      :inputs
+      (append
+       (loop for character across "/login render-auth"
+             collect (string character))
+       (list
+        (footer-sync-wait-for-screen-text
+         "Render Auth · subscription/API key")
+        (string #\Return)
+        (let ((attempts 0))
+          (lambda (terminal)
+            (let ((screen
+                    (format
+                     nil "~{~A~^~%~}"
+                     (mapcar
+                      #'cadr-tui:strip-terminal-sequences
+                      (cadr-tui:virtual-terminal-snapshot
+                       terminal)))))
+              (when (search title screen)
+                (error
+                 "first Return opened the method selector:~%~A"
+                 screen))
+              (incf attempts)
+              (cond
+                ((null
+                  (search "subscription/API key" screen))
+                 t)
+                ((> attempts 80)
+                 (error
+                  "login autocomplete stayed open:~%~A"
+                  screen))
+                (t nil)))))
+        (string #\Return)
+        (footer-sync-wait-for-screen-text title)
+        (lambda (terminal)
+          (let ((screen
+                  (format
+                   nil "~{~A~^~%~}"
+                   (mapcar
+                    #'cadr-tui:strip-terminal-sequences
+                    (cadr-tui:virtual-terminal-snapshot
+                     terminal)))))
+            (is (search "Sign in with an account" screen))
+            (is (search "Sign in with an API key" screen))
+            (is (null
+                 (search "Select provider to configure:"
+                         screen)))
+            t))
+        (string #\Escape)
+        ""
+        (footer-sync-submit-input "/quit")))))))

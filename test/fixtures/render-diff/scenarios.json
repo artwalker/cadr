@@ -3869,9 +3869,7 @@
           "pauseMs": 300
         },
         {
-          "sendSide": {
-            "pi": "enter"
-          }
+          "send": "enter"
         },
         {
           "waitFor": "Select authentication method for Render Auth:"
@@ -4002,9 +4000,7 @@
           "pauseMs": 300
         },
         {
-          "sendSide": {
-            "pi": "enter"
-          }
+          "send": "enter"
         },
         {
           "waitFor": "authentication method for Render"
@@ -4131,9 +4127,7 @@
           "pauseMs": 300
         },
         {
-          "sendSide": {
-            "pi": "enter"
-          }
+          "send": "enter"
         },
         {
           "waitFor": "Select authentication method for Render Auth:"
@@ -4253,9 +4247,7 @@
           "pauseMs": 300
         },
         {
-          "sendSide": {
-            "pi": "enter"
-          }
+          "send": "enter"
         },
         {
           "waitFor": "authentication method for Render"
@@ -4351,9 +4343,7 @@
           "pauseMs": 300
         },
         {
-          "sendSide": {
-            "pi": "enter"
-          }
+          "send": "enter"
         },
         {
           "waitFor": "Select authentication method for Render Auth:"
@@ -4449,9 +4439,7 @@
           "pauseMs": 300
         },
         {
-          "sendSide": {
-            "pi": "enter"
-          }
+          "send": "enter"
         },
         {
           "waitFor": "authentication method for Render"
