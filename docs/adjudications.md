@@ -2636,3 +2636,47 @@ The gray `Working` status rule is canonicalized in
   5. 这一轮之后倍数仍 > 5：状态写 blocked，附全部数据，**这是最后一轮**，顾问将带数据与用户讨论在“接受实测倍数并记为有意差异”和“改用原生运行时”之间决定；不得自行放宽、不得自行引入原生库。
 - **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. The status
   cell starts with `open：顾问裁决 2026-10-23 第三次性能裁决：最后一轮，只做 i64 合法化与零分配，条件 5'''''' 见 docs/adjudications.md；原 blocked 记录：` and keeps the previous blocked text.
+
+## 2026-10-24 — GAP-05a 最终裁决：A
+
+- **Ruling (user, 2026-10-24; recorded by advisor Claude):** three
+  profiling rounds are done. i64 is legalized, the hot loop allocates
+  nothing on the second run, all 1698 functions compile, and the
+  interpreter is called 0 times. The user selects A.
+- **Measured:** ratios are cadr `qjs_eval` over Node 22.22.0 running
+  quickjs-wasi 3.6.2. Both sides return 499999500000 for the 1e6
+  accumulation and 1048578 for the 1MB JSON round trip.
+
+  | Round | 1e6 accumulation | 1MB JSON round trip |
+  |---|---|---|
+  | First | 20.2× (1584ms vs 78.5ms) | 16.3× (540ms vs 33.2ms) |
+  | Second (5''''') | 10.7× (696ms and 708ms vs 65.3ms) | 9.6× (304ms vs 31.7ms) |
+  | Third (5'''''') | 9.5× (578ms and 599ms vs 63.4ms) | 6.4× (233ms vs 36.4ms) |
+  | Independent retest | 10.5× (620ms and 616ms vs 58.4ms) | 7.3× (224ms vs 30.8ms) |
+
+  The first two rounds and the third-round pair are in
+  `docs/reviews/goal27-surface/GAP-05a-perf.md`. The third-round pair
+  and the independent retest are also in the GAP-05a status cell. A
+  later `return 1 + 1` is 73ms, 73ms, and 66ms on the third round, and
+  152ms, 60ms, and 88ms on the retest. More than half of sb-sprof
+  self time is `QJS-AOT-80`. The limit is SBCL register allocation on
+  generated functions with hundreds of locals.
+- **Options:**
+  - A. Keep the pure Lisp WASM runtime. Record the CPU-heavy ratio
+    against upstream as an intentional difference. Codemode output
+    stays verbatim with upstream.
+  - B. Switch to native wasmtime.
+- **Tradeoff:** A keeps one pure Lisp runtime. The functional checks, spec tests,
+  WASI, AOT, cold start, memory, and the 1+1 latency condition are
+  already met. CPU-heavy scripts stay about 6 to 11 times the upstream
+  wasm, so a script near upstream's timeout can time out sooner. B
+  would replace that runtime with native wasmtime to close the ratio,
+  and would add a native dependency.
+- **Choice:** A. The user chose A on 2026-10-24.
+- **Follow-ups:**
+  1. 性能账加回归门禁：1e6 累加倍数 ≤ 12、1MB JSON 往返倍数 ≤ 8.5、后续 `return 1 + 1` ≤ 200ms（以本轮实测为基线，留出机器抖动余量，只许变好）。Recorded as `OQ-G27-WASM-PERF` in `docs/open-questions.md`. This entry does not add the gate.
+  2. 编译器层面的优化（巨型函数的寄存器压力：按基本块拆分、局部变量缓存等）作为 Goal 27 之后的后续项，不阻塞合并。
+  3. 若实际使用中出现 CPU 受限的 codemode 场景，重新评估原生运行时。
+- **GAP-65:** 顾问裁决 2026-10-24 将 GAP-65 开为第三次返修，范围限定为第二次验收列出的场景（fatal-crash、extension-select、todo、custom-header、reload-runtime、tools、trigger-compact）里视口窗口与页脚不在上游那一行的问题；按 lane brief 的 render-diff 判定标准，这些场景每一屏里属于视口的差异必须消失，其余差异逐屏归到别的行。
+- **Where:** `docs/acceptance/goal27-pi-parity.md` GAP-05a. The status
+  cell starts with `done：用户 2026-10-24 选 A：保持纯 Lisp WASM 运行时，CPU 密集脚本相对上游的倍数记为有意差异（见 docs/parity-map.md 与 docs/adjudications.md 2026-10-24 条目），codemode 输出与上游逐字一致；功能、规范测试、WASI、AOT、冷启动、内存与 1+1 时延条件均已满足；原 blocked 记录：`, keeps the previous blocked text, and ends with `；review: pass（顾问记录用户裁决，2026-10-24；此前各轮验收已确认除吞吐倍数外的全部条件）`. The behavior ledger row is `Codemode WASM runtime` in `docs/parity-map.md`. GAP-65 in the same acceptance file starts with `open：顾问裁决 2026-10-24 第三次返修，范围限定为第二次验收列出的场景（fatal-crash、extension-select、todo、custom-header、reload-runtime、tools、trigger-compact）里视口窗口与页脚不在上游那一行的问题；按 lane brief 的 render-diff 判定标准，这些场景每一屏里属于视口的差异必须消失，其余差异逐屏归到别的行；原 blocked 记录：` and keeps the previous blocked text.

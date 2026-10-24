@@ -406,3 +406,9 @@ adjudication and the evidence are archived in
   exists at all. Equal-strength assertion:
   `goal18-install-telemetry-has-no-egress` (goal14-organization-test.lisp)
   scans all of src/**/*.lisp for the absence of the endpoint string.
+
+- `OQ-G27-WASM-PERF`: **regression ceiling for the pure Lisp WASM runtime, and the compiler work that waits until after Goal 27.** User ruling 2026-10-24, GAP-05a option A (`docs/adjudications.md`). The runtime stays a pure Lisp AOT of quickjs-wasi 3.6.2. Codemode output matches upstream verbatim. CPU-heavy scripts stay at the recorded ratio, about 6 to 11 times Node 22.22.0 on that wasm. This entry is the follow-up. It does not reopen the A/B choice.
+
+  1. The performance ledger gains a regression gate. The ceiling uses this round's measurements as the baseline and leaves room for machine jitter. Later runs may only improve. 1e6 integer accumulation stays at most 12× Node 22 quickjs-wasi 3.6.2. A 1MB JSON round trip stays at most 8.5×. A later `return 1 + 1` stays at most 200ms. This round's numbers under that ceiling are 9.5× and an independent retest of 10.5× for the accumulation, 6.4× and 7.3× for the JSON round trip, and `return 1 + 1` at 73ms, 73ms, and 66ms, with the retest at 152ms, 60ms, and 88ms. This entry records the ceiling. It does not add the gate.
+  2. Compiler work on register pressure in huge functions, including splitting by basic block and caching locals, is a follow-up after Goal 27. It does not block the merge. The remaining time is mostly `QJS-AOT-80`. sb-sprof puts more than half of self time there, and SBCL's register allocator is the limit on generated functions with hundreds of locals.
+  3. If real use hits a CPU-bound codemode case, reopen the choice of a native runtime.
